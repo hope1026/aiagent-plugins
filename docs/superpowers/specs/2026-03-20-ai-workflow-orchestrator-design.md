@@ -42,6 +42,42 @@ V1의 우선순위는 범용 에이전트 플랫폼이 아니라 `workflow orche
 - 각 프로젝트는 로컬 레포 단위로 등록된다.
 - 실제 코드 변경은 프로젝트 설정에 따라 `worktree/branch 격리` 또는 `현재 working tree 직접 수정`으로 수행된다.
 
+## Planning Assumptions
+
+구현 계획이 분산되지 않도록, V1 계획 수립 전 다음 가정을 고정한다.
+
+- 런타임 스택은 `TypeScript` 기준으로 통일한다.
+- 로컬 컨트롤 플레인은 `Node.js` 기반 백엔드 서비스로 둔다.
+- 웹 UI는 별도 프론트엔드에서 로컬 컨트롤 플레인에 연결된다.
+- V1의 에이전트 실행 기본값은 `ephemeral subprocess run`이다.
+- 초기 adapter는 `Claude`, `Codex`, `Gemini`를 모두 지원하되, 공통 보장 범위는 `prompt/context injection`, `stdout/stderr capture`, `exit status`, `artifact attachment`까지로 제한한다.
+- V1의 preview 범위는 `code`, `markdown`, `image`, `saved test/report artifacts`까지다.
+- Slack과 Discord는 V1에서 `알림 + deep link` 중심으로 지원한다.
+- reference dedup 검사는 V1에서 `ownership rule 검사`, `명시적 참조 검사`, `단순 중복 경고` 수준으로 제한한다.
+- 프로젝트 레포 내부 `.weppy/`가 소스 오브 트루스이며, 앱 내부 저장소는 재생성 가능한 read model/cache만 담당한다.
+
+## First Shippable Slice
+
+첫 구현 계획은 아래 범위만을 대상으로 한다.
+
+- 멀티 프로젝트 레지스트리와 프로젝트 전환
+- `.weppy/workflows/` 및 `.weppy/reference/` 문서 모델
+- `brief -> plan -> execution -> verification -> review -> reference sync` 상태 머신
+- `Overview`, `Brief`, `Plan`, `Progress`, `Review`, `Diff`, `Reference` 탭
+- `Codex`, `Claude`, `Gemini`의 ephemeral adapter
+- 코드, 문서, 이미지, artifact preview
+- review reason, retry, replan, rebrief, reference sync 타임라인
+- in-app attention center
+- Slack/Discord outbound notification and deep link
+
+다음 항목은 첫 출하 범위에서 제외한다.
+
+- session-backed long-running agent context
+- 메신저 안에서의 완전한 승인 처리 UX
+- 실시간 live browser preview 생성
+- 완전 자동 semantic reference dedup
+- 팀/서버 멀티유저 권한 시스템
+
 ## Core Concepts
 
 ### Brief
@@ -340,6 +376,8 @@ workflow는 계속 진행하지만 사용자가 나중에 꼭 확인해야 한�
 
 자동 진행 모드에서도 사용자가 반드시 확인해야 하는 사건을 모아두는 UI를 제공한다.
 
+V1에서는 채널별 기능 차이를 줄이기 위해 승인 처리의 최종 권한은 앱 내부에 둔다. Slack과 Discord는 우선 `알림 + deep link` 채널로 취급하고, 메신저 내부 승인 플로우는 후속 범위로 둔다.
+
 ## Agent Execution Model
 
 V1은 에이전트를 직접 노출하기보다 공통 실행 모델로 감싼다.
@@ -484,14 +522,6 @@ workflow 종료 시 `completion-report.md`를 생성한다.
 
 이 제품은 위 도구들을 그대로 복제하지 않고, 로컬 멀티 프로젝트 오케스트레이터에 맞게 추상화한다.
 
-## Open Questions For Planning
-
-- 로컬 컨트롤 플레인의 런타임 구현을 무엇으로 할지
-- agent adapter별 초기 지원 수준을 어디까지 둘지
-- Slack/Discord 승인 처리 범위를 어디까지 허용할지
-- reference dedup 검사 규칙을 정적 검사로 어디까지 자동화할지
-- visual preview 생성 방식을 어떤 프레임워크에 맞출지
-
 ## Recommended Planning Boundaries
 
 V1 계획은 다음 순서로 나누는 것이 적절하다.
@@ -503,4 +533,3 @@ V1 계획은 다음 순서로 나누는 것이 적절하다.
 5. agent adapter v1
 6. reference sync와 dedup 검사
 7. approval/attention/notification 통합
-
