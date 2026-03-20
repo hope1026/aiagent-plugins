@@ -349,6 +349,12 @@ workflow는 사람의 개입 방식을 정책으로 가진다.
 - `attention_rules`
 - `digest_policy`
 
+정책 우선순위는 다음과 같다.
+
+1. `blocking_rules`
+2. `attention_rules`
+3. `digest_policy`
+
 ### Blocking Approval
 
 사용자 응답 전까지 workflow를 멈춘다.
@@ -371,6 +377,8 @@ workflow는 계속 진행하지만 사용자가 나중에 꼭 확인해야 한�
 - 큰 visual change
 - reference ownership conflict가 자동 해소됨
 - 실패 후 자동 복구됨
+
+`attention`은 `info | important | critical` 심각도를 가질 수 있다. 하지만 attention만으로는 state transition을 막지 않는다. 진행을 멈추는 조건은 반드시 `blocking_rules`로 정의되어야 한다.
 
 ### Attention Center
 
@@ -449,6 +457,8 @@ V1은 에이전트를 직접 노출하기보다 공통 실행 모델로 감싼�
 
 목표는 내부적으로 하나의 `Unified Skill Graph`를 구성하고, 실행 직전에 각 에이전트 형식으로 컴파일하는 것이다.
 
+V1 계획에서는 이를 복잡한 런타임 그래프로 구현하지 않는다. 초기 구현은 `instruction merge pipeline`으로 시작하고, 내부 표현만 이후 그래프 모델로 확장 가능하게 설계한다.
+
 ## Verification Model
 
 완료 판단은 `worked`가 아니라 `proved` 기준으로 한다.
@@ -471,7 +481,8 @@ V1은 에이전트를 직접 노출하기보다 공통 실행 모델로 감싼�
 - required evidence bundle 존재
 - 영향받는 reference 문서 갱신 완료
 - reference dedup/ownership 검사 통과
-- required approval/attention 처리 완료
+- 모든 blocking approval 해결
+- required final summary와 critical attention이 UI와 configured channel에 기록됨
 - completion report 생성 완료
 
 하나라도 비어 있으면 `Completed`로 가지 않는다.
