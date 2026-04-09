@@ -1,6 +1,6 @@
 ---
 name: roblox-docs-sync-guide
-description: Guide for keeping Roblox MCP documentation in sync with code changes. Trigger when tools/actions/tiers/counts change and multilingual docs, tool references, or release docs must be updated consistently.
+description: Guide for keeping Roblox MCP documentation in sync with code changes. Trigger when tools/actions/tiers/counts change and multilingual docs, tool references, release docs, or the dashboard "What's New" announcements must be updated consistently.
 ---
 
 # Roblox Docs Sync Guide
@@ -10,10 +10,12 @@ description: Guide for keeping Roblox MCP documentation in sync with code change
 - Basic/Pro classification changed in plugin handler or tier files.
 - Tool counts/categories changed and docs may be stale.
 - Release documentation must stay aligned across supported languages.
+- A user-visible behavior change needs a dashboard announcement (reset of stats/history, new page, migration side-effects, etc.).
 
 ## Do Not Use This Skill For
 - Feature implementation with no documentation impact.
 - Isolated copy edits unrelated to tool/action/tier truth.
+- Internal refactors that do not affect what the user sees, runs, or stores on disk.
 
 ## Supported Languages
 - `en`: `deploy/publish/hope1026-roblox-mcp/README.md`
@@ -99,6 +101,9 @@ description: Guide for keeping Roblox MCP documentation in sync with code change
 - `CLAUDE.md`
 - `deploy/publish/hope1026-roblox-mcp/CHANGELOG.md`
 
+### Dashboard "What's New" announcements
+- `mcp-dashboard/src/features/whats-new/announcements.data.ts` — bundled `ANNOUNCEMENTS[]` array shown in the dashboard's What's New page. See the "Dashboard Announcements" section below for when and how to add an entry.
+
 ## Execution Workflow
 1. Read source-of-truth files.
 - Never infer tool list from memory.
@@ -122,6 +127,137 @@ All README language selectors must stay consistent.
 - Active language entry should be bold, not linked.
 - Cross-links must remain valid and relative-path correct.
 
+## Dashboard Announcements (`ANNOUNCEMENTS`)
+
+The dashboard "What's New" tab reads a bundled array from
+`mcp-dashboard/src/features/whats-new/announcements.data.ts`. Treat it as the
+place to surface user-visible changes that the user needs to be aware of —
+not as an internal changelog.
+
+### When to Add an Entry
+
+Add an announcement when a shipped release introduces any of the following:
+
+- A user-visible reset or format change that affects data the user already
+  has on disk (tool statistics, command/changelog history, sync state,
+  config files). If the user will notice "my numbers are gone" or "my old
+  entries are missing", it needs an announcement.
+- A new dashboard page, tab, or major UI area that the user should know
+  about.
+- A breaking change to a user-facing workflow (installation, connection,
+  placeId handling, sync root resolution, license activation).
+- A deprecation that the user must act on, or a migration the user must
+  perform manually.
+- A security or privacy notice the user should acknowledge.
+
+### When NOT to Add an Entry
+
+- Internal refactors with no user-visible impact (e.g., file reorganization,
+  renaming internal identifiers, generated-code churn, test restructuring).
+- Bug fixes that simply restore expected behavior without changing data,
+  files, or UI.
+- Code comments, typing improvements, or developer tooling changes.
+- Any change the user cannot observe from the dashboard, plugin UI, CLI,
+  or files they own on disk.
+
+Rule of thumb: if the only thing that changed is how the code is organized,
+the user does not need to know. If something on their screen or in their
+project folder changes, they do.
+
+### Translating Internal Changes Into User Framing
+
+Write the announcement from the user's point of view. The user does not
+care about internal identifier names, schema field renames, or refactor
+rationale. They care about:
+
+1. What will look different to them.
+2. Whether any of their data was touched.
+3. What, if anything, they need to do.
+
+**Example — bad (internal framing):**
+> Renamed `action` to `command` across the codebase. `CommandHistoryEntry`
+> schema version bumped. Plugin `HANDLER_REGISTRY` rekeyed.
+
+**Example — good (user framing):**
+> Tool usage stats reset after upgrade. Your accumulated counts start from
+> zero. The previous file is preserved as a `.bak` backup in each place's
+> observability folder — nothing is lost.
+
+The second version tells the user exactly what they will see, whether any
+action is required, and where to find their old data if they want it. The
+first version describes internal plumbing the user has no context for.
+
+### Schema
+
+Each entry in `ANNOUNCEMENTS` must match this shape
+(`announcements.types.ts`):
+
+```ts
+{
+  id: string;              // stable unique ID, never reused
+  date: string;            // "YYYY-MM-DD"
+  title: { en: string; ko: string };
+  body:  { en: string; ko: string };  // plain text, \n for linebreaks
+  severity: 'info' | 'warning' | 'critical';
+  category: 'release' | 'notice' | 'deprecation' | 'tip';
+  version?: string;                             // optional, e.g. "mcp-server 1.5.0"
+  link?: { url: string; label: { en: string; ko: string } }; // optional
+}
+```
+
+### Authoring Rules
+
+- **ID**: use `YYYY-MM-DD-short-slug`. Never reuse an ID — once shipped, it
+  is a stable user-facing read-state key tracked in `localStorage`. Editing
+  body text in place is fine; changing the ID is not.
+- **Order**: newest first. The module order is the display order in the
+  dashboard.
+- **Languages**: both `en` and `ko` are required. Do not ship an entry with
+  only one language. If you cannot translate confidently, ask for help —
+  do not machine-translate into the file.
+- **Tone**: concise, factual, present-tense, no marketing language. Write
+  what the user will see, not what you implemented.
+- **Body**: plain text only. `\n` is preserved as a linebreak via
+  `white-space: pre-wrap`. There is no markdown renderer — do not use
+  `**bold**`, `[links](url)`, or list markers expecting formatting.
+- **Links**: if you need to point at docs or a PR, use the optional `link`
+  field. Do not paste raw URLs inside `body`.
+- **Severity**:
+  - `info` — neutral notice, new feature, informational tip.
+  - `warning` — the user should pay attention; something on disk or in the
+    UI changed and they should know where to find their data.
+  - `critical` — immediate action required, data at risk, or a breaking
+    change that blocks a workflow.
+- **Category**:
+  - `release` — new release / new feature highlight.
+  - `notice` — general user-facing notice (resets, format changes, reminders).
+  - `deprecation` — something is going away; user must migrate.
+  - `tip` — optional guidance or best-practice nudge.
+- **Avoid jargon**: words like "schema version", "dispatch map", "handler
+  registry", "codegen", "tier map" belong in commit messages, not here.
+
+### Verifying an Announcement Change
+
+After editing `announcements.data.ts`:
+
+1. `cd mcp-dashboard && npx tsc --noEmit` — no type errors.
+2. `npx vitest run src/features/whats-new/` — all What's New tests pass.
+3. `npm run build` — production build succeeds.
+4. Optional sanity check: open the dashboard, visit `/whats-new`, confirm
+   your entry renders with correct severity bar, category chip, and that
+   both locales display correctly when switching language.
+
+### Common Mistakes To Avoid
+
+- Announcing an internal refactor that the user cannot see. (Skip it.)
+- Reusing an ID from a previous announcement. (Users have already marked
+  it as read in `localStorage`; they will never see the new text.)
+- Writing only `en` or only `ko`. (The other locale will fall back, but
+  this is a shipping defect.)
+- Using markdown syntax expecting it to render.
+- Embedding URLs inside `body` instead of the `link` field.
+- Using severity `critical` for cosmetic or informational changes.
+
 ## Verification Checklist
 - [ ] All changed tools/actions reflected in docs
 - [ ] No removed tools remain in docs
@@ -131,6 +267,8 @@ All README language selectors must stay consistent.
 - [ ] Language selector format preserved
 - [ ] Localization keys updated for all 6 languages
 - [ ] Gumroad product entry description updated if Pro features changed
+- [ ] Dashboard `ANNOUNCEMENTS` entry added when a user-visible reset, migration, new page, or breaking change shipped
+- [ ] Announcement `id` is new (never reused); both `en` and `ko` are populated
 
 ## Output Contract
 When using this skill, return:
