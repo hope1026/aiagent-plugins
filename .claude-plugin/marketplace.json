@@ -1,0 +1,22 @@
+{
+  "name": "onestar",
+  "owner": { "name": "Onestar Lee" },
+  "metadata": {
+    "description": "Onestar Lee's shared AI plugins",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "forge",
+      "source": "./plugins/forge",
+      "description": "Spec-first development process skills for Claude Code and Codex.",
+      "category": "productivity"
+    },
+    {
+      "name": "onestar-ai-tools",
+      "source": "./plugins/onestar-ai-tools",
+      "description": "AI council and collaboration skills.",
+      "category": "productivity"
+    }
+  ]
+}
