@@ -185,12 +185,12 @@ Every process skill bakes in the superpowers discipline patterns: an **Iron Law*
 
 ### Primary channel: GitHub marketplace (both agents, Windows-safe)
 
-The repo (`github.com/OnestarLee/ai-config-shared`) doubles as a plugin **marketplace** for both agents — one skill source, two marketplace manifests at repo root:
+The repo (`github.com/hope1026/aiagent-plugins`) doubles as a plugin **marketplace** for both agents — one skill source, two marketplace manifests at repo root:
 
 | Agent | Marketplace manifest | Install (end user) | Mechanism |
 |---|---|---|---|
-| Claude Code | `.claude-plugin/marketplace.json` | `/plugin marketplace add OnestarLee/ai-config-shared` → `/plugin install forge` | Clones/copies into Claude's managed plugin cache; SessionStart hook active |
-| Codex | `.agents/plugins/marketplace.json` (exists; add `forge` entry) | `codex marketplace add https://github.com/OnestarLee/ai-config-shared` → install via `/plugins` | Copies into `~/.codex/plugins/forge` |
+| Claude Code | `.claude-plugin/marketplace.json` | `/plugin marketplace add hope1026/aiagent-plugins` → `/plugin install forge@hope1026` | Clones/copies into Claude's managed plugin cache; SessionStart hook active |
+| Codex | `.agents/plugins/marketplace.json` (exists; add `forge` entry) | `codex plugin marketplace add hope1026/aiagent-plugins --ref main --sparse .agents/plugins --sparse plugins/forge` → `codex plugin add forge@hope1026` | Copies into Codex's managed plugin cache |
 
 - Marketplace installs **copy** files into each agent's managed store — **no symlinks anywhere in the end-user path**, so Windows works out of the box.
 - Updates flow through each agent's native update mechanism (marketplace refresh / plugin update) — `git push` to the repo is the release action.

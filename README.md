@@ -26,14 +26,14 @@ Claude Code:
 
 ```text
 /plugin marketplace add hope1026/aiagent-plugins
-/plugin install forge@onestar
+/plugin install forge@hope1026
 ```
 
 Codex:
 
 ```text
-codex marketplace add https://github.com/hope1026/aiagent-plugins
-# then install forge from /plugins
+codex plugin marketplace add hope1026/aiagent-plugins --ref main --sparse .agents/plugins --sparse plugins/forge
+codex plugin add forge@hope1026
 ```
 
 Marketplace installs copy files into each agent's managed store — no symlinks, works on Windows. Updates: `git push` here, then update the plugin from the agent.

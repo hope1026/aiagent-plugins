@@ -1,8 +1,8 @@
 {
-  "name": "onestar",
-  "owner": { "name": "Onestar Lee" },
+  "name": "hope1026",
+  "owner": { "name": "hope1026" },
   "metadata": {
-    "description": "Onestar Lee's shared AI plugins",
+    "description": "hope1026's shared AI plugins",
     "version": "1.0.0"
   },
   "plugins": [

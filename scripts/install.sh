@@ -103,7 +103,7 @@ install_claude() {
     echo "installed Claude Code skills-directory plugin: $dst ($MODE)"
   done < <(plugin_list)
   echo "note: SessionStart hooks only run for marketplace-installed plugins;"
-  echo "      for the full experience use: /plugin marketplace add OnestarLee/ai-config-shared"
+  echo "      for the full experience use: /plugin marketplace add hope1026/aiagent-plugins"
 }
 
 case "$AGENT" in
