@@ -9,7 +9,7 @@ PLUGIN="all"
 
 usage() {
   cat <<'EOF'
-Usage: scripts/install.sh [--agent codex|claude|all] [--mode copy|link] [--plugin forge|onestar-ai-tools|all]
+Usage: scripts/install.sh [--agent codex|claude|all] [--mode copy|link] [--plugin forge|all]
 
 Dev-mode install from a local checkout. For end users, prefer the GitHub
 marketplace install (see README.md).

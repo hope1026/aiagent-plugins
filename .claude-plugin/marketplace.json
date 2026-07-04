@@ -11,12 +11,6 @@
       "source": "./plugins/forge",
       "description": "Spec-first development process skills for Claude Code and Codex.",
       "category": "productivity"
-    },
-    {
-      "name": "onestar-ai-tools",
-      "source": "./plugins/onestar-ai-tools",
-      "description": "AI council and collaboration skills.",
-      "category": "productivity"
     }
   ]
 }

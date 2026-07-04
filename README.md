@@ -7,7 +7,6 @@ Shared AI agent plugins managed from one source tree, usable in both **Claude Co
 | Plugin | Purpose |
 |---|---|
 | `forge` | Spec-first development process: spec → plan → execute → verify, plus TDD, debugging, UI design, writing tone, and a spec-to-HTML viewer. Install this when starting any project. |
-| `onestar-ai-tools` | AI council (multi-assistant second opinions). |
 
 ```text
 plugins/<name>/
