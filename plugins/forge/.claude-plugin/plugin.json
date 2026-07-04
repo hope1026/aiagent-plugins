@@ -1,0 +1,9 @@
+{
+  "name": "forge",
+  "displayName": "Forge",
+  "version": "0.1.0",
+  "description": "Spec-first development process skills: spec, plan, execute, verify, debug, design, tone, and spec visualization. For Claude Code and Codex.",
+  "author": { "name": "Onestar Lee" },
+  "skills": "./skills/",
+  "keywords": ["spec-first", "process", "tdd", "debugging", "ui-design", "tone", "korean", "codex", "claude-code"]
+}

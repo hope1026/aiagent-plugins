@@ -1,0 +1,11 @@
+{
+  "name": "onestar-ai-tools",
+  "displayName": "Onestar AI Tools",
+  "version": "0.2.0",
+  "description": "Shared AI collaboration skills for Codex and Claude Code.",
+  "author": {
+    "name": "Onestar Lee"
+  },
+  "skills": "./skills/",
+  "keywords": ["ai-council", "codex", "claude-code"]
+}

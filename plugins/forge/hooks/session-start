@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SKILL="$ROOT/skills/using-forge/SKILL.md"
+[[ -f "$SKILL" ]] || exit 0
+content="$(cat "$SKILL")"
+wrapped="<FORGE_BOOTSTRAP>
+You have forge: a spec-first development process.
+
+**Below is the full content of the 'forge:using-forge' skill. For all other forge skills, use the skill mechanism:**
+
+${content}
+</FORGE_BOOTSTRAP>"
+if command -v jq >/dev/null 2>&1; then
+  jq -n --arg ctx "$wrapped" '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:$ctx}}'
+else
+  python3 - "$wrapped" <<'PY'
+import json, sys
+print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": sys.argv[1]}}))
+PY
+fi

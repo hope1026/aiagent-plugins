@@ -1,0 +1,20 @@
+{
+  "name": "forge",
+  "version": "0.1.0",
+  "description": "Spec-first development process skills: spec, plan, execute, verify, debug, design, tone, and spec visualization. For Claude Code and Codex.",
+  "author": { "name": "Onestar Lee" },
+  "skills": "./skills/",
+  "hooks": {},
+  "interface": {
+    "displayName": "Forge",
+    "shortDescription": "Spec-first process skills for real projects.",
+    "longDescription": "Forge packages a complete spec-first workflow - brainstorm to spec, spec to plan, plan to verified implementation - plus UI design, writing tone, systematic debugging, TDD, and a spec-to-HTML viewer. The spec is the source of truth; code follows it.",
+    "developerName": "Onestar Lee",
+    "category": "Productivity",
+    "capabilities": ["Skills"],
+    "defaultPrompt": [
+      "Write a spec for this feature before we code.",
+      "Render docs/specs/001 as an HTML viewer."
+    ]
+  }
+}

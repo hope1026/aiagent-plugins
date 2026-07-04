@@ -1,0 +1,37 @@
+# Codex Adaptations
+
+How forge runs on the Codex CLI. Read this once per session when running in Codex, then apply the mappings whenever a forge skill names an action.
+
+## Skill invocation
+
+Codex has no session-start hook, so this router skill arrives by description matching, not injection.
+
+- **Explicit:** invoke any forge skill by typing `$<skill-name>` (for example `$writing-specs`, `$systematic-debugging`).
+- **Implicit:** Codex matches skill descriptions against the task; the routing table in the forge using-forge skill still decides which one is correct.
+- **Recommended:** add one pointer line to the project's `AGENTS.md` so the workflow loads at session start, for example: "Before responding to any task, follow the forge using-forge skill (spec-first workflow)."
+
+## Action-to-tool mapping
+
+Forge skills name actions, never harness tools. On Codex, perform them as:
+
+| When a forge skill says | On Codex, use |
+|---|---|
+| create a todo / track a checklist | `update_plan` |
+| run in the shell | `shell` |
+| edit files / write files | `apply_patch` |
+| dispatch a subagent | `spawn_agent` (see multi-agent support below) |
+
+## Subagent dispatch requires multi-agent support
+
+Add to your Codex config (`~/.codex/config.toml`):
+
+```toml
+[features]
+multi_agent = true
+```
+
+This enables `spawn_agent`, `wait_agent`, and `close_agent`, which the forge executing-plans skill uses to dispatch one fresh subagent per plan task. Always close subagents once they have finished all their work.
+
+## Sequential fallback rule
+
+If no subagent capability is available, execute sequentially; never fabricate tool calls. Do the tasks yourself, one at a time, in plan order, applying the same per-task gates (the forge test-driven-development skill, per-task verification, ledger updates) the dispatching skill requires. A missing feature changes who does the work — never whether the process is followed.

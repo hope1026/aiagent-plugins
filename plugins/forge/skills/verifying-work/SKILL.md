@@ -1,0 +1,110 @@
+---
+name: verifying-work
+description: 'Use when about to claim work is complete, fixed, passing, or done - before committing, creating PRs, reporting progress, or setting a spec to implemented. Triggers: "완료", "검증", "다 됐어?", "확인해줘", "verify", "done", finishing any plan or fix.'
+---
+
+# Verifying Work
+
+Announce at start: "Using the forge verifying-work skill: gathering fresh evidence before any completion claim."
+
+Respond to the user in the user's language. The discipline below applies in every language.
+
+## Overview
+
+Claiming work is complete without verification is dishonesty, not efficiency. Every "done", "fixed", or "passing" — in any wording, including paraphrases and implied satisfaction — must be backed by evidence produced in the current moment, and spec-driven work must be walked against the spec's acceptance criteria one by one.
+
+## Iron Law
+
+```
+NO COMPLETION CLAIM WITHOUT FRESH VERIFICATION EVIDENCE. EVIDENCE BEFORE ASSERTIONS, ALWAYS.
+```
+
+Violating the letter of this law is violating its spirit. Rewording a claim ("should be good now", "looks complete") does not exempt it.
+
+## When to Use / When NOT
+
+**Use before:**
+
+- Any statement that work is complete, fixed, passing, working, or done — exact words, synonyms, or implication.
+- Committing, creating a PR, reporting progress, or moving to the next plan task.
+- Setting a spec's `Status:` to `implemented` (this skill is the ONLY thing permitted to set that value).
+- Accepting a subagent's success report.
+
+**NOT needed for:** neutral in-progress narration that claims nothing ("running the tests now"), or answering questions that assert nothing about work state.
+
+## The Process
+
+Verification has two levels. Level 1 always applies. Level 2 additionally applies whenever the work traces to a spec.
+
+### Level 1 — command-level verification (always)
+
+1. **Identify** the command that proves the claim: build, test suite, lint, type check, or a real run of the changed behavior.
+2. **Run it NOW in the shell** — the full command, fresh. Cached results, remembered output, and runs from earlier in the session count as nothing.
+3. **Read the full output.** Check the exit code. Count the failures yourself instead of skimming for a green word.
+4. **Compare output to claim.** If they disagree, state the actual status with the evidence — never soften or defer the bad news.
+5. **Only then** make the claim, and include the evidence with it.
+
+| Claim | Requires | Not sufficient |
+|---|---|---|
+| Tests pass | Fresh test run: 0 failures, exit 0 | An earlier run, "should pass" |
+| Build succeeds | Fresh build: exit 0 | Lint passing, logs looking fine |
+| Bug fixed | Original reproduction now passes | Code changed, fix assumed |
+| Subagent finished | You inspected the diff and re-ran checks | The subagent's own report |
+| Requirements met | Level 2 walk below | Tests passing alone |
+
+### Level 2 — spec-level verification (when a spec exists)
+
+1. Open `docs/specs/NNN-<slug>/spec.md` and read the Acceptance Criteria section.
+2. Create one todo per acceptance criterion (AC1..ACn) so none can be silently skipped.
+3. Walk each AC in order: execute its Given/When/Then against the real implementation, then record a verdict — **PASS** or **FAIL** — with the exact command output or concrete observation as evidence. No AC may be judged from memory or from reading the code.
+4. Cross-check consistency: each AC still maps to current R-IDs, and if `.forge/plans/NNN-<slug>.md` exists, its AC coverage table matches what was actually built. A dangling AC or uncovered requirement is a FAIL to resolve, not a footnote.
+
+### Verdict handling
+
+Any AC FAIL means exactly one of two things, and you must name which:
+
+- **Code bug** — the implementation does not meet the spec → fix it via the forge systematic-debugging skill, then redo the walk from Level 1.
+- **Spec bug** — the requirement itself is wrong or outdated → propose a delta via the forge writing-specs skill in change mode and get the user's approval, then re-verify.
+
+One of the two must change, explicitly. Never adjust both silently, and never re-interpret an AC until it passes.
+
+### Completion
+
+Only after **every** AC records PASS with evidence:
+
+1. Set the spec's `Status:` line to `implemented`. This value is set only by this skill, only at this point.
+2. Report the AC table to the user.
+
+If no spec exists, first confirm the change is genuinely on the ceremony-floor exemption list (typo/comment/formatting, no-API dependency bump, non-output CI config, behavior-preserving refactor with passing tests). Only then does Level 1 alone gate the claim — and say explicitly that verification was command-level only. If the work altered behavior and has no spec, that is a process gap: route to the forge writing-specs skill before any completion claim, never around it.
+
+### Report format
+
+```
+| AC | Verdict | Evidence |
+|----|---------|----------|
+| AC1 | PASS | `npm test` → 42/42 passed, exit 0 |
+| AC2 | FAIL | POST /login returned 500, expected 201 (output attached) |
+```
+
+## Working Files
+
+- Reads: `docs/specs/NNN-<slug>/spec.md` (Acceptance Criteria, Requirements) and, when present, `.forge/plans/NNN-<slug>.md` (verification commands, AC coverage table).
+- Writes: the `Status: implemented` line in `docs/specs/NNN-<slug>/spec.md` — only after all ACs PASS. The AC report goes to the user in chat, not to a file.
+
+## Red Flags
+
+| Excuse | Reality |
+|---|---|
+| "Tests passed earlier" | Earlier is not now — the code has changed since. Run them again. |
+| "The diff looks right" | Reading code is not running it. Correct-looking code fails constantly. |
+| "I'm confident it works" | Confidence is not evidence. Run the command. |
+| "User is waiting, skip the rerun" | A false "done" costs far more of their time than one rerun. |
+| "The subagent reported success" | A report is a claim, not evidence. Inspect the diff and re-run the checks yourself. |
+| "Lint is clean, so it builds" | A linter is neither a compiler nor a test suite. |
+| "I'll set implemented now, verify after" | Status is the gate token. It flips only after the evidence exists. |
+| "That AC obviously passes" | The "obvious" AC is where regressions hide. Walk it like every other one. |
+| "No spec exists, so Level 1 is enough" | Only if the change is on the ceremony-floor exemption list. A missing spec for behavior-changing work is a gap to close via the forge writing-specs skill, not a shortcut. |
+
+## Handoff
+
+**If any AC failed: the next step is the forge systematic-debugging skill (code bug) or the forge writing-specs skill in change mode (spec bug) — then return here and re-verify from Level 1. If all ACs passed: set the spec `Status: implemented`, report the AC table to the user — the lifecycle is complete.**
