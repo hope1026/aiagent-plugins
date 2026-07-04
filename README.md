@@ -1,6 +1,6 @@
-# ai-config-shared
+# aiagent-plugins
 
-Shared AI agent plugins managed from one source tree, usable in both **Claude Code** and **Codex CLI**. Skill files are written once (Agent Skills open standard) and installed into each agent's own structure.
+AI agent plugins managed from one source tree, usable in both **Claude Code** and **Codex CLI**. Skill files are written once (Agent Skills open standard) and installed into each agent's own structure.
 
 ## What's here
 
@@ -25,14 +25,14 @@ docs/specs/                    # specs for this repo (spec-first, dogfooded)
 Claude Code:
 
 ```text
-/plugin marketplace add OnestarLee/ai-config-shared
+/plugin marketplace add hope1026/aiagent-plugins
 /plugin install forge@onestar
 ```
 
 Codex:
 
 ```text
-codex marketplace add https://github.com/OnestarLee/ai-config-shared
+codex marketplace add https://github.com/hope1026/aiagent-plugins
 # then install forge from /plugins
 ```
 
@@ -41,7 +41,7 @@ Marketplace installs copy files into each agent's managed store — no symlinks,
 ## Install (local dev)
 
 ```bash
-bash scripts/install.sh                # copy, both agents, all plugins
+bash scripts/install.sh                # copy, both agents, forge plugin
 bash scripts/install.sh --mode link    # symlink: edit repo -> instantly live (macOS/Linux)
 bash scripts/install.sh --agent codex --plugin forge
 ```
