@@ -1,6 +1,6 @@
 ---
 name: writing-tone
-description: 'Use when writing or editing anything humans will read - documentation, README, PR descriptions, commit messages, error messages, UI copy, Slack messages, emails, reports - in any language, especially Korean technical communication. Triggers: "톤앤매너", "말투", "자연스럽게", "문서", "메시지 작성", "리드미", drafting or reviewing prose.'
+description: 'Use when writing or editing anything humans will read - natural, human-readable prose without AI-like filler; documentation, README, PR descriptions, commit messages, error messages, UI copy, Slack messages, emails, reports - in any language, especially Korean technical communication. Triggers: "톤앤매너", "말투", "자연스럽게", "사람처럼", "AI스럽지 않게", "문서", "메시지 작성", "리드미", drafting or reviewing prose.'
 ---
 
 # Writing Tone
@@ -11,7 +11,7 @@ Respond to the user in the user's language. These rules govern whatever language
 
 ## Overview
 
-Prose that humans read is a deliverable, not an afterthought. Vigorous writing is concise: every sentence carries information the reader needs, in the order the reader needs it. This skill is a small index — the heavy rules live in references/style-rules.md inside this skill.
+Prose that humans read is a deliverable, not an afterthought. Vigorous writing is concise: every sentence carries information the reader needs, in the order the reader needs it. This is the base tone skill for natural, human-readable writing; purpose-specific skills such as marketing or operations tone may layer on top of it.
 
 ## Iron Law
 
@@ -27,6 +27,7 @@ Apply these to every sentence, in any language:
 2. **Put statements in positive form.** Say what is, not what is not: "the cache is stale" beats "the cache is not up to date".
 3. **Use definite, specific, concrete language.** "Retries 3 times over 30s" beats "retries a few times for a while".
 4. **Omit needless words.** "the fact that", "in order to", "it should be noted that" — delete.
+5. **Remove AI-like filler.** Skip stock openings, exaggerated praise, generic reassurance, and sign-offs that add no useful information.
 
 Above all: **lead with the point** — decision, result, or ask first; background after.
 

@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-`forge` is a cross-platform plugin (Claude Code + Codex CLI) that packages a complete, spec-first development process: brainstorm → spec → plan → execute → verify, plus UI-design, writing-tone, and spec-visualization skills. It is the one plugin to install when starting any new project.
+`forge` is a cross-platform plugin (Claude Code + Codex CLI) that packages a complete, spec-first development process: brainstorm → spec → plan → execute → verify, plus UI-design, base writing-tone, marketing/operations tone overlays, and spec-visualization skills. It is the one plugin to install when starting any new project.
 
 Core philosophy: **the spec is the source of truth**. Code follows the spec; feature changes edit the spec first; verification means checking the implementation against the spec's acceptance criteria.
 
@@ -18,7 +18,7 @@ Core philosophy: **the spec is the source of truth**. Code follows the spec; fea
 | Project working dir | `.forge/` at target-repo root |
 | Spec location | `docs/specs/` (committed, source of truth) |
 | Skill language | English body + Korean trigger keywords in descriptions; skills instruct responding to the user in the user's language |
-| Approach | Lean spec-first core (11 skills), not a full superpowers mirror |
+| Approach | Lean spec-first core (13 skills), not a full superpowers mirror |
 | superpowers | Keep installed during forge validation; replace (disable) once forge is stable |
 
 **Non-goals:**
@@ -75,7 +75,9 @@ plugins/forge/
     ui-design/SKILL.md
     writing-tone/
       SKILL.md
-      references/style-rules.md     # Strunk core + Korean comms shapes (from tone-and-manner)
+      references/style-rules.md     # base natural prose + Strunk core + Korean comms shapes
+    marketing-tone/SKILL.md         # marketing/product copy overlay on writing-tone
+    operations-tone/SKILL.md        # customer/operations reply overlay on writing-tone
     maintaining-forge/
       SKILL.md
       references/portability-rules.md
@@ -150,7 +152,7 @@ Spec-first is exempt ONLY when the change alters no documented or documentable b
 
 Everything else gets a spec. (Research finding: unmatched ceremony is the #1 spec-driven-development failure mode, but a vague carve-out gets rationalized — hence a closed list.)
 
-## 6. Skill catalog (11 skills)
+## 6. Skill catalog (13 skills)
 
 Every process skill bakes in the superpowers discipline patterns: an **Iron Law** fenced block, **Red Flags** list + rationalization table (`| Excuse | Reality |`), "announce at start" line, checklist→one-todo-per-item, and an explicit **terminal handoff** naming the next skill. Process-flow `dot` graphs only where a decision is non-obvious.
 
@@ -165,10 +167,12 @@ Every process skill bakes in the superpowers discipline patterns: an **Iron Law*
 | 7 | `verifying-work` | Before any "done/fixed/passing" claim: run verification commands, read output, then walk AC1..ACn line-by-line with evidence. Flips spec status to `implemented`. Evidence before assertions, always. | superpowers `verification-before-completion` + spec-kit `/analyze` |
 | 8 | `spec-viewer` | Renders a spec.md into ONE self-contained tabbed HTML at `.forge/viewer/NNN-slug.html`: Overview / Requirements / Flows (Mermaid) / Data & Interfaces / Acceptance checklist (localStorage) / History. Print-friendly. Regenerable view — never the truth. | New (open niche; stack per §7) |
 | 9 | `ui-design` | Declare the visual system before code (type scale, palette, spacing, depth — each with a WHY); concrete numeric floors; named anti-slop ban-list; self-tests (swap/squint/signature); effort calibration (utilitarian vs editorial). | Anthropic `frontend-design` + `artifact-design` + community `interface-design` |
-| 10 | `writing-tone` | Anything humans read (docs, PRs, commits, UI text, Slack): Strunk core (active voice; positive form; definite, specific, concrete language; omit needless words) + the Korean engineering-comms voice and message shapes absorbed from `tone-and-manner`. Heavy rules in `references/`, read only when writing. | obra `writing-clearly-and-concisely` + existing `tone-and-manner` |
-| 11 | `maintaining-forge` | How to add/edit forge skills: portability rules (§2.6), description-writing rules, template anatomy, validate.sh usage, testing skills with subagents. | superpowers `writing-skills` (lean) |
+| 10 | `writing-tone` | Base natural prose layer for anything humans read (docs, PRs, commits, UI text, Slack): non-AI-like wording, Strunk core, and Korean engineering-comms voice. Heavy rules in `references/`, read only when writing. | obra `writing-clearly-and-concisely` + existing `tone-and-manner` |
+| 11 | `marketing-tone` | Purpose overlay on `writing-tone` for marketing, product, launch, social, and campaign copy: fact-based confidence, trust-building claims, and hype restraint. | New |
+| 12 | `operations-tone` | Purpose overlay on `writing-tone` for customer support and operations replies: confirmed status, user impact, action plan, customer action, next update, and restrained root-cause detail. | New |
+| 13 | `maintaining-forge` | How to add/edit forge skills: portability rules (§2.6), description-writing rules, template anatomy, validate.sh usage, testing skills with subagents. | superpowers `writing-skills` (lean) |
 
-**Skill routing (encoded in using-forge):** process skills fire before implementation skills. "Build X" → writing-specs. "Fix this bug" → systematic-debugging (+ TDD for the fix). "Is it done?" → verifying-work. UI work inside a task → ui-design. Human-readable prose → writing-tone.
+**Skill routing (encoded in using-forge):** process skills fire before implementation skills. "Build X" → writing-specs. "Fix this bug" → systematic-debugging (+ TDD for the fix). "Is it done?" → verifying-work. UI work inside a task → ui-design. Human-readable prose → writing-tone. Marketing copy → writing-tone plus marketing-tone. Customer or operations replies → writing-tone plus operations-tone.
 
 **Excluded** (and why): code-review skills (harness built-ins cover it; revisit later), git-worktrees / finishing-a-branch (harness-specific), separate brainstorming skill (merged into writing-specs).
 
@@ -220,6 +224,10 @@ Symlinks are an iteration convenience on Unix, never a correctness requirement �
 2. Validation period: superpowers stays installed alongside forge.
 3. Once forge is proven: disable/uninstall superpowers in Claude Code (documented step, user-triggered).
 4. Note for later dedup: the global `natural-korean-communication` skill overlaps `writing-tone`.
+
+### Tone overlay change
+
+- 2026-07-04 [CHANGE] Added `marketing-tone` and `operations-tone` as purpose-specific overlays on top of `writing-tone`; kept `writing-tone` as the single base natural prose skill instead of adding `natural-writing-tone`.
 
 ## 9. Testing the plugin itself
 

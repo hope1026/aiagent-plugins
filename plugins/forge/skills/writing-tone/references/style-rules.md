@@ -1,6 +1,6 @@
 # Style Rules
 
-Part 1 governs English prose mechanics; part 2 governs Korean engineering communication. Read part 1 before drafting substantial English prose. Read part 2 before writing any Korean message, of any length.
+Part 1 governs English prose mechanics; part 2 governs Korean engineering communication; part 3 governs natural, non-AI-like writing in any language. Read part 1 before drafting substantial English prose. Read part 2 before writing any Korean message, of any length. Apply part 3 to every prose output.
 
 ## Part 1 — English Prose Mechanics
 
@@ -78,3 +78,53 @@ PR summary:
 ### Output
 
 Return the rewritten message only unless the user asks for explanation or alternatives. If the source text is ambiguous, preserve intent and remove only unnecessary noise.
+
+## Part 3 — Natural Human Writing
+
+Default to a plain person-to-person voice. The writing should sound like a capable operator, engineer, founder, or teammate wrote it for a real reader.
+
+### Remove AI-Like Patterns
+
+Delete stock assistant phrasing unless it serves a real purpose:
+
+- `물론입니다`, `좋은 질문입니다`, `아래와 같이 정리해드리겠습니다`
+- `도움이 되었길 바랍니다`, `언제든지 문의해주세요`
+- `It is important to note`, `In today's fast-paced world`, `I hope this helps`
+- Repeating the user's request before answering it
+- Apologizing for normal work or thanking the reader in every paragraph
+
+### Prefer Concrete Human Sentences
+
+- Start with the actual answer, decision, status, or ask.
+- Use the reader's vocabulary when it is accurate.
+- Keep technical terms when they are clearer than a forced translation.
+- Use short paragraphs and ordinary transitions.
+- Say what changed, what matters, and what happens next.
+
+### Avoid Over-Polish
+
+Do not make every sentence symmetrical, inspirational, or slogan-like. A slightly direct sentence is often more trustworthy than a polished generic one.
+
+Weak:
+
+```text
+물론입니다. 요청하신 내용을 바탕으로 아래와 같이 정리해드리겠습니다.
+```
+
+Better:
+
+```text
+핵심은 `writing-tone`을 기본 스킬로 유지하고, 마케팅/운영 톤은 오버레이로 두는 방식입니다.
+```
+
+Weak:
+
+```text
+We are committed to delivering a seamless and reliable experience.
+```
+
+Better:
+
+```text
+The issue is confirmed, and we are preparing a fix. No action is needed on your side right now.
+```

@@ -6,7 +6,7 @@ AI agent plugins managed from one source tree, usable in both **Claude Code** an
 
 | Plugin | Purpose |
 |---|---|
-| `forge` | Spec-first development process: spec → plan → execute → verify, plus TDD, debugging, UI design, writing tone, and a spec-to-HTML viewer. Install this when starting any project. |
+| `forge` | Spec-first development process: spec → plan → execute → verify, plus TDD, debugging, UI design, base writing tone, marketing/operations tone overlays, and a spec-to-HTML viewer. Install this when starting any project. |
 
 ```text
 plugins/<name>/
@@ -63,7 +63,9 @@ bash scripts/install.sh --agent codex --plugin forge
 | `verifying-work` | Evidence before claims; walks acceptance criteria; flips spec to `implemented` |
 | `spec-viewer` | Renders a spec as one self-contained tabbed HTML (Mermaid diagrams, AC checklist) |
 | `ui-design` | Declared visual system before UI code; numeric floors; anti-slop ban list; self-tests |
-| `writing-tone` | Clear prose for humans (Strunk core) + Korean engineering communication |
+| `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
+| `marketing-tone` | Marketing and product copy overlay: factual, confident, trust-building claims |
+| `operations-tone` | Customer and operations overlay: confirmed status, impact, next action, and restrained cause detail |
 | `maintaining-forge` | How to add/edit forge skills without breaking cross-agent portability |
 
 ## Spec-first lifecycle (the short version)
