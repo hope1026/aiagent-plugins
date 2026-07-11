@@ -7,11 +7,19 @@ description: 'Use when creating features, changing any behavior, starting a proj
 
 Announce at start: "Using the forge writing-specs skill — mode: <new | change | clarify | sync>."
 
-Respond to the user in the user's language. This skill file stays in English; the spec may be written in the user's language, but requirement IDs (R1, AC1), Status keywords, and history tags stay in English.
+Respond to the user in the user's language. This skill file stays in English. Write the spec in the user's language; this is mandatory, not optional. Keep the template's canonical headings and machine-readable tokens unchanged, along with code identifiers and established original-language terms.
 
 ## Overview
 
 The spec is the source of truth. Every behavior change starts by writing or editing a spec under `docs/specs/`, getting the user's approval, and only then planning and coding. This skill turns intent into an approved spec through collaborative dialogue — it never produces code.
+
+## Spec Language
+
+- Determine the language from the user's current request and established conversation language. If they explicitly request another language for the spec, follow that request.
+- Write all human-readable spec content in that language: the title, overview, non-goals, requirements, acceptance criteria, diagram labels, table labels and descriptions, and decision history explanations.
+- Preserve terms whose identity or established meaning belongs to their original language. This includes proper nouns, product and framework names, API and protocol names, code identifiers, commands, quoted UI labels, and domain terms with a recognized original form. Do not force-translate or transliterate them.
+- Explain preserved terms and all surrounding prose in the user's language. Original-language terms are not permission to leave explanatory sentences in another language.
+- Keep only the template's canonical `##` section headings and machine-readable tokens unchanged so downstream forge skills can parse them. Localize ordinary body labels such as `Non-goals:` and table column labels; they are not canonical headings or machine-readable tokens.
 
 ## Iron Law
 
@@ -50,13 +58,15 @@ If both change and sync seem to apply: sync records what the code already does; 
 
 Read `references/spec-template.md` in this skill before writing or editing any spec. Create one todo per numbered step of your mode and complete them in order.
 
+The Spec Language rules apply in every mode, including deltas, clarification rewrites, drift records, and reconciliation outcomes. Never treat an existing spec's language as permission to continue in a language that differs from the user's language; surface the mismatch and bring its human-readable content into the user's language as part of the spec edit.
+
 ### Mode: new
 
 1. **Explore context** — files, docs, recent commits. If the request spans multiple independent subsystems, decompose first: agree on the sub-projects and their order, then spec the first one.
 2. **Ask clarifying questions** — ONE question per message. Prefer multiple choice. Focus on purpose, constraints, success criteria. Flag anything still ambiguous inline as `[NEEDS CLARIFICATION: question]` instead of guessing.
 3. **Propose 2–3 approaches** — with trade-offs; lead with your recommendation and why.
-4. **Write the spec** — from the template, to `docs/specs/NNN-<slug>/spec.md`, `Status: draft`. Mermaid fences go in Behavior & Flows; they are the single diagram source (the forge spec-viewer skill lifts them verbatim).
-5. **Self-review** — placeholder scan (TBD, TODO, vague phrasing), internal consistency (do sections contradict each other?), ambiguity (any requirement readable two ways → fix or mark), scope (one plan's worth of work, or decompose). Fix inline.
+4. **Write the spec** — from the template, to `docs/specs/NNN-<slug>/spec.md`, `Status: draft`, following the Spec Language rules above. Mermaid fences go in Behavior & Flows; they are the single diagram source (the forge spec-viewer skill lifts them verbatim).
+5. **Self-review** — language compliance (all explanations use the user's language; established original-language terms remain intact), placeholder scan (TBD, TODO, vague phrasing), internal consistency (do sections contradict each other?), ambiguity (any requirement readable two ways → fix or mark), scope (one plan's worth of work, or decompose). Fix inline.
 6. **User approval gate** — ask the user to review the spec file (offer the forge spec-viewer skill for a rendered view). Wait for the answer. Only the user can approve.
 7. **On approval** — set `Status: approved` (requires zero `[NEEDS CLARIFICATION]` markers) and log the approval in Decisions & History.
 
@@ -108,6 +118,9 @@ Numbering: `NNN` is the next unused three-digit number in `docs/specs/` (001, 00
 | "One [NEEDS CLARIFICATION] marker won't block approval." | Approved requires zero markers. An unresolved marker is an unwritten requirement. |
 | "It's just a prototype / throwaway experiment." | Prototypes ship. If it changes observable behavior, it gets a spec — only the closed exemption list skips one. |
 | "The user liked my recommended approach — that counts as approval." | Approval applies to the written spec file the user reviewed, never to a chat summary of an approach. Until the user approves the file, the gate holds. |
+| "English is clearer for technical specs." | The user's language is required for every explanation. Preserve only established original-language terms and machine-readable tokens. |
+| "A few untranslated sentences are fine because they contain technical terms." | Preserve the terms, not the surrounding prose. Explain them in the user's language. |
+| "Labels copied from the English template should stay English." | Only canonical `##` headings and machine-readable tokens stay fixed. Localize body and table labels such as `Non-goals:`. |
 
 ## Handoff
 

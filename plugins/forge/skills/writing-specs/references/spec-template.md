@@ -2,6 +2,13 @@
 
 Canonical structure for `docs/specs/NNN-<slug>/spec.md`. Section headings must match this template exactly — plans, verification, and the forge spec-viewer skill all navigate by these names.
 
+## Language rules
+
+- Keep only the canonical `##` section headings below exactly as written because downstream forge skills parse them. Localize body labels such as `Non-goals:` and table column labels.
+- Write every other human-readable part of the spec in the user's language, including the title, explanations, requirements, acceptance criteria, diagram labels, table labels and descriptions, and history explanations.
+- Preserve proper nouns, product and framework names, API and protocol names, code identifiers, commands, quoted UI labels, and established domain terms in their original form. Explain them and their surrounding context in the user's language instead of forcing a translation or transliteration.
+- Keep requirement IDs, Status keywords, history tags, EARS keywords, and Given/When/Then keywords in English as machine-readable tokens.
+
 ## Status line semantics
 
 The `Status:` line is the lifecycle gate token. It moves forward `draft → approved → implemented`; a change delta moves it back to `draft` until the user re-approves.
@@ -15,45 +22,45 @@ The `Status:` line is the lifecycle gate token. It moves forward `draft → appr
 ## Template
 
 ````markdown
-# <Feature name>
+# <Feature name in the user's language>
 
 Status: draft
 
 ## Overview
 
-<2–4 sentences: what this is and why it exists.>
+<In the user's language: 2–4 sentences explaining what this is and why it exists.>
 
-Non-goals:
-- <what this spec deliberately does not cover>
+<Non-goals label in the user's language>:
+- <In the user's language: what this spec deliberately does not cover>
 
 ## Requirements
 
-<Stable IDs — never renumber, never reuse a removed ID. EARS phrasing. Each
-requirement must be testable. Mark unresolved ambiguity inline:
-[NEEDS CLARIFICATION: the exact open question].>
+<In the user's language, except for stable IDs and EARS keywords. Never
+renumber or reuse a removed ID. Each requirement must be testable. Mark unresolved ambiguity inline:
+[NEEDS CLARIFICATION: the exact open question in the user's language].>
 
 - R1. WHEN <trigger> THE SYSTEM SHALL <behavior>
 - R2. IF <abnormal condition> THEN THE SYSTEM SHALL <response>
 
 ## Behavior & Flows
 
-<Mermaid flowchart / sequenceDiagram / stateDiagram fences. These fences are
-the single diagram source — the spec viewer lifts them verbatim.>
+<Mermaid flowchart / sequenceDiagram / stateDiagram fences with human-readable
+labels in the user's language. These fences are the single diagram source — the spec viewer lifts them verbatim.>
 
 ## Data & Interfaces
 
-<Entities and fields as tables; API and event contracts as tables.>
+<Entities and fields as tables; API and event contracts as tables. Write table labels and descriptions in the user's language while preserving identifiers and established original-language terms.>
 
 ## Acceptance Criteria
 
-<AC1..ACn, Given/When/Then, each citing the R-IDs it verifies.>
+<AC1..ACn, Given/When/Then, each citing the R-IDs it verifies. Write the criterion content in the user's language.>
 
 - AC1 (R1): GIVEN <precondition> WHEN <action> THEN <observable outcome>
 
 ## Decisions & History
 
-<Dated log of decisions, clarifications, change deltas, drift findings,
-rejected options. Append-only.>
+<In the user's language: dated log of decisions, clarifications, change deltas,
+drift findings, and rejected options. Append-only; keep history tags in English.>
 
 - YYYY-MM-DD [DECISION] <what was decided and why>
 ````
@@ -69,6 +76,8 @@ rejected options. Append-only.>
 | Optional feature | WHERE `<feature is included>` THE SYSTEM SHALL `<behavior>` |
 
 ## Filled examples
+
+These examples demonstrate structure and token placement. Use their English prose only when the user's language is English; otherwise write equivalent content in the user's language while preserving applicable original-language terms.
 
 Running example: login with account lockout.
 
