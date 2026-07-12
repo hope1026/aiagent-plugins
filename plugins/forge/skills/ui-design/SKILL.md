@@ -50,7 +50,7 @@ Same craft, different treatment. Utilitarian is a treatment, not an exemption �
 
 ### Step 1 — Read the context
 
-If this UI belongs to a spec'd feature, read `docs/specs/NNN-slug/spec.md` and the plan task in `.forge/plans/NNN-slug.md` first. The spec's requirements and acceptance criteria bound what the UI must do; this skill governs how it looks.
+If this UI belongs to planned work, read the Task in `docs/plans/PPP-slug/plan.md` or `tasks/*.md` and every Related Spec first. Related requirements and acceptance criteria bound what the UI must do; this skill governs how it looks.
 
 ### Step 2 — MANDATORY pre-code checkpoint: declare the visual system
 
@@ -126,7 +126,7 @@ For document Viewers, verify both 1440px desktop and 390px mobile. A diagram is 
 | Path | Direction | Purpose |
 |---|---|---|
 | `docs/specs/NNN-slug/spec.md` | read | Requirements and acceptance criteria the UI must satisfy |
-| `.forge/plans/NNN-slug.md` | read | The plan task this UI work belongs to, if any |
+| `docs/plans/PPP-slug/plan.md` | read | The plan task this UI work belongs to, if any |
 | `.forge/scratch/` | write (optional, gitignored) | Design explorations and comparison notes that shouldn't be committed |
 
 ## Red Flags

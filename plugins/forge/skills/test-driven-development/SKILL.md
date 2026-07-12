@@ -109,8 +109,8 @@ A bug is a missing test. First reproduce the bug as a failing test (root cause e
 
 This skill adds tests to the project's own test tree; it creates no forge files by itself. Related paths:
 
-- Plan work: the current task lives in `.forge/plans/NNN-<slug>.md`; the progress ledger `.forge/scratch/progress-NNN.md` is maintained by the forge executing-plans skill, not here.
-- Bugfix work: record the regression test path in the debug note `.forge/debug/YYYY-MM-DD-<slug>.md` per the forge systematic-debugging skill.
+- Plan work: the current task lives in `docs/plans/PPP-<slug>/plan.md` or its optional `tasks/*.md`; plan-local progress is maintained by the forge executing-plans skill, not here.
+- Bugfix work: keep local investigation in `.forge/scratch/`; promote a durable root-cause record to `docs/debug/YYYY-MM-DD-<slug>.md` per the forge systematic-debugging skill.
 - Traceability: when a spec exists at `docs/specs/NNN-<slug>/spec.md`, name tests so they map to its R-IDs / AC-IDs (for example, mention the AC in the test description).
 
 ## Red Flags

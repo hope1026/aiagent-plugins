@@ -93,8 +93,8 @@ Goal: the cause is fixed, proven, and guarded against regression.
 
 ## Working Files
 
-- For any non-trivial bug (took more than a few minutes, or taught you something about the system), write a debug note to `.forge/debug/YYYY-MM-DD-<slug>.md` with exactly these sections: **Symptom**, **Reproduction**, **Root cause**, **Fix**, **Regression test path**.
-- Throwaway reproduction scripts and instrumentation experiments go in `.forge/scratch/` (gitignored), not the source tree.
+- Keep active investigation notes, reproduction scripts, and instrumentation experiments in `.forge/scratch/` (gitignored).
+- When a non-trivial root cause is worth sharing or preserving, promote it to `docs/debug/YYYY-MM-DD-<slug>.md` with exactly these sections: **Symptom**, **Reproduction**, **Root cause**, **Fix**, **Regression test path**.
 
 ## Red Flags
 

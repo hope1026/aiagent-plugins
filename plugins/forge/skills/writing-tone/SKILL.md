@@ -41,7 +41,7 @@ Above all: **lead with the point** — decision, result, or ask first; backgroun
 
 ## Viewer Copy
 
-For spec, plan, and combined review Viewers:
+For spec and plan review Viewers:
 
 - Frame the page and diagram title as the question the reviewer wants answered, not as an internal system name.
 - State what to confirm before background or source detail.

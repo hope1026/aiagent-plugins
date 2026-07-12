@@ -71,9 +71,9 @@ Record these as Level 1 evidence. Viewer-only PASS never changes the governing p
 
 1. Open `docs/specs/NNN-<slug>/spec.md` and read the Acceptance Criteria section.
 2. Create one todo per acceptance criterion (AC1..ACn) so none can be silently skipped.
-3. **Check route evidence** when `.forge/scratch/progress-NNN.md` exists: every executed Task records tier, execution mode, parallel group or `none`, verification, and commit scope. For subagent work, confirm the root agent inspected the result and produced fresh verification; a worker report alone is not acceptance evidence.
+3. **Check route evidence** in the plan's `Progress History` and optional `progress.md`: every executed Task records tier, execution mode, parallel group or `none`, verification, and commit scope. For subagent work, confirm the root agent inspected the result and produced fresh verification; a worker report alone is not acceptance evidence.
 4. Walk each AC in order: reproduce its precondition, perform its action, and observe its expected outcome against the real implementation. Record a verdict — **PASS** or **FAIL** — with the exact command output or concrete observation as evidence. No AC may be judged from memory or from reading the code.
-5. Cross-check consistency: each AC still maps to current R-IDs, and if `.forge/plans/NNN-<slug>.md` exists, its AC coverage table matches what was actually built. A dangling AC or uncovered requirement is a FAIL to resolve, not a footnote.
+5. Cross-check consistency: each AC still maps to current R-IDs, and each related plan under `docs/plans/` has a coverage table matching what was built. A dangling AC or uncovered requirement is a FAIL to resolve, not a footnote.
 
 ### Verdict handling
 
@@ -104,7 +104,7 @@ If no spec exists, first confirm the change is genuinely on the ceremony-floor e
 
 ## Working Files
 
-- Reads: `docs/specs/NNN-<slug>/spec.md` (Acceptance Criteria, Requirements) and, when present, `.forge/plans/NNN-<slug>.md` (verification commands, AC coverage table).
+- Reads: every related `docs/specs/NNN-<slug>/spec.md` and the current `docs/plans/PPP-<slug>/plan.md`, plus optional `progress.md` and `tasks/*.md`.
 - Writes: the `Status: implemented` line in `docs/specs/NNN-<slug>/spec.md` — only after all ACs PASS. The AC report goes to the user in chat, not to a file.
 
 ## Red Flags
