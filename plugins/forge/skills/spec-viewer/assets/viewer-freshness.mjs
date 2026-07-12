@@ -16,6 +16,21 @@ export function sourceMatchKey(path) {
   return String(path).replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');
 }
 
+export function shouldAutoFetch(protocol) {
+  return protocol === 'http:' || protocol === 'https:';
+}
+
+export async function verifyLocalSource(source, file) {
+  try {
+    const actual = await sha256Hex(await file.arrayBuffer());
+    return actual === source.sha256
+      ? { state: 'current', actual }
+      : { state: 'stale', actual, error: 'selected file SHA-256 differs' };
+  } catch (error) {
+    return { state: 'unverified', error: String(error && error.message || error) };
+  }
+}
+
 export async function verifyFetchedSource(source, baseUrl) {
   try {
     const url = new URL(source.path, baseUrl);
@@ -92,18 +107,9 @@ async function verifySelectedFiles(manifest, fileList) {
       results.push(result);
       continue;
     }
-    try {
-      const actual = await sha256Hex(await file.arrayBuffer());
-      const result = actual === source.sha256
-        ? { state: 'current', actual }
-        : { state: 'stale', actual, error: 'selected file SHA-256 differs' };
-      renderSource(source.path, result);
-      results.push(result);
-    } catch (error) {
-      const result = { state: 'unverified', error: String(error && error.message || error) };
-      renderSource(source.path, result);
-      results.push(result);
-    }
+    const result = await verifyLocalSource(source, file);
+    renderSource(source.path, result);
+    results.push(result);
   }
   renderOverall(results);
 }
@@ -118,7 +124,7 @@ async function initFreshness() {
   }
   const initial = manifest.sources.map(() => ({ state: 'unverified' }));
   renderOverall(initial);
-  if (['http:', 'https:'].includes(location.protocol)) {
+  if (shouldAutoFetch(location.protocol)) {
     const results = await Promise.all(
       manifest.sources.map((source) => verifyFetchedSource(source, location.href)),
     );
