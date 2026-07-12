@@ -20,22 +20,20 @@ The reading order is deliberate: summary table → visual flow → detailed Task
 ```
 THE HTML IS A VIEW, NEVER THE TRUTH.
 SOURCE MERMAID STAYS VERBATIM. DERIVED VIEWS ADD NO NEW MEANING.
-SOURCE CHANGE OR CHECKPOINT MEANS REBUILD BEFORE REVIEW.
+NO EXPLICIT USER REQUEST, NO BUILD OR REBUILD.
 ```
 
 ## When to Use / When NOT
 
-**Use when:**
+**Use only after an explicit user request when:**
 
-- A human will review or approve a complex spec or implementation plan.
-- A combined review needs R→AC→Task→Step→verification traceability.
 - The user asks to visualize, present, print, or share a spec or plan.
-- A Viewer already exists and its source or progress checkpoint changed.
+- The user asks to create or update a `spec`, `plan`, or `combined` Viewer.
 
 **Do NOT use when:**
 
 - The source itself needs writing or changing — use the forge writing-specs or writing-plans skill.
-- A simple document is adequately reviewed as Markdown and the user did not request a Viewer.
+- The user did not make an explicit user request for Viewer creation or update. Complexity, approval, handoff, checkpoint, and an existing stale Viewer do not count as a request.
 - Building product UI — use the forge ui-design skill.
 - The desired relationship is not present in source — return to the governing source instead of inventing it here.
 
@@ -55,7 +53,7 @@ Create one todo per numbered step before starting.
 
 1. **Choose the mode and read every selected source.** Confirm paths, spec status, primary source language, and whether a progress ledger exists. Record expected Task, Step, R, AC, and Mermaid counts.
 
-2. **Choose the review path.** Use Markdown for a simple source when the calling skill reports complexity 0–1. Build HTML for complexity 2+, an existing lifecycle Viewer, or an explicit user request.
+2. **Enforce the request gate.** Confirm the user explicitly requested Viewer creation or update for the selected current sources. If not, stop and return to the Markdown review path. Never infer permission from complexity, lifecycle stage, or an existing Viewer.
 
 3. **Author the six-panel fragment.** Read `references/content-patterns.md`, then write `.forge/scratch/NNN-<slug>-content.html`. Keep exactly these panel IDs in order: `overview`, `requirements`, `flows`, `data`, `acceptance`, `history`. The fragment contains no doctype, shell markup, style, or script.
 
@@ -98,7 +96,7 @@ Create one todo per numbered step before starting.
 
 8. **Verify the view.** Confirm six panels, exact counts, source paths and source hash, `current` freshness, unresolved placeholders 0, source Mermaid equality, and fragment shell markup 0. In a real browser verify 1440px and 390px, tabs, Task/R/AC deep links, AC and Step checkbox persistence, independent table and diagram scroll, Mermaid errors, favicon requests, and offline rendering.
 
-9. **Rebuild at lifecycle boundaries.** The forge writing-specs skill rebuilds before approval after source changes. The forge writing-plans skill builds before execution handoff. The forge executing-plans skill rebuilds the combined Viewer after each checkpoint when one exists.
+9. **Handle later source changes.** Approval, plan edits, execution progress, and checkpoints can make the generated file stale. Report it as stale; repeat this process only after another explicit user request to update the Viewer.
 
 ## Diagram Classification
 
@@ -130,7 +128,7 @@ When a source Mermaid is invalid, show its error summary, available line and col
 | "The build succeeded, so review is complete." | Assembly does not prove browser rendering, mobile readability, or persistence. |
 | "One huge Task graph is more complete." | Group Tasks into 6–10 Routes first so a person can form a mental model. |
 | "Mobile can pinch-zoom the sequence diagram." | Provide the responsibility summary first and keep readable horizontal scrolling. |
-| "The checkpoint changed only one Task." | Any source or progress change makes the prior review view stale; rebuild it. |
+| "The checkpoint changed only one Task, so I should keep the Viewer current." | The prior view is stale, but freshness does not grant update permission. Report it and wait for an explicit user request. |
 | "Committing HTML makes maintenance easier." | The source, manifest, and rebuild command make it maintainable; generated HTML stays disposable. |
 
 ## Handoff

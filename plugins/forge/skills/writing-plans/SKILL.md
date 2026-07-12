@@ -64,7 +64,7 @@ Create one todo per numbered step below and work through them in order.
 6. **Write each task** (template below) with bite-sized steps and full traceability.
 7. **Self-review** (section below), fixing issues inline.
 8. **Save** to `.forge/plans/NNN-<slug>.md` — same `NNN` as the spec.
-9. **Prepare the review view.** For a complex plan, or when the spec already has a Viewer, use the forge spec-viewer skill in `plan` or `combined` mode before execution handoff. Build it in the plan language and confirm its source hash and counts.
+9. **Offer the review view.** Markdown is the default review path. After the plan is saved and self-reviewed, notify the user when a Viewer would help and ask whether the user wants a Viewer. Build `plan` or `combined` mode only after an explicit user request for the current sources; an existing Viewer may be reported as stale but is not an update trigger.
 
 ## Review Structure for Complex Plans
 
@@ -216,7 +216,7 @@ After writing the complete plan, reread the spec with fresh eyes and check the p
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 4. **Language consistency:** confirm all human-readable prose uses the governing spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim spec values remain intact.
 5. **Review structure:** confirm complex plans include Routes, dependency, Runtime responsibility, data flow, extension points, R·AC mapping, checkpoints, and the three required diagram perspectives when their source relationships exist.
-6. **Viewer freshness:** if a plan or combined Viewer is required or already exists, rebuild it and confirm source hash, Task/Step/R/AC/Mermaid counts, and localized labels before handoff.
+6. **Viewer request boundary:** confirm no Viewer was created or updated without an explicit user request. If one exists and the source changed, report it as stale. When the user explicitly requested a Viewer, confirm source hash, Task/Step/R/AC/Mermaid counts, and localized labels before handoff.
 
 Fix issues inline and move on — no re-review loop.
 
@@ -243,7 +243,7 @@ Fix issues inline and move on — no re-review loop.
 | "The user is in a hurry, skip self-review" | Self-review takes minutes; an unexecutable plan wastes hours. Run all four checks. |
 | "Implementation plans are technical, so English is clearer." | The plan is also a user review artifact. Write its prose in the spec's language and preserve only the technical terms, identifiers, code, and exact commands that need their original form. |
 | "The Task list is already ordered, so Routes are decoration." | Routes make dependency and scope review possible before a reader opens 20 or more detailed Tasks. |
-| "The plan is saved, so the handoff is complete." | A complex or previously visualized lifecycle needs a fresh plan or combined Viewer before execution starts. |
+| "The plan is complex, so handoff requires a Viewer." | Complexity justifies telling the user why a Viewer may help. Markdown remains valid, and HTML requires an explicit user request. |
 
 ## Handoff
 

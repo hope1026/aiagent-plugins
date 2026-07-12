@@ -1,19 +1,19 @@
 # 사람 중심 Lifecycle Review Viewer
 
-Status: implemented
+Status: approved
 
 ## Overview
 
 Forge의 spec과 구현 계획이 커질수록 원본 Markdown만으로 전체 흐름, 책임 경계, Task 의존성, R·AC coverage를 검토하기 어렵다. 이 기능은 `spec.md`와 `.forge/plans/*.md`를 source of truth로 유지하면서, 사람이 내용을 단계적으로 이해하고 검토할 수 있는 읽기 전용 HTML Viewer를 `spec`, `plan`, `combined` mode로 제공한다.
 
-Viewer의 목적은 텍스트를 그림으로 치환하는 것이 아니다. 같은 정보를 `요약표 → 시각 흐름 → 상세 Task → AC evidence` 순서로 읽게 하고, 프로젝트가 진행되는 동안 source 변경과 checkpoint에 맞춰 재생성되는 최신 검토 화면을 유지하는 것이다.
+Viewer의 목적은 텍스트를 그림으로 치환하는 것이 아니다. 같은 정보를 `요약표 → 시각 흐름 → 상세 Task → AC evidence` 순서로 읽게 하고, 사용자가 명시적으로 요청한 시점의 source를 바탕으로 검토 화면을 제공하는 것이다.
 
 비목표:
 - HTML Viewer를 spec이나 plan을 대신하는 편집 가능한 source of truth로 만들지 않는다.
 - Viewer 안에서 source에 없는 런타임 의미, 요구사항, 의존성 또는 설계 결정을 새로 만들지 않는다.
 - Notion, Google Docs, 별도 문서 사이트를 필수 운영 요소로 추가하지 않는다.
 - Viewer 검토 결과만으로 제품 구현 완료나 `Status: implemented`를 선언하지 않는다.
-- 모든 작은 spec과 plan에 HTML 생성을 강제하지 않는다.
+- 사용자의 명시적 요청 없이 spec·plan·checkpoint의 HTML Viewer를 생성하거나 갱신하지 않는다.
 
 검토한 접근안:
 
@@ -32,19 +32,21 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R1. Forge는 `docs/specs/NNN-<slug>/spec.md`를 요구사항과 승인 상태의 source of truth로 계속 유지해야 한다.
 - R2. Forge는 `.forge/plans/NNN-<slug>.md`를 구현 Route, Task, 파일, Interface, 검증 절차의 source of truth로 유지해야 한다.
 - R3. Viewer는 읽기 전용 파생 산출물이어야 하며, Viewer에서 spec·plan·progress source를 직접 수정하지 않아야 한다.
-- R4. 복잡한 spec이나 plan의 Viewer가 생성된 이후 source가 변경되면 Forge는 사용자 검토 또는 checkpoint 보고 전에 Viewer를 다시 생성해야 한다.
+- R4. MODIFIED — Viewer가 생성된 이후 source가 변경되더라도 Forge는 사용자가 명시적으로 갱신을 요청한 경우에만 Viewer를 다시 생성해야 한다.
 - R5. Viewer는 source path, source hash, 생성 시각, mode, locale, 집계 수치를 표시하고 source hash가 다르면 stale 상태를 표시해야 한다.
 - R6. 생성된 Viewer HTML은 기본적으로 커밋하지 않고 `.forge/viewer/`에서 재생성 가능하게 유지해야 한다.
-- R7. `writing-specs`는 복잡한 spec의 new·change·clarify·sync 수정 후 승인 요청 전에 spec Viewer를 생성하거나 갱신해야 한다.
-- R8. `writing-plans`는 복잡한 plan 저장 후 실행 handoff 전에 plan 또는 combined Viewer를 생성해야 한다.
-- R9. `executing-plans`는 Viewer가 존재하는 복잡한 작업에서 Task checkpoint 후 progress와 commit 정보를 반영해 combined Viewer를 갱신해야 한다.
+- R7. MODIFIED — `writing-specs`는 new·change·clarify·sync 과정에서 사용자의 명시적 요청이 없는 한 spec Viewer를 생성하거나 갱신하지 않아야 한다.
+- R8. MODIFIED — `writing-plans`는 plan 저장 또는 실행 handoff 과정에서 사용자의 명시적 요청이 없는 한 plan 또는 combined Viewer를 생성하거나 갱신하지 않아야 한다.
+- R9. MODIFIED — `executing-plans`는 Viewer가 이미 존재하더라도 사용자의 명시적 요청이 없는 한 Task checkpoint 후 combined Viewer를 갱신하지 않아야 한다.
 
 ### 복잡도에 따른 검토 방식
 
-- R10. Forge는 단순한 문서는 Markdown으로 검토하고 복잡한 문서는 HTML Viewer로 검토해야 한다.
-- R11. 복잡도 점수는 R 8개 초과, AC 8개 초과, Mermaid 2개 이상, 데이터·Interface 표 2개 이상, 여러 subsystem·actor·Place·상태 전이, 문서 200줄 초과, 미해결 clarification 또는 change history 다수 항목에 각각 1점을 부여해야 한다.
-- R12. 복잡도 점수가 0~1이면 Markdown을 기본 검토 화면으로 사용하고, 2 이상이면 HTML Viewer를 자동 생성해야 한다.
-- R13. 사용자가 시각화를 요청하면 복잡도 점수와 관계없이 Viewer를 생성해야 한다.
+- R10. MODIFIED — Forge는 복잡도와 관계없이 Markdown을 기본 검토 화면으로 사용해야 한다.
+- R11. MODIFIED — 복잡도 점수는 R 8개 초과, AC 8개 초과, Mermaid 2개 이상, 데이터·Interface 표 2개 이상, 여러 subsystem·actor·Place·상태 전이, 문서 200줄 초과, 미해결 clarification 또는 change history 다수 항목에 각각 1점을 부여하되 Viewer 자동 생성 조건으로 사용하지 않아야 한다.
+- R12. MODIFIED — 복잡도 점수가 2 이상이면 Forge는 Viewer가 검토에 도움이 될 수 있음을 사용자에게 알리고 필요하면 명시적으로 요청할 수 있다고 안내하되, Viewer를 자동 생성하지 않아야 한다.
+- R13. MODIFIED — 사용자가 현재 spec이나 plan의 시각화 또는 Viewer 생성·갱신을 명시적으로 요청한 경우에만 Forge는 복잡도 점수와 관계없이 해당 Viewer를 생성하거나 갱신해야 한다.
+- R68. `writing-specs`와 `writing-plans`는 각각 Markdown source 작성과 자체 검토가 끝난 뒤 승인 또는 다음 lifecycle handoff를 요청할 때, Viewer가 검토에 도움이 되는 경우 사용자에게 Viewer 생성 여부를 물어야 한다.
+- R69. 기존 Viewer의 source가 변경되면 Forge는 그 Viewer가 stale임을 사용자에게 알릴 수 있지만, 명시적 요청 전에는 stale Viewer를 갱신하거나 현재 검토 화면으로 제시하지 않아야 한다.
 
 ### Viewer mode와 출력
 
@@ -126,26 +128,24 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 
 ## Behavior & Flows
 
-Viewer를 프로젝트 수명주기 동안 유지하는 흐름:
+Viewer를 사용자 요청에 따라 제공하는 흐름:
 
 ```mermaid
 flowchart TD
-    A[spec.md 작성 또는 변경] --> B{복잡도 점수 2 이상 또는 사용자 요청?}
-    B -- 아니오 --> C[Markdown으로 검토]
-    B -- 예 --> D[spec mode Viewer 생성]
-    D --> E[사용자 spec 검토와 승인]
-    C --> E
-    E --> F[plan.md 작성]
-    F --> G{복잡한 plan?}
-    G -- 아니오 --> H[Markdown plan 검토]
-    G -- 예 --> I[plan 또는 combined Viewer 생성]
-    H --> J[사용자가 구현 진행 요청]
-    I --> J
-    J --> K[Task 실행과 checkpoint]
-    K --> L[combined Viewer progress 갱신]
-    L --> M{spec 또는 plan 변경?}
-    M -- 예 --> A
-    M -- 아니오 --> N[다음 Task 또는 최종 검증]
+    A[spec.md 또는 plan.md 작성·변경] --> B[Markdown source 자체 검토 완료]
+    B --> C{Viewer가 검토에 도움이 되는가?}
+    C -- 예 --> D[사용자에게 효용을 알리고 생성 여부 질문]
+    C -- 아니오 --> E[Markdown으로 승인 또는 handoff 요청]
+    D --> F{사용자가 명시적으로 요청했는가?}
+    F -- 예 --> G[요청한 mode의 Viewer 생성 또는 갱신]
+    F -- 아니오 --> E
+    G --> H[Viewer와 함께 승인 또는 handoff 요청]
+    E --> I[다음 lifecycle 단계]
+    H --> I
+    I --> J[Task 실행과 checkpoint]
+    J --> K{Viewer 갱신을 명시적으로 요청했는가?}
+    K -- 예 --> L[combined Viewer 갱신]
+    K -- 아니오 --> M[Markdown checkpoint 보고]
 ```
 
 mode별 source ownership:
@@ -194,7 +194,7 @@ mode별 source 계약:
 | `acceptance` | 승인 기준 | AC→Task→검증 방법, 검토 checkbox |
 | `history` | 변경 이력 | source path·hash, checkpoint, commit, 재생성 command |
 
-복잡도 점수:
+Viewer 추천을 위한 복잡도 점수:
 
 | Signal | 점수 |
 |---|---:|
@@ -205,6 +205,8 @@ mode별 source 계약:
 | 여러 subsystem·actor·Place·상태 전이 | 1 |
 | 문서 200줄 초과 | 1 |
 | clarification 또는 change history 다수 | 1 |
+
+이 점수는 사용자에게 Viewer의 잠재적 효용을 알릴지 판단하는 신호일 뿐, HTML을 자동 생성하거나 갱신하는 권한이 아니다.
 
 build interface 목표:
 
@@ -249,9 +251,9 @@ Viewer shell의 inherited visual system:
 | `spec-viewer` | mode, source ownership, derived view, freshness, panel mapping |
 | `viewer-template.html` | locale, mobile diagram·table wrapper, 접근성, favicon, tabular number, 오류 표시 |
 | `build-viewer.sh` | `--mode`, `--locale`, source manifest, output naming, offline 유지 |
-| `writing-specs` | 복잡도 판정, 승인 전 Viewer 생성·재생성 |
+| `writing-specs` | Markdown 기본 검토, Viewer 효용 안내, 완료 후 생성 여부 질문 |
 | `writing-plans` | Route·dependency·runtime·data flow·확장·checkpoint 구조와 diagram 규칙 |
-| `executing-plans` | checkpoint 후 combined Viewer 갱신 |
+| `executing-plans` | 요청이 있을 때만 checkpoint combined Viewer 갱신 |
 | `ui-design` | inherited fixed shell 예외와 diagram fallback |
 | `writing-tone` | 질문형 제목, 읽는 법, 요약 우선, locale copy |
 | `verifying-work` | Viewer-only Level 1 검증과 `implemented` 금지 |
@@ -260,8 +262,8 @@ Viewer shell의 inherited visual system:
 
 AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 관찰 가능한 완료 기준을 뜻한다.
 
-- AC1 (R1–R9): complex spec Viewer를 생성한 뒤 spec을 변경하고 승인 요청을 준비하면 Viewer의 source hash와 내용이 새 spec과 일치하고, HTML은 Git 추적 대상에 추가되지 않는다.
-- AC2 (R10–R13): 복잡도 1점인 문서는 Markdown 검토 경로를 사용하고, 2점인 문서와 사용자 시각화 요청 문서는 HTML Viewer 경로를 사용한다.
+- AC1 (R1–R9, R69): 기존 spec Viewer가 있는 상태에서 spec을 변경하고 승인 요청을 준비하면 Forge는 Viewer를 자동 갱신하지 않고 stale 사실을 알리며, 사용자가 갱신을 명시적으로 요청한 뒤에만 새 source hash와 내용으로 갱신하고 HTML을 Git 추적 대상에 추가하지 않는다.
+- AC2 (R10–R13): 복잡도 1점과 2점인 문서는 모두 Markdown 검토 경로를 기본으로 사용하고, 2점인 문서에서는 Viewer의 효용만 안내하며, 사용자가 시각화를 명시적으로 요청한 문서만 HTML Viewer 경로를 사용한다.
 - AC3 (R14–R20): 같은 fixture를 `spec`, `plan`, `combined` mode와 `--locale ko`로 build하면 세 출력 이름이 규칙과 일치하고 tab label이 한국어로 표시된다.
 - AC4 (R15, R37): 승인된 spec Mermaid 9개가 있는 fixture를 spec mode로 build하면 Viewer에 Mermaid 9개가 나타나고 각 source text의 SHA-256이 spec fence와 일치한다.
 - AC5 (R16–R17, R29–R36): Task 22개, Step 110개, R 190개, AC 105개 fixture를 plan·combined mode로 build하면 모든 count가 source와 일치하고 R→AC→Task→Step deep link가 올바른 panel과 대상을 연다.
@@ -280,6 +282,8 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - AC18 (R5, R27): History panel에서 source path·hash, mode, locale, counts, 생성 시각, checkpoint, commit, rebuild command를 확인할 수 있고 stale fixture는 stale 상태로 표시된다.
 - AC19 (R51, R65–R66): desktop 1440px와 mobile 390px browser 검증에서 tab, deep link, checkbox persistence, diagram, table, print layout이 정상이며 Mermaid error가 0개다.
 - AC20 (R58, R65): generated fragment의 panel은 정확히 6개이고 unresolved placeholder와 shell markup이 0개다.
+- AC21 (R68): spec 또는 plan의 Markdown source 작성과 자체 검토가 끝나면, Viewer가 유용한 경우 승인 또는 handoff 메시지에서 생성 여부를 묻고 사용자의 응답 전에는 HTML 파일이 생성되지 않는다.
+- AC22 (R9, R13, R69): 기존 combined Viewer가 있는 Task checkpoint에서 progress ledger가 변경되어도 자동 갱신하지 않고 Markdown으로 보고하며, 사용자가 갱신을 명시적으로 요청한 경우에만 새 progress source를 포함해 재생성한다.
 
 ## Decisions & History
 
@@ -293,3 +297,6 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - 2026-07-12 [REJECTED] 별도 `plan-viewer` skill: shell과 locale·mobile·검증 로직이 중복된다.
 - 2026-07-12 [REJECTED] generated HTML을 기본 커밋: 큰 binary-like diff와 source drift를 만들 수 있다.
 - 2026-07-12 [REJECTED] Notion·Google Docs·별도 docs site를 필수 검토 경로로 사용: source 동기화와 운영 부담이 증가한다.
+- 2026-07-12 [CHANGE] R4, R7–R13 MODIFIED: 복잡도나 기존 Viewer 존재 여부에 따른 자동 생성·갱신을 제거하고, 사용자의 명시적 요청만 Viewer 작업을 허용한다.
+- 2026-07-12 [CHANGE] R68–R69 ADDED: Markdown source 완료 후 Viewer의 효용을 알리고 생성 여부를 묻되, stale Viewer는 요청 없이 갱신하거나 현재 검토 화면으로 제시하지 않는다.
+- 2026-07-12 [DECISION] 사용자가 Viewer 명시 요청 정책 change delta를 승인했다.

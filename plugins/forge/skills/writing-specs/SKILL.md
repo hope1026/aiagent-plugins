@@ -63,7 +63,7 @@ Read `references/spec-template.md` in this skill before writing or editing any s
 
 The Spec Language rules apply in every mode, including deltas, clarification rewrites, drift records, and reconciliation outcomes. Never treat an existing spec's language as permission to continue in a language that differs from the user's language; surface the mismatch and bring its human-readable content into the user's language as part of the spec edit.
 
-Before every approval request, calculate the review complexity score. Add one point for each signal: more than 8 R items, more than 8 AC items, at least 2 Mermaid fences, at least 2 data or interface tables, multiple subsystems/actors/Places/state transitions, more than 200 lines, or multiple unresolved clarifications/change-history items. A score of 0–1 uses Markdown by default. A score of 2+ uses the forge spec-viewer skill in `spec` mode. An explicit visualization request always uses the Viewer. After any source edit, rebuild an existing Viewer before asking for approval.
+Before every approval request, calculate the review complexity score. Add one point for each signal: more than 8 R items, more than 8 AC items, at least 2 Mermaid fences, at least 2 data or interface tables, multiple subsystems/actors/Places/state transitions, more than 200 lines, or multiple unresolved clarifications/change-history items. **Markdown is the default review path at every score.** A score of 2+ means a Viewer may help, so notify the user and explain that they can explicitly request one. Complexity and an existing Viewer never authorize generation. Build or rebuild only after an explicit user request for the current source; otherwise report an existing Viewer as stale after source changes.
 
 ### Mode: new
 
@@ -72,17 +72,17 @@ Before every approval request, calculate the review complexity score. Add one po
 3. **Propose 2–3 approaches** — with trade-offs; lead with your recommendation and why.
 4. **Write the spec** — from the template, to `docs/specs/NNN-<slug>/spec.md`, `Status: draft`, following the Spec Language rules above. Mermaid fences go in Behavior & Flows; they are the single diagram source (the forge spec-viewer skill lifts them verbatim).
 5. **Self-review** — language compliance (all explanations use the user's language; EARS and acceptance criteria read naturally in that language; established original-language terms remain intact), placeholder scan (TBD, TODO, vague phrasing), internal consistency (do sections contradict each other?), ambiguity (any requirement readable two ways → fix or mark), scope (one plan's worth of work, or decompose). Fix inline.
-6. **Prepare the review view** — apply the complexity score. For score 2+ or an explicit visualization request, build or rebuild the `spec` mode Viewer in the user's language before approval.
-7. **User approval gate** — ask the user to review the Markdown or generated Viewer. Wait for the answer. Only the user can approve.
-8. **On approval** — set `Status: approved` (requires zero `[NEEDS CLARIFICATION]` markers), log the approval in Decisions & History, and rebuild an existing Viewer so its source hash and status match.
+6. **Prepare the review request** — apply the complexity score. After writing and self-review are complete, ask whether the user wants a Viewer when it would materially help. Do not build while waiting; an explicit user request is the only generation trigger.
+7. **User approval gate** — ask the user to review the Markdown or an explicitly requested Viewer. Wait for the answer. Only the user can approve.
+8. **On approval** — set `Status: approved` (requires zero `[NEEDS CLARIFICATION]` markers) and log the approval in Decisions & History. A status change makes an existing Viewer stale; report that fact, but do not update it without a new explicit user request.
 
 ### Mode: change
 
 1. **Locate the governing spec** in `docs/specs/`. If none exists, switch to new mode.
 2. **Draft the delta** — mark each affected requirement `MODIFIED` or `REMOVED`, add new R-IDs for `ADDED` requirements (never renumber or reuse IDs), and update the affected flows, interfaces, and ACs. Set `Status: draft`.
 3. **Record the delta** in Decisions & History: `- YYYY-MM-DD [CHANGE] R3 MODIFIED: ...`.
-4. **Prepare the review view** — apply the complexity score and rebuild an existing or required `spec` mode Viewer from the changed source.
-5. **User approval gate** — same as new mode; on approval set `Status: approved` and rebuild an existing Viewer with the approved status.
+4. **Prepare the review request** — apply the complexity score, notify the user when a Viewer would help, and ask whether the user wants one after the delta and self-review are complete. Do not create or update HTML without an explicit user request.
+5. **User approval gate** — same as new mode; on approval set `Status: approved`, log the approval, and report any existing Viewer as stale without updating it.
 6. **Hand off** to the forge writing-plans skill.
 
 Never patch the code first and back-fill the spec. The change request edits the spec; the code follows the plan.
@@ -93,7 +93,7 @@ Never patch the code first and back-fill the spec. The change request edits the 
 2. **Resolve each one** — one question per message, multiple choice preferred.
 3. **Rewrite** the requirement with the answer, delete the marker, log a `[CLARIFIED]` entry in Decisions & History.
 4. **Zero markers** is a precondition for `Status: approved`. While any marker remains, the spec stays draft.
-5. **Rebuild before review** when complexity requires a Viewer or one already exists.
+5. **Offer the review path** after all markers are resolved. Markdown remains the default; notify the user when a Viewer would help and build one only after an explicit user request.
 
 ### Mode: sync
 
@@ -102,7 +102,7 @@ Never patch the code first and back-fill the spec. The change request edits the 
 3. **Append each mismatch** to Decisions & History with a `[DRIFT]` tag. Do not silently rewrite requirements.
 4. **Propose reconciliation per item** — either a spec change (accept what the code does) or a code fix (restore what the spec says). The user decides each item; never both silently.
 5. **Apply the outcomes** — approved spec changes are edited in with `[CHANGE]` entries; code fixes go through the forge writing-plans skill.
-6. **Rebuild before handoff** when complexity requires a Viewer or one already exists.
+6. **Offer the review path before handoff.** Markdown remains the default; an existing or useful Viewer may be mentioned, but creation or update requires an explicit user request.
 
 ## Working Files
 
@@ -131,7 +131,7 @@ Numbering: `NNN` is the next unused three-digit number in `docs/specs/` (001, 00
 | "A few untranslated sentences are fine because they contain technical terms." | Preserve the terms, not the surrounding prose. Explain them in the user's language. |
 | "EARS and Given/When/Then must stay English for downstream automation." | Downstream skills trace `R-ID` and `AC-ID`; they do not parse those English words. Preserve the semantics and write the sentences in the user's language. |
 | "Labels copied from the English template should stay English." | Only canonical `##` headings and fixed traceability and lifecycle tokens stay unchanged. Localize body and table labels such as `Non-goals:`. |
-| "I'll ask for approval in Markdown now and render it later." | A required or existing Viewer is part of the review gate. Rebuild it from the current source before approval. |
+| "The spec is complex, so I can generate the Viewer now." | Complexity justifies a usefulness notice, not HTML generation. Ask after the Markdown source is complete and wait for an explicit user request. |
 
 ## Handoff
 

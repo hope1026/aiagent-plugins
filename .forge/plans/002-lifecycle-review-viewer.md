@@ -19,6 +19,7 @@
 - 모든 mode는 `overview`, `requirements`, `flows`, `data`, `acceptance`, `history` panel ID를 유지한다.
 - Viewer-only 검증은 spec을 `implemented`로 바꾸지 않는다. 전체 AC 검증만 상태 전환을 허용한다.
 - UI shell의 Type, Palette, Spacing, Depth는 inherited이며 content fragment에 style, script, shell markup을 넣지 않는다.
+- Viewer 생성·갱신은 사용자의 명시적 요청이 있을 때만 수행한다. 복잡도와 기존 Viewer 존재 여부는 자동 생성 권한이 아니다.
 
 ## 목표와 완료 상태
 
@@ -39,6 +40,8 @@
 | Route 4 — Authoring Lifecycle | 4 | spec·plan·execution 문서 구조 | plan/combined handoff 검토 |
 | Route 5 — Review Quality | 5 | UI·tone·verification 규칙 | skill diff와 validator |
 | Route 6 — Integration & Release | 6 | scale fixture, docs, manifests, generated Viewer | AC report와 설치 확인 |
+| Route 7 — Opt-in Authoring | 7 | spec·plan Viewer 명시 요청 정책 | Markdown approval flow |
+| Route 8 — Opt-in Execution | 8 | checkpoint Viewer 명시 요청 정책 | stale 알림과 무생성 증거 |
 
 ## Task dependency
 
@@ -54,6 +57,8 @@ flowchart LR
     T2 --> T5[Task 5\nReview Quality]
     T4 --> T6[Task 6\nIntegration & Release]
     T5 --> T6
+    T6 --> T7[Task 7\nOpt-in Authoring]
+    T7 --> T8[Task 8\nOpt-in Execution]
 ```
 
 ## Runtime responsibility
@@ -135,6 +140,8 @@ flowchart TD
 | AC18 | 1, 2, 4, 6 |
 | AC19 | 2, 6 |
 | AC20 | 1, 2, 6 |
+| AC21 | 7 |
+| AC22 | 8 |
 
 ### Task 1: mode·locale·source manifest assembly core (R1–R20, R29–R31, R37, R47 · AC1–AC5, AC16, AC18, AC20)
 
@@ -414,9 +421,134 @@ ROUTES = 8
 
 예상: push 성공, `forge@hope1026` 재설치 성공, installed plugin manifest에 새 `+codex.` cachebuster가 표시됨
 
+### Task 7: spec·plan Viewer opt-in authoring policy (R4, R7–R8, R10–R13, R68–R69 · AC1–AC2, AC21)
+
+**파일:**
+- 생성: `scripts/tests/test-forge-lifecycle-policy.sh`
+- 수정: `plugins/forge/skills/writing-specs/SKILL.md`
+- 수정: `plugins/forge/skills/writing-plans/SKILL.md`
+- 수정: `plugins/forge/skills/spec-viewer/SKILL.md`
+
+**인터페이스:**
+- 입력: complexity score, Markdown source 완료 상태, explicit Viewer request, stale Viewer 상태
+- 출력: `Markdown default → notify usefulness → ask after completion → build only on explicit request` contract
+
+- [x] **Step 1: Viewer 자동 생성 문구를 거부하는 policy test 작성**
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+fail() { echo "FAIL: $1" >&2; exit 1; }
+
+WRITING_SPECS="$ROOT_DIR/plugins/forge/skills/writing-specs/SKILL.md"
+WRITING_PLANS="$ROOT_DIR/plugins/forge/skills/writing-plans/SKILL.md"
+SPEC_VIEWER="$ROOT_DIR/plugins/forge/skills/spec-viewer/SKILL.md"
+
+for file in "$WRITING_SPECS" "$WRITING_PLANS" "$SPEC_VIEWER"; do
+  grep -qi 'explicit user request' "$file" || fail "$file misses explicit user request gate"
+done
+
+grep -q 'Markdown is the default review path' "$WRITING_SPECS" || \
+  fail "writing-specs does not default to Markdown"
+grep -q 'ask whether the user wants a Viewer' "$WRITING_SPECS" || \
+  fail "writing-specs does not ask after completion"
+grep -q 'ask whether the user wants a Viewer' "$WRITING_PLANS" || \
+  fail "writing-plans does not ask after completion"
+
+if rg -n 'score 2\+ uses|rebuild an existing Viewer|complex plan.*use the forge spec-viewer' \
+  "$WRITING_SPECS" "$WRITING_PLANS" >/dev/null; then
+  fail "automatic Viewer generation language remains"
+fi
+
+echo "forge lifecycle policy: all checks passed"
+```
+
+- [x] **Step 2: policy test를 실행해 현재 자동 생성 규칙으로 RED 확인**
+
+실행: `bash scripts/tests/test-forge-lifecycle-policy.sh`
+
+예상: `FAIL: ... misses explicit user request gate` 또는 `FAIL: automatic Viewer generation language remains`
+
+- [x] **Step 3: writing-specs를 Markdown 기본·복잡도 notify·완료 후 질문 방식으로 변경**
+
+필수 contract:
+
+```text
+Markdown is the default review path at every complexity score.
+Complexity may trigger a usefulness notice, never generation.
+After source writing and self-review, ask whether the user wants a Viewer.
+Build or rebuild only after an explicit user request for the current source.
+```
+
+- [x] **Step 4: writing-plans와 spec-viewer에 동일한 explicit request gate 적용**
+
+`writing-plans`는 plan 저장과 자체 검토 뒤 Viewer 생성 여부를 묻고, `spec-viewer`는 explicit request 없이 호출되면 Markdown path로 돌아가도록 명시한다. 기존 Viewer가 stale이면 상태만 알리고 생성·갱신하지 않는다.
+
+- [x] **Step 5: policy test와 validator를 GREEN으로 확인하고 commit**
+
+실행: `bash scripts/tests/test-forge-lifecycle-policy.sh && bash scripts/validate.sh && git diff --check`
+
+예상: `forge lifecycle policy: all checks passed`, `validate: all checks passed`, whitespace error 0
+
+실행: `git add scripts/tests/test-forge-lifecycle-policy.sh plugins/forge/skills/{writing-specs,writing-plans,spec-viewer} docs/specs/002-lifecycle-review-viewer/spec.md .forge/plans/002-lifecycle-review-viewer.md && git commit -m "feat(forge): make lifecycle viewers opt in"`
+
+### Task 8: execution checkpoint Viewer opt-in policy (R9, R13, R69 · AC22)
+
+**파일:**
+- 수정: `scripts/tests/test-forge-lifecycle-policy.sh`
+- 수정: `plugins/forge/skills/executing-plans/SKILL.md`
+- 수정: `plugins/forge/skills/spec-viewer/SKILL.md`
+
+**인터페이스:**
+- 입력: progress ledger 변경, existing combined Viewer, explicit update request
+- 출력: stale notice 또는 user-requested combined Viewer rebuild
+
+- [ ] **Step 1: checkpoint가 Viewer를 자동 갱신하지 않는 assertion을 policy test에 추가**
+
+```bash
+EXECUTING_PLANS="$ROOT_DIR/plugins/forge/skills/executing-plans/SKILL.md"
+
+grep -qi 'explicit user request' "$EXECUTING_PLANS" || \
+  fail "executing-plans misses explicit Viewer update gate"
+grep -q 'report it as stale' "$EXECUTING_PLANS" || \
+  fail "executing-plans misses stale Viewer notice"
+if rg -n 'If a lifecycle Viewer exists, rebuild|rebuild it before the first checkpoint' \
+  "$EXECUTING_PLANS" >/dev/null; then
+  fail "executing-plans still rebuilds Viewer automatically"
+fi
+```
+
+- [ ] **Step 2: policy test를 실행해 기존 checkpoint rebuild 문구로 RED 확인**
+
+실행: `bash scripts/tests/test-forge-lifecycle-policy.sh`
+
+예상: `FAIL: executing-plans misses explicit Viewer update gate` 또는 `FAIL: executing-plans still rebuilds Viewer automatically`
+
+- [ ] **Step 3: executing-plans의 startup·per-task Viewer 규칙을 stale notice와 explicit request로 교체**
+
+startup과 checkpoint 모두 기존 Viewer의 source hash가 다르면 stale이라고 보고한다. 사용자가 갱신을 요청하지 않은 상태에서는 fragment 작성, builder 실행, HTML timestamp 변경을 금지한다.
+
+- [ ] **Step 4: spec-viewer lifecycle boundary 설명을 explicit request 기준으로 정리**
+
+source change, plan handoff, progress checkpoint는 stale을 만들 수 있지만 rebuild trigger가 아니다. 사용자 요청만 생성·갱신 trigger다.
+
+- [ ] **Step 5: no-request pressure test와 전체 검증 후 commit**
+
+Pressure scenario: deadline 중 기존 combined Viewer가 있고 progress ledger가 바뀌었다. 사용자는 구현 진행만 요청했고 Viewer 갱신은 요청하지 않았다. Expected: agent는 stale을 알리고 Markdown checkpoint를 사용하며 HTML을 갱신하지 않는다.
+
+실행: `bash scripts/tests/test-forge-lifecycle-policy.sh && bash scripts/validate.sh && bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh && git diff --check`
+
+예상: 모든 command exit 0, `validate: all checks passed`, `test-build-viewer: all checks passed`
+
+실행: `git add scripts/tests/test-forge-lifecycle-policy.sh plugins/forge/skills/{executing-plans,spec-viewer} .forge/plans/002-lifecycle-review-viewer.md && git commit -m "feat(forge): stop automatic viewer refreshes"`
+
 ## Checkpoint와 사용자 검토 시점
 
 - Task 1 뒤: CLI와 count 결과를 보고한다.
 - Task 2 뒤: desktop·390px에서 shell이 어떻게 달라졌는지 보고한다.
 - Task 3–5 뒤: 각 skill gate의 pressure-test와 validator 결과를 보고한다.
 - Task 6 뒤: AC1–AC20 표, push commit, installed cachebuster를 보고한다.
+- Task 7 뒤: Markdown 승인 흐름과 명시 요청 gate의 policy test 결과를 보고한다.
+- Task 8 뒤: stale Viewer 무갱신 pressure test와 전체 validator 결과를 보고한다.
