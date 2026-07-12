@@ -7,11 +7,19 @@ description: 'Use when an approved spec exists and implementation needs a task-l
 
 **Announce at start:** "Using the forge writing-plans skill to turn the approved spec into an implementation plan."
 
-Respond to the user in the user's language. This skill file stays in English.
+Respond to the user in the user's language. This skill file stays in English. Write the plan in the governing spec's language unless the user explicitly requests another language.
 
 ## Overview
 
 Turn an approved spec into a plan that an engineer with **zero context** for this codebase could execute: bite-sized tasks, exact file paths, complete code in every step, and explicit traceability back to the spec's requirement and acceptance-criterion IDs. Assume the implementer is skilled but knows nothing about this project's domain, toolset, or past decisions — and may see only their own task. DRY. YAGNI. Test-first. Frequent commits.
+
+## Plan Language
+
+- Use the governing spec's human-readable language for the plan. If the user explicitly requests another plan language, follow that request and keep the plan internally consistent.
+- Write all human-readable plan content in that language: the title, goal, architecture, constraints, task names, file responsibilities, interface explanations, step instructions, expected-result explanations, and handoff notes.
+- Preserve proper nouns, product and framework names, API and protocol names, code identifiers, type and function signatures, file paths, commands, exact output, and established domain terms in their original form. Follow the project's convention for code, comments, and commit messages.
+- Keep only the plan's canonical `##` headings, `Task N` and `Step N` structural tokens, R-IDs, AC-IDs, checkbox syntax, and exact command or output tokens unchanged. Localize ordinary labels such as Spec, Goal, Architecture, Tech Stack, Tasks, Files, Interfaces, Create, Modify, Test, Consumes, Produces, Run, and Expected.
+- Do not translate or paraphrase values copied verbatim from the spec, including user-facing copy, version constraints, protocol values, and named decisions.
 
 ## Iron Law
 
@@ -67,7 +75,7 @@ This is the forge addition on top of ordinary planning discipline:
 ```markdown
 ## AC Coverage
 
-| AC | Tasks |
+| AC | <Localized Tasks label> |
 |---|---|
 | AC1 | 1, 2 |
 | AC2 | 3 |
@@ -81,49 +89,49 @@ A task that cites no R-ID needs a stated reason to exist (scaffolding for a cite
 Every plan MUST start with this header:
 
 ```markdown
-# <Feature Name> Implementation Plan
+# <Feature name and implementation-plan title in the plan language>
 
-> **For agentic workers:** execute with the forge executing-plans skill,
-> task by task with checkpoints. Steps use checkbox (`- [ ]`) syntax for tracking.
+> <In the plan language: tell agentic workers to execute with the forge
+> executing-plans skill, task by task with checkpoints.>
 
-**Spec:** `docs/specs/NNN-<slug>/spec.md`
+**<Localized Spec label>:** `docs/specs/NNN-<slug>/spec.md`
 
-**Goal:** [one sentence describing what this builds]
+**<Localized Goal label>:** [one sentence in the plan language describing what this builds]
 
-**Architecture:** [2-3 sentences about the approach]
+**<Localized Architecture label>:** [2-3 sentences in the plan language about the approach]
 
-**Tech Stack:** [key technologies/libraries with versions where they matter]
+**<Localized Tech Stack label>:** [key technologies/libraries with versions where they matter; preserve established names]
 
 ## Global Constraints
 
-[The spec's project-wide requirements — version floors, dependency limits,
-naming and copy rules, platform requirements — one line each, values copied
+[In the plan language: the spec's project-wide requirements — version floors,
+dependency limits, naming and copy rules, platform requirements — one line each, values copied
 verbatim from the spec. Every task's requirements implicitly include this
 section.]
 
 ## AC Coverage
 
-| AC | Tasks |
+| AC | <Localized Tasks label> |
 |---|---|
 ```
 
 ## Task Structure Template
 
 ````markdown
-### Task N: <Component Name> (R-IDs · AC-IDs)
+### Task N: <Component name in the plan language> (R-IDs · AC-IDs)
 
-**Files:**
-- Create: `exact/path/to/file.py`
-- Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test_file.py`
+**<Localized Files label>:**
+- <Localized Create label>: `exact/path/to/file.py`
+- <Localized Modify label>: `exact/path/to/existing.py:123-145`
+- <Localized Test label>: `tests/exact/path/to/test_file.py`
 
-**Interfaces:**
-- Consumes: [what this task uses from earlier tasks — exact signatures]
-- Produces: [what later tasks rely on — exact function names, parameter and
+**<Localized Interfaces label>:**
+- <Localized Consumes label>: [in the plan language: what this task uses from earlier tasks — exact signatures]
+- <Localized Produces label>: [in the plan language: what later tasks rely on — exact function names, parameter and
   return types. A task's implementer may see only their own task; this block
   is how they learn the names and types neighboring tasks use.]
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: <In the plan language: write the failing test>**
 
 ```python
 def test_specific_behavior():
@@ -131,29 +139,29 @@ def test_specific_behavior():
     assert result == expected
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [ ] **Step 2: <In the plan language: run the test and verify that it fails>**
 
-Run: `pytest tests/exact/path/to/test_file.py::test_specific_behavior -v`
-Expected: FAIL with "function not defined"
+<Localized Run label>: `pytest tests/exact/path/to/test_file.py::test_specific_behavior -v`
+<Localized Expected label>: <In the plan language: FAIL with the exact message "function not defined">
 
-- [ ] **Step 3: Write the minimal implementation**
+- [ ] **Step 3: <In the plan language: write the minimal implementation>**
 
 ```python
 def function(input):
     return expected
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [ ] **Step 4: <In the plan language: run the test and verify that it passes>**
 
-Run: `pytest tests/exact/path/to/test_file.py::test_specific_behavior -v`
-Expected: PASS
+<Localized Run label>: `pytest tests/exact/path/to/test_file.py::test_specific_behavior -v`
+<Localized Expected label>: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: <In the plan language: commit the completed change>**
 
-Run: `git add tests/exact/path/to/test_file.py src/path/file.py && git commit -m "feat: specific behavior"`
+<Localized Run label>: `git add tests/exact/path/to/test_file.py src/path/file.py && git commit -m "feat: specific behavior"`
 ````
 
-Adapt the language and test runner to the project; keep the red → green → commit cycle.
+The surrounding plan prose follows the Plan Language rules. Adapt code, commands, commit messages, and the test runner to the project; keep the red → green → commit cycle.
 
 ## Bite-Sized Steps
 
@@ -183,6 +191,7 @@ After writing the complete plan, reread the spec with fresh eyes and check the p
 1. **Spec coverage:** walk every R-ID and AC-ID; point to the task that implements each. Verify the coverage table matches the task headers. List and fix any gap.
 2. **Placeholder scan:** search the plan for every pattern in "No Placeholders" above. Fix them.
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+4. **Language consistency:** confirm all human-readable prose uses the governing spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim spec values remain intact.
 
 Fix issues inline and move on — no re-review loop.
 
@@ -204,7 +213,8 @@ Fix issues inline and move on — no re-review loop.
 | "This coverage table is just bookkeeping" | The table is how uncovered ACs become visible. Skipping it is how requirements silently drop. |
 | "The change is small, I'll just code it directly" | Small change = small plan, but the plan exists. No code without a plan task. |
 | "Add error handling here — the engineer will know what" | They won't. Name the errors, the handling, and the test that proves it. |
-| "The user is in a hurry, skip self-review" | Self-review takes minutes; an unexecutable plan wastes hours. Run all three checks. |
+| "The user is in a hurry, skip self-review" | Self-review takes minutes; an unexecutable plan wastes hours. Run all four checks. |
+| "Implementation plans are technical, so English is clearer." | The plan is also a user review artifact. Write its prose in the spec's language and preserve only the technical terms, identifiers, code, and exact commands that need their original form. |
 
 ## Handoff
 
