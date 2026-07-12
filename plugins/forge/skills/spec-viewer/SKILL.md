@@ -64,9 +64,9 @@ The fragment is ONLY the six tab panels — no doctype, no head, no scripts, no 
 - **Mermaid fences are lifted verbatim** from spec.md into `<pre class="mermaid">` blocks. Do not "fix", reformat, or invent diagrams. If a fence is broken, the viewer shows its source as an error — then fix spec.md and rebuild.
 - Markdown tables become HTML `<table>` with `<thead>`/`<tbody>`.
 - Requirements render as a table whose rows carry R-ID anchor ids, so `#R3` deep-links work:
-  `<tr id="R1"><td>R1</td><td>WHEN ... THE SYSTEM SHALL ...</td></tr>`
-- Acceptance criteria render as checkboxes with the full Given/When/Then text and their R-IDs:
-  `<label class="ac-item"><input type="checkbox" data-ac="AC1"> <span><strong>AC1</strong> Given ... When ... Then ... <em>(R1, R2)</em></span></label>`
+  `<tr id="R1"><td>R1</td><td>When the user submits the form, the system saves it.</td></tr>`
+- Acceptance criteria render as checkboxes with their full localized text and R-IDs:
+  `<label class="ac-item"><input type="checkbox" data-ac="AC1"> <span><strong>AC1</strong> Localized precondition, action, and outcome. <em>(R1, R2)</em></span></label>`
 - **Escape raw text**: `&` becomes `&amp;` and `<` becomes `&lt;` in all spec text — including inside `<pre class="mermaid">` (the browser decodes entities back to the original source before parsing).
 - Deep links: any panel opens directly via hash, e.g. `viewer.html#flows`.
 

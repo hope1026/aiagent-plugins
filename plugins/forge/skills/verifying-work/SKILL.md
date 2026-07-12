@@ -56,7 +56,7 @@ Verification has two levels. Level 1 always applies. Level 2 additionally applie
 
 1. Open `docs/specs/NNN-<slug>/spec.md` and read the Acceptance Criteria section.
 2. Create one todo per acceptance criterion (AC1..ACn) so none can be silently skipped.
-3. Walk each AC in order: execute its Given/When/Then against the real implementation, then record a verdict — **PASS** or **FAIL** — with the exact command output or concrete observation as evidence. No AC may be judged from memory or from reading the code.
+3. Walk each AC in order: reproduce its precondition, perform its action, and observe its expected outcome against the real implementation. Record a verdict — **PASS** or **FAIL** — with the exact command output or concrete observation as evidence. No AC may be judged from memory or from reading the code.
 4. Cross-check consistency: each AC still maps to current R-IDs, and if `.forge/plans/NNN-<slug>.md` exists, its AC coverage table matches what was actually built. A dangling AC or uncovered requirement is a FAIL to resolve, not a footnote.
 
 ### Verdict handling

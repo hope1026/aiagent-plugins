@@ -7,7 +7,13 @@ Canonical structure for `docs/specs/NNN-<slug>/spec.md`. Section headings must m
 - Keep only the canonical `##` section headings below exactly as written because downstream forge skills parse them. Localize body labels such as `Non-goals:` and table column labels.
 - Write every other human-readable part of the spec in the user's language, including the title, explanations, requirements, acceptance criteria, diagram labels, table labels and descriptions, and history explanations.
 - Preserve proper nouns, product and framework names, API and protocol names, code identifiers, commands, quoted UI labels, and established domain terms in their original form. Explain them and their surrounding context in the user's language instead of forcing a translation or transliteration.
-- Keep requirement IDs, Status keywords, history tags, EARS keywords, and Given/When/Then keywords in English as machine-readable tokens.
+- Keep requirement and acceptance-criterion IDs, Status keywords, history tags, and the `[NEEDS CLARIFICATION: ...]` marker prefix in English as fixed traceability and lifecycle tokens. EARS and acceptance-criterion prose follow the user's language.
+
+## Traceability IDs
+
+- `R` means Requirement: a required system behavior or constraint.
+- `AC` means Acceptance Criterion: observable evidence that one or more requirements are satisfied.
+- Every AC cites the R-IDs it verifies. Downstream planning and verification trace these IDs, not English sentence keywords.
 
 ## Status line semantics
 
@@ -35,12 +41,12 @@ Status: draft
 
 ## Requirements
 
-<In the user's language, except for stable IDs and EARS keywords. Never
-renumber or reuse a removed ID. Each requirement must be testable. Mark unresolved ambiguity inline:
+<Start with one short line in the user's language defining R as Requirement: a required system behavior or constraint. Then write the requirements in the user's language, except for stable IDs. Use EARS semantics without
+forcing English keywords: state the trigger or condition and the required behavior clearly. Never renumber or reuse a removed ID. Each requirement must be testable. Mark unresolved ambiguity inline:
 [NEEDS CLARIFICATION: the exact open question in the user's language].>
 
-- R1. WHEN <trigger> THE SYSTEM SHALL <behavior>
-- R2. IF <abnormal condition> THEN THE SYSTEM SHALL <response>
+- R1. <In the user's language: event or condition, followed by the required behavior>
+- R2. <In the user's language: exception condition, followed by the required response>
 
 ## Behavior & Flows
 
@@ -53,9 +59,9 @@ labels in the user's language. These fences are the single diagram source — th
 
 ## Acceptance Criteria
 
-<AC1..ACn, Given/When/Then, each citing the R-IDs it verifies. Write the criterion content in the user's language.>
+<Start with one short line in the user's language defining AC as Acceptance Criterion: observable evidence that cited requirements are satisfied. Then write AC1..ACn, each citing the R-IDs it verifies. In the user's language, state the precondition, action, and observable outcome clearly.>
 
-- AC1 (R1): GIVEN <precondition> WHEN <action> THEN <observable outcome>
+- AC1 (R1): <In the user's language: precondition, action, and observable outcome>
 
 ## Decisions & History
 
@@ -65,15 +71,17 @@ drift findings, and rejected options. Append-only; keep history tags in English.
 - YYYY-MM-DD [DECISION] <what was decided and why>
 ````
 
-## EARS quick reference
+## EARS semantic reference
 
-| Pattern | Shape |
+Use these semantic shapes in the user's language. The English keywords are explanatory labels, not required output tokens.
+
+| Pattern | Meaning |
 |---|---|
-| Ubiquitous | THE SYSTEM SHALL `<behavior>` |
-| Event-driven | WHEN `<trigger>` THE SYSTEM SHALL `<behavior>` |
-| State-driven | WHILE `<state>` THE SYSTEM SHALL `<behavior>` |
-| Unwanted behavior | IF `<abnormal condition>` THEN THE SYSTEM SHALL `<response>` |
-| Optional feature | WHERE `<feature is included>` THE SYSTEM SHALL `<behavior>` |
+| Ubiquitous | A behavior that is always required |
+| Event-driven | An event or trigger followed by the required behavior |
+| State-driven | A state that remains true while the required behavior applies |
+| Unwanted behavior | An abnormal or failure condition followed by the required response |
+| Optional feature | A feature-presence condition followed by the required behavior |
 
 ## Filled examples
 
@@ -81,14 +89,14 @@ These examples demonstrate structure and token placement. Use their English pros
 
 Running example: login with account lockout.
 
-### Requirements (EARS)
+### Requirements (EARS semantics)
 
-- R1. WHEN a user submits valid credentials THE SYSTEM SHALL create a session and redirect to the dashboard within 2 seconds.
-- R2. IF a fifth login attempt for the same account fails within 10 minutes THEN THE SYSTEM SHALL lock the account for 15 minutes and display the lockout message.
+- R1. When a user submits valid credentials, the system creates a session and redirects to the dashboard within 2 seconds.
+- R2. If a fifth login attempt for the same account fails within 10 minutes, the system locks the account for 15 minutes and displays the lockout message.
 
-### Acceptance criterion (Given/When/Then)
+### Acceptance criterion (precondition / action / outcome)
 
-- AC1 (R2): GIVEN an account with four failed login attempts in the last 10 minutes, WHEN a fifth attempt fails, THEN the account rejects even correct credentials for 15 minutes and the login page shows the lockout message.
+- AC1 (R2): With an account at four failed login attempts in the last 10 minutes, a fifth failed attempt makes the account reject even correct credentials for 15 minutes and makes the login page show the lockout message.
 
 ### Behavior & Flows
 
