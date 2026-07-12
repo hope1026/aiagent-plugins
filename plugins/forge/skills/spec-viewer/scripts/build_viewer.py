@@ -68,36 +68,40 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("-t", "--title", required=True)
     parser.add_argument("-s", "--status", default="draft")
     parser.add_argument("-o", "--output", type=Path)
-    parser.add_argument("--mode", choices=("spec", "plan", "combined"), default="spec")
+    parser.add_argument("--mode", choices=("spec", "plan"), default="spec")
     parser.add_argument("--locale", choices=tuple(LABELS), default="en")
     parser.add_argument("--spec", type=Path)
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--progress", type=Path)
+    parser.add_argument("--tasks-dir", type=Path)
     parser.add_argument("--offline", action="store_true")
     args = parser.parse_args(argv)
 
-    if args.mode in ("spec", "combined") and not args.spec:
-        parser.error(f"--spec is required for {args.mode} mode")
-    if args.mode in ("plan", "combined") and not args.plan:
-        parser.error(f"--plan is required for {args.mode} mode")
+    if args.mode == "spec":
+        if not args.spec:
+            parser.error("--spec is required for spec mode")
+        if args.plan or args.progress or args.tasks_dir:
+            parser.error("--plan, --progress, and --tasks-dir are invalid for spec mode")
+    if args.mode == "plan":
+        if not args.plan:
+            parser.error("--plan is required for plan mode")
+        if args.spec:
+            parser.error("--spec is invalid for plan mode; use Related Specs as links")
     for path in (args.content, args.spec, args.plan, args.progress):
         if path is not None and not path.is_file():
             parser.error(f"file not found: {path}")
+    if args.tasks_dir is not None and not args.tasks_dir.is_dir():
+        parser.error(f"directory not found: {args.tasks_dir}")
     if args.output is None:
         anchor = args.spec or args.plan
         if anchor is None:
             parser.error("--output is required when no source path can determine a name")
-        args.output = derive_output(anchor, args.mode)
+        args.output = derive_output(anchor)
     return args
 
 
-def derive_output(anchor: Path, mode: str) -> Path:
-    if anchor.name == "spec.md":
-        slug = anchor.parent.name
-    else:
-        slug = anchor.stem
-    suffix = {"spec": "", "plan": "-plan", "combined": "-review"}[mode]
-    return Path(".forge/viewer") / f"{slug}{suffix}.html"
+def derive_output(anchor: Path) -> Path:
+    return anchor.parent / "view.html"
 
 
 def sha256(path: Path) -> str:
@@ -111,17 +115,25 @@ def sha256(path: Path) -> str:
 def selected_sources(args: argparse.Namespace) -> list[tuple[str, Path]]:
     result: list[tuple[str, Path]] = []
     if args.spec:
-        result.append(("spec" if args.mode != "plan" else "approved-spec", args.spec))
+        result.append(("spec", args.spec))
     if args.plan:
         result.append(("plan", args.plan))
     if args.progress:
         result.append(("progress", args.progress))
+    if args.tasks_dir:
+        result.extend(("task", path) for path in sorted(args.tasks_dir.glob("*.md")))
     return result
 
 
-def source_records(sources: list[tuple[str, Path]]) -> list[dict[str, str]]:
+def source_records(
+    sources: list[tuple[str, Path]], output_directory: Path
+) -> list[dict[str, str]]:
     return [
-        {"role": role, "path": str(path), "sha256": sha256(path)}
+        {
+            "role": role,
+            "path": Path(os.path.relpath(path, output_directory)).as_posix(),
+            "sha256": sha256(path),
+        }
         for role, path in sources
     ]
 
@@ -156,11 +168,6 @@ def validate_fragment(content: str) -> None:
         raise ValueError(f"content fragment must contain panels in order: {', '.join(PANELS)}")
     if re.search(r"<!doctype|<html\b|<head\b|<style\b|<script\b", content, re.IGNORECASE):
         raise ValueError("content fragment must not contain shell markup, style, or script")
-
-
-def freshness(content_path: Path, sources: list[tuple[str, Path]]) -> str:
-    content_mtime = content_path.stat().st_mtime_ns
-    return "stale" if any(path.stat().st_mtime_ns > content_mtime for _, path in sources) else "current"
 
 
 def mermaid_tag(offline: bool) -> str:
@@ -206,10 +213,10 @@ def build(args: argparse.Namespace, argv: list[str]) -> str:
     manifest = ViewerManifest(
         mode=args.mode,
         locale=args.locale,
-        sources=source_records(sources),
+        sources=source_records(sources, args.output.parent),
         generated_at=generated_at,
         counts=collect_counts([path for _, path in sources]),
-        freshness=freshness(args.content, sources),
+        freshness="unverified",
         rebuild_command=" ".join(shlex.quote(part) for part in ["build-viewer.sh", *argv]),
     )
     manifest_json = json.dumps(asdict(manifest), ensure_ascii=False, indent=2).replace("</", "<\\/")
