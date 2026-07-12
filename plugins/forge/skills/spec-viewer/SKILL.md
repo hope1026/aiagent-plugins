@@ -1,19 +1,19 @@
 ---
 name: spec-viewer
-description: 'Use when a spec or implementation plan needs a self-contained HTML review view with diagrams, tables, traceability, or an acceptance checklist, or when a user asks to visualize a spec or plan. Triggers: "스펙 시각화", "스펙 보여줘", "계획 시각화", "spec html", "plan viewer", "스펙 뷰어", "다이어그램으로", reviewing a spec or plan with a human.'
+description: 'Use when a spec or implementation plan needs a self-contained HTML review view with diagrams, tables, traceability, freshness checks, or an acceptance checklist, or when a user asks to visualize a spec or plan. Triggers: "스펙 시각화", "스펙 보여줘", "계획 시각화", "spec html", "plan viewer", "스펙 뷰어", "다이어그램으로", reviewing a spec or plan with a human.'
 ---
 
 # Spec Viewer
 
-Announce at start: "Using the forge spec-viewer skill to render source documents as a lifecycle review Viewer."
+Announce at start: "Using the forge spec-viewer skill to render an independent spec or plan review Viewer."
 
 Respond to the user in the user's language. This skill file stays in English. Viewer prose follows the primary source language; preserve proper nouns, API, service, schema, protocol, and code identifiers in their established language.
 
 ## Overview
 
-Assembly, not invention. This skill combines a fixed HTML shell, a source-owned six-panel content fragment, and source metadata into `spec`, `plan`, or `combined` review views. The Markdown sources remain authoritative throughout delivery; generated HTML is read-only and regenerable.
+Assembly, not invention. This skill combines a fixed HTML shell, a source-owned six-panel content fragment, and source metadata into an independent `spec` or `plan` review View. Markdown remains authoritative. A generated `view.html` is read-only, shared beside its source, and reports whether its embedded SHA-256 values match current Markdown.
 
-The reading order is deliberate: summary table → visual flow → detailed Task → AC evidence → source. A Viewer helps a person find answers; it never adds decisions that the source does not contain.
+The reading order is deliberate: summary table → visual flow → source detail → acceptance evidence. A Viewer helps a person find answers; it never adds decisions that the source does not contain.
 
 ## Iron Law
 
@@ -28,109 +28,104 @@ NO EXPLICIT USER REQUEST, NO BUILD OR REBUILD.
 **Use only after an explicit user request when:**
 
 - The user asks to visualize, present, print, or share a spec or plan.
-- The user asks to create or update a `spec`, `plan`, or `combined` Viewer.
+- The user asks to create or update a `spec` or `plan` Viewer.
 
 **Do NOT use when:**
 
 - The source itself needs writing or changing — use the forge writing-specs or writing-plans skill.
-- The user did not make an explicit user request for Viewer creation or update. Complexity, approval, handoff, checkpoint, and an existing stale Viewer do not count as a request.
+- The user did not explicitly request Viewer creation or update. Complexity, approval, handoff, checkpoint, and an existing stale Viewer do not grant permission.
 - Building product UI — use the forge ui-design skill.
-- The desired relationship is not present in source — return to the governing source instead of inventing it here.
+- A plan links Related Specs and the desired relationship is absent from the plan — keep the link; do not merge spec content into the plan View.
 
 ## Source Ownership and Modes
 
 | Mode | Primary source | Auxiliary source | Output |
 |---|---|---|---|
-| `spec` | `docs/specs/NNN-<slug>/spec.md` | none | `.forge/viewer/NNN-<slug>.html` |
-| `plan` | `.forge/plans/NNN-<slug>.md` | approved spec for R, AC, and approved Mermaid | `.forge/viewer/NNN-<slug>-plan.html` |
-| `combined` | approved spec + plan | `.forge/scratch/progress-NNN.md` when present | `.forge/viewer/NNN-<slug>-review.html` |
+| `spec` | `docs/specs/NNN-<slug>/spec.md` | none | `docs/specs/NNN-<slug>/view.html` |
+| `plan` | `docs/plans/PPP-<slug>/plan.md` | optional `progress.md`, optional `tasks/*.md` | `docs/plans/PPP-<slug>/view.html` |
 
-In `spec` mode, the spec owns all displayed meaning. In `plan` mode, the plan owns Route, Task, Step, file, interface, and verification detail; the spec is supporting evidence only. In `combined` mode, label each field by its source and link the two sources without merging their responsibilities.
+Spec and plan identifiers, paths, and lifetimes are independent. Related Specs in a plan remain navigation links; they are not plan Viewer sources. The removed `combined` mode must never be used as a compatibility fallback.
 
 ## The Process
 
 Create one todo per numbered step before starting.
 
-1. **Choose the mode and read every selected source.** Confirm paths, spec status, primary source language, and whether a progress ledger exists. Record expected Task, Step, R, AC, and Mermaid counts.
+1. **Choose one mode and read every selected source.** Confirm paths, primary source language, and optional plan sources. Record expected Task, Step, R, AC, and Mermaid counts for that mode only.
 
-2. **Enforce the request gate.** Confirm the user explicitly requested Viewer creation or update for the selected current sources. If not, stop and return to the Markdown review path. Never infer permission from complexity, lifecycle stage, or an existing Viewer.
+2. **Enforce the request gate.** Confirm the user explicitly requested creation or update for the current sources. Otherwise stop at Markdown review. Never infer permission from complexity, lifecycle stage, or an existing View.
 
-3. **Author the six-panel fragment.** Read `references/content-patterns.md`, then write `.forge/scratch/NNN-<slug>-content.html`. Keep exactly these panel IDs in order: `overview`, `requirements`, `flows`, `data`, `acceptance`, `history`. The fragment contains no doctype, shell markup, style, or script.
+3. **Author the six-panel fragment.** Read `references/content-patterns.md`, then write `.forge/scratch/<source-id>-content.html`. Keep these panel IDs in order: `overview`, `requirements`, `flows`, `data`, `acceptance`, `history`. Add no doctype, shell markup, style, or script.
 
-4. **Preserve diagram ownership.** Copy approved spec Mermaid byte-for-byte and label it `Spec source`. Copy plan Mermaid byte-for-byte and label it `Plan source`. Label mechanically calculated Route, dependency, and coverage diagrams `Derived view`; use only explicit Task IDs, Route membership, dependencies, and R·AC mappings.
+4. **Preserve diagram ownership.** Copy spec Mermaid byte-for-byte and label it `Spec source`. Copy plan-source Mermaid byte-for-byte and label it `Plan source` with its path. Label mechanically calculated Route, dependency, and coverage diagrams `Derived view`; use only relationships explicit in the selected mode's sources.
 
-5. **Package every diagram for people.** Before each diagram provide a question-shaped title, what to confirm, and a one-sentence reading guide. Before a wide sequence diagram provide a runtime responsibility summary table. Keep the original wide diagram in a horizontal scroll region; add a vertical summary before it when mobile text would otherwise be unreadable.
+5. **Package every diagram for people.** Before each diagram provide a question-shaped title, what to confirm, and a one-sentence reading guide. Before a wide sequence diagram provide a runtime responsibility summary table. Keep wide diagrams in independent horizontal scroll regions and provide a source-derived mobile summary.
 
-6. **Prepare ignored working directories.** Ensure `.forge/scratch/.gitignore` and `.forge/viewer/.gitignore` each contain exactly `*`. Generated HTML remains uncommitted.
+6. **Prepare local intermediates.** Keep content fragments and browser evidence in `.forge/scratch/` or `.forge/viewer-build/`. These directories remain uncommitted. The final `view.html` is committed beside its Markdown source.
 
-7. **Build with source metadata.** Run the matching command from the project root:
+7. **Build with source metadata.** Run one matching command from the project root:
 
    ```bash
    bash <spec-viewer-skill>/scripts/build-viewer.sh \
      --mode spec --locale ko \
      --spec docs/specs/NNN-<slug>/spec.md \
      -c .forge/scratch/NNN-<slug>-content.html \
-     -t "<question-shaped title>" -s "<status>"
+     -t "<question-shaped title>" -s "<status>" --offline
    ```
 
    ```bash
    bash <spec-viewer-skill>/scripts/build-viewer.sh \
      --mode plan --locale ko \
-     --spec docs/specs/NNN-<slug>/spec.md \
-     --plan .forge/plans/NNN-<slug>.md \
-     -c .forge/scratch/NNN-<slug>-content.html \
-     -t "<question-shaped title>" -s "<status>"
-   ```
-
-   ```bash
-   bash <spec-viewer-skill>/scripts/build-viewer.sh \
-     --mode combined --locale ko \
-     --spec docs/specs/NNN-<slug>/spec.md \
-     --plan .forge/plans/NNN-<slug>.md \
-     --progress .forge/scratch/progress-NNN.md \
-     -c .forge/scratch/NNN-<slug>-content.html \
+     --plan docs/plans/PPP-<slug>/plan.md \
+     --progress docs/plans/PPP-<slug>/progress.md \
+     --tasks-dir docs/plans/PPP-<slug>/tasks \
+     -c .forge/scratch/PPP-<slug>-content.html \
      -t "<question-shaped title>" -s "<status>" --offline
    ```
 
-   Omit `--progress` when no ledger exists. Omit `--locale ko` only when the primary source language is English. Output names are derived when `-o` is omitted; `-o` remains available for deliberate overrides. `--offline` inlines Mermaid 11 instead of requesting the CDN.
+   Omit `--progress` and `--tasks-dir` when absent. Omit `--locale ko` only when the primary source language is English. Output defaults to `view.html` beside the primary source; `-o` remains available for deliberate overrides. `--offline` inlines Mermaid 11.
 
-8. **Verify the view.** Confirm six panels, exact counts, source paths and source hash, `current` freshness, unresolved placeholders 0, source Mermaid equality, and fragment shell markup 0. In a real browser verify 1440px and 390px, tabs, Task/R/AC deep links, AC and Step checkbox persistence, independent table and diagram scroll, Mermaid errors, favicon requests, and offline rendering.
+8. **Verify assembly and freshness.** Confirm six panels, exact mode-local counts, relative source paths, SHA-256 values, unresolved placeholders 0, source Mermaid equality, and fragment shell markup 0. Run `bash <spec-viewer-skill>/scripts/build-viewer.sh --check <source-dir>/view.html`. In a real browser verify 1440px and 390px, tabs, mode-local deep links, checkbox persistence, independent scroll, Mermaid errors, favicon requests, and offline rendering.
 
-9. **Handle later source changes.** Approval, plan edits, execution progress, and checkpoints can make the generated file stale. Report it as stale; repeat this process only after another explicit user request to update the Viewer.
+9. **Verify read-time states.** Under same-origin HTTP, current Markdown must produce `current` and a changed source must produce `stale`. Under `file://` or blocked source access, the View must start `unverified` and offer local Markdown selection. Missing, ambiguous, or unreadable files remain `unverified`; one mismatched source makes the overall plan View `stale`.
+
+10. **Handle later source changes.** Source edits can make a committed View stale. Report the state; repeat this process only after another explicit user request. Freshness never grants rebuild permission.
 
 ## Diagram Classification
 
 | Label | Allowed content | Prohibited content |
 |---|---|---|
-| `Spec source` | exact Mermaid text from the governing spec | formatting or semantic edits |
-| `Plan source` | exact Mermaid text from the implementation plan | relationships absent from the plan |
-| `Derived view` | mechanically calculated Route, Task dependency, and R·AC coverage | new runtime responsibility, transaction order, state transition, or decision |
+| `Spec source` | exact Mermaid text from the selected spec | formatting or semantic edits |
+| `Plan source` | exact Mermaid text from the selected plan source file | relationships absent from plan sources |
+| `Derived view` | mechanically calculated Route, Task dependency, and explicit coverage | new runtime responsibility, transaction order, state transition, or decision |
 
-When a source Mermaid is invalid, show its error summary, available line and column, and original text. Fix the source, lift it again, and rebuild; never repair only the HTML.
+When source Mermaid is invalid, show its error summary, available line and column, and original text. Fix the Markdown source and rebuild; never repair only the HTML.
 
 ## Working Files
 
 | File | Role | Committed? |
 |---|---|---|
-| `docs/specs/NNN-<slug>/spec.md` | requirement and approval source | yes |
-| `.forge/plans/NNN-<slug>.md` | implementation source | yes |
-| `.forge/scratch/progress-NNN.md` | checkpoint evidence | no |
-| `.forge/scratch/NNN-<slug>-content.html` | six-panel fragment | no |
-| `.forge/viewer/NNN-<slug>*.html` | generated review views | no |
+| `docs/specs/NNN-<slug>/spec.md` | permanent requirement source | yes |
+| `docs/specs/NNN-<slug>/view.html` | explicitly requested spec View | yes |
+| `docs/plans/PPP-<slug>/plan.md` | work-scoped plan source | yes |
+| `docs/plans/PPP-<slug>/progress.md` | optional long progress source | yes |
+| `docs/plans/PPP-<slug>/tasks/*.md` | optional independent Task sources | yes |
+| `docs/plans/PPP-<slug>/view.html` | explicitly requested plan View | yes |
+| `.forge/scratch/*-content.html` | six-panel fragment | no |
+| `.forge/viewer-build/` | local build and browser evidence | no |
 
 ## Red Flags
 
 | Excuse | Reality |
 |---|---|
-| "The HTML is easier to edit than the Markdown." | Editing the derivative creates drift. Change the owning source and rebuild. |
-| "The relationship is obvious, so the derived diagram can add it." | Obvious is still unsourced. Add the decision to spec or plan first. |
-| "The Mermaid is valid after I cleaned up its wording." | A source diagram must be byte-for-byte identical, not merely equivalent. |
-| "The build succeeded, so review is complete." | Assembly does not prove browser rendering, mobile readability, or persistence. |
-| "One huge Task graph is more complete." | Group Tasks into 6–10 Routes first so a person can form a mental model. |
-| "Mobile can pinch-zoom the sequence diagram." | Provide the responsibility summary first and keep readable horizontal scrolling. |
-| "The checkpoint changed only one Task, so I should keep the Viewer current." | The prior view is stale, but freshness does not grant update permission. Report it and wait for an explicit user request. |
-| "Committing HTML makes maintenance easier." | The source, manifest, and rebuild command make it maintainable; generated HTML stays disposable. |
+| "The HTML is easier to edit than the Markdown." | Editing the derivative creates drift. Change the owning source and rebuild after an explicit request. |
+| "The plan links one spec, so I can merge it into the View." | A link is not source ownership. Plan Views read plan-local sources only. |
+| "Combined mode still helps this one plan." | The mode encodes a false 1:1 lifecycle and has been removed. |
+| "The Mermaid is valid after I cleaned up its wording." | Source diagrams stay byte-for-byte identical, not merely equivalent. |
+| "The build succeeded, so freshness is current." | Build-time hash capture is not read-time verification. The initial state is `unverified`. |
+| "A fetch error probably means the file is unchanged." | An unreadable source is `unverified`, never `current`. |
+| "The checkpoint changed only one Task, so I should refresh the View." | Staleness does not grant update permission. Report it and wait for an explicit request. |
+| "Committing HTML makes it the source of truth." | Sharing a derived View does not transfer ownership away from Markdown. |
 
 ## Handoff
 
-**Viewer rebuilt from its current source. If review changes requirements, use the forge writing-specs skill; if an approved spec needs a plan, use the forge writing-plans skill; if the plan is approved, use the forge executing-plans skill.**
+**Viewer rebuilt from its current independent source set. If review changes requirements, use the forge writing-specs skill; if it changes execution detail, use the forge writing-plans skill; if the plan is ready, use the forge executing-plans skill.**

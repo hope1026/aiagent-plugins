@@ -19,5 +19,10 @@ grep -q 'Progress History' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
 ! grep -q 'progress-NNN' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
 ! grep -q 'combined Viewer' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
 grep -q 'docs/debug/' "$ROOT/plugins/forge/skills/systematic-debugging/SKILL.md"
+grep -q 'docs/specs/NNN-<slug>/view.html' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
+grep -q 'docs/plans/PPP-<slug>/view.html' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
+! grep -q '| `combined`' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
+grep -q '`unverified`' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
+! grep -q 'Combined mode' "$ROOT/plugins/forge/skills/spec-viewer/references/content-patterns.md"
 
 printf 'test-forge-artifact-contract: all checks passed\n'

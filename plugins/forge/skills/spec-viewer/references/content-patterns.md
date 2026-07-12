@@ -17,14 +17,14 @@ Keep all six panels. For an empty section, state that the source contains no cor
 
 ## Panel content by mode
 
-| Panel | Spec mode | Plan mode | Combined mode |
-|---|---|---|---|
-| Overview | purpose, status, counts | goal, completion state, Routes, reading order | delivery state and source counts |
-| Requirements | R list and policies | Global Constraints and Route scope | R coverage status |
-| Flows | source behavior diagrams | Route map, dependency, runtime, extension flow | Route progress and cross-source links |
-| Data | source data and interfaces | files, server authority, Remote, transaction, interfaces | source ownership and changed interfaces |
-| Acceptance | AC checklist | AC→Task→verification | R→AC→Task→Step→evidence |
-| History | decisions and source metadata | checkpoints and rebuild command | source hash, commits, progress, regeneration |
+| Panel | Spec mode | Plan mode |
+|---|---|---|
+| Overview | purpose, status, counts | goal, completion state, Routes, reading order |
+| Requirements | R list and policies | Global Constraints, Related Specs links, and Route scope |
+| Flows | source behavior diagrams | Route map, dependency, runtime, extension flow |
+| Data | source data and interfaces | files, server authority, Remote, transaction, interfaces |
+| Acceptance | AC checklist | AC→Task→verification when related; otherwise Task→verification |
+| History | decisions and source metadata | Progress History, checkpoints, source hashes, rebuild command |
 
 ## Diagram package
 
@@ -60,7 +60,9 @@ Step keys are Task-scoped because plan Step numbers restart inside each Task. AC
 
 ## History manifest
 
-The fixed shell displays mode, locale, source path, source hash, generated time, counts, freshness, and rebuild command. The History panel adds source decisions, checkpoint summaries, and commit IDs when those exist in the governing source or progress ledger.
+The fixed shell displays mode, locale, relative source path, generated SHA-256, generated time, counts, read-time freshness, and rebuild command. The History panel adds source decisions, checkpoint summaries, and commit IDs when those exist in the selected source set.
+
+Spec View deep links stay within R and AC content. Plan View deep links stay within Task and Step content. Related Specs are navigation links only; never create a cross-source combined traceability panel.
 
 ## Mobile fallback
 

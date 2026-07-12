@@ -544,7 +544,7 @@ source summary에 overall badge, source별 status·hash·오류 영역, `multipl
 - 병렬 안전성: 순차 실행; 구현된 CLI와 UI 용어를 문서화한다.
 - 승인 gate: 없음
 
-- [ ] **Step 1: Viewer skill contract assertion을 추가하고 RED를 확인한다.**
+- [x] **Step 1: Viewer skill contract assertion을 추가하고 RED를 확인한다.**
 
 ```bash
 grep -q '| `spec` .*docs/specs/NNN-<slug>/view.html' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
@@ -558,25 +558,25 @@ grep -q '`unverified`' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
 
 예상: old mode table과 `.forge/viewer` 경로 때문에 실패한다.
 
-- [ ] **Step 2: Source Ownership과 build command를 두 mode로 교체한다.**
+- [x] **Step 2: Source Ownership과 build command를 두 mode로 교체한다.**
 
 spec은 `spec.md`만, plan은 `plan.md`와 optional `progress.md`, `tasks/*.md`만 source로 선택한다. Related Specs는 링크로 표시하고 내용을 lift하지 않는다. content fragment는 `.forge/scratch/`, 최종 output은 source 옆 `view.html`로 고정한다.
 
-- [ ] **Step 3: freshness 검증 절차를 3단계로 문서화한다.**
+- [x] **Step 3: freshness 검증 절차를 3단계로 문서화한다.**
 
 HTTP same-origin 자동 검사, `file://` 수동 파일 선택, CLI `--check`를 모두 확인한다. 열람 전 manifest 상태는 `unverified`이며 source 하나라도 stale이면 overall stale이라는 aggregation rule을 명시한다.
 
-- [ ] **Step 4: content pattern을 mode-local deep link와 panel 내용으로 수정한다.**
+- [x] **Step 4: content pattern을 mode-local deep link와 panel 내용으로 수정한다.**
 
 spec View는 R·AC, plan View는 Task·Step을 deep link한다. plan Acceptance panel은 Related Specs가 있으면 AC→Task→verification, 없으면 Task→verification을 표시한다. combined panel column과 cross-source deep link 예시를 제거한다.
 
-- [ ] **Step 5: contract test와 validator를 실행한다.**
+- [x] **Step 5: contract test와 validator를 실행한다.**
 
 실행: `bash scripts/tests/test-forge-artifact-contract.sh && bash scripts/validate.sh`
 
 예상: exit 0, spec-viewer 500-line cap과 Red Flags 구조 유지.
 
-- [ ] **Step 6: 변경을 commit한다.**
+- [x] **Step 6: 변경을 commit한다.**
 
 실행: `git add plugins/forge/skills/spec-viewer/SKILL.md plugins/forge/skills/spec-viewer/references/content-patterns.md scripts/tests/test-forge-artifact-contract.sh && git commit -m "docs(forge): define independent viewer modes"`
 
@@ -750,4 +750,5 @@ push, publish, Marketplace update는 실행하지 않고 사용자에게 별도 
 - 2026-07-13: Task 3 완료 — plan-local execution and progress workflow (`83b7042`).
 - 2026-07-13: Task 4 완료 — independent spec/plan builder modes (`cef0a18`). Scale fixture split remains owned by Task 8.
 - 2026-07-13: Task 5 완료 — manifest-based CLI freshness check (`8a9d766`).
-- 2026-07-13: Task 6 완료 — read-time browser freshness runtime and UI.
+- 2026-07-13: Task 6 완료 — read-time browser freshness runtime and UI (`278f678`).
+- 2026-07-13: Task 7 완료 — independent spec/plan Viewer authoring contract.
