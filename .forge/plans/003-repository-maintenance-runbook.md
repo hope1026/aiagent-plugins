@@ -331,7 +331,7 @@ Checkpoint: `.agents/skills/validator-probe`가 실패를 유발하고 cleanup �
 - 사용: Task 1의 repository-only runbook 경로와 wrapper 경로
 - 제공: 설치 사용자에게 12개 사용자 실행 스킬만 안내하는 router·catalog·설계 문서
 
-- [ ] **Step 1: Plugin 내부 참조와 문서 경계를 검사하도록 layout test 확장**
+- [x] **Step 1: Plugin 내부 참조와 문서 경계를 검사하도록 layout test 확장**
 
 `scripts/tests/test-maintaining-forge-layout.sh`의 성공 출력 직전에 다음 검사를 추가한다.
 
@@ -345,13 +345,13 @@ grep -q '.agent-runbooks/maintaining-forge/' "$ROOT_DIR/README.md" || \
   fail "README does not document repository-only Forge maintenance"
 ```
 
-- [ ] **Step 2: 확장한 layout test가 runtime router 참조 때문에 실패하는지 확인**
+- [x] **Step 2: 확장한 layout test가 runtime router 참조 때문에 실패하는지 확인**
 
 실행: `bash scripts/tests/test-maintaining-forge-layout.sh`
 
 예상: `FAIL: Forge user plugin still references maintaining-forge`
 
-- [ ] **Step 3: `using-forge`에서 Forge 내부 유지보수 route 제거**
+- [x] **Step 3: `using-forge`에서 Forge 내부 유지보수 route 제거**
 
 `plugins/forge/skills/using-forge/SKILL.md`의 Routing 표에서 아래 행을 삭제한다.
 
@@ -359,14 +359,14 @@ grep -q '.agent-runbooks/maintaining-forge/' "$ROOT_DIR/README.md" || \
 | Editing forge itself — skills, manifests, hooks, install scripts | the forge maintaining-forge skill |
 ```
 
-- [ ] **Step 4: README의 사용자 catalog와 repository maintenance 안내 분리**
+- [x] **Step 4: README의 사용자 catalog와 repository maintenance 안내 분리**
 
 - Forge skill catalog에서 `maintaining-forge` 행을 삭제한다.
 - Catalog 소개를 사용자 실행 스킬 12개 기준으로 유지한다.
 - 별도 `## Repository maintenance` 절을 추가하고 `.agent-runbooks/maintaining-forge/README.md`가 정본이며 두 local wrapper가 이를 가리킨다고 명시한다.
 - Marketplace와 `scripts/install.sh`는 `plugins/forge/`만 설치하므로 repository-only 파일을 배포하지 않는다고 명시한다.
 
-- [ ] **Step 5: 기존 Forge plugin 설계 문서를 현재 구조로 동기화**
+- [x] **Step 5: 기존 Forge plugin 설계 문서를 현재 구조로 동기화**
 
 `docs/specs/2026-07-04-forge-plugin-design.md`에서 다음을 반영한다.
 
@@ -377,7 +377,7 @@ grep -q '.agent-runbooks/maintaining-forge/' "$ROOT_DIR/README.md" || \
 - Plugin 자체 테스트 설명이 `.agent-runbooks/maintaining-forge/README.md`를 가리키게 변경한다.
 - 2026-07-12 변경 이력에 repository-only runbook 분리를 기록한다.
 
-- [ ] **Step 6: Layout·문서 경계 검증 통과 확인**
+- [x] **Step 6: Layout·문서 경계 검증 통과 확인**
 
 실행:
 
@@ -388,7 +388,7 @@ rg -n 'maintaining-forge' plugins/forge
 
 예상: 첫 명령은 `layout: all checks passed`, 두 번째 명령은 결과 없이 exit 1
 
-- [ ] **Step 7: Task 3 변경을 conventional commit 후보로 정리**
+- [x] **Step 7: Task 3 변경을 conventional commit 후보로 정리**
 
 실행 후보: `git add plugins/forge/skills/using-forge/SKILL.md README.md docs/specs/2026-07-04-forge-plugin-design.md scripts/tests/test-maintaining-forge-layout.sh && git commit -m "docs(forge): separate user skills from maintenance runbook"`
 

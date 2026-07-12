@@ -32,4 +32,12 @@ for wrapper in \
     fail "$wrapper does not reference portability rules"
 done
 
+if rg -n 'maintaining-forge' "$ROOT_DIR/plugins/forge" >/dev/null; then
+  rg -n 'maintaining-forge' "$ROOT_DIR/plugins/forge" >&2
+  fail "Forge user plugin still references maintaining-forge"
+fi
+
+grep -q '.agent-runbooks/maintaining-forge/' "$ROOT_DIR/README.md" || \
+  fail "README does not document repository-only Forge maintenance"
+
 echo "layout: all checks passed"

@@ -18,7 +18,7 @@ Core philosophy: **the spec is the source of truth**. Code follows the spec; fea
 | Project working dir | `.forge/` at target-repo root |
 | Spec location | `docs/specs/` (committed, source of truth) |
 | Skill language | English body + Korean trigger keywords in descriptions; skills instruct responding to the user in the user's language |
-| Approach | Lean spec-first core (13 skills), not a full superpowers mirror |
+| Approach | Lean spec-first core (12 user-facing skills), not a full superpowers mirror |
 | superpowers | Keep installed during forge validation; replace (disable) once forge is stable |
 
 **Non-goals:**
@@ -78,10 +78,13 @@ plugins/forge/
       references/style-rules.md     # base natural prose + Strunk core + Korean comms shapes
     marketing-tone/SKILL.md         # marketing/product copy overlay on writing-tone
     operations-tone/SKILL.md        # customer/operations reply overlay on writing-tone
-    maintaining-forge/
-      SKILL.md
-      references/portability-rules.md
 plugins/onestar-ai-tools/           # keeps ai-council; tone-and-manner removed
+.agent-runbooks/
+  maintaining-forge/
+    README.md                        # repository-only Forge maintenance source of truth
+    references/portability-rules.md
+.agents/skills/maintaining-forge/   # thin Codex repository entry skill
+.claude/skills/maintaining-forge/   # thin Claude Code repository entry skill
 scripts/
   install.sh                        # dev-mode install (see §8)
   validate.sh                       # extended: frontmatter + portability lint (see §8)
@@ -152,7 +155,7 @@ Spec-first is exempt ONLY when the change alters no documented or documentable b
 
 Everything else gets a spec. (Research finding: unmatched ceremony is the #1 spec-driven-development failure mode, but a vague carve-out gets rationalized — hence a closed list.)
 
-## 6. Skill catalog (13 skills)
+## 6. User skill catalog (12 skills)
 
 Every process skill bakes in the superpowers discipline patterns: an **Iron Law** fenced block, **Red Flags** list + rationalization table (`| Excuse | Reality |`), "announce at start" line, checklist→one-todo-per-item, and an explicit **terminal handoff** naming the next skill. Process-flow `dot` graphs only where a decision is non-obvious.
 
@@ -170,9 +173,12 @@ Every process skill bakes in the superpowers discipline patterns: an **Iron Law*
 | 10 | `writing-tone` | Base natural prose layer for anything humans read (docs, PRs, commits, UI text, Slack): non-AI-like wording, Strunk core, and Korean engineering-comms voice. Heavy rules in `references/`, read only when writing. | obra `writing-clearly-and-concisely` + existing `tone-and-manner` |
 | 11 | `marketing-tone` | Purpose overlay on `writing-tone` for marketing, product, launch, social, and campaign copy: fact-based confidence, trust-building claims, and hype restraint. | New |
 | 12 | `operations-tone` | Purpose overlay on `writing-tone` for customer support and operations replies: confirmed status, user impact, action plan, customer action, next update, and restrained root-cause detail. | New |
-| 13 | `maintaining-forge` | How to add/edit forge skills: portability rules (§2.6), description-writing rules, template anatomy, validate.sh usage, testing skills with subagents. | superpowers `writing-skills` (lean) |
 
 **Skill routing (encoded in using-forge):** process skills fire before implementation skills. "Build X" → writing-specs. "Fix this bug" → systematic-debugging (+ TDD for the fix). "Is it done?" → verifying-work. UI work inside a task → ui-design. Human-readable prose → writing-tone. Marketing copy → writing-tone plus marketing-tone. Customer or operations replies → writing-tone plus operations-tone.
+
+Forge maintenance is a repository-only workflow, not a user plugin skill. Its
+shared source is `.agent-runbooks/maintaining-forge/`; Codex and Claude Code use
+thin local wrappers under `.agents/skills/` and `.claude/skills/`.
 
 **Excluded** (and why): code-review skills (harness built-ins cover it; revisit later), git-worktrees / finishing-a-branch (harness-specific), separate brainstorming skill (merged into writing-specs).
 
@@ -217,6 +223,7 @@ Symlinks are an iteration convenience on Unix, never a correctness requirement �
 - frontmatter: `name` + `description` present; description ≤1024 chars, third-person "Use when…" shape
 - **banned-token lint** in skill bodies: `TodoWrite`, `Task tool`, `Bash tool`, `@`-path includes, `/skill-name` references
 - SKILL.md ≤500 lines; manifests parse as JSON; marketplace entries resolve to existing dirs
+- the same skill checks cover `plugins/*/skills/`, `.agents/skills/`, and `.claude/skills/`
 
 ### Migration & rollout
 
@@ -229,8 +236,12 @@ Symlinks are an iteration convenience on Unix, never a correctness requirement �
 
 - 2026-07-04 [CHANGE] Added `marketing-tone` and `operations-tone` as purpose-specific overlays on top of `writing-tone`; kept `writing-tone` as the single base natural prose skill instead of adding `natural-writing-tone`.
 
+### Repository maintenance separation
+
+- 2026-07-12 [CHANGE] Removed `maintaining-forge` from the Marketplace user skill catalog. `.agent-runbooks/maintaining-forge/` is now the shared repository-only source, with thin Codex and Claude Code wrapper skills.
+
 ## 9. Testing the plugin itself
 
 - `validate.sh` green on every commit.
 - Smoke test per harness: fresh session in a scratch project → "build a tiny feature X" must trigger writing-specs (not direct coding); "fix this bug" must trigger systematic-debugging; spec-viewer output opens and renders all diagram types offline and via CDN; on Codex, `$writing-specs` explicit invocation works and skills appear in `/skills`.
-- Subagent-based skill pressure-testing (per maintaining-forge): give a subagent a task + the skill, check it follows the gates instead of rationalizing around them.
+- Fresh-agent skill pressure-testing follows `.agent-runbooks/maintaining-forge/README.md`: give a fresh agent the scenario, local wrapper, shared runbook, and portability reference, then check that it keeps every gate.

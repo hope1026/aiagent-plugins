@@ -14,6 +14,9 @@ plugins/<name>/
   .codex-plugin/plugin.json    # Codex manifest
   skills/<skill>/SKILL.md      # shared skill source (one file, both agents)
   hooks/                       # Claude-only SessionStart bootstrap (forge)
+.agent-runbooks/               # repository-only shared agent workflows
+.agents/skills/                # thin Codex repository entry skills
+.claude/skills/                # thin Claude Code repository entry skills
 .claude-plugin/marketplace.json    # this repo is a Claude Code marketplace
 .agents/plugins/marketplace.json   # ...and a Codex marketplace
 docs/specs/                    # specs for this repo (spec-first, dogfooded)
@@ -49,8 +52,9 @@ bash scripts/install.sh --agent codex --plugin forge
 - Codex target: per-skill entries in `~/.agents/skills/` + `~/.agents/plugins/marketplace.json`.
 - Claude target: `~/.claude/skills/<plugin>`. Note: the forge SessionStart hook only runs for marketplace-installed plugins.
 - Windows: `--mode link` is auto-downgraded to copy (symlinks need admin/Developer Mode); re-run install after edits.
+- Marketplace and local dev installs use `plugins/forge/` only. Repository-only runbooks and their local wrapper skills are not installed for plugin users.
 
-## forge skill catalog
+## forge user skill catalog
 
 | Skill | One line |
 |---|---|
@@ -66,7 +70,18 @@ bash scripts/install.sh --agent codex --plugin forge
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
 | `marketing-tone` | Marketing and product copy overlay: factual, confident, trust-building claims |
 | `operations-tone` | Customer and operations overlay: confirmed status, impact, next action, and restrained cause detail |
-| `maintaining-forge` | How to add/edit forge skills without breaking cross-agent portability |
+
+## Repository maintenance
+
+Forge itself is maintained through the repository-only runbook at
+`.agent-runbooks/maintaining-forge/README.md`. Codex and Claude Code discover
+thin local wrappers under `.agents/skills/maintaining-forge/` and
+`.claude/skills/maintaining-forge/`; both wrappers read the same runbook and
+portability reference.
+
+Keep detailed maintainer procedures in `.agent-runbooks/`. They stay outside
+`plugins/forge/`, so Marketplace and `scripts/install.sh` distribute only the
+12 user-execution skills listed above.
 
 ## Spec-first lifecycle (the short version)
 
@@ -86,4 +101,4 @@ Per-project artifacts: specs in `docs/specs/NNN-<slug>/spec.md` (committed); pla
 bash scripts/validate.sh
 ```
 
-Lints every skill: frontmatter shape, description rules (trigger-only, ≤1024 chars, YAML quoting), 500-line cap, and banned harness-specific tokens (portability). CI runs this on every push.
+Lints plugin skills and both repository-local wrapper roots: frontmatter shape, description rules (trigger-only, ≤1024 chars, YAML quoting), 500-line cap, and banned harness-specific tokens (portability). CI runs the layout tests and validator on every push.

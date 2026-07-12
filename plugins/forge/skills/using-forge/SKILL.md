@@ -59,7 +59,6 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 | Approved spec exists, no plan yet | the forge writing-plans skill |
 | A plan exists in `.forge/plans/` with open tasks | the forge executing-plans skill |
 | Writing any implementation code | the forge test-driven-development skill |
-| Editing forge itself — skills, manifests, hooks, install scripts | the forge maintaining-forge skill |
 
 ## Working Files
 
