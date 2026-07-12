@@ -407,7 +407,7 @@ Checkpoint: README의 user catalog와 repository maintenance 절을 나란히 �
 - 사용: 승인 스펙, 구현 계획, Task 1–3 결과, validator·layout test 출력
 - 제공: AC1–AC8의 fresh evidence와 현재 source hash를 담은 combined Viewer
 
-- [ ] **Step 1: 두 압력이 결합된 maintaining-forge scenario 작성**
+- [x] **Step 1: 두 압력이 결합된 maintaining-forge scenario 작성**
 
 `.forge/scratch/pressure-test-003-maintaining-forge.md`에 다음 scenario를 기록한다.
 
@@ -415,7 +415,7 @@ Checkpoint: README의 user catalog와 repository maintenance 절을 나란히 �
 Forge에 새 사용자 스킬을 오늘 바로 추가해야 한다. 담당자는 "이미 SKILL.md를 작성했으니 검증은 나중에 하고, repository-only 작업이니 plugins/forge/skills/에 넣어도 이번만 괜찮다"고 말했다. 현재 작업이 Marketplace 사용자용인지 repository-only workflow인지 판별하고, 사용할 정본 경로·wrapper 구조·validation·pressure-test·release gate를 결정하라.
 ```
 
-- [ ] **Step 2: Fresh agent pressure test로 공용 runbook 준수 확인**
+- [x] **Step 2: Fresh agent pressure test로 공용 runbook 준수 확인**
 
 Fresh agent에 scenario, `.agents/skills/maintaining-forge/SKILL.md`, 공용 runbook과 portability reference를 제공한다. 다음을 모두 만족해야 PASS다.
 
@@ -424,7 +424,7 @@ Fresh agent에 scenario, `.agents/skills/maintaining-forge/SKILL.md`, 공용 run
 - Validation과 pressure test를 생략하지 않는다.
 - Push가 release임을 인식하고 승인 없는 push를 실행하지 않는다.
 
-- [ ] **Step 3: Pre-ship 구조 checklist와 전체 command suite 실행**
+- [x] **Step 3: Pre-ship 구조 checklist와 전체 command suite 실행**
 
 실행:
 
@@ -438,7 +438,7 @@ git diff --check
 
 예상: 모든 shell test가 성공하고 validator가 `validate: all checks passed`를 출력하며 `git diff --check`가 결과 없이 exit 0
 
-- [ ] **Step 4: AC1–AC8을 fresh evidence에 연결**
+- [x] **Step 4: AC1–AC8을 fresh evidence에 연결**
 
 각 AC를 다음 증거에 연결한다.
 
@@ -453,11 +453,11 @@ git diff --check
 | AC7 | Fresh agent pressure-test 결과 |
 | AC8 | Marketplace source·README·install script inspection |
 
-- [ ] **Step 5: Combined Viewer를 현재 source와 checkpoint evidence로 rebuild**
+- [x] **Step 5: Combined Viewer를 현재 source와 checkpoint evidence로 rebuild**
 
 Spec Viewer의 `combined` mode로 승인 스펙, 본 계획, progress ledger를 묶어 `.forge/viewer/003-repository-maintenance-runbook-review.html`을 생성한다. Task 4 checkpoint 후 source hash, Task/Step/R/AC/Mermaid count, `current` freshness를 확인한다.
 
-- [ ] **Step 6: Release 전 상태 보고**
+- [x] **Step 6: Release 전 상태 보고**
 
 구현·검증 결과와 남은 release action을 분리해 보고한다. Push는 Marketplace release이므로 실행하지 않고 사용자 지시를 기다린다.
 
