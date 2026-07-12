@@ -6,7 +6,7 @@ AI agent plugins managed from one source tree, usable in both **Claude Code** an
 
 | Plugin | Purpose |
 |---|---|
-| `forge` | Spec-first development process: spec → plan → execute → verify, plus TDD, debugging, UI design, base writing tone, marketing/operations tone overlays, and a spec-to-HTML viewer. Install this when starting any project. |
+| `forge` | Spec-first development process: spec → plan → execute → verify, plus TDD, debugging, UI design, writing tone overlays, and a lifecycle HTML review Viewer for specs and plans. Install this when starting any project. |
 
 ```text
 plugins/<name>/
@@ -61,7 +61,7 @@ bash scripts/install.sh --agent codex --plugin forge
 | `test-driven-development` | RED → GREEN → REFACTOR; no implementation without a failing test |
 | `systematic-debugging` | Reproduce → isolate → root-cause → fix; no fix without an understood cause |
 | `verifying-work` | Evidence before claims; walks acceptance criteria; flips spec to `implemented` |
-| `spec-viewer` | Renders a spec as one self-contained tabbed HTML (Mermaid diagrams, AC checklist) |
+| `spec-viewer` | Renders spec, plan, or combined lifecycle review as self-contained HTML with Mermaid, traceability, and persistent checklists |
 | `ui-design` | Declared visual system before UI code; numeric floors; anti-slop ban list; self-tests |
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
 | `marketing-tone` | Marketing and product copy overlay: factual, confident, trust-building claims |
@@ -76,6 +76,7 @@ bash scripts/install.sh --agent codex --plugin forge
 4. Verification is against the spec's acceptance criteria, with fresh evidence.
 5. Spec status `draft → approved` (human) `→ implemented` (verified only).
 6. Drift repair (`sync` mode) reconciles brownfield code against its spec.
+7. Simple sources stay in Markdown; complex specs and plans get a regenerable Viewer whose source hash and checkpoint evidence stay current.
 
 Per-project artifacts: specs in `docs/specs/NNN-<slug>/spec.md` (committed); plans/debug/research under `.forge/` (committed); `.forge/scratch/` and `.forge/viewer/` (self-gitignored).
 

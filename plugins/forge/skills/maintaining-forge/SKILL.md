@@ -100,7 +100,7 @@ Keep the whole system in view — a change to one skill often needs a matching h
 | test-driven-development | Failing test before implementation code; red, green, refactor. |
 | systematic-debugging | Reproduce, isolate, root-cause, then fix; no fix without an understood cause. |
 | verifying-work | Fresh evidence before any completion claim; walks acceptance criteria; sets spec status implemented. |
-| spec-viewer | Renders a spec into one self-contained tabbed HTML page under `.forge/viewer/`. |
+| spec-viewer | Renders spec, plan, or combined lifecycle review into self-contained HTML under `.forge/viewer/`. |
 | ui-design | Declare the visual system before UI code; numeric floors; anti-slop ban list. |
 | writing-tone | Prose rules for anything humans read; concise English core plus Korean engineering communication. |
 | maintaining-forge | This skill: how forge itself is changed, validated, tested, and released. |

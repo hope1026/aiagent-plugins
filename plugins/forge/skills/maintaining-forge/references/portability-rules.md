@@ -101,7 +101,7 @@ Every process skill includes: an announce line, an Iron Law fenced block, a Red 
 | Aspect | Claude Code | Codex |
 |---|---|---|
 | Skill invocation | `forge:skill-name` or automatic description matching; session-start injection of using-forge | `$skill-name` or implicit description matching only |
-| Hooks | Auto-discovered from `plugins/forge/hooks/hooks.json`; SessionStart injects the using-forge body | No hook support; `.codex-plugin/plugin.json` ships `"hooks": {}` to suppress auto-discovery |
+| Hooks | Auto-discovered from `plugins/forge/hooks/hooks.json`; SessionStart injects the using-forge body | No hook support; `.codex-plugin/plugin.json` omits the unsupported `hooks` field |
 | Subagents | Native subagent dispatch available | Only under `multi_agent` configuration; otherwise execute sequentially — never fabricate subagent calls |
 | Install paths (marketplace) | Managed plugin cache via the Claude marketplace manifest | `~/.codex/plugins/forge` via `.agents/plugins/marketplace.json` |
 | Install paths (dev) | `~/.claude/skills/forge` whole-tree | Per-skill entries under `~/.agents/skills/<skill-name>` (symlinks followed on Unix; copies on Windows) |

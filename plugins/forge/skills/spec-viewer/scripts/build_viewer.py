@@ -229,12 +229,11 @@ def build(args: argparse.Namespace, argv: list[str]) -> str:
     }
     for panel in PANELS:
         replacements[f"{{{{TAB_{panel.upper()}}}}}"] = html.escape(labels[panel])
-    for token, value in replacements.items():
-        template = template.replace(token, value)
-    unresolved = sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", template)))
+    token_pattern = re.compile(r"\{\{[A-Z0-9_]+\}\}")
+    unresolved = sorted(set(token_pattern.findall(template)) - replacements.keys())
     if unresolved:
         raise ValueError(f"unresolved template tokens: {', '.join(unresolved)}")
-    return template
+    return token_pattern.sub(lambda match: replacements[match.group(0)], template)
 
 
 def main(argv: list[str]) -> int:
