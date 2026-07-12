@@ -59,10 +59,33 @@ Create one todo per numbered step below and work through them in order.
 1. **Read the spec end to end.** List every R-ID and AC-ID. These are the units the plan must cover.
 2. **Map the file structure.** Before defining tasks, decide which files will be created or modified and what each is responsible for. One clear responsibility per file; prefer small focused files; follow the codebase's established patterns rather than restructuring unilaterally.
 3. **Draw task boundaries.** A task is the smallest unit that carries its own test cycle and is worth a fresh reviewer's gate. Fold setup, configuration, and docs into the task whose deliverable needs them; split only where a reviewer could reject one task while approving its neighbor. Each task ends with an independently testable deliverable.
-4. **Write the plan header** (template below), including the AC coverage table.
-5. **Write each task** (template below) with bite-sized steps and full traceability.
-6. **Self-review** (section below), fixing issues inline.
-7. **Save** to `.forge/plans/NNN-<slug>.md` — same `NNN` as the spec — and deliver the Handoff line.
+4. **Design the implementation Routes and review structure.** Read `references/plan-visual-structure.md`. Group Tasks into 6–10 Routes or Milestones before drawing dependencies; use fewer only when the plan genuinely has fewer independent phases.
+5. **Write the plan header** (template below), including the AC coverage table.
+6. **Write each task** (template below) with bite-sized steps and full traceability.
+7. **Self-review** (section below), fixing issues inline.
+8. **Save** to `.forge/plans/NNN-<slug>.md` — same `NNN` as the spec.
+9. **Prepare the review view.** For a complex plan, or when the spec already has a Viewer, use the forge spec-viewer skill in `plan` or `combined` mode before execution handoff. Build it in the plan language and confirm its source hash and counts.
+
+## Review Structure for Complex Plans
+
+A complex plan includes these human-review sections before its detailed Tasks:
+
+- goal and completion state;
+- 6–10 implementation Routes or Milestones, with each Task assigned to one primary Route;
+- Task dependency;
+- Runtime responsibility;
+- major data flow;
+- Place, platform, or subsystem extension points;
+- Task-level R and AC mapping;
+- checkpoints and user review moments.
+
+Include three diagram perspectives when the source has the relationships needed to draw them:
+
+1. Task dependency or Route map;
+2. Runtime responsibility or transaction flow;
+3. extension structure or multi-Place flow.
+
+Do not flatten 22 Tasks into one graph. Group them into Routes first, then show Task detail inside each Route. Each diagram includes a question-shaped title, what to confirm, a one-sentence reading guide, and a source-derived mobile summary table. Plan Mermaid belongs to the plan source; Viewer-derived Route and coverage diagrams may only calculate explicit Task numbers, membership, dependencies, and R·AC mappings.
 
 ## Traceability Rule
 
@@ -192,6 +215,8 @@ After writing the complete plan, reread the spec with fresh eyes and check the p
 2. **Placeholder scan:** search the plan for every pattern in "No Placeholders" above. Fix them.
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 4. **Language consistency:** confirm all human-readable prose uses the governing spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim spec values remain intact.
+5. **Review structure:** confirm complex plans include Routes, dependency, Runtime responsibility, data flow, extension points, R·AC mapping, checkpoints, and the three required diagram perspectives when their source relationships exist.
+6. **Viewer freshness:** if a plan or combined Viewer is required or already exists, rebuild it and confirm source hash, Task/Step/R/AC/Mermaid counts, and localized labels before handoff.
 
 Fix issues inline and move on — no re-review loop.
 
@@ -201,6 +226,8 @@ Fix issues inline and move on — no re-review loop.
 |---|---|
 | `docs/specs/NNN-<slug>/spec.md` | Read: the approved spec (source of truth) |
 | `.forge/plans/NNN-<slug>.md` | Write: the plan — same `NNN` as the spec; committed |
+| `.forge/viewer/NNN-<slug>-plan.html` | Generated plan review view; uncommitted |
+| `.forge/viewer/NNN-<slug>-review.html` | Generated combined review view; uncommitted |
 
 ## Red Flags
 
@@ -215,6 +242,8 @@ Fix issues inline and move on — no re-review loop.
 | "Add error handling here — the engineer will know what" | They won't. Name the errors, the handling, and the test that proves it. |
 | "The user is in a hurry, skip self-review" | Self-review takes minutes; an unexecutable plan wastes hours. Run all four checks. |
 | "Implementation plans are technical, so English is clearer." | The plan is also a user review artifact. Write its prose in the spec's language and preserve only the technical terms, identifiers, code, and exact commands that need their original form. |
+| "The Task list is already ordered, so Routes are decoration." | Routes make dependency and scope review possible before a reader opens 20 or more detailed Tasks. |
+| "The plan is saved, so the handoff is complete." | A complex or previously visualized lifecycle needs a fresh plan or combined Viewer before execution starts. |
 
 ## Handoff
 
