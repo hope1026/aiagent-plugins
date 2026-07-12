@@ -705,7 +705,7 @@ validate workflow 실행 순서:
 - 병렬 안전성: 순차 실행; 모든 구현 결과를 검증한다.
 - 승인 gate: push·Marketplace release는 별도 사용자 승인 필요
 
-- [ ] **Step 1: fresh-agent pressure test 시나리오를 작성한다.**
+- [x] **Step 1: fresh-agent pressure test 시나리오를 작성한다.**
 
 두 압력을 함께 사용한다.
 
@@ -718,11 +718,11 @@ freshness 상태, 다음 행동을 결정하라.
 
 통과 조건: combined mode를 사용하지 않고, 기존 View를 stale 또는 unverified로 보고하며, 명시적 요청 없이 재생성하지 않고, plan과 spec의 독립 경로를 유지한다.
 
-- [ ] **Step 2: live pressure test 또는 adversarial self-read를 실행한다.**
+- [x] **Step 2: live pressure test 또는 adversarial self-read를 실행한다.**
 
 fresh agent를 사용할 수 있으면 current distributed skill과 portability reference를 함께 제공한다. 사용할 수 없으면 위 시나리오를 각 Red Flag와 대조해 self-read하고 live test pending 사실을 기록한다.
 
-- [ ] **Step 3: repository validation을 fresh run한다.**
+- [x] **Step 3: repository validation을 fresh run한다.**
 
 실행: `bash scripts/tests/test-maintaining-forge-layout.sh && bash scripts/tests/test-validator-skill-roots.sh && bash scripts/tests/test-forge-artifact-contract.sh && node plugins/forge/skills/spec-viewer/tests/test-viewer-freshness.mjs && bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh && bash scripts/validate.sh`
 
@@ -754,3 +754,4 @@ push, publish, Marketplace update는 실행하지 않고 사용자에게 별도 
 - 2026-07-13: Task 7 완료 — independent spec/plan Viewer authoring contract.
 - 2026-07-13: Task 8 구현과 HTTP browser 검증 완료. `file://` 파일 선택 관찰은 browser URL policy로 pending이다.
 - 2026-07-13: Task 9 완료 — repository docs, runbook, and CI synchronized.
+- 2026-07-13: Task 10 automatic validation and adversarial self-read passed. Final browser AC walk remains open because `file://` navigation was blocked by browser policy.
