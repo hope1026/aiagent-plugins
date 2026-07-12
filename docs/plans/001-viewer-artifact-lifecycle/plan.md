@@ -600,21 +600,21 @@ spec View는 R·AC, plan View는 Task·Step을 deep link한다. plan Acceptance 
 - 병렬 안전성: 순차 실행; 실제 browser evidence는 완성된 runtime을 요구한다.
 - 승인 gate: 없음
 
-- [ ] **Step 1: scale fixture를 독립 spec·plan source로 분리한다.**
+- [x] **Step 1: scale fixture를 독립 spec·plan source로 분리한다.**
 
 spec fixture는 R 190, AC 105, Mermaid 9를 유지한다. plan fixture는 Task 22, Step 110, Route 8을 `plan.md`, `progress.md`, `tasks/*.md`에 분산하되 Task-scoped key가 중복되지 않게 만든다. plan fragment는 spec Mermaid와 R·AC row를 포함하지 않는다.
 
-- [ ] **Step 2: shell regression assertion을 mode-local count로 갱신한다.**
+- [x] **Step 2: shell regression assertion을 mode-local count로 갱신한다.**
 
 spec View는 R 190·AC 105·Mermaid 9, plan View는 Task 22·Step 110을 각각 검사한다. 두 output 모두 panel 6개, unresolved token 0개, fragment shell markup 0개, offline CDN request 0개를 검사한다.
 
-- [ ] **Step 3: 자동 test suite를 실행한다.**
+- [x] **Step 3: 자동 test suite를 실행한다.**
 
 실행: `node plugins/forge/skills/spec-viewer/tests/test-viewer-freshness.mjs && bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh`
 
 예상: 두 command exit 0, `test-build-viewer: all checks passed`.
 
-- [ ] **Step 4: HTTP freshness를 실제 browser에서 검증한다.**
+- [x] **Step 4: HTTP freshness를 실제 browser에서 검증한다.**
 
 실행: `python3 -m http.server 8765 --directory <fixture-root>`
 
@@ -624,7 +624,7 @@ spec View는 R 190·AC 105·Mermaid 9, plan View는 Task 22·Step 110을 각각 
 
 관찰: `file:///absolute/fixture/path/view.html`에서 초기 `unverified`, 올바른 Markdown 선택 후 `current`, 잘못된 파일 선택 후 source별 오류를 확인한다. tab, R·AC 또는 Task·Step deep link, checkbox reload persistence, table·diagram 독립 scroll, invalid Mermaid fallback, favicon request 0개를 확인한다.
 
-- [ ] **Step 6: evidence note와 fixture 변경을 commit한다.**
+- [x] **Step 6: evidence note와 fixture 변경을 commit한다.**
 
 `.forge/scratch/002-viewer-browser-evidence.md`에는 viewport, URL mode, source 상태, console error, network observation을 기록하되 commit하지 않는다.
 
@@ -752,3 +752,4 @@ push, publish, Marketplace update는 실행하지 않고 사용자에게 별도 
 - 2026-07-13: Task 5 완료 — manifest-based CLI freshness check (`8a9d766`).
 - 2026-07-13: Task 6 완료 — read-time browser freshness runtime and UI (`278f678`).
 - 2026-07-13: Task 7 완료 — independent spec/plan Viewer authoring contract.
+- 2026-07-13: Task 8 구현과 HTTP browser 검증 완료. `file://` 파일 선택 관찰은 browser URL policy로 pending이다.

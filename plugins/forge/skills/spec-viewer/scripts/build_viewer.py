@@ -201,6 +201,26 @@ def source_summary(manifest: ViewerManifest, labels: dict[str, str]) -> str:
     count_text = " · ".join(
         f"{key} {value}" for key, value in manifest.counts.items()
     )
+    items = "".join(
+        '<li data-source-path="{}"><code>{}</code> <span>{}</span> <code>{}</code> '
+        '<span class="freshness-state freshness-unverified" data-source-state>unverified</span> '
+        '<span class="source-error" data-source-error></span></li>'.format(
+            html.escape(source["path"], quote=True),
+            html.escape(source["role"]),
+            html.escape(source["path"]),
+            html.escape(source["sha256"][:12]),
+        )
+        for source in manifest.sources
+    )
+    return (
+        f'<details class="source-summary"><summary>{html.escape(labels["sources"])} · '
+        f'{html.escape(manifest.mode)} · {html.escape(labels["freshness"])} '
+        f'<span class="freshness-state freshness-unverified" data-freshness-overall>{html.escape(manifest.freshness)}</span> · '
+        f'{html.escape(count_text)}</summary><ul>{items}</ul>'
+        f'<label class="source-picker-label" for="forge-source-picker">{html.escape(labels["select_sources"])}</label>'
+        f'<input id="forge-source-picker" type="file" accept=".md,text/markdown" multiple>'
+        f'<code>{html.escape(manifest.rebuild_command)}</code></details>'
+    )
 
 
 def extract_manifest(viewer: Path) -> ViewerManifest:
@@ -250,26 +270,6 @@ def check_viewer(viewer: Path) -> list[str]:
                 f"{source['path']}: stale (expected {expected[:12]}, actual {actual[:12]})"
             )
     return errors
-    items = "".join(
-        '<li data-source-path="{}"><code>{}</code> <span>{}</span> <code>{}</code> '
-        '<span class="freshness-state freshness-unverified" data-source-state>unverified</span> '
-        '<span class="source-error" data-source-error></span></li>'.format(
-            html.escape(source["path"], quote=True),
-            html.escape(source["role"]),
-            html.escape(source["path"]),
-            html.escape(source["sha256"][:12]),
-        )
-        for source in manifest.sources
-    )
-    return (
-        f'<details class="source-summary"><summary>{html.escape(labels["sources"])} · '
-        f'{html.escape(manifest.mode)} · {html.escape(labels["freshness"])} '
-        f'<span class="freshness-state freshness-unverified" data-freshness-overall>{html.escape(manifest.freshness)}</span> · '
-        f'{html.escape(count_text)}</summary><ul>{items}</ul>'
-        f'<label class="source-picker-label" for="forge-source-picker">{html.escape(labels["select_sources"])}</label>'
-        f'<input id="forge-source-picker" type="file" accept=".md,text/markdown" multiple>'
-        f'<code>{html.escape(manifest.rebuild_command)}</code></details>'
-    )
 
 
 def build(args: argparse.Namespace, argv: list[str]) -> str:
