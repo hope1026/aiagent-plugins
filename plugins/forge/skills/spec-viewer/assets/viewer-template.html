@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{LANG}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -106,20 +106,22 @@
 <header class="doc-header">
   <div class="doc-header-inner">
     <h1>{{TITLE}}</h1>
-    <p class="doc-meta"><span class="status">{{STATUS}}</span><span>generated {{GENERATED}}</span></p>
+    <p class="doc-meta"><span class="status">{{STATUS}}</span><span>{{GENERATED_LABEL}} {{GENERATED}}</span></p>
+    {{SOURCE_SUMMARY}}
   </div>
 </header>
-<nav class="tab-bar" aria-label="Spec sections">
-  <button type="button" data-tab="overview" aria-selected="false">Overview</button>
-  <button type="button" data-tab="requirements" aria-selected="false">Requirements</button>
-  <button type="button" data-tab="flows" aria-selected="false">Flows</button>
-  <button type="button" data-tab="data" aria-selected="false">Data &amp; Interfaces</button>
-  <button type="button" data-tab="acceptance" aria-selected="false">Acceptance</button>
-  <button type="button" data-tab="history" aria-selected="false">History</button>
+<nav class="tab-bar" aria-label="{{NAV_LABEL}}">
+  <button type="button" data-tab="overview" aria-selected="false">{{TAB_OVERVIEW}}</button>
+  <button type="button" data-tab="requirements" aria-selected="false">{{TAB_REQUIREMENTS}}</button>
+  <button type="button" data-tab="flows" aria-selected="false">{{TAB_FLOWS}}</button>
+  <button type="button" data-tab="data" aria-selected="false">{{TAB_DATA}}</button>
+  <button type="button" data-tab="acceptance" aria-selected="false">{{TAB_ACCEPTANCE}}</button>
+  <button type="button" data-tab="history" aria-selected="false">{{TAB_HISTORY}}</button>
 </nav>
 <main>
 {{CONTENT}}
 </main>
+<script type="application/json" id="forge-source-manifest">{{SOURCE_MANIFEST}}</script>
 {{MERMAID}}
 <script>
 (function () {
