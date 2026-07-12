@@ -18,7 +18,8 @@ Forge is a spec-first development process: the spec is the source of truth, code
 ## Iron Law
 
 ```
-NO PLAN WITHOUT AN APPROVED SPEC. NO CODE WITHOUT A PLAN TASK. THE SPEC IS THE SOURCE OF TRUTH.
+NO PRODUCT-BEHAVIOR IMPLEMENTATION WITHOUT AN APPROVED SPEC.
+NO IMPLEMENTATION CODE WITHOUT A PLAN TASK. RELATED SPECS ARE THE SOURCE OF TRUTH.
 ```
 
 ### Ceremony floor (closed exemption list)
@@ -57,6 +58,7 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 | Writing prose humans will read — docs, PRs, commits, messages | the forge writing-tone skill |
 | "Show me the spec" / render or present a spec for review | the forge spec-viewer skill |
 | Approved spec exists, no plan yet | the forge writing-plans skill |
+| Operational, research, or ceremony-floor work needs an execution plan | the forge writing-plans skill |
 | A plan exists in `docs/plans/` with open tasks | the forge executing-plans skill |
 | Writing any implementation code | the forge test-driven-development skill |
 
