@@ -52,6 +52,21 @@ Verification has two levels. Level 1 always applies. Level 2 additionally applie
 | Subagent finished | You inspected the diff and re-ran checks | The subagent's own report |
 | Requirements met | Level 2 walk below | Tests passing alone |
 
+#### Viewer-only Level 1 scope
+
+A Viewer-only change alters a read-only review artifact or its presentation without changing product behavior. Verify it separately from product implementation:
+
+1. Exactly six fragment panels exist in the required order.
+2. Task, Step, AC, and Mermaid counts equal their sources; include R count when the mode displays requirements.
+3. Every source Mermaid block is byte-for-byte identical to its governing source.
+4. Unresolved placeholders are 0 and fragment shell markup is 0.
+5. At 1440px and 390px, tabs, Task/R/AC deep links, table and diagram scroll, and print layout behave correctly.
+6. Mermaid errors are 0 for valid fixtures; an invalid fixture shows its error location and original source.
+7. AC and Step checkbox states persist independently after reload.
+8. Offline output makes no external Mermaid request and renders the same diagrams.
+
+Record these as Level 1 evidence. Viewer-only PASS never changes the governing product spec to `Status: implemented`, because the Viewer does not implement product behavior. When the Viewer implementation itself has a governing spec, that implementation still requires the full Level 2 walk against its own ACs.
+
 ### Level 2 — spec-level verification (when a spec exists)
 
 1. Open `docs/specs/NNN-<slug>/spec.md` and read the Acceptance Criteria section.
@@ -70,7 +85,7 @@ One of the two must change, explicitly. Never adjust both silently, and never re
 
 ### Completion
 
-Only after **every** AC records PASS with evidence:
+Only after **every** AC records PASS with evidence for the actual implementation governed by that spec:
 
 1. Set the spec's `Status:` line to `implemented`. This value is set only by this skill, only at this point.
 2. Report the AC table to the user.
@@ -104,6 +119,8 @@ If no spec exists, first confirm the change is genuinely on the ceremony-floor e
 | "I'll set implemented now, verify after" | Status is the gate token. It flips only after the evidence exists. |
 | "That AC obviously passes" | The "obvious" AC is where regressions hide. Walk it like every other one. |
 | "No spec exists, so Level 1 is enough" | Only if the change is on the ceremony-floor exemption list. A missing spec for behavior-changing work is a gap to close via the forge writing-specs skill, not a shortcut. |
+| "The Viewer checklist passed, so the product spec is implemented." | Viewer-only evidence proves the review artifact, not product behavior. Leave the product status unchanged. |
+| "Desktop is enough for a read-only document." | Wide diagrams and tables fail differently at 390px. Viewer verification always includes both widths. |
 
 ## Handoff
 

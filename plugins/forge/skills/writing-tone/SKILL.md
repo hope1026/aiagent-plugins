@@ -39,6 +39,17 @@ Above all: **lead with the point** — decision, result, or ask first; backgroun
 4. Cut pass: delete hedges, filler, and anything the reader does not need in order to act.
 5. Read once as the reader: is the ask explicit — who does what, by when, and what happens next?
 
+## Viewer Copy
+
+For spec, plan, and combined review Viewers:
+
+- Frame the page and diagram title as the question the reviewer wants answered, not as an internal system name.
+- State what to confirm before background or source detail.
+- Put a one-sentence reading guide immediately before every diagram.
+- Use the user's language for labels whose meaning survives translation. Preserve established API, service, schema, protocol, and code identifiers in their original form.
+- Order content as summary → visual flow → source detail → acceptance evidence. Keep the full source detail collapsed or later in the reading path when a summary is enough to orient the reader.
+- Prefer concrete actor, responsibility, state, count, and verification wording over abstract labels such as "Architecture Overview".
+
 For substantial prose, create one todo per step of this checklist. For short messages, still run steps 3–5 — the cut pass is never optional.
 
 ## Limited-Context Strategy
@@ -65,6 +76,8 @@ This skill creates no artifacts in the forge working directory `.forge/` — the
 | "Reading the reference is overkill here" | For substantial prose it is the difference between designed and default — and it is short. |
 | "My default writing is already clear" | Unedited drafts hedge and pad. These rules exist because default output reads as default. |
 | "I know Korean; I don't need part 2" | Part 2 encodes house voice and message shapes, not grammar. Fluency is not the standard — the shapes are. |
+| "The diagram explains itself." | A reviewer needs the question, what to confirm, and a reading guide before interpreting nodes and arrows. |
+| "Technical Viewer labels should stay English." | Localize translatable labels in the user's language; preserve only established names and identifiers whose exact form matters. |
 
 ## Handoff
 
