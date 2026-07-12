@@ -10,4 +10,7 @@ jobs:
       - run: |
           bash scripts/tests/test-maintaining-forge-layout.sh
           bash scripts/tests/test-validator-skill-roots.sh
+          bash scripts/tests/test-forge-artifact-contract.sh
+          node plugins/forge/skills/spec-viewer/tests/test-viewer-freshness.mjs
+          bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh
           bash scripts/validate.sh

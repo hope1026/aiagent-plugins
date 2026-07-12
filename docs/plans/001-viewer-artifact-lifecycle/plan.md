@@ -649,7 +649,7 @@ spec View는 R 190·AC 105·Mermaid 9, plan View는 Task 22·Step 110을 각각 
 - 병렬 안전성: 순차 실행; 최종 문서는 검증된 behavior를 설명한다.
 - 승인 gate: 없음
 
-- [ ] **Step 1: CI와 runbook assertion을 test에 추가하고 RED를 확인한다.**
+- [x] **Step 1: CI와 runbook assertion을 test에 추가하고 RED를 확인한다.**
 
 ```bash
 grep -q 'test-forge-artifact-contract.sh' "$ROOT/.github/workflows/validate.yml"
@@ -661,11 +661,11 @@ grep -q 'superseded by docs/specs/002-lifecycle-review-viewer/spec.md' "$ROOT/do
 
 예상: CI invocation 또는 supersession note assertion에서 실패한다.
 
-- [ ] **Step 2: maintainer runbook과 README를 현재 계약으로 갱신한다.**
+- [x] **Step 2: maintainer runbook과 README를 현재 계약으로 갱신한다.**
 
 plugin system map, working files, short lifecycle, Viewer catalog를 `spec|plan`, committed `view.html`, docs plans, promoted research/debug 기준으로 바꾼다. dated design 문서의 기존 역사 내용은 보존하고 상단에 current source 링크와 superseded 범위를 추가한다.
 
-- [ ] **Step 3: CI에 contract와 Viewer regression을 연결한다.**
+- [x] **Step 3: CI에 contract와 Viewer regression을 연결한다.**
 
 validate workflow 실행 순서:
 
@@ -679,13 +679,13 @@ validate workflow 실행 순서:
     bash scripts/validate.sh
 ```
 
-- [ ] **Step 4: 전체 자동 검증을 실행한다.**
+- [x] **Step 4: 전체 자동 검증을 실행한다.**
 
 실행: `bash scripts/tests/test-forge-artifact-contract.sh && node plugins/forge/skills/spec-viewer/tests/test-viewer-freshness.mjs && bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh && bash scripts/validate.sh`
 
 예상: 모든 command exit 0.
 
-- [ ] **Step 5: 변경을 commit한다.**
+- [x] **Step 5: 변경을 commit한다.**
 
 실행: `git add .agent-runbooks/maintaining-forge/README.md README.md docs/specs/2026-07-04-forge-plugin-design.md .github/workflows/validate.yml scripts/tests/test-forge-artifact-contract.sh && git commit -m "docs(forge): publish artifact lifecycle contract"`
 
@@ -753,3 +753,4 @@ push, publish, Marketplace update는 실행하지 않고 사용자에게 별도 
 - 2026-07-13: Task 6 완료 — read-time browser freshness runtime and UI (`278f678`).
 - 2026-07-13: Task 7 완료 — independent spec/plan Viewer authoring contract.
 - 2026-07-13: Task 8 구현과 HTTP browser 검증 완료. `file://` 파일 선택 관찰은 browser URL policy로 pending이다.
+- 2026-07-13: Task 9 완료 — repository docs, runbook, and CI synchronized.

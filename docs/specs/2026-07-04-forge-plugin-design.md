@@ -1,5 +1,7 @@
 # forge — Spec-First Process Plugin for Claude Code + Codex (Design)
 
+> Artifact paths and Viewer lifecycle in this dated design are superseded by docs/specs/002-lifecycle-review-viewer/spec.md. Preserve this document as the original design history; use the approved numbered spec for current behavior.
+
 - **Status:** implemented (2026-07-04 — all sections verified; superpowers replacement pending validation period per §8)
 - **Date:** 2026-07-04
 - **Repo:** `ai-config-shared` → `plugins/forge/`

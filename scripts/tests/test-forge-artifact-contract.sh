@@ -24,5 +24,8 @@ grep -q 'docs/plans/PPP-<slug>/view.html' "$ROOT/plugins/forge/skills/spec-viewe
 ! grep -q '| `combined`' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
 grep -q '`unverified`' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
 ! grep -q 'Combined mode' "$ROOT/plugins/forge/skills/spec-viewer/references/content-patterns.md"
+grep -q 'test-forge-artifact-contract.sh' "$ROOT/.github/workflows/validate.yml"
+grep -q 'docs/plans/' "$ROOT/.agent-runbooks/maintaining-forge/README.md"
+grep -q 'superseded by docs/specs/002-lifecycle-review-viewer/spec.md' "$ROOT/docs/specs/2026-07-04-forge-plugin-design.md"
 
 printf 'test-forge-artifact-contract: all checks passed\n'

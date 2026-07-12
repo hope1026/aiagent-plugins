@@ -145,8 +145,8 @@ The distributed Forge plugin contains user-execution skills only:
 |---|---|
 | `using-forge` | Route user project work into the spec-first lifecycle |
 | `writing-specs` | Create and approve the source-of-truth spec |
-| `writing-plans` | Turn an approved spec into traced implementation tasks |
-| `executing-plans` | Execute tasks with a durable ledger and checkpoints |
+| `writing-plans` | Create independently identified plans with optional Related Specs |
+| `executing-plans` | Execute tasks with plan-local progress and checkpoints |
 | `test-driven-development` | Enforce red, green, refactor |
 | `systematic-debugging` | Reproduce, isolate, and establish root cause |
 | `verifying-work` | Gather fresh acceptance evidence |
@@ -173,6 +173,9 @@ distributed catalog.
 | Validator | `scripts/validate.sh` |
 | Dev install script | `scripts/install.sh` |
 | Pressure-test notes | `.forge/scratch/` |
+| Repository specs | `docs/specs/NNN-<slug>/spec.md` |
+| Repository plans | `docs/plans/PPP-<slug>/plan.md` |
+| Shared research and debug records | `docs/research/`, `docs/debug/` |
 
 The validator checks distributed plugin skills plus repository-local wrapper
 skills under `.agents/skills/` and `.claude/skills/`.

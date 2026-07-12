@@ -63,12 +63,12 @@ bash scripts/install.sh --agent codex --plugin forge
 |---|---|
 | `using-forge` | Entry point: routes any task to the right forge skill; spec-first iron law; shared artifact contract |
 | `writing-specs` | Idea → approved spec (new/change/clarify/sync modes); the spec is the source of truth |
-| `writing-plans` | Approved spec → task-level plan; every task cites requirement/acceptance IDs |
-| `executing-plans` | Task-by-task execution with checkpoints and a durable progress ledger |
+| `writing-plans` | Independent task-level plan with 0..N Related Specs; behavior changes still require approval |
+| `executing-plans` | Task-by-task execution with checkpoints and plan-local progress history |
 | `test-driven-development` | RED → GREEN → REFACTOR; no implementation without a failing test |
 | `systematic-debugging` | Reproduce → isolate → root-cause → fix; no fix without an understood cause |
 | `verifying-work` | Evidence before claims; walks acceptance criteria; flips spec to `implemented` |
-| `spec-viewer` | Renders spec, plan, or combined lifecycle review as self-contained HTML with Mermaid, traceability, and persistent checklists |
+| `spec-viewer` | Renders an independent spec or plan View with Mermaid, read-time SHA-256 freshness, and persistent checklists |
 | `ui-design` | Declared visual system before UI code; numeric floors; anti-slop ban list; self-tests |
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
 | `marketing-tone` | Marketing and product copy overlay: factual, confident, trust-building claims |
@@ -88,13 +88,13 @@ Keep detailed maintainer procedures in `.agent-runbooks/`. They stay outside
 
 ## Spec-first lifecycle (the short version)
 
-1. No plan without an approved spec; no code without a plan task.
+1. Product behavior changes require an approved spec; execution work requires a plan task.
 2. Change requests edit the spec first — never patch code and back-fill.
 3. Implementation discoveries pause for an approved spec delta.
 4. Verification is against the spec's acceptance criteria, with fresh evidence.
 5. Spec status `draft → approved` (human) `→ implemented` (verified only).
 6. Drift repair (`sync` mode) reconciles brownfield code against its spec.
-7. Simple sources stay in Markdown; complex specs and plans get a regenerable Viewer whose source hash and checkpoint evidence stay current.
+7. Markdown stays authoritative; explicitly requested Views are shared beside it and verify source SHA-256 at read time.
 
 Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`; work-scoped plans live independently in `docs/plans/PPP-<slug>/plan.md`; explicitly requested Views are committed as `view.html` beside their Markdown source. Research and debug records move to `docs/research/` or `docs/debug/` when they are worth sharing or preserving. `.forge/scratch/` and `.forge/viewer-build/` contain local, regenerable files only.
 
