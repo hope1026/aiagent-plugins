@@ -110,7 +110,7 @@ Never patch the code first and back-fill the spec. The change request edits the 
 |---|---|---|
 | Spec — source of truth | `docs/specs/NNN-<slug>/spec.md` | yes |
 | Investigation notes (new/sync exploration) | `.forge/research/YYYY-MM-DD-<slug>.md` | yes |
-| Rendered viewer (via the forge spec-viewer skill) | `.forge/viewer/NNN-<slug>.html` | no |
+| Rendered Viewer (via the forge spec-viewer skill) | `docs/specs/NNN-<slug>/view.html` | yes, when explicitly requested |
 
 Numbering: `NNN` is the next unused three-digit number in `docs/specs/` (001, 002, …); the directory is `docs/specs/NNN-<slug>/` with the fixed filename `spec.md`. Change, clarify, and sync reuse the existing spec's number.
 

@@ -1,21 +1,21 @@
 ---
 name: writing-plans
-description: 'Use when an approved spec exists and implementation needs a task-level plan, before touching any code. Triggers: "구현 계획", "계획 작성", "plan", "implementation plan", an approved spec with no plan.'
+description: 'Use when implementation or operational work needs a task-level plan before execution, with approved spec references required for product behavior changes. Triggers: "구현 계획", "계획 작성", "plan", "implementation plan", approved spec planning, independent work planning.'
 ---
 
 # Writing Plans
 
-**Announce at start:** "Using the forge writing-plans skill to turn the approved spec into an implementation plan."
+**Announce at start:** "Using the forge writing-plans skill to create an independently identified implementation plan."
 
-Respond to the user in the user's language. This skill file stays in English. Write the plan in the governing spec's language unless the user explicitly requests another language.
+Respond to the user in the user's language. This skill file stays in English. Write the plan in the related spec's language when one governs the work; otherwise use the user's language unless they explicitly request another language.
 
 ## Overview
 
-Turn an approved spec into a plan that an engineer with **zero context** for this codebase could execute: bite-sized tasks, exact file paths, complete code in every step, and explicit traceability back to the spec's requirement and acceptance-criterion IDs. Assume the implementer is skilled but knows nothing about this project's domain, toolset, or past decisions — and may see only their own task. DRY. YAGNI. Test-first. Frequent commits.
+Create a work-scoped plan that an engineer with **zero context** for this codebase could execute: bite-sized tasks, exact file paths, complete code in every step, and explicit traceability to every related spec. Plans have identifiers and lifetimes independent of specs. Assume the implementer is skilled but knows nothing about this project's domain, toolset, or past decisions — and may see only their own task. DRY. YAGNI. Test-first. Frequent commits.
 
 ## Plan Language
 
-- Use the governing spec's human-readable language for the plan. If the user explicitly requests another plan language, follow that request and keep the plan internally consistent.
+- Use the governing spec's human-readable language when one exists. With no related spec, use the user's language. If the user explicitly requests another plan language, follow that request and keep the plan internally consistent.
 - Write all human-readable plan content in that language: the title, goal, architecture, constraints, task names, file responsibilities, interface explanations, step instructions, expected-result explanations, and handoff notes.
 - Preserve proper nouns, product and framework names, API and protocol names, code identifiers, type and function signatures, file paths, commands, exact output, and established domain terms in their original form. Follow the project's convention for code, comments, and commit messages.
 - Keep only the plan's canonical `##` headings, `Task N` and `Step N` structural tokens, R-IDs, AC-IDs, checkbox syntax, and exact command or output tokens unchanged. Localize ordinary labels such as Spec, Goal, Architecture, Tech Stack, Tasks, Files, Interfaces, Create, Modify, Test, Consumes, Produces, Run, and Expected.
@@ -24,31 +24,31 @@ Turn an approved spec into a plan that an engineer with **zero context** for thi
 ## Iron Law
 
 ```
-NO PLAN WITHOUT AN APPROVED SPEC.
+NO PRODUCT-BEHAVIOR PLAN WITHOUT AN APPROVED SPEC.
 NO STEP WITHOUT ITS COMPLETE CONTENT.
-EVERY ACCEPTANCE CRITERION MAPS TO A TASK.
+EVERY RELATED ACCEPTANCE CRITERION MAPS TO A TASK.
 ```
 
 ## Precondition Gate
 
-Before drafting anything:
+Before drafting anything, classify the plan's `Related Specs` as 0 or more references:
 
-1. Locate the spec: `docs/specs/NNN-<slug>/spec.md`.
-2. Confirm the status line reads `Status: approved`.
-3. Confirm the spec contains zero `[NEEDS CLARIFICATION]` markers.
+1. Decide whether the work changes documented or documentable product behavior.
+2. For behavior-changing work, locate every governing spec, confirm each `Status: approved`, and confirm zero `[NEEDS CLARIFICATION]` markers.
+3. For work with no related spec, record `None — <reason>` and confirm the work is on the Forge ceremony floor or is non-product operational or research work.
 
-If any check fails, STOP. Do not sketch "a rough plan in the meantime." Use the forge writing-specs skill to get the spec to approved, then return here.
+If behavior-changing work has no approved spec, STOP. Do not sketch "a rough plan in the meantime." Use the forge writing-specs skill, then return here.
 
 ## When to Use / When NOT
 
 **Use when:**
-- An approved spec exists and no plan exists for it yet.
+- Approved specs exist and implementation needs a plan.
 - An approved spec delta (change mode) needs new or revised tasks in an existing plan.
+- Ceremony-floor, operational, or research work benefits from an explicit execution plan without a governing product spec.
 
 **Do NOT use when:**
-- No spec exists, or the spec is still `draft` → the forge writing-specs skill first.
+- Product behavior changes have no approved governing spec → the forge writing-specs skill first.
 - A plan already exists and needs executing → the forge executing-plans skill.
-- The work is on the ceremony floor (typo/comment/formatting-only, no-API dependency bump, CI config not affecting build outputs, pure refactor with no observable behavior change AND existing tests pass) — no spec, no plan. This is a closed list; anything not on it gets a spec and a plan.
 
 **Scope check:** if the spec covers multiple independent subsystems, propose one plan per subsystem. Each plan must produce working, testable software on its own.
 
@@ -56,15 +56,15 @@ If any check fails, STOP. Do not sketch "a rough plan in the meantime." Use the 
 
 Create one todo per numbered step below and work through them in order.
 
-1. **Read the spec end to end.** List every R-ID and AC-ID. These are the units the plan must cover.
+1. **Read every related spec end to end.** List every referenced R-ID and AC-ID. With no related spec, record the qualifying reason and the verification evidence the plan must produce.
 2. **Map the file structure.** Before defining tasks, decide which files will be created or modified and what each is responsible for. One clear responsibility per file; prefer small focused files; follow the codebase's established patterns rather than restructuring unilaterally.
 3. **Draw task boundaries.** A task is the smallest unit that carries its own test cycle and is worth a fresh reviewer's gate. Fold setup, configuration, and docs into the task whose deliverable needs them; split only where a reviewer could reject one task while approving its neighbor. Each task ends with an independently testable deliverable.
 4. **Design the implementation Routes and review structure.** Read `references/plan-visual-structure.md`. Group Tasks into 6–10 Routes or Milestones before drawing dependencies; use fewer only when the plan genuinely has fewer independent phases.
 5. **Write the plan header** (template below), including the AC coverage table.
 6. **Write each task** (template below) with bite-sized steps and full traceability.
 7. **Self-review** (section below), fixing issues inline.
-8. **Save** to `.forge/plans/NNN-<slug>.md` — same `NNN` as the spec.
-9. **Offer the review view.** Markdown is the default review path. After the plan is saved and self-reviewed, notify the user when a Viewer would help and ask whether the user wants a Viewer. Build `plan` or `combined` mode only after an explicit user request for the current sources; an existing Viewer may be reported as stale but is not an update trigger. Viewer choice does not change execution approval gates.
+8. **Save** to `docs/plans/PPP-<slug>/plan.md`, where `PPP` is the next unused three-digit plan number independent of every spec number.
+9. **Offer the review view.** Markdown is the default review path. After the plan is saved and self-reviewed, notify the user when a Viewer would help and ask whether the user wants a `plan` Viewer. Build it only after an explicit user request for the current sources; an existing Viewer may be reported as stale but is not an update trigger. Viewer choice does not change execution approval gates.
 
 ## Review Structure for Complex Plans
 
@@ -91,8 +91,8 @@ Do not flatten 22 Tasks into one graph. Group them into Routes first, then show 
 
 This is the forge addition on top of ordinary planning discipline:
 
-- **Every task header cites the R-IDs and AC-IDs it implements**, e.g. `### Task 3: Login endpoint (R2, R4 · AC2)`.
-- **Every AC-ID in the spec appears in at least one task.** An AC no task covers means the plan is incomplete — add the task.
+- **Every task governed by a spec cites the R-IDs and AC-IDs it implements**, e.g. `### Task 3: Login endpoint (R2, R4 · AC2)`.
+- **Every referenced AC-ID appears in at least one task.** An AC no task covers means the plan is incomplete — add the task.
 - **The plan starts with a coverage table** so gaps are visible at a glance:
 
 ```markdown
@@ -105,7 +105,7 @@ This is the forge addition on top of ordinary planning discipline:
 | AC3 | 3, 4 |
 ```
 
-A task that cites no R-ID needs a stated reason to exist (scaffolding for a cited task is fine — say so).
+A task that cites no R-ID needs a stated reason to exist. In a spec-free plan, every task instead cites the plan goal and its exact verification evidence.
 
 ## Plan Header Template
 
@@ -117,7 +117,12 @@ Every plan MUST start with this header:
 > <In the plan language: tell agentic workers to execute with the forge
 > executing-plans skill, task by task with checkpoints.>
 
-**<Localized Spec label>:** `docs/specs/NNN-<slug>/spec.md`
+Status: active
+
+**Related Specs:**
+- `docs/specs/NNN-<slug>/spec.md`: R1, R2 · AC1
+
+Use `None — <qualifying reason>` when the plan has no related spec.
 
 **<Localized Goal label>:** [one sentence in the plan language describing what this builds]
 
@@ -217,7 +222,7 @@ Every step must contain the actual content the implementer needs. These are **pl
 
 After writing the complete plan, reread the spec with fresh eyes and check the plan against it. Create one todo per check:
 
-1. **Spec coverage:** walk every R-ID and AC-ID; point to the task that implements each. Verify the coverage table matches the task headers. List and fix any gap.
+1. **Spec coverage:** walk every referenced R-ID and AC-ID; point to the task that implements each. Verify the coverage table matches the task headers. With no related spec, verify every task maps to the plan goal and evidence. List and fix any gap.
 2. **Placeholder scan:** search the plan for every pattern in "No Placeholders" above. Fix them.
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 4. **Language consistency:** confirm all human-readable prose uses the governing spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim spec values remain intact.
@@ -230,20 +235,21 @@ Fix issues inline and move on — no re-review loop.
 
 | Path | Role |
 |---|---|
-| `docs/specs/NNN-<slug>/spec.md` | Read: the approved spec (source of truth) |
-| `.forge/plans/NNN-<slug>.md` | Write: the plan — same `NNN` as the spec; committed |
-| `.forge/viewer/NNN-<slug>-plan.html` | Generated plan review view; uncommitted |
-| `.forge/viewer/NNN-<slug>-review.html` | Generated combined review view; uncommitted |
+| `docs/specs/NNN-<slug>/spec.md` | Read: each related approved spec, when present |
+| `docs/plans/PPP-<slug>/plan.md` | Write: independently identified work plan; committed |
+| `docs/plans/PPP-<slug>/progress.md` | Optional long or multi-writer progress history; committed |
+| `docs/plans/PPP-<slug>/tasks/*.md` | Optional independently owned Task details; committed |
+| `docs/plans/PPP-<slug>/view.html` | Generated plan review View after explicit request; committed |
 
 ## Red Flags
 
 | Excuse | Reality |
 |---|---|
-| "The spec is basically approved, I'll start planning" | "Basically approved" is draft. The gate is the literal `Status: approved` line — get it via the forge writing-specs skill. |
+| "The spec is basically approved, I'll start planning" | For behavior-changing work, "basically approved" is draft. The gate is the literal `Status: approved` line. |
 | "The requirements are all in this conversation — effectively a spec" | Chat scrollback is not a source of truth; it has no status line, no R-IDs, and it evaporates. Capture it in `docs/specs/` via the forge writing-specs skill first. |
 | "I'll fill in this step's code during execution" | The executor may be a fresh context with zero knowledge. A step without content is a placeholder, and placeholders are plan failures. |
 | "Similar to Task 2 — no need to repeat" | Implementers read tasks in isolation. Repeat the code. |
-| "This coverage table is just bookkeeping" | The table is how uncovered ACs become visible. Skipping it is how requirements silently drop. |
+| "This coverage table is just bookkeeping" | The table is how uncovered related ACs become visible. Skipping it is how requirements silently drop. |
 | "The change is small, I'll just code it directly" | Small change = small plan, but the plan exists. No code without a plan task. |
 | "Add error handling here — the engineer will know what" | They won't. Name the errors, the handling, and the test that proves it. |
 | "The user is in a hurry, skip self-review" | Self-review takes minutes; an unexecutable plan wastes hours. Run all four checks. |

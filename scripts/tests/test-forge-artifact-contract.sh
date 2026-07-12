@@ -9,5 +9,10 @@ grep -q 'docs/plans/PPP-<slug>/view.html' "$ROOT/.agent-runbooks/maintaining-for
 ! grep -q '| Plans | `.forge/plans/' "$ROOT/.agent-runbooks/maintaining-forge/references/portability-rules.md"
 grep -q 'docs/research/' "$ROOT/README.md"
 grep -q 'docs/debug/' "$ROOT/README.md"
+grep -q 'Related Specs' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
+grep -q 'docs/plans/PPP-<slug>/plan.md' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
+grep -q '0 or more' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
+! grep -q 'same `NNN` as the spec' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
+! grep -q 'combined review path' "$ROOT/plugins/forge/skills/writing-plans/references/plan-visual-structure.md"
 
 printf 'test-forge-artifact-contract: all checks passed\n'

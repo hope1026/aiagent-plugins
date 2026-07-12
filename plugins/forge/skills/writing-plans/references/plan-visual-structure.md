@@ -1,6 +1,6 @@
 # Plan Visual Structure
 
-Use this reference for plans that need a human review view. The plan remains the source of truth; diagrams summarize only relationships explicitly written in the plan or governing spec.
+Use this reference for plans that need a human review view. The plan remains the source of truth; diagrams summarize only relationships explicitly written in the plan or its related specs.
 
 ## Recommended order
 
@@ -10,7 +10,7 @@ Use this reference for plans that need a human review view. The plan remains the
 4. Runtime responsibility
 5. Major data flow
 6. Place, platform, or subsystem extension points
-7. AC Coverage and Task-level R·AC mapping
+7. Verification coverage and, when related specs exist, Task-level R·AC mapping
 8. Detailed Tasks and Steps
 9. Internal checkpoints, notify checkpoints, and approval boundaries
 
@@ -51,10 +51,11 @@ Each diagram has:
 
 ## Traceability
 
-The combined review path should make these links navigable:
+The plan review path uses one of these source-owned link shapes:
 
 ```text
-R → AC → Task → Step → verification method → checkpoint evidence
+related spec present: R → AC → Task → Step → verification method
+no related spec: Task → Step → verification method
 ```
 
 Checkboxes record review progress, not product PASS or FAIL. Use Task-scoped Step keys such as `Task4-Step2` because Step numbering restarts inside each Task.
