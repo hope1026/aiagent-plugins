@@ -10,6 +10,7 @@ SPEC_VIEWER="$ROOT_DIR/plugins/forge/skills/spec-viewer/SKILL.md"
 EXECUTING_PLANS="$ROOT_DIR/plugins/forge/skills/executing-plans/SKILL.md"
 ROUTING_REF="$ROOT_DIR/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
 CODEX_REF="$ROOT_DIR/plugins/forge/skills/using-forge/references/codex-tools.md"
+VERIFYING_WORK="$ROOT_DIR/plugins/forge/skills/verifying-work/SKILL.md"
 
 for file in "$WRITING_SPECS" "$WRITING_PLANS" "$SPEC_VIEWER"; do
   grep -qi 'explicit user request' "$file" || fail "$file misses explicit user request gate"
@@ -50,5 +51,17 @@ grep -q 'inherit the current model' "$CODEX_REF" || \
   fail "Codex fallback does not inherit the current model"
 grep -q 'subagents remain available' "$CODEX_REF" || \
   fail "Codex model fallback incorrectly disables subagents"
+
+grep -q 'internal checkpoint' "$EXECUTING_PLANS" || fail "missing internal checkpoint"
+grep -q 'notify checkpoint' "$EXECUTING_PLANS" || fail "missing notify checkpoint"
+grep -q 'approval checkpoint' "$EXECUTING_PLANS" || fail "missing approval checkpoint"
+grep -q 'without waiting for the user' "$EXECUTING_PLANS" || \
+  fail "internal or notify flow still waits for the user"
+if rg -n 'report to the user after every task|checkpoint is the user.s review gate' \
+  "$EXECUTING_PLANS" >/dev/null; then
+  fail "per-task user checkpoint language remains"
+fi
+grep -q 'approval gate' "$WRITING_PLANS" || fail "writing-plans misses approval metadata"
+grep -q 'route evidence' "$VERIFYING_WORK" || fail "verifying-work misses route evidence review"
 
 echo "forge lifecycle policy: all checks passed"

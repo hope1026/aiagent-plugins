@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-description: 'Use when a written implementation plan exists in .forge/plans/ and tasks need to be executed with review checkpoints and a durable progress ledger. Triggers: "계획 실행", "구현 진행", "execute the plan", "다음 태스크", resuming interrupted plan work.'
+description: 'Use when a written implementation plan exists in .forge/plans/ and tasks need adaptive routing, continuous execution, or a durable progress ledger. Triggers: "계획 실행", "구현 진행", "자동 라우팅", "execute the plan", "다음 태스크", resuming interrupted plan work.'
 ---
 
 # Executing Plans
@@ -11,7 +11,7 @@ Respond to the user in the user's language. This skill file stays in English.
 
 ## Overview
 
-A plan in the forge working directory `.forge/plans/` is a contract derived from an approved spec: bite-sized tasks, exact paths, verification per task. This skill routes each Task by `fast`, `balanced`, or `frontier` capability, chooses root, subagent, or parallel execution, keeps a durable progress ledger, and preserves one hard rule for what happens when reality contradicts the spec.
+A plan in the forge working directory `.forge/plans/` is a contract derived from an approved spec: bite-sized tasks, exact paths, verification per task. This skill routes each Task by `fast`, `balanced`, or `frontier` capability, chooses root, subagent, or parallel execution, and keeps a durable progress ledger. It uses `internal checkpoint`, `notify checkpoint`, and `approval checkpoint` as distinct states so safe work continues without waiting for the user.
 
 ## Iron Law
 
@@ -55,13 +55,19 @@ For each task, in plan order:
 4. Commit as the plan directs.
 5. Append one line to the ledger: `Task N: complete (commits <a>..<b>)`.
 6. If a lifecycle Viewer exists and the progress ledger changed, report it as stale. Do not rebuild it unless the user made an explicit user request to update the current `combined` Viewer; after such a request, confirm Task, Step, R, AC, Mermaid counts and source hash before reporting.
-7. Mark the todo complete and **checkpoint**: report to the user after every task (or after a batch of parallel-safe tasks) — what was done, the verification evidence, what comes next, and a Viewer path only when the user explicitly requested that build. The checkpoint is the user's review gate; do not blow past it. Batching is allowed only when the plan itself marks those tasks as independent — never decide unilaterally that tasks are parallel-safe.
+7. Mark the todo complete and record an **internal checkpoint**: verification, checkbox, ledger, and planned local commit are the durable recovery point. Start the next safe Task without waiting for the user.
+8. Send a non-blocking **notify checkpoint** when a Route or Milestone completes, a `frontier` Task completes, or automatic tier escalation occurs. Summarize completed work, fresh evidence, tier and execution mode, and what continues next. Do not wait for a response before starting the next safe Task.
 
-### Phase 3: Divergence and blockers
+### Phase 3: Approval boundaries and blockers
 
-- **Spec is wrong or incomplete** (a requirement can't work as specified, a case the spec never covered): iron-law procedure — pause, propose a delta via the forge writing-specs skill in change mode, get approval, continue.
-- **Plan has a mechanical defect but the spec is fine** (typo, stale path, wrong command): apply the smallest correction that keeps the plan true to the spec, note it in the ledger, and mention it at the checkpoint. If you are unsure which case you are in, it is a spec divergence — stop and follow the iron-law procedure.
-- **Blocked** (missing dependency, verification fails repeatedly, instruction you don't understand): stop and ask the user. Never guess your way through a blocker, and never force a task to "pass" by weakening its verification.
+Use an **approval checkpoint** only for one of these boundaries. Persist completed work and the exact resume point in the ledger, then state the decision, options, and impact and wait for the user:
+
+- **Spec divergence:** a requirement is wrong, missing, or cannot work as approved → propose a delta via the forge writing-specs skill in change mode.
+- **New authority:** a destructive action, external write, purchase, paid resource, or agreed cost-limit increase is required.
+- **Scope or product decision:** execution would materially expand the approved scope or needs a user-owned product or design choice.
+- **Release boundary:** push, publish, deploy, or release would expose the result outside the local repository.
+
+A local edit, test, planned local commit, tier selection, subagent dispatch, parallel group, internal checkpoint, or notify checkpoint is not an approval boundary. A mechanical plan defect (typo, stale path, wrong command) receives the smallest spec-consistent correction, a ledger note, and the next notify checkpoint; it does not stop execution. For repeated verification failure, follow `references/adaptive-routing.md`: escalate once, then use the forge systematic-debugging skill. Ask the user only when that investigation reaches an approval boundary.
 
 ### Adaptive subagent routing
 
@@ -87,8 +93,8 @@ Use `references/adaptive-routing.md`; do not dispatch one fresh subagent mechani
 | "I'll update the ledger after a few tasks" | A crash between tasks erases everything unwritten. One line per task, immediately after it completes. |
 | "This step is too small for the TDD cycle" | Implementation steps require the forge test-driven-development skill. Small steps are exactly where untested regressions hide. |
 | "Verification passed earlier, no need to rerun" | The plan's verification runs fresh for THIS task's changes. A remembered pass is not evidence. |
-| "The user is waiting, skip the checkpoint" | Checkpoints are the user's review gate. Skipping them hides divergence until it is expensive to unwind. |
-| "These tasks feel independent, I'll checkpoint once at the end" | Only the plan can mark tasks parallel-safe. Self-declared batching is checkpoint-skipping with extra steps. |
+| "Every Task needs a user checkpoint to stay safe." | Safety comes from the internal checkpoint, root verification, and explicit approval boundaries. Per-Task waiting only breaks execution flow. |
+| "A notify was sent, so I must wait for feedback." | Notify is informational. Continue with the next safe Task unless an approval boundary exists. |
 | "The ledger changed, so I should refresh the existing Viewer." | The Viewer is stale, but that does not grant update permission. Report it as stale and wait for an explicit user request. |
 | "Subagents are available, so every Task gets one." | Dispatch has context and review cost. Use root for tightly coupled work and delegate only Tasks that pass the adaptive routing gate. |
 | "The model role is missing, so parallel work is impossible." | Model mapping and subagent availability are independent. Inherit the current model and keep safe parallelism when workers remain available. |
@@ -97,4 +103,4 @@ Use `references/adaptive-routing.md`; do not dispatch one fresh subagent mechani
 
 When every task is complete, verified, and recorded in the ledger:
 
-**All tasks complete. Next: the forge verifying-work skill against the spec's acceptance criteria.**
+**All tasks complete. Continue directly to the forge verifying-work skill against the spec's acceptance criteria.**

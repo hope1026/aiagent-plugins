@@ -12,17 +12,17 @@ Use this reference for plans that need a human review view. The plan remains the
 6. Place, platform, or subsystem extension points
 7. AC Coverage and Task-level R·AC mapping
 8. Detailed Tasks and Steps
-9. Checkpoints and user review moments
+9. Internal checkpoints, notify checkpoints, and approval boundaries
 
 This order lets a reviewer move from scope to flow to implementation detail to evidence.
 
 ## Route table
 
 ```markdown
-| Route | Tasks | Deliverable | Review checkpoint |
+| Route | Tasks | Deliverable | Checkpoint type |
 |---|---:|---|---|
-| Route 1 — Source | 1–3 | Parser and manifest | count fixture |
-| Route 2 — Review | 4–6 | Viewer shell | desktop and 390px |
+| Route 1 — Source | 1–3 | Parser and manifest | notify after count fixture |
+| Route 2 — Review | 4–6 | Viewer shell | approval only before release |
 ```
 
 Use 6–10 Routes for a large plan. Every Task has one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
@@ -58,3 +58,5 @@ R → AC → Task → Step → verification method → checkpoint evidence
 ```
 
 Checkboxes record review progress, not product PASS or FAIL. Use Task-scoped Step keys such as `Task4-Step2` because Step numbering restarts inside each Task.
+
+Execution metadata must make routing decidable: exact dependencies, write ownership, stable Interfaces, verification, parallel-safety reason, and any real approval gate. Ordinary local edits, tests, planned commits, tier selection, subagent work, and safe parallel groups use internal or notify checkpoints and do not wait for the user.

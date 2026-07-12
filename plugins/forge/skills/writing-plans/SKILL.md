@@ -64,7 +64,7 @@ Create one todo per numbered step below and work through them in order.
 6. **Write each task** (template below) with bite-sized steps and full traceability.
 7. **Self-review** (section below), fixing issues inline.
 8. **Save** to `.forge/plans/NNN-<slug>.md` — same `NNN` as the spec.
-9. **Offer the review view.** Markdown is the default review path. After the plan is saved and self-reviewed, notify the user when a Viewer would help and ask whether the user wants a Viewer. Build `plan` or `combined` mode only after an explicit user request for the current sources; an existing Viewer may be reported as stale but is not an update trigger.
+9. **Offer the review view.** Markdown is the default review path. After the plan is saved and self-reviewed, notify the user when a Viewer would help and ask whether the user wants a Viewer. Build `plan` or `combined` mode only after an explicit user request for the current sources; an existing Viewer may be reported as stale but is not an update trigger. Viewer choice does not change execution approval gates.
 
 ## Review Structure for Complex Plans
 
@@ -77,7 +77,7 @@ A complex plan includes these human-review sections before its detailed Tasks:
 - major data flow;
 - Place, platform, or subsystem extension points;
 - Task-level R and AC mapping;
-- checkpoints and user review moments.
+- internal checkpoint, notify checkpoint, and real approval gate boundaries.
 
 Include three diagram perspectives when the source has the relationships needed to draw them:
 
@@ -154,6 +154,12 @@ section.]
   return types. A task's implementer may see only their own task; this block
   is how they learn the names and types neighboring tasks use.]
 
+**<Localized Execution metadata label>:**
+- <Localized Dependencies label>: [exact Task IDs or `none`]
+- <Localized Write ownership label>: [exact files or directories this Task may modify]
+- <Localized Parallel safety label>: [safe group and reason, or sequential reason]
+- <Localized Approval gate label>: [exact spec divergence, authority, scope decision, or release boundary; otherwise `none`]
+
 - [ ] **Step 1: <In the plan language: write the failing test>**
 
 ```python
@@ -215,7 +221,7 @@ After writing the complete plan, reread the spec with fresh eyes and check the p
 2. **Placeholder scan:** search the plan for every pattern in "No Placeholders" above. Fix them.
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 4. **Language consistency:** confirm all human-readable prose uses the governing spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim spec values remain intact.
-5. **Review structure:** confirm complex plans include Routes, dependency, Runtime responsibility, data flow, extension points, R·AC mapping, checkpoints, and the three required diagram perspectives when their source relationships exist.
+5. **Review structure:** confirm complex plans include Routes, dependency, Runtime responsibility, data flow, extension points, R·AC mapping, internal and notify checkpoints, real approval gates, and the three required diagram perspectives when their source relationships exist. Local edits, tests, planned local commits, tier selection, subagents, and parallel groups are not approval gates.
 6. **Viewer request boundary:** confirm no Viewer was created or updated without an explicit user request. If one exists and the source changed, report it as stale. When the user explicitly requested a Viewer, confirm source hash, Task/Step/R/AC/Mermaid counts, and localized labels before handoff.
 
 Fix issues inline and move on — no re-review loop.
@@ -244,9 +250,10 @@ Fix issues inline and move on — no re-review loop.
 | "Implementation plans are technical, so English is clearer." | The plan is also a user review artifact. Write its prose in the spec's language and preserve only the technical terms, identifiers, code, and exact commands that need their original form. |
 | "The Task list is already ordered, so Routes are decoration." | Routes make dependency and scope review possible before a reader opens 20 or more detailed Tasks. |
 | "The plan is complex, so handoff requires a Viewer." | Complexity justifies telling the user why a Viewer may help. Markdown remains valid, and HTML requires an explicit user request. |
+| "A user checkpoint after every Task is safer." | Put verification and recovery in the internal checkpoint. Reserve approval gates for spec divergence, new authority, scope decisions, and release. |
 
 ## Handoff
 
 After saving the plan and finishing self-review, tell the user:
 
-**Plan complete and saved. Next: the forge executing-plans skill, task by task with checkpoints.**
+**Plan complete and saved. Next: the forge executing-plans skill with adaptive routing, continuous internal checkpoints, non-blocking Route notifications, and approval only at explicit authority boundaries.**

@@ -71,8 +71,9 @@ Record these as Level 1 evidence. Viewer-only PASS never changes the governing p
 
 1. Open `docs/specs/NNN-<slug>/spec.md` and read the Acceptance Criteria section.
 2. Create one todo per acceptance criterion (AC1..ACn) so none can be silently skipped.
-3. Walk each AC in order: reproduce its precondition, perform its action, and observe its expected outcome against the real implementation. Record a verdict — **PASS** or **FAIL** — with the exact command output or concrete observation as evidence. No AC may be judged from memory or from reading the code.
-4. Cross-check consistency: each AC still maps to current R-IDs, and if `.forge/plans/NNN-<slug>.md` exists, its AC coverage table matches what was actually built. A dangling AC or uncovered requirement is a FAIL to resolve, not a footnote.
+3. **Check route evidence** when `.forge/scratch/progress-NNN.md` exists: every executed Task records tier, execution mode, parallel group or `none`, verification, and commit scope. For subagent work, confirm the root agent inspected the result and produced fresh verification; a worker report alone is not acceptance evidence.
+4. Walk each AC in order: reproduce its precondition, perform its action, and observe its expected outcome against the real implementation. Record a verdict — **PASS** or **FAIL** — with the exact command output or concrete observation as evidence. No AC may be judged from memory or from reading the code.
+5. Cross-check consistency: each AC still maps to current R-IDs, and if `.forge/plans/NNN-<slug>.md` exists, its AC coverage table matches what was actually built. A dangling AC or uncovered requirement is a FAIL to resolve, not a footnote.
 
 ### Verdict handling
 
@@ -115,6 +116,7 @@ If no spec exists, first confirm the change is genuinely on the ceremony-floor e
 | "I'm confident it works" | Confidence is not evidence. Run the command. |
 | "User is waiting, skip the rerun" | A false "done" costs far more of their time than one rerun. |
 | "The subagent reported success" | A report is a claim, not evidence. Inspect the diff and re-run the checks yourself. |
+| "The Task passed, so route evidence is optional." | Adaptive execution must remain auditable. Record tier, mode, group, verification, and root review before using the Task as AC evidence. |
 | "Lint is clean, so it builds" | A linter is neither a compiler nor a test suite. |
 | "I'll set implemented now, verify after" | Status is the gate token. It flips only after the evidence exists. |
 | "That AC obviously passes" | The "obvious" AC is where regressions hide. Walk it like every other one. |

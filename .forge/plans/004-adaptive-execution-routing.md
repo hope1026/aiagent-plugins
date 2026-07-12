@@ -215,7 +215,7 @@ startup에서 남은 Task의 route 정보를 plan에서 읽고, 각 Task 시작 
 - 입력: Task verification result, Route·Milestone boundary, spec divergence, authority boundary
 - 출력: `internal → continue`, `notify → continue`, `approval → persist and stop`, final verifying-work handoff
 
-- [ ] **Step 1: per-task user wait를 금지하고 세 checkpoint 유형을 검사하는 RED assertion 추가**
+- [x] **Step 1: per-task user wait를 금지하고 세 checkpoint 유형을 검사하는 RED assertion 추가**
 
 ```bash
 WRITING_PLANS="$ROOT_DIR/plugins/forge/skills/writing-plans/SKILL.md"
@@ -234,25 +234,25 @@ grep -q 'approval gate' "$WRITING_PLANS" || fail "writing-plans misses approval 
 grep -q 'route evidence' "$VERIFYING_WORK" || fail "verifying-work misses route evidence review"
 ```
 
-- [ ] **Step 2: policy test를 실행해 기존 Task별 checkpoint 규칙으로 RED 확인**
+- [x] **Step 2: policy test를 실행해 기존 Task별 checkpoint 규칙으로 RED 확인**
 
 실행: `bash scripts/tests/test-forge-lifecycle-policy.sh`
 
 예상: `FAIL: missing internal checkpoint` 또는 `FAIL: per-task user checkpoint language remains`
 
-- [ ] **Step 3: executing-plans loop를 non-blocking checkpoint state machine으로 변경**
+- [x] **Step 3: executing-plans loop를 non-blocking checkpoint state machine으로 변경**
 
 Task verification·checkbox·ledger·계획된 commit은 internal checkpoint로 처리하고 바로 다음 Task를 시작한다. Route·Milestone 완료, frontier Task 완료, tier escalation은 notify로 알린 뒤 다음 안전한 작업을 계속한다. spec delta, destructive·external·cost escalation, scope expansion, push·publish·deploy·release에서만 상태와 재개 지점을 저장하고 approval을 기다린다.
 
-- [ ] **Step 4: writing-plans에 실행 metadata와 최소 approval gate 규칙 추가**
+- [x] **Step 4: writing-plans에 실행 metadata와 최소 approval gate 규칙 추가**
 
 Task의 기존 Files·Interfaces·verification을 route 입력으로 명시하고 dependency와 write ownership을 빠뜨리지 않게 한다. approval gate는 사용자 결정이 실제로 필요한 곳만 표시하며 local edit·test·commit·tier 선택·subagent·parallel 실행을 gate로 만들지 않는다. Handoff 문구는 `task by task with checkpoints` 대신 continuous execution과 제한된 approval boundary를 설명한다.
 
-- [ ] **Step 5: verifying-work에 route evidence와 root ownership 확인 추가**
+- [x] **Step 5: verifying-work에 route evidence와 root ownership 확인 추가**
 
 최종 AC walk 전에 progress ledger의 tier·mode·parallel group·escalation·verification·commit 범위를 확인한다. subagent가 제출한 결과는 root fresh verification 증거가 있을 때만 acceptance evidence로 사용할 수 있다.
 
-- [ ] **Step 6: Viewer opt-in과 checkpoint semantics의 결합을 GREEN으로 확인하고 commit**
+- [x] **Step 6: Viewer opt-in과 checkpoint semantics의 결합을 GREEN으로 확인하고 commit**
 
 실행: `bash scripts/tests/test-forge-lifecycle-policy.sh && bash scripts/validate.sh && git diff --check`
 
