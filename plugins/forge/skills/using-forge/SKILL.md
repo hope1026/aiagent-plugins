@@ -57,7 +57,7 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 | Writing prose humans will read — docs, PRs, commits, messages | the forge writing-tone skill |
 | "Show me the spec" / render or present a spec for review | the forge spec-viewer skill |
 | Approved spec exists, no plan yet | the forge writing-plans skill |
-| A plan exists in `.forge/plans/` with open tasks | the forge executing-plans skill |
+| A plan exists in `docs/plans/` with open tasks | the forge executing-plans skill |
 | Writing any implementation code | the forge test-driven-development skill |
 
 ## Working Files
@@ -66,14 +66,16 @@ Forge keeps its artifacts in fixed locations inside the target project:
 
 | Artifact | Path | Committed |
 |---|---|---|
-| Specs — source of truth | `docs/specs/NNN-<slug>/spec.md` | yes |
-| Implementation plans | `.forge/plans/NNN-<slug>.md` | yes |
-| Debug / root-cause notes | `.forge/debug/YYYY-MM-DD-<slug>.md` | yes |
-| Research notes | `.forge/research/YYYY-MM-DD-<slug>.md` | yes |
-| Generated spec viewers | `.forge/viewer/NNN-<slug>.html` | no |
-| Scratch — progress ledgers, subagent briefs | `.forge/scratch/` | no |
+| Specs — permanent source of truth | `docs/specs/NNN-<slug>/spec.md` | yes |
+| Spec Viewer — when explicitly generated | `docs/specs/NNN-<slug>/view.html` | yes |
+| Work-scoped implementation plans | `docs/plans/PPP-<slug>/plan.md` | yes |
+| Plan Viewer — when explicitly generated | `docs/plans/PPP-<slug>/view.html` | yes |
+| Promoted debug / root-cause notes | `docs/debug/YYYY-MM-DD-<slug>.md` | yes |
+| Promoted research notes | `docs/research/YYYY-MM-DD-<slug>.md` | yes |
+| Scratch — local progress and briefs | `.forge/scratch/` | no |
+| Viewer build intermediates | `.forge/viewer-build/` | no |
 
-`viewer/` and `scratch/` each contain a self-ignoring `.gitignore` (a single `*` line) created on first use, so the target repo's own `.gitignore` never needs editing. Spec dirs are numbered `NNN-<slug>` with fixed artifact names; plans reuse the spec's `NNN`.
+`.forge/scratch/` and `.forge/viewer-build/` contain local, regenerable files and remain uncommitted. Spec directories use independent `NNN-<slug>` identifiers and persist for the project lifetime. Plan directories use independent `PPP-<slug>` identifiers and may be deleted when their work ends after permanent decisions are promoted to a spec, ADR, or another durable document.
 
 ## Red Flags
 

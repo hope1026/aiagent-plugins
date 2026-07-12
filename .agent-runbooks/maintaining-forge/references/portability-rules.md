@@ -47,11 +47,13 @@ commands. Install paths differ across harnesses and install modes.
 | Artifact | Path | Committed |
 |---|---|---|
 | Specs | `docs/specs/NNN-<slug>/spec.md` | yes |
-| Plans | `.forge/plans/NNN-<slug>.md` | yes |
-| Debug notes | `.forge/debug/YYYY-MM-DD-<slug>.md` | yes |
-| Research notes | `.forge/research/` | yes |
-| Generated Viewer | `.forge/viewer/` | no |
-| Scratch and ledgers | `.forge/scratch/` | no |
+| Spec Viewer, when requested | `docs/specs/NNN-<slug>/view.html` | yes |
+| Plans | `docs/plans/PPP-<slug>/plan.md` | yes |
+| Plan Viewer, when requested | `docs/plans/PPP-<slug>/view.html` | yes |
+| Promoted debug notes | `docs/debug/YYYY-MM-DD-<slug>.md` | yes |
+| Promoted research notes | `docs/research/` | yes |
+| Local scratch and ledgers | `.forge/scratch/` | no |
+| Viewer build intermediates | `.forge/viewer-build/` | no |
 
 ## 7. Process-skill Structure
 

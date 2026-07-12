@@ -20,7 +20,10 @@ plugins/<name>/
 .claude-plugin/marketplace.json    # this repo is a Claude Code marketplace
 .agents/plugins/marketplace.json   # ...and a Codex marketplace
 docs/specs/                    # specs for this repo (spec-first, dogfooded)
-.forge/plans/                  # implementation plans for this repo
+docs/plans/                    # independent, work-scoped implementation plans
+docs/research/                 # promoted research worth sharing
+docs/debug/                    # promoted root-cause records
+.forge/                        # local, regenerable scratch and build files
 ```
 
 ## Install (recommended: GitHub marketplace)
@@ -58,7 +61,7 @@ bash scripts/install.sh --agent codex --plugin forge
 
 | Skill | One line |
 |---|---|
-| `using-forge` | Entry point: routes any task to the right forge skill; spec-first iron law; `.forge/` contract |
+| `using-forge` | Entry point: routes any task to the right forge skill; spec-first iron law; shared artifact contract |
 | `writing-specs` | Idea → approved spec (new/change/clarify/sync modes); the spec is the source of truth |
 | `writing-plans` | Approved spec → task-level plan; every task cites requirement/acceptance IDs |
 | `executing-plans` | Task-by-task execution with checkpoints and a durable progress ledger |
@@ -93,7 +96,7 @@ Keep detailed maintainer procedures in `.agent-runbooks/`. They stay outside
 6. Drift repair (`sync` mode) reconciles brownfield code against its spec.
 7. Simple sources stay in Markdown; complex specs and plans get a regenerable Viewer whose source hash and checkpoint evidence stay current.
 
-Per-project artifacts: specs in `docs/specs/NNN-<slug>/spec.md` (committed); plans/debug/research under `.forge/` (committed); `.forge/scratch/` and `.forge/viewer/` (self-gitignored).
+Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`; work-scoped plans live independently in `docs/plans/PPP-<slug>/plan.md`; explicitly requested Views are committed as `view.html` beside their Markdown source. Research and debug records move to `docs/research/` or `docs/debug/` when they are worth sharing or preserving. `.forge/scratch/` and `.forge/viewer-build/` contain local, regenerable files only.
 
 ## Validate
 
