@@ -1,6 +1,6 @@
 # Forge 유지보수 런북 분리
 
-Status: approved
+Status: implemented
 
 ## Overview
 
@@ -86,3 +86,4 @@ Wrapper 계약:
 - 2026-07-12 [DECISION] 공용 런북과 얇은 에이전트별 wrapper의 구조는 sibling repository `weppy-roblox-mcp-private`의 검증된 패턴을 따른다.
 - 2026-07-12 [CHANGE] 기존 Forge 설계의 13번째 배포 스킬 `maintaining-forge`를 사용자 플러그인에서 제거하고 repository-only runbook으로 재분류한다.
 - 2026-07-12 [DECISION] 사용자가 본 스펙을 승인하여 구현 계획 수립을 시작한다.
+- 2026-07-12 [DECISION] AC1–AC8을 fresh evidence로 검증해 모두 PASS로 판정하고 상태를 `implemented`로 전환한다.
