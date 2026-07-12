@@ -404,7 +404,7 @@ ROUTES = 8
 
 실행: `git add README.md plugins/forge docs/specs/002-lifecycle-review-viewer .forge/plans/002-lifecycle-review-viewer.md && git commit -m "feat(forge): ship lifecycle review viewer"`
 
-- [ ] **Step 8: main push 후 이 머신 plugin update**
+- [x] **Step 8: main push 후 이 머신 plugin update**
 
 실행: `git push origin main`
 
