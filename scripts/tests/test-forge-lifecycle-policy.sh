@@ -7,6 +7,7 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 WRITING_SPECS="$ROOT_DIR/plugins/forge/skills/writing-specs/SKILL.md"
 WRITING_PLANS="$ROOT_DIR/plugins/forge/skills/writing-plans/SKILL.md"
 SPEC_VIEWER="$ROOT_DIR/plugins/forge/skills/spec-viewer/SKILL.md"
+EXECUTING_PLANS="$ROOT_DIR/plugins/forge/skills/executing-plans/SKILL.md"
 
 for file in "$WRITING_SPECS" "$WRITING_PLANS" "$SPEC_VIEWER"; do
   grep -qi 'explicit user request' "$file" || fail "$file misses explicit user request gate"
@@ -22,6 +23,15 @@ grep -q 'ask whether the user wants a Viewer' "$WRITING_PLANS" || \
 if rg -n 'score 2\+ uses|rebuild an existing Viewer|complex plan.*use the forge spec-viewer' \
   "$WRITING_SPECS" "$WRITING_PLANS" >/dev/null; then
   fail "automatic Viewer generation language remains"
+fi
+
+grep -qi 'explicit user request' "$EXECUTING_PLANS" || \
+  fail "executing-plans misses explicit Viewer update gate"
+grep -q 'report it as stale' "$EXECUTING_PLANS" || \
+  fail "executing-plans misses stale Viewer notice"
+if rg -n 'If a lifecycle Viewer exists, rebuild|rebuild it before the first checkpoint' \
+  "$EXECUTING_PLANS" >/dev/null; then
+  fail "executing-plans still rebuilds Viewer automatically"
 fi
 
 echo "forge lifecycle policy: all checks passed"

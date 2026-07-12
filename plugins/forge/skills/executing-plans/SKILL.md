@@ -42,7 +42,7 @@ The startup checklist and every plan task become todos — create one todo per i
 2. **Open the ledger** `.forge/scratch/progress-NNN.md` (same NNN as the plan). If `.forge/scratch/` does not exist, create it together with a `.forge/scratch/.gitignore` file containing exactly `*`. If the ledger does not exist, create it with a one-line header naming the plan file.
 3. **Skip completed work.** Tasks the ledger marks complete are DONE — do not redo them. Resume at the first task not marked complete. After any compaction or resume, trust the ledger and the commit history over your own recollection.
 4. **Create one todo per remaining task.**
-5. **Check the review view.** If a plan or combined Viewer exists, compare its source hash to the current spec and plan. Rebuild it before the first checkpoint when stale.
+5. **Check the review view without changing it.** If a plan or combined Viewer exists, compare its source hash to the current spec and plan and report it as stale when they differ. Do not create or update a Viewer without an explicit user request; when the user explicitly requests an update, use the forge spec-viewer skill for the current sources.
 
 ### Phase 2: Per-task loop
 
@@ -53,8 +53,8 @@ For each task, in plan order:
 3. Run the task's verification commands NOW and read the actual output. Expected output only counts when you saw it.
 4. Commit as the plan directs.
 5. Append one line to the ledger: `Task N: complete (commits <a>..<b>)`.
-6. If a lifecycle Viewer exists, rebuild the `combined` Viewer from the current spec, plan, and progress ledger. Confirm Task, Step, R, AC, Mermaid counts and source hash before reporting.
-7. Mark the todo complete and **checkpoint**: report to the user after every task (or after a batch of parallel-safe tasks) — what was done, the verification evidence, what comes next, and the refreshed Viewer path when applicable. The checkpoint is the user's review gate; do not blow past it. Batching is allowed only when the plan itself marks those tasks as independent — never decide unilaterally that tasks are parallel-safe.
+6. If a lifecycle Viewer exists and the progress ledger changed, report it as stale. Do not rebuild it unless the user made an explicit user request to update the current `combined` Viewer; after such a request, confirm Task, Step, R, AC, Mermaid counts and source hash before reporting.
+7. Mark the todo complete and **checkpoint**: report to the user after every task (or after a batch of parallel-safe tasks) — what was done, the verification evidence, what comes next, and a Viewer path only when the user explicitly requested that build. The checkpoint is the user's review gate; do not blow past it. Batching is allowed only when the plan itself marks those tasks as independent — never decide unilaterally that tasks are parallel-safe.
 
 ### Phase 3: Divergence and blockers
 
@@ -74,7 +74,7 @@ If subagent capability is available, dispatch one fresh subagent per task with t
 | `docs/specs/NNN-<slug>/spec.md` | Source of truth, consulted on any divergence | Yes |
 | `.forge/scratch/progress-NNN.md` | Progress ledger — one line per completed task | No (gitignored) |
 | `.forge/scratch/.gitignore` | Contains `*`; create if missing | No |
-| `.forge/viewer/NNN-<slug>-review.html` | Rebuilt combined checkpoint view when the lifecycle uses one | No |
+| `.forge/viewer/NNN-<slug>-review.html` | Combined checkpoint view created or updated only on explicit user request | No |
 
 ## Red Flags
 
@@ -88,7 +88,7 @@ If subagent capability is available, dispatch one fresh subagent per task with t
 | "Verification passed earlier, no need to rerun" | The plan's verification runs fresh for THIS task's changes. A remembered pass is not evidence. |
 | "The user is waiting, skip the checkpoint" | Checkpoints are the user's review gate. Skipping them hides divergence until it is expensive to unwind. |
 | "These tasks feel independent, I'll checkpoint once at the end" | Only the plan can mark tasks parallel-safe. Self-declared batching is checkpoint-skipping with extra steps. |
-| "Only the ledger changed, so the existing Viewer is current." | Combined review includes progress evidence. A Task checkpoint changes its source and requires a rebuild. |
+| "The ledger changed, so I should refresh the existing Viewer." | The Viewer is stale, but that does not grant update permission. Report it as stale and wait for an explicit user request. |
 
 ## Handoff
 

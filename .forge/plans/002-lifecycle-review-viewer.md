@@ -505,7 +505,7 @@ Build or rebuild only after an explicit user request for the current source.
 - 입력: progress ledger 변경, existing combined Viewer, explicit update request
 - 출력: stale notice 또는 user-requested combined Viewer rebuild
 
-- [ ] **Step 1: checkpoint가 Viewer를 자동 갱신하지 않는 assertion을 policy test에 추가**
+- [x] **Step 1: checkpoint가 Viewer를 자동 갱신하지 않는 assertion을 policy test에 추가**
 
 ```bash
 EXECUTING_PLANS="$ROOT_DIR/plugins/forge/skills/executing-plans/SKILL.md"
@@ -520,21 +520,21 @@ if rg -n 'If a lifecycle Viewer exists, rebuild|rebuild it before the first chec
 fi
 ```
 
-- [ ] **Step 2: policy test를 실행해 기존 checkpoint rebuild 문구로 RED 확인**
+- [x] **Step 2: policy test를 실행해 기존 checkpoint rebuild 문구로 RED 확인**
 
 실행: `bash scripts/tests/test-forge-lifecycle-policy.sh`
 
 예상: `FAIL: executing-plans misses explicit Viewer update gate` 또는 `FAIL: executing-plans still rebuilds Viewer automatically`
 
-- [ ] **Step 3: executing-plans의 startup·per-task Viewer 규칙을 stale notice와 explicit request로 교체**
+- [x] **Step 3: executing-plans의 startup·per-task Viewer 규칙을 stale notice와 explicit request로 교체**
 
 startup과 checkpoint 모두 기존 Viewer의 source hash가 다르면 stale이라고 보고한다. 사용자가 갱신을 요청하지 않은 상태에서는 fragment 작성, builder 실행, HTML timestamp 변경을 금지한다.
 
-- [ ] **Step 4: spec-viewer lifecycle boundary 설명을 explicit request 기준으로 정리**
+- [x] **Step 4: spec-viewer lifecycle boundary 설명을 explicit request 기준으로 정리**
 
 source change, plan handoff, progress checkpoint는 stale을 만들 수 있지만 rebuild trigger가 아니다. 사용자 요청만 생성·갱신 trigger다.
 
-- [ ] **Step 5: no-request pressure test와 전체 검증 후 commit**
+- [x] **Step 5: no-request pressure test와 전체 검증 후 commit**
 
 Pressure scenario: deadline 중 기존 combined Viewer가 있고 progress ledger가 바뀌었다. 사용자는 구현 진행만 요청했고 Viewer 갱신은 요청하지 않았다. Expected: agent는 stale을 알리고 Markdown checkpoint를 사용하며 HTML을 갱신하지 않는다.
 
