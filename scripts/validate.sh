@@ -78,7 +78,14 @@ while IFS= read -r skill; do
   if grep -nE '@(\.|/|skills/)' "$skill" >/dev/null; then
     err "$name: banned @-path include: $(grep -nE '@(\.|/|skills/)' "$skill" | head -3 | tr '\n' ' ')"
   fi
-done < <(find "$ROOT_DIR/plugins" -name SKILL.md -not -path '*/node_modules/*')
+done < <(
+  {
+    find "$ROOT_DIR/plugins" -name SKILL.md -not -path '*/node_modules/*'
+    for root in "$ROOT_DIR/.agents/skills" "$ROOT_DIR/.claude/skills"; do
+      [[ -d "$root" ]] && find "$root" -name SKILL.md -not -path '*/node_modules/*'
+    done
+  } | sort
+)
 
 if [[ "$FAIL" -eq 0 ]]; then
   echo "validate: all checks passed"

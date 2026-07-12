@@ -7,4 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash scripts/validate.sh
+      - run: |
+          bash scripts/tests/test-maintaining-forge-layout.sh
+          bash scripts/tests/test-validator-skill-roots.sh
+          bash scripts/validate.sh

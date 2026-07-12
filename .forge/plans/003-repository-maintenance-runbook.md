@@ -226,7 +226,7 @@ Checkpoint: 사용자 plugin source에서 유지보수 skill directory가 사라
 - 사용: `.agents/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`, `plugins/*/skills/*/SKILL.md`
 - 제공: 세 skill root에 동일한 frontmatter·size·portability 검사를 적용하는 `bash scripts/validate.sh`
 
-- [ ] **Step 1: Repository-local skill validation을 요구하는 failing test 작성**
+- [x] **Step 1: Repository-local skill validation을 요구하는 failing test 작성**
 
 `scripts/tests/test-validator-skill-roots.sh`를 다음 내용으로 작성한다.
 
@@ -263,13 +263,13 @@ grep -q 'validator-probe: banned harness-specific token' <<<"$output" || {
 echo "validator roots: all checks passed"
 ```
 
-- [ ] **Step 2: Validator root test를 실행해 현재 validator에서 실패 확인**
+- [x] **Step 2: Validator root test를 실행해 현재 validator에서 실패 확인**
 
 실행: `bash scripts/tests/test-validator-skill-roots.sh`
 
 예상: `FAIL: validate.sh ignored .agents/skills`
 
-- [ ] **Step 3: `scripts/validate.sh`의 skill discovery를 세 root로 확장**
+- [x] **Step 3: `scripts/validate.sh`의 skill discovery를 세 root로 확장**
 
 기존 loop body는 그대로 두고, 마지막 process substitution만 다음 다중 root discovery로 교체한다.
 
@@ -284,7 +284,7 @@ done < <(
 )
 ```
 
-- [ ] **Step 4: CI가 layout test, validator root test, 전체 validation을 순서대로 실행하도록 변경**
+- [x] **Step 4: CI가 layout test, validator root test, 전체 validation을 순서대로 실행하도록 변경**
 
 `.github/workflows/validate.yml`의 validation step을 다음 명령으로 바꾼다.
 
@@ -295,7 +295,7 @@ done < <(
           bash scripts/validate.sh
 ```
 
-- [ ] **Step 5: Validator 회귀 테스트와 전체 validation 통과 확인**
+- [x] **Step 5: Validator 회귀 테스트와 전체 validation 통과 확인**
 
 실행:
 
@@ -311,7 +311,7 @@ validator roots: all checks passed
 validate: all checks passed
 ```
 
-- [ ] **Step 6: Task 2 변경을 conventional commit 후보로 정리**
+- [x] **Step 6: Task 2 변경을 conventional commit 후보로 정리**
 
 실행 후보: `git add scripts/validate.sh scripts/tests/test-validator-skill-roots.sh .github/workflows/validate.yml && git commit -m "test(forge): validate repository-local skill wrappers"`
 
