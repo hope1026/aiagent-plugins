@@ -420,7 +420,7 @@ source path는 `view.html` parent 기준 POSIX 상대 경로로 기록한다. Ta
 - 병렬 안전성: 순차 실행; Task 6이 manifest shape를 소비한다.
 - 승인 gate: 없음
 
-- [ ] **Step 1: current·stale·missing·invalid manifest CLI test를 작성한다.**
+- [x] **Step 1: current·stale·missing·invalid manifest CLI test를 작성한다.**
 
 ```bash
 bash "$BUILDER" --check "$PLAN_DIR/view.html"
@@ -432,13 +432,13 @@ printf '<html><script id="forge-source-manifest">{bad}</script></html>' > "$TMP/
 if bash "$BUILDER" --check "$TMP/invalid.html"; then exit 1; fi
 ```
 
-- [ ] **Step 2: RED를 확인한다.**
+- [x] **Step 2: RED를 확인한다.**
 
 실행: `bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh`
 
 예상: argparse가 `--check`를 인식하지 못해 실패한다.
 
-- [ ] **Step 3: manifest extraction과 checker를 구현한다.**
+- [x] **Step 3: manifest extraction과 checker를 구현한다.**
 
 함수 계약:
 
@@ -452,13 +452,13 @@ check_viewer 반환 계약: 모든 source가 존재하고 SHA-256이 일치하�
 
 manifest script의 JSON parse, relative path escape 방지, missing source, hash mismatch를 source별 오류로 반환한다. `main()`은 오류가 없으면 `viewer current: <path>`와 exit 0, 오류가 있으면 각 원인을 stderr에 쓰고 exit 1을 반환한다.
 
-- [ ] **Step 4: GREEN을 확인한다.**
+- [x] **Step 4: GREEN을 확인한다.**
 
 실행: `bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh`
 
 예상: current fixture exit 0, stale·missing·invalid fixture non-zero.
 
-- [ ] **Step 5: 변경을 commit한다.**
+- [x] **Step 5: 변경을 commit한다.**
 
 실행: `git add plugins/forge/skills/spec-viewer/scripts/build_viewer.py plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh && git commit -m "feat(forge): check viewer source hashes"`
 
@@ -480,7 +480,7 @@ manifest script의 JSON parse, relative path escape 방지, missing source, hash
 - 병렬 안전성: 순차 실행; template와 builder token을 함께 바꾼다.
 - 승인 gate: visual system은 기존 fixed shell의 Type·Palette·Spacing·Depth를 inherited로 유지한다.
 
-- [ ] **Step 1: pure freshness helper test를 작성한다.**
+- [x] **Step 1: pure freshness helper test를 작성한다.**
 
 ```javascript
 import assert from 'node:assert/strict';
@@ -494,13 +494,13 @@ assert.equal(await sha256Hex(new TextEncoder().encode('abc')),
 assert.equal(sourceMatchKey('./tasks/001-api.md'), 'tasks/001-api.md');
 ```
 
-- [ ] **Step 2: RED를 확인한다.**
+- [x] **Step 2: RED를 확인한다.**
 
 실행: `node plugins/forge/skills/spec-viewer/tests/test-viewer-freshness.mjs`
 
 예상: `viewer-freshness.mjs` module이 없어 실패한다.
 
-- [ ] **Step 3: pure helper와 DOM initialization을 구현한다.**
+- [x] **Step 3: pure helper와 DOM initialization을 구현한다.**
 
 필수 export:
 
@@ -513,17 +513,17 @@ export async function verifyFetchedSource(source, baseUrl) { /* cache: 'no-store
 
 브라우저에서만 `initFreshness()`를 실행한다. same-origin fetch 실패는 source별 `unverified`로 기록하고 file input을 표시한다. 선택 파일은 `arrayBuffer()`로만 읽으며 upload, beacon, fetch body를 만들지 않는다.
 
-- [ ] **Step 4: template UI와 build token을 연결한다.**
+- [x] **Step 4: template UI와 build token을 연결한다.**
 
 source summary에 overall badge, source별 status·hash·오류 영역, `multiple` Markdown file input을 추가한다. CSS는 기존 border 전략과 accent를 inherited하고 `current`, `stale`, `unverified`를 text와 색으로 함께 구분한다. builder는 asset 내용을 `{{FRESHNESS_RUNTIME}}`에 삽입하고 template은 `<script type="module">`로 실행한다.
 
-- [ ] **Step 5: helper GREEN과 self-contained output을 확인한다.**
+- [x] **Step 5: helper GREEN과 self-contained output을 확인한다.**
 
 실행: `node plugins/forge/skills/spec-viewer/tests/test-viewer-freshness.mjs && bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh`
 
 예상: helper assertion 전부 통과, 생성 HTML에 외부 freshness script 요청 0개.
 
-- [ ] **Step 6: 변경을 commit한다.**
+- [x] **Step 6: 변경을 commit한다.**
 
 실행: `git add plugins/forge/skills/spec-viewer/assets/viewer-freshness.mjs plugins/forge/skills/spec-viewer/tests/test-viewer-freshness.mjs plugins/forge/skills/spec-viewer/assets/viewer-template.html plugins/forge/skills/spec-viewer/scripts/build_viewer.py && git commit -m "feat(forge): verify viewer freshness at read time"`
 
@@ -749,3 +749,5 @@ push, publish, Marketplace update는 실행하지 않고 사용자에게 별도 
 - 2026-07-13: Task 2 완료 — independent plan authoring lifecycle (`51bd56e`).
 - 2026-07-13: Task 3 완료 — plan-local execution and progress workflow (`83b7042`).
 - 2026-07-13: Task 4 완료 — independent spec/plan builder modes (`cef0a18`). Scale fixture split remains owned by Task 8.
+- 2026-07-13: Task 5 완료 — manifest-based CLI freshness check (`8a9d766`).
+- 2026-07-13: Task 6 완료 — read-time browser freshness runtime and UI.

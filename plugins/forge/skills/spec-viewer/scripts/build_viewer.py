@@ -31,6 +31,8 @@ LABELS = {
         "sources": "Sources",
         "diagram": "Diagram",
         "mermaid_error": "Mermaid error",
+        "freshness": "Freshness",
+        "select_sources": "Select Markdown files to verify locally",
     },
     "ko": {
         "overview": "개요",
@@ -44,6 +46,8 @@ LABELS = {
         "sources": "Source",
         "diagram": "다이어그램",
         "mermaid_error": "Mermaid 오류",
+        "freshness": "최신성",
+        "select_sources": "로컬 검증용 Markdown 파일 선택",
     },
 }
 
@@ -247,7 +251,10 @@ def check_viewer(viewer: Path) -> list[str]:
             )
     return errors
     items = "".join(
-        "<li><code>{}</code> <span>{}</span> <code>{}</code></li>".format(
+        '<li data-source-path="{}"><code>{}</code> <span>{}</span> <code>{}</code> '
+        '<span class="freshness-state freshness-unverified" data-source-state>unverified</span> '
+        '<span class="source-error" data-source-error></span></li>'.format(
+            html.escape(source["path"], quote=True),
             html.escape(source["role"]),
             html.escape(source["path"]),
             html.escape(source["sha256"][:12]),
@@ -256,8 +263,11 @@ def check_viewer(viewer: Path) -> list[str]:
     )
     return (
         f'<details class="source-summary"><summary>{html.escape(labels["sources"])} · '
-        f'{html.escape(manifest.mode)} · {html.escape(manifest.freshness)} · '
+        f'{html.escape(manifest.mode)} · {html.escape(labels["freshness"])} '
+        f'<span class="freshness-state freshness-unverified" data-freshness-overall>{html.escape(manifest.freshness)}</span> · '
         f'{html.escape(count_text)}</summary><ul>{items}</ul>'
+        f'<label class="source-picker-label" for="forge-source-picker">{html.escape(labels["select_sources"])}</label>'
+        f'<input id="forge-source-picker" type="file" accept=".md,text/markdown" multiple>'
         f'<code>{html.escape(manifest.rebuild_command)}</code></details>'
     )
 
@@ -265,6 +275,7 @@ def check_viewer(viewer: Path) -> list[str]:
 def build(args: argparse.Namespace, argv: list[str]) -> str:
     script_root = Path(__file__).resolve().parent.parent
     template = (script_root / "assets" / "viewer-template.html").read_text(encoding="utf-8")
+    freshness_runtime = (script_root / "assets" / "viewer-freshness.mjs").read_text(encoding="utf-8")
     content = args.content.read_text(encoding="utf-8")
     validate_fragment(content)
     sources = selected_sources(args)
@@ -293,6 +304,7 @@ def build(args: argparse.Namespace, argv: list[str]) -> str:
         "{{MERMAID_ERROR}}": html.escape(labels["mermaid_error"]),
         "{{CONTENT}}": content,
         "{{MERMAID}}": mermaid_tag(args.offline),
+        "{{FRESHNESS_RUNTIME}}": freshness_runtime,
     }
     for panel in PANELS:
         replacements[f"{{{{TAB_{panel.upper()}}}}}"] = html.escape(labels[panel])

@@ -99,6 +99,13 @@
   .source-summary summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-variant-numeric: tabular-nums; }
   .source-summary ul { padding-left: 1.25rem; }
   .source-summary li { max-width: none; overflow-wrap: anywhere; }
+  .source-picker-label { display: block; font-weight: 600; color: var(--text); margin-top: 0.75rem; }
+  #forge-source-picker { display: block; min-height: 44px; max-width: 100%; margin: 0.25rem 0 0.75rem; }
+  .freshness-state { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .freshness-current { color: var(--accent); }
+  .freshness-stale { color: var(--error); }
+  .freshness-unverified { color: var(--text-muted); }
+  .source-error { color: var(--error); }
 
   .ac-item {
     display: flex; gap: 0.6rem; align-items: baseline; padding: 0.5rem 0;
@@ -146,6 +153,9 @@
 {{CONTENT}}
 </main>
 <script type="application/json" id="forge-source-manifest">{{SOURCE_MANIFEST}}</script>
+<script type="module">
+{{FRESHNESS_RUNTIME}}
+</script>
 {{MERMAID}}
 <script>
 (function () {
