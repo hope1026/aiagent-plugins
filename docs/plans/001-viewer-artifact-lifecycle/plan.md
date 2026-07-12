@@ -356,7 +356,7 @@ TDD와 UI는 현재 plan Task를 `docs/plans/PPP-<slug>/`에서 찾는다. verif
 - 병렬 안전성: Task 3과 병렬 가능하지만 Task 5보다 먼저 완료한다.
 - 승인 gate: 없음
 
-- [ ] **Step 1: builder regression test를 두 mode 기준으로 먼저 수정한다.**
+- [x] **Step 1: builder regression test를 두 mode 기준으로 먼저 수정한다.**
 
 검사 항목:
 
@@ -369,15 +369,13 @@ grep -q '"mode": "plan"' "$PLAN_DIR/view.html"
 grep -q '"freshness": "unverified"' "$PLAN_DIR/view.html"
 ```
 
-scale fixture는 `spec/`과 `plan/` 디렉터리를 따로 만들고 plan 아래 `progress.md`, `tasks/001-*.md`를 생성한다.
-
-- [ ] **Step 2: RED를 확인한다.**
+- [x] **Step 2: RED를 확인한다.**
 
 실행: `bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh`
 
 예상: `combined` 제거, `view.html` output, `--tasks-dir` 중 첫 미구현 동작에서 실패한다.
 
-- [ ] **Step 3: CLI와 output derivation을 구현한다.**
+- [x] **Step 3: CLI와 output derivation을 구현한다.**
 
 함수 계약:
 
@@ -392,17 +390,17 @@ def selected_sources(args: argparse.Namespace) -> list[tuple[str, Path]]:
 
 `choices`는 `("spec", "plan")`만 허용한다. spec mode는 `--spec`만, plan mode는 `--plan`과 optional sources만 허용하며 spec content를 plan source에 포함하지 않는다.
 
-- [ ] **Step 4: source-relative manifest와 unique count를 구현한다.**
+- [x] **Step 4: source-relative manifest와 unique count를 구현한다.**
 
 source path는 `view.html` parent 기준 POSIX 상대 경로로 기록한다. Task와 Step은 Task-scoped key로 중복 제거하고, R·AC·Mermaid는 선택된 mode source 집합 안에서만 집계한다. manifest 초기 freshness는 항상 `unverified`다.
 
-- [ ] **Step 5: GREEN과 전체 builder regression을 확인한다.**
+- [x] **Step 5: GREEN과 전체 builder regression을 확인한다.**
 
 실행: `bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh`
 
 예상: `test-build-viewer: all checks passed`, output 두 개, combined output 0개.
 
-- [ ] **Step 6: 변경을 commit한다.**
+- [x] **Step 6: 변경을 commit한다.**
 
 실행: `git add plugins/forge/skills/spec-viewer/scripts/build_viewer.py plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh plugins/forge/skills/spec-viewer/tests/fixtures/generate-scale-fixture.py && git commit -m "feat(forge): build independent spec and plan views"`
 
@@ -750,3 +748,4 @@ push, publish, Marketplace update는 실행하지 않고 사용자에게 별도 
 - 2026-07-13: Task 1 완료 — shared artifact path contract (`2da1dac`).
 - 2026-07-13: Task 2 완료 — independent plan authoring lifecycle (`51bd56e`).
 - 2026-07-13: Task 3 완료 — plan-local execution and progress workflow (`83b7042`).
+- 2026-07-13: Task 4 완료 — independent spec/plan builder modes (`cef0a18`). Scale fixture split remains owned by Task 8.

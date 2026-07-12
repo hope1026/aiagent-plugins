@@ -66,6 +66,29 @@ if grep -q 'src="https://cdn.jsdelivr.net/npm/mermaid' "$SPEC_OUT"; then
   exit 1
 fi
 
+bash "$BUILDER" --check "$PLAN_OUT"
+cp "$PLAN_DIR/plan.md" "$PLAN_DIR/plan.md.original"
+printf '\nchanged\n' >> "$PLAN_DIR/plan.md"
+if bash "$BUILDER" --check "$PLAN_OUT"; then
+  echo "stale Viewer unexpectedly passed --check" >&2
+  exit 1
+fi
+mv "$PLAN_DIR/plan.md.original" "$PLAN_DIR/plan.md"
+
+mv "$PLAN_DIR/progress.md" "$PLAN_DIR/progress.md.missing"
+if bash "$BUILDER" --check "$PLAN_OUT"; then
+  echo "Viewer with a missing source unexpectedly passed --check" >&2
+  exit 1
+fi
+mv "$PLAN_DIR/progress.md.missing" "$PLAN_DIR/progress.md"
+
+INVALID_OUT="$TMP/invalid-manifest.html"
+printf '<html><script type="application/json" id="forge-source-manifest">{bad}</script></html>\n' > "$INVALID_OUT"
+if bash "$BUILDER" --check "$INVALID_OUT"; then
+  echo "invalid manifest unexpectedly passed --check" >&2
+  exit 1
+fi
+
 if bash "$BUILDER" \
   --mode combined \
   --spec "$SPEC_DIR/spec.md" \
