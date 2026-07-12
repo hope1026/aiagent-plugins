@@ -29,6 +29,8 @@ LABELS = {
         "nav": "Review sections",
         "generated": "generated",
         "sources": "Sources",
+        "diagram": "Diagram",
+        "mermaid_error": "Mermaid error",
     },
     "ko": {
         "overview": "개요",
@@ -40,6 +42,8 @@ LABELS = {
         "nav": "검토 항목",
         "generated": "생성",
         "sources": "Source",
+        "diagram": "다이어그램",
+        "mermaid_error": "Mermaid 오류",
     },
 }
 
@@ -218,6 +222,8 @@ def build(args: argparse.Namespace, argv: list[str]) -> str:
         "{{NAV_LABEL}}": html.escape(labels["nav"]),
         "{{SOURCE_SUMMARY}}": source_summary(manifest, labels),
         "{{SOURCE_MANIFEST}}": manifest_json,
+        "{{DIAGRAM_LABEL}}": html.escape(labels["diagram"]),
+        "{{MERMAID_ERROR}}": html.escape(labels["mermaid_error"]),
         "{{CONTENT}}": content,
         "{{MERMAID}}": mermaid_tag(args.offline),
     }
@@ -246,4 +252,3 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

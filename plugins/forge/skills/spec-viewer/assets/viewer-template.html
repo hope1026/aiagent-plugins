@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{TITLE}}</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e6e5c'/%3E%3Cpath d='M17 18h30v7H25v8h18v7H25v12h-8z' fill='white'/%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #f6f5f2;
@@ -35,6 +36,7 @@
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.6;
+    overflow-x: hidden;
   }
   /* type scale: 1.25 ratio on a 1rem base */
   h1 { font-size: 1.953rem; line-height: 1.2; margin: 0; }
@@ -58,7 +60,7 @@
   .tab-bar button {
     appearance: none; border: none; background: none; color: var(--text-muted);
     font: inherit; font-size: 0.9rem; font-weight: 550; padding: 0.5rem 0.85rem;
-    cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap;
+    cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; min-height: 44px;
   }
   .tab-bar button:hover { color: var(--text); }
   .tab-bar button.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -66,7 +68,10 @@
   main { padding-top: 1.5rem; padding-bottom: 4rem; }
   .tab-panel > :first-child { margin-top: 0; }
 
-  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
   th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
   th { background: var(--surface); font-weight: 650; }
   tr:target td { background: var(--accent-soft); }
@@ -77,18 +82,35 @@
     padding: 0.85rem 1rem; overflow-x: auto;
   }
   pre.mermaid[data-processed] { background: none; border: none; padding: 0; overflow: visible; }
-  pre.mermaid svg { max-width: 100%; height: auto; }
-  pre.mermaid-error { border-color: var(--error); }
-  pre.mermaid-error::before {
-    content: "invalid mermaid — source shown"; display: block; color: var(--error);
-    font-weight: 650; margin-bottom: 0.5rem;
+
+  .table-scroll, .diagram-scroll {
+    width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
   }
+  .table-scroll table { min-width: 42rem; }
+  .diagram-scroll { margin: 1rem 0; border: 1px solid var(--border); background: var(--surface); }
+  .diagram-scroll pre.mermaid { margin: 0; border: 0; }
+  .diagram-scroll svg { display: block; height: auto; margin: 0 auto; }
+  .diagram-error { border: 1px solid var(--error); padding: 0.85rem 1rem; }
+  .mermaid-error-message { color: var(--error); font-weight: 650; margin: 0 0 0.5rem; }
+  .mermaid-error-source { margin: 0; }
+
+  .source-summary { margin-top: 0.75rem; color: var(--text-muted); font-size: 0.85rem; }
+  .source-summary summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .source-summary ul { padding-left: 1.25rem; }
+  .source-summary li { max-width: none; overflow-wrap: anywhere; }
 
   .ac-item {
     display: flex; gap: 0.6rem; align-items: baseline; padding: 0.5rem 0;
     border-bottom: 1px solid var(--border); max-width: 65ch;
   }
   .ac-item input { accent-color: var(--accent); flex: none; transform: translateY(2px); }
+
+  @media (max-width: 43.75rem) {
+    .doc-header-inner, .tab-bar, main { padding-left: 1rem; padding-right: 1rem; }
+    .diagram-scroll.is-wide svg { min-width: 48rem; max-width: none; }
+    .table-scroll table { min-width: 42rem; }
+  }
 
   @media print {
     .tab-bar { display: none; }
@@ -99,10 +121,12 @@
       margin: 1.5rem 0 0.75rem; border-bottom: 1px solid #000; padding-bottom: 0.25rem;
     }
     table, pre, svg { page-break-inside: avoid; }
+    .table-scroll, .diagram-scroll { overflow: visible; border: 0; }
+    .diagram-scroll.is-wide svg { min-width: 0; max-width: 100%; }
   }
 </style>
 </head>
-<body>
+<body data-diagram-label="{{DIAGRAM_LABEL}}" data-mermaid-error="{{MERMAID_ERROR}}">
 <header class="doc-header">
   <div class="doc-header-inner">
     <h1>{{TITLE}}</h1>
@@ -139,16 +163,70 @@
       var el = blocks[i];
       el.setAttribute('data-forge-rendered', '1');
       var src = el.textContent.trim();
+      var wrapper = ensureDiagramWrapper(el, src, i);
       var valid = false;
-      try { valid = await mermaid.parse(src, { suppressErrors: true }); } catch (e) { valid = false; }
+      var parseError = null;
+      try { valid = await mermaid.parse(src); } catch (e) { parseError = e; }
       if (valid) {
-        try { await mermaid.run({ nodes: [el] }); continue; } catch (e2) { /* fall through */ }
+        try { await mermaid.run({ nodes: [el] }); continue; } catch (e2) { parseError = e2; }
       }
-      var fallback = document.createElement('pre');
-      fallback.className = 'mermaid-error';
-      fallback.textContent = src;
-      el.replaceWith(fallback);
+      var fallback = document.createElement('div');
+      fallback.className = 'diagram-error';
+      var message = document.createElement('p');
+      message.className = 'mermaid-error-message';
+      message.textContent = document.body.getAttribute('data-mermaid-error') + ': ' + errorDetails(parseError);
+      var source = document.createElement('pre');
+      source.className = 'mermaid-error-source';
+      source.textContent = src;
+      fallback.appendChild(message);
+      fallback.appendChild(source);
+      wrapper.replaceWith(fallback);
     }
+  }
+
+  function errorDetails(error) {
+    var text = String(error && (error.str || error.message) || 'parse failed');
+    var location = error && error.hash && error.hash.loc;
+    if (location && location.first_line) {
+      text += ' (line ' + location.first_line + ', column ' + (location.first_column || 0) + ')';
+    }
+    return text;
+  }
+
+  function ensureDiagramWrapper(el, src, index) {
+    var wrapper = el.closest('.diagram-scroll');
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.className = 'diagram-scroll';
+      el.parentNode.insertBefore(wrapper, el);
+      wrapper.appendChild(el);
+    }
+    if (/^\s*(sequenceDiagram|flowchart\s+LR|graph\s+LR)/m.test(src)) {
+      wrapper.classList.add('is-wide');
+    }
+    wrapper.setAttribute('role', 'region');
+    if (!wrapper.hasAttribute('aria-label') && !wrapper.hasAttribute('aria-labelledby')) {
+      var heading = wrapper.parentElement && wrapper.parentElement.querySelector('h2, h3, h4');
+      if (heading) {
+        if (!heading.id) { heading.id = 'diagram-title-' + index; }
+        wrapper.setAttribute('aria-labelledby', heading.id);
+      } else {
+        wrapper.setAttribute('aria-label', document.body.getAttribute('data-diagram-label') + ' ' + (index + 1));
+      }
+    }
+    return wrapper;
+  }
+
+  function wrapTables(panel) {
+    panel.querySelectorAll('table').forEach(function (table) {
+      if (table.closest('.table-scroll')) { return; }
+      var wrapper = document.createElement('div');
+      wrapper.className = 'table-scroll';
+      wrapper.setAttribute('role', 'region');
+      wrapper.setAttribute('tabindex', '0');
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
   }
 
   function activate(id) {
@@ -164,7 +242,7 @@
       }
     });
     var active = document.getElementById(id);
-    if (active) { renderDiagrams(active); }
+    if (active) { wrapTables(active); renderDiagrams(active); }
   }
 
   function fromHash() {
@@ -186,18 +264,24 @@
   window.addEventListener('hashchange', fromHash);
 
   var storeKey = 'forge-viewer:' + document.title;
+  var checkboxState = { ac: {}, step: {} };
+  function checkboxKind(box) { return box.hasAttribute('data-step') ? 'step' : 'ac'; }
+  function checkboxId(box, kind) { return box.getAttribute(kind === 'step' ? 'data-step' : 'data-ac'); }
   function saveChecks() {
-    var state = {};
-    document.querySelectorAll('input[type="checkbox"][data-ac]').forEach(function (box) {
-      state[box.getAttribute('data-ac')] = box.checked;
+    checkboxState = { ac: {}, step: {} };
+    document.querySelectorAll('input[type="checkbox"][data-ac], input[type="checkbox"][data-step]').forEach(function (box) {
+      var kind = checkboxKind(box);
+      checkboxState[kind][checkboxId(box, kind)] = box.checked;
     });
-    try { localStorage.setItem(storeKey, JSON.stringify(state)); } catch (e) {}
+    try { localStorage.setItem(storeKey, JSON.stringify(checkboxState)); } catch (e) {}
   }
   (function restoreChecks() {
-    var saved = {};
-    try { saved = JSON.parse(localStorage.getItem(storeKey) || '{}') || {}; } catch (e) {}
-    document.querySelectorAll('input[type="checkbox"][data-ac]').forEach(function (box) {
-      box.checked = !!saved[box.getAttribute('data-ac')];
+    try { checkboxState = JSON.parse(localStorage.getItem(storeKey) || '{}') || checkboxState; } catch (e) {}
+    checkboxState.ac = checkboxState.ac || {};
+    checkboxState.step = checkboxState.step || {};
+    document.querySelectorAll('input[type="checkbox"][data-ac], input[type="checkbox"][data-step]').forEach(function (box) {
+      var kind = checkboxKind(box);
+      box.checked = !!checkboxState[kind][checkboxId(box, kind)];
       box.addEventListener('change', saveChecks);
     });
   })();

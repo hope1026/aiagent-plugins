@@ -33,6 +33,16 @@ grep -q '"freshness": "current"' "$OUT"
 grep -q 'data-tab="overview"' "$OUT"
 grep -q '>개요</button>' "$OUT"
 grep -q 'window.mermaid' "$OUT"
+grep -q 'rel="icon" href="data:image/svg+xml' "$OUT"
+grep -q 'font-variant-numeric: tabular-nums' "$OUT"
+grep -q '\.diagram-scroll' "$OUT"
+grep -q '\.table-scroll' "$OUT"
+grep -q 'min-width: 48rem' "$OUT"
+grep -q 'min-height: 44px' "$OUT"
+grep -q 'mermaid-error-message' "$OUT"
+grep -q '\[data-step\]' "$OUT"
+grep -q 'checkboxState.ac' "$OUT"
+grep -q 'checkboxState.step' "$OUT"
 if grep -q 'src="https://cdn.jsdelivr.net/npm/mermaid' "$OUT"; then
   echo "offline output references the Mermaid CDN" >&2
   exit 1
