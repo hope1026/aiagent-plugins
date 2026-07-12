@@ -8,6 +8,8 @@ WRITING_SPECS="$ROOT_DIR/plugins/forge/skills/writing-specs/SKILL.md"
 WRITING_PLANS="$ROOT_DIR/plugins/forge/skills/writing-plans/SKILL.md"
 SPEC_VIEWER="$ROOT_DIR/plugins/forge/skills/spec-viewer/SKILL.md"
 EXECUTING_PLANS="$ROOT_DIR/plugins/forge/skills/executing-plans/SKILL.md"
+ROUTING_REF="$ROOT_DIR/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
+CODEX_REF="$ROOT_DIR/plugins/forge/skills/using-forge/references/codex-tools.md"
 
 for file in "$WRITING_SPECS" "$WRITING_PLANS" "$SPEC_VIEWER"; do
   grep -qi 'explicit user request' "$file" || fail "$file misses explicit user request gate"
@@ -33,5 +35,20 @@ if rg -n 'If a lifecycle Viewer exists, rebuild|rebuild it before the first chec
   "$EXECUTING_PLANS" >/dev/null; then
   fail "executing-plans still rebuilds Viewer automatically"
 fi
+
+for term in fast balanced frontier; do
+  grep -q "$term" "$EXECUTING_PLANS" || fail "executing-plans misses $term"
+done
+
+for term in impact uncertainty context_coupling verification_clarity parallel_group; do
+  grep -q "$term" "$ROUTING_REF" || fail "adaptive routing reference misses $term"
+done
+
+grep -q 'maximum of 3 concurrent subagents' "$ROUTING_REF" || \
+  fail "adaptive routing reference misses default concurrency cap"
+grep -q 'inherit the current model' "$CODEX_REF" || \
+  fail "Codex fallback does not inherit the current model"
+grep -q 'subagents remain available' "$CODEX_REF" || \
+  fail "Codex model fallback incorrectly disables subagents"
 
 echo "forge lifecycle policy: all checks passed"

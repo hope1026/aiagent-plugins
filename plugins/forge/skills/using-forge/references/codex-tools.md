@@ -35,3 +35,9 @@ This enables `spawn_agent`, `wait_agent`, and `close_agent`, which the forge exe
 ## Sequential fallback rule
 
 If no subagent capability is available, execute sequentially; never fabricate tool calls. Do the tasks yourself, one at a time, in plan order, applying the same per-task gates (the forge test-driven-development skill, per-task verification, ledger updates) the dispatching skill requires. A missing feature changes who does the work — never whether the process is followed.
+
+## Capability-tier agent roles
+
+Forge uses `fast`, `balanced`, and `frontier` as portable capability tiers, not fixed model slugs. Codex custom agent roles may map `forge_fast`, `forge_balanced`, and `forge_frontier` through `agents.<name>.config_file`; the user's role config owns the actual model and reasoning settings.
+
+When a configured tier role is unavailable, inherit the current model. Model fallback does not disable collaboration: subagents remain available whenever Codex exposes multi-agent capability, so independent Tasks may still run in parallel with the inherited model. Use sequential fallback only when subagent capability itself is unavailable. Never claim a role or model switch that the current session cannot perform.
