@@ -101,6 +101,8 @@ If running in Codex, read references/codex-tools.md — it maps forge's named ac
 
 User instructions — project instruction files (AGENTS.md, CLAUDE.md, and similar) and direct requests — take precedence over skills, which in turn override default behavior. Only skip a skill's workflow when the user has explicitly told you to skip it; a request for an outcome ("just add the button") is not an instruction to skip the process that produces it.
 
+Execution-mode requests may choose only routes that satisfy the routed skill's safety gates: requesting parallel execution does not by itself waive dependency, write-overlap, verification, authority, or release gates. An explicit request to change one of those governing constraints is a spec or scope decision, not an ordinary routing preference.
+
 Skill files are written in English. Always respond to the user in the user's language.
 
 ## Handoff

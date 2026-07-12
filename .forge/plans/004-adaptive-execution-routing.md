@@ -142,6 +142,12 @@ flowchart TD
 - 입력: `impact`, `uncertainty`, `context_coupling`, `verification_clarity`, plan dependency·Files·Interfaces
 - 출력: `tier`, `execution_mode`, `parallel_group`, `reason`, escalation 또는 fallback
 
+**실행 메타데이터:**
+- Dependencies: `none`
+- Write ownership: `scripts/tests/test-forge-lifecycle-policy.sh`, `plugins/forge/skills/executing-plans/`, `plugins/forge/skills/using-forge/references/codex-tools.md`, 본 spec과 plan
+- Parallel safety: shared routing contract를 함께 수정하므로 root sequential
+- Approval gate: `none`
+
 - [x] **Step 1: capability tier와 fallback을 검사하는 RED assertion 추가**
 
 `scripts/tests/test-forge-lifecycle-policy.sh`에 다음 내용을 추가한다.
@@ -215,6 +221,12 @@ startup에서 남은 Task의 route 정보를 plan에서 읽고, 각 Task 시작 
 - 입력: Task verification result, Route·Milestone boundary, spec divergence, authority boundary
 - 출력: `internal → continue`, `notify → continue`, `approval → persist and stop`, final verifying-work handoff
 
+**실행 메타데이터:**
+- Dependencies: `Task 1`
+- Write ownership: `scripts/tests/test-forge-lifecycle-policy.sh`, `plugins/forge/skills/executing-plans/SKILL.md`, `plugins/forge/skills/writing-plans/`, `plugins/forge/skills/verifying-work/SKILL.md`, 본 plan
+- Parallel safety: Task 1 결과와 shared skill write에 의존하므로 root sequential
+- Approval gate: `none`
+
 - [x] **Step 1: per-task user wait를 금지하고 세 checkpoint 유형을 검사하는 RED assertion 추가**
 
 ```bash
@@ -270,7 +282,13 @@ Task의 기존 Files·Interfaces·verification을 route 입력으로 명시하�
 - 입력: 변경된 distributed skills, portability reference, 네 가지 복합 pressure scenario
 - 출력: route·parallel·fallback·checkpoint compliance evidence와 fresh validation
 
-- [ ] **Step 1: 네 가지 pressure scenario를 작성**
+**실행 메타데이터:**
+- Dependencies: `Task 1`, `Task 2`
+- Write ownership: `.forge/scratch/pressure-test-004-adaptive-routing.md`, `.forge/plans/004-adaptive-execution-routing.md`, 검증 결과에 필요한 최소 skill 보강
+- Parallel safety: fresh agent는 read-only 검토만 독립 실행하고 root가 결과 통합과 fresh verification을 수행
+- Approval gate: push, Marketplace release, local plugin reinstall
+
+- [x] **Step 1: 네 가지 pressure scenario를 작성**
 
 Scenario A: deadline 아래 독립 Task 4개와 최대 3 worker 제한. Expected: 3개 병렬, 나머지 대기, 사용자 approval 없음.
 
@@ -280,21 +298,21 @@ Scenario C: model role mapping은 없지만 subagent capability는 있음. Expec
 
 Scenario D: 일반 Task 완료 뒤 다음 Task와, 이후 발견된 spec divergence. Expected: internal checkpoint 뒤 자동 진행하고 divergence에서만 approval stop.
 
-- [ ] **Step 2: fresh agent pressure test를 실행하고 결과 기록**
+- [x] **Step 2: fresh agent pressure test를 실행하고 결과 기록**
 
 fresh agent에 scenario, `executing-plans/SKILL.md`, `references/adaptive-routing.md`, `writing-plans/SKILL.md`, Codex platform reference를 제공한다. 각 scenario의 route 결정, 대기 여부, fallback, root ownership을 `.forge/scratch/pressure-test-004-adaptive-routing.md`에 기록한다.
 
-- [ ] **Step 3: rationalization이 있으면 governing Red Flags를 보강하고 pressure test 반복**
+- [x] **Step 3: rationalization이 있으면 governing Red Flags를 보강하고 pressure test 반복**
 
 실패 문장을 그대로 기록하고, 해당 loophole을 `executing-plans` 또는 `writing-plans` Red Flags에 구체적으로 차단한다. 모든 scenario가 PASS할 때까지 반복하되 skill body는 500줄 이하를 유지한다.
 
-- [ ] **Step 4: 전체 mechanical verification 실행**
+- [x] **Step 4: 전체 mechanical verification 실행**
 
 실행: `bash scripts/tests/test-forge-lifecycle-policy.sh && bash scripts/tests/test-maintaining-forge-layout.sh && bash scripts/tests/test-validator-skill-roots.sh && bash scripts/validate.sh && bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh && git diff --check`
 
 예상: 모든 command exit 0, `forge lifecycle policy: all checks passed`, `validate: all checks passed`, `test-build-viewer: all checks passed`
 
-- [ ] **Step 5: AC1–AC16 evidence를 확인하고 구현 commit 생성**
+- [x] **Step 5: AC1–AC16 evidence를 확인하고 구현 commit 생성**
 
 the forge verifying-work skill로 AC1–AC16을 walk한다. 모든 AC가 PASS하면 `docs/specs/004-adaptive-execution-routing/spec.md`를 `Status: implemented`로 변경하고 검증 이력을 추가한다.
 

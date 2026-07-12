@@ -11,6 +11,7 @@ EXECUTING_PLANS="$ROOT_DIR/plugins/forge/skills/executing-plans/SKILL.md"
 ROUTING_REF="$ROOT_DIR/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
 CODEX_REF="$ROOT_DIR/plugins/forge/skills/using-forge/references/codex-tools.md"
 VERIFYING_WORK="$ROOT_DIR/plugins/forge/skills/verifying-work/SKILL.md"
+USING_FORGE="$ROOT_DIR/plugins/forge/skills/using-forge/SKILL.md"
 
 for file in "$WRITING_SPECS" "$WRITING_PLANS" "$SPEC_VIEWER"; do
   grep -qi 'explicit user request' "$file" || fail "$file misses explicit user request gate"
@@ -51,6 +52,13 @@ grep -q 'inherit the current model' "$CODEX_REF" || \
   fail "Codex fallback does not inherit the current model"
 grep -q 'subagents remain available' "$CODEX_REF" || \
   fail "Codex model fallback incorrectly disables subagents"
+if rg -n 'one fresh subagent per plan task|close_agent' "$CODEX_REF" >/dev/null; then
+  fail "Codex reference promises mechanical dispatch or unavailable lifecycle tools"
+fi
+grep -q 'requesting parallel execution does not' "$USING_FORGE" || \
+  fail "using-forge allows direct requests to bypass parallel safety"
+grep -q 'overlapping writes remain sequential' "$ROUTING_REF" || \
+  fail "adaptive routing misses the user-pressure counter"
 
 grep -q 'internal checkpoint' "$EXECUTING_PLANS" || fail "missing internal checkpoint"
 grep -q 'notify checkpoint' "$EXECUTING_PLANS" || fail "missing notify checkpoint"

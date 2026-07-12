@@ -1,6 +1,6 @@
 # 적응형 실행 라우팅과 비차단 Checkpoint
 
-Status: approved
+Status: implemented
 
 ## Overview
 
@@ -200,3 +200,4 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - 2026-07-12 [REJECTED] Task마다 approval checkpoint: 사용자 응답 대기가 연속 실행을 방해한다.
 - 2026-07-12 [REJECTED] 모든 checkpoint 제거: spec divergence와 외부 권한 경계를 안전하게 처리할 수 없다.
 - 2026-07-12 [DECISION] 사용자가 자동 capability-tier 라우팅과 비차단 checkpoint 스펙을 승인했다.
+- 2026-07-12 [DECISION] semantic policy test, portability validator, route evidence audit, 네 가지 fresh-agent pressure scenario를 통해 AC1–AC16이 PASS했다.

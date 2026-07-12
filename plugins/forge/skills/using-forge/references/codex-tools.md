@@ -30,7 +30,7 @@ Add to your Codex config (`~/.codex/config.toml`):
 multi_agent = true
 ```
 
-This enables `spawn_agent`, `wait_agent`, and `close_agent`, which the forge executing-plans skill uses to dispatch one fresh subagent per plan task. Always close subagents once they have finished all their work.
+These operations let the forge executing-plans skill dispatch bounded Tasks that pass adaptive routing. Do not dispatch a fresh subagent mechanically for every Task. Use only the multi-agent lifecycle operations exposed by the current Codex session.
 
 ## Sequential fallback rule
 

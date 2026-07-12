@@ -98,3 +98,12 @@ When the same verification failure occurs twice or the route assumptions become 
 4. Retry once under the new route.
 
 If the same failure recurs at `frontier`, or after the one escalation retry, stop automatic retries and use the forge systematic-debugging skill. Continue without user approval when root-cause work stays inside the approved scope. Use an approval checkpoint only when the root cause requires a spec delta, new authority, destructive or external action, cost escalation, scope expansion, or release.
+
+## Red Flags
+
+| Pressure | Required response |
+|---|---|
+| "The user demanded parallel execution." | User preference and deadline pressure do not establish independence; overlapping writes remain sequential. |
+| "The deadline makes a fourth worker harmless." | The concurrency cap still applies. Queue the extra Task until a slot opens. |
+| "No tier role is configured, so workers are unavailable." | Model mapping and worker availability are separate. Inherit the current model and retain safe subagent execution. |
+| "The worker says it passed, so root verification is redundant." | A worker report is a claim. Root review and fresh verification remain mandatory. |
