@@ -71,7 +71,9 @@ A local edit, test, planned local commit, tier selection, subagent dispatch, par
 
 ### Adaptive subagent routing
 
-Use `references/adaptive-routing.md`; do not dispatch one fresh subagent mechanically for every Task. Delegate only bounded work with complete Interfaces, disjoint writes, and independent verification. Parallelize only Tasks that pass every safety gate, respect a maximum of 3 concurrent subagents when the user set no lower cap, and keep root ownership of diff review and fresh verification. If model-role mapping is unavailable, inherit the current model while subagents remain usable. If subagent capability is unavailable, execute sequentially yourself. Never fabricate model selection or subagent calls — platform specifics live in the forge using-forge skill's platform notes.
+Use `references/adaptive-routing.md`; apply its deterministic defaults: `fast` uses root, an eligible `balanced` Task uses a subagent, and `frontier` uses root. Do not ask the user to choose an execution mode for an ordinary Task. Honor explicit `root-only`, disabled-subagent, and lower-concurrency preferences, then record the route and report delegation at notify or final reporting.
+
+Do not dispatch one fresh subagent mechanically for every Task. Delegate only bounded work with complete Interfaces, disjoint writes, and independent verification. Parallelize only Tasks that pass every safety gate, respect a maximum of 3 concurrent subagents when the user set no lower cap, and keep root ownership of diff review and fresh verification. If model-role mapping is unavailable, inherit the current model while subagents remain usable. If subagent capability is unavailable, execute sequentially yourself. Never fabricate model selection or subagent calls — platform specifics live in the forge using-forge skill's platform notes.
 
 ## Working Files
 
@@ -97,6 +99,7 @@ Use `references/adaptive-routing.md`; do not dispatch one fresh subagent mechani
 | "A notify was sent, so I must wait for feedback." | Notify is informational. Continue with the next safe Task unless an approval boundary exists. |
 | "Plan progress changed, so I should refresh the existing Viewer." | The Viewer is stale, but that does not grant update permission. Report it and wait for an explicit user request. |
 | "Subagents are available, so every Task gets one." | Dispatch has context and review cost. Use root for tightly coupled work and delegate only Tasks that pass the adaptive routing gate. |
+| "I should ask which execution mode the user wants for each Task." | Apply the tier default and report the route. Execution mode is not an approval boundary. |
 | "The model role is missing, so parallel work is impossible." | Model mapping and subagent availability are independent. Inherit the current model and keep safe parallelism when workers remain available. |
 
 ## Handoff

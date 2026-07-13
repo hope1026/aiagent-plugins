@@ -35,6 +35,16 @@ Choose one:
 
 Subagent availability alone is not a reason to delegate. Use one only when the handoff is complete and root review remains cheaper than direct execution.
 
+## Default Execution Modes
+
+Apply these defaults after selecting the capability tier and before forming a parallel group:
+
+- `fast` defaults to `root`. Use `parallel` only for multiple mechanical Tasks that pass every parallel safety condition and save more wall-clock time than dispatch and review cost.
+- `balanced` defaults to `subagent` only when `context_coupling=low`, `verification_clarity=strong`, the handoff is complete, write ownership is disjoint, and root review is cheaper than direct execution. Otherwise use `root`. When two or more eligible Tasks also pass the parallel safety gate, prefer `parallel` within the concurrency cap.
+- `frontier` defaults to `root`. Delegate only bounded evidence collection that is separable from source-of-truth judgment; spec, architecture, security, data safety, root cause, integration, and final judgment remain root-owned.
+
+User execution preferences override these defaults when they are more restrictive: honor `root-only`, disabled subagents, and a lower concurrency cap. A preference never waives dependency, write-overlap, verification, or root-ownership gates. Do not ask the user to choose a mode for an ordinary Task; record the automatic choice in the ledger and summarize delegation in a notify or final report.
+
 ## Parallel Safety Gate
 
 Parallelize only when every condition holds:
@@ -107,3 +117,5 @@ If the same failure recurs at `frontier`, or after the one escalation retry, sto
 | "The deadline makes a fourth worker harmless." | The concurrency cap still applies. Queue the extra Task until a slot opens. |
 | "No tier role is configured, so workers are unavailable." | Model mapping and worker availability are separate. Inherit the current model and retain safe subagent execution. |
 | "The worker says it passed, so root verification is redundant." | A worker report is a claim. Root review and fresh verification remain mandatory. |
+| "Balanced means I should always dispatch a worker." | The subagent default applies only when coupling is low, verification is strong, handoff is complete, ownership is disjoint, and review is cheaper than direct execution. Otherwise use root. |
+| "I should ask the user which mode they prefer for this Task." | Apply the deterministic default and report it. Ask only when a user-owned authority, scope, cost, or product decision is actually required. |

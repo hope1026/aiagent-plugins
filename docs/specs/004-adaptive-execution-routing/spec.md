@@ -1,6 +1,6 @@
 # 적응형 실행 라우팅과 비차단 Checkpoint
 
-Status: implemented
+Status: approved
 
 ## Overview
 
@@ -36,6 +36,10 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R5. spec·architecture 결정, 높은 영향도, 큰 불확실성, 여러 subsystem에 걸친 변경, 보안·데이터 위험, 약한 검증 신호 중 하나라도 있는 Task는 `frontier` tier를 사용해야 한다.
 - R6. 실행 중 같은 원인의 검증 실패가 두 번 반복되거나 root agent가 Task의 route 판단 근거가 무효라고 확인하면, Forge는 한 단계 높은 tier로 자동 escalation하고 progress ledger에 이유를 기록해야 한다.
 - R7. 플랫폼이 custom agent role이나 model 선택을 지원하지 않으면 Forge는 선택한 tier에 현재 model을 상속해야 한다. 이 경우에도 subagent 기능이 있으면 병렬 실행할 수 있고, subagent 기능까지 없을 때만 동일한 route·검증 규칙으로 순차 실행해야 하며, 지원하지 않는 model 선택이나 subagent 호출을 가장하지 않아야 한다.
+- R28. ADDED — `fast` tier Task는 root agent가 직접 실행하는 것을 기본값으로 사용해야 한다. 단, 여러 정형 Task가 병렬 안전성 조건을 모두 만족하고 dispatch·review 비용보다 wall-clock 절감이 큰 경우에는 병렬 subagent 실행을 선택할 수 있어야 한다.
+- R29. ADDED — `balanced` tier Task는 `context_coupling=low`, `verification_clarity=strong`, 완전한 handoff, 독립적인 write ownership을 모두 만족하고 root review가 직접 실행보다 저렴하면 단일 subagent 실행을 기본값으로 사용해야 한다. 하나라도 만족하지 않으면 root agent가 실행해야 한다.
+- R30. ADDED — `frontier` tier Task는 root agent가 직접 실행하는 것을 기본값으로 사용해야 한다. 증거 수집처럼 source-of-truth 판단과 분리된 bounded work만 subagent에 위임할 수 있으며, spec·architecture·security·data safety·root cause·최종 통합 판단은 root agent가 소유해야 한다.
+- R31. ADDED — Forge는 R28–R30의 기본 실행 주체를 사용자에게 매번 질문하지 않고 자동 선택해야 한다. 사용자가 `root-only`, subagent 사용 여부 또는 동시 실행 상한을 명시한 경우에는 그 선호를 안전성 조건 안에서 우선 적용하고, 자동 위임 결과는 notify 또는 최종 보고에서 알려야 한다.
 
 ### Subagent와 병렬 실행
 
@@ -81,9 +85,15 @@ flowchart TD
     C -- 낮음 --> D[fast]
     C -- 보통 --> E[balanced]
     C -- 높음 --> F[frontier]
-    D --> G{독립성과 병렬 이득이 있는가?}
-    E --> G
-    F --> G
+    D --> D1[root 기본]
+    E --> E1{결합도 낮음·검증 강함·handoff 완전?}
+    E1 -- 예 --> E2[단일 subagent 기본]
+    E1 -- 아니오 --> E3[root 실행]
+    F --> F1[root 기본]
+    D1 --> G{독립성과 병렬 이득이 있는가?}
+    E2 --> G
+    E3 --> G
+    F1 --> I
     G -- 예 --> H[안전한 parallel group에 subagent 배정]
     G -- 아니오 --> I[root 또는 단일 subagent로 순차 실행]
     H --> J[root review와 fresh verification]
@@ -156,6 +166,14 @@ Platform mapping 예시:
 | `balanced` | 일반 coding·testing·documentation | 플랫폼의 기본 coding model과 균형 reasoning 설정 |
 | `frontier` | 복잡한 판단, 높은 위험, 넓은 context | 사용 가능한 최고 capability model과 높은 reasoning 설정 |
 
+기본 execution mode:
+
+| Tier | 기본 실행 주체 | 자동 변경 조건 |
+|---|---|---|
+| `fast` | `root` | 여러 정형 Task가 병렬 안전성 조건을 모두 만족하고 coordination 비용보다 실행 시간 절감이 큰 경우 `parallel` |
+| `balanced` | `subagent` | 낮은 context 결합도, 강한 검증, 완전한 handoff, 독립 write ownership을 모두 만족하지 않으면 `root`; 독립 Task가 둘 이상이면 안전성 gate 통과 후 `parallel` |
+| `frontier` | `root` | source-of-truth 판단과 분리된 bounded evidence collection만 `subagent` 가능 |
+
 변경 대상:
 
 | 대상 | 주요 변경 |
@@ -186,6 +204,8 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - AC14 (R1–R26): instruction pressure test에서 deadline과 병렬 실행 압력이 함께 주어져도 agent는 충돌 Task를 순차 처리하고, ordinary Task마다 사용자 응답을 기다리지 않으며, spec divergence와 release 경계에서는 멈춘다.
 - AC15 (R1–R26): `bash scripts/validate.sh`와 관련 skill 검증을 실행하면 `validate: all checks passed`가 출력되고 distributed skill portability 규칙 위반이 없다.
 - AC16 (R6, R17, R27): `frontier` escalation 후 같은 verification failure가 다시 발생하면 자동 재시도가 중단되고 the forge systematic-debugging skill로 전환되며, root cause가 spec divergence나 추가 권한으로 확인되지 않는 한 사용자 approval을 요구하지 않는다.
+- AC17 (R28–R30): 동일한 plan에서 정형 `fast` Task, 결합도가 낮고 결정적 검증이 있는 독립 `balanced` Task, source-of-truth 판단을 포함한 `frontier` Task를 route하면 기본 execution mode가 각각 `root`, `subagent`, `root`로 기록된다. `balanced` Task의 handoff 또는 독립성이 불완전하면 `root`로 기록된다.
+- AC18 (R9, R11, R18, R31): 안전한 독립 `balanced` Task가 둘 이상이면 사용자에게 실행 방식을 묻지 않고 최대 3개까지 병렬 subagent로 실행하며 notify 또는 최종 보고에서 위임 결과를 알린다. 사용자가 `root-only` 또는 더 낮은 동시 실행 상한을 지정하면 그 설정을 지킨다.
 
 ## Decisions & History
 
@@ -201,3 +221,5 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - 2026-07-12 [REJECTED] 모든 checkpoint 제거: spec divergence와 외부 권한 경계를 안전하게 처리할 수 없다.
 - 2026-07-12 [DECISION] 사용자가 자동 capability-tier 라우팅과 비차단 checkpoint 스펙을 승인했다.
 - 2026-07-12 [DECISION] semantic policy test, portability validator, route evidence audit, 네 가지 fresh-agent pressure scenario를 통해 AC1–AC16이 PASS했다.
+- 2026-07-13 [CHANGE] R28–R31 ADDED 및 AC17–AC18 ADDED: `fast`는 root, 독립성과 검증이 명확한 `balanced`는 subagent, `frontier`는 root를 기본 실행 주체로 사용하고, 안전한 자동 위임은 사용자에게 매번 묻지 않도록 실행 mode 기본값을 명시한다.
+- 2026-07-13 [DECISION] 사용자가 R28–R31과 AC17–AC18의 기본 execution mode 정책을 승인하고 구현·push·현재 머신 업데이트를 요청했다.
