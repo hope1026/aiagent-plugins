@@ -42,7 +42,7 @@ The startup checklist and every plan task become todos — create one todo per i
 2. **Open progress state.** The default source is Task checkboxes plus `Progress History` in `plan.md`. When `progress.md` exists beside the plan, use it for detailed routing and checkpoint evidence. When `tasks/*.md` exists, confirm each Task ID appears once in the plan index and once in its owned Task file.
 3. **Skip completed work.** Tasks the plan-local progress state marks complete are DONE — do not redo them. Resume at the first task not marked complete. After any compaction or resume, trust plan-local progress and commit history over recollection.
 4. **Create one todo per remaining task.**
-5. **Check the review view without changing it.** If `view.html` exists beside the plan, compare its source hashes to `plan.md` and optional `progress.md` and `tasks/*.md`; report stale or unverified state. Do not create or update a Viewer without an explicit user request.
+5. **Ignore the review view during execution.** A `view.html` beside the plan is not an execution source and needs no hash, browser, or layout check. Do not create or update a Viewer without an explicit user request.
 6. **Route the remaining Tasks.** Read `references/adaptive-routing.md`. For each Task, use `impact`, `uncertainty`, `context_coupling`, and `verification_clarity` to choose the capability tier and likely execution mode. Use plan dependency, Files, Interfaces, and verification to form only safe `parallel_group` values. Record the final route immediately before the Task starts so repository changes can invalidate an earlier estimate.
 
 ### Phase 2: Per-task loop
@@ -54,7 +54,7 @@ For each task, in plan order:
 3. Run the task's verification commands NOW and read the actual output. Expected output only counts when you saw it.
 4. Commit as the plan directs.
 5. Check the Task boxes and append one `Progress History` line: `Task N: complete (commits <a>..<b>)`. When `progress.md` exists, append detailed route evidence there and keep the summary in `plan.md`.
-6. If a plan Viewer exists and any plan source changed, report it as stale. Do not rebuild it unless the user explicitly requests the current `plan` Viewer; after such a request, confirm Task, Step, and Mermaid counts plus every source hash.
+6. If a plan Viewer exists and any plan source changed, it may be reported as stale. Do not inspect, validate, or rebuild it unless the user explicitly requests the current `plan` Viewer; after such a request, use the forge spec-viewer skill and stop when its build succeeds.
 7. Mark the todo complete and record an **internal checkpoint**: verification, checkbox, ledger, and planned local commit are the durable recovery point. Start the next safe Task without waiting for the user.
 8. Send a non-blocking **notify checkpoint** when a Route or Milestone completes, a `frontier` Task completes, or automatic tier escalation occurs. Summarize completed work, fresh evidence, tier and execution mode, and what continues next. Do not wait for a response before starting the next safe Task.
 

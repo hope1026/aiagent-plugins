@@ -13,6 +13,7 @@ Viewer의 목적은 텍스트를 그림으로 치환하는 것이 아니다. 같
 - Viewer 안에서 source에 없는 런타임 의미, 요구사항, 의존성 또는 설계 결정을 새로 만들지 않는다.
 - Notion, Google Docs, 별도 문서 사이트를 필수 운영 요소로 추가하지 않는다.
 - Viewer 검토 결과만으로 제품 구현 완료나 `Status: implemented`를 선언하지 않는다.
+- 생성된 개별 Viewer를 구현 산출물처럼 별도 렌더링·레이아웃 검증하지 않는다.
 - 사용자의 명시적 요청 없이 spec·plan·checkpoint의 HTML Viewer를 생성하거나 갱신하지 않는다.
 - spec과 plan이 항상 1:1로 대응한다고 가정하거나 두 문서의 내용을 하나의 combined Viewer에 병합하지 않는다.
 
@@ -109,7 +110,7 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R48. HTML shell은 inline favicon을 포함해 로컬 브라우저 검증에서 favicon 404를 만들지 않아야 한다.
 - R49. 집계 수치와 상태 표는 tabular number를 사용해야 한다.
 - R50. 넓은 표는 독립 가로 스크롤 wrapper를 사용해 문서 전체 viewport 폭을 확장하지 않아야 한다.
-- R51. Viewer shell은 desktop 1440px와 mobile 390px에서 tab, 표, diagram, deep link, checkbox를 검증해야 한다.
+- R51. MODIFIED — Viewer shell, template, style, script 또는 runtime 동작을 변경할 때는 desktop 1440px와 mobile 390px에서 tab, 표, diagram, deep link, checkbox를 검증해야 하지만, 고정 shell로 개별 `view.html`을 생성할 때는 이 검증을 반복하지 않아야 한다.
 - R52. mobile에서 sequence diagram 글자를 읽기 어려우면 책임 요약표 또는 세로 flowchart를 먼저 제공하고 원본 diagram은 가로 스크롤로 유지해야 한다.
 
 ### 열람 시점 freshness
@@ -131,7 +132,7 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 
 ### ui-design과 writing-tone 규칙
 
-- R57. `ui-design`은 고정 Viewer shell 작업에서 Type, Palette, Spacing, Depth를 `inherited`로 선언할 수 있는 예외를 명시해야 한다.
+- R57. MODIFIED — 고정 Viewer shell로 spec 또는 plan `view.html`을 생성하는 작업은 `ui-design`을 적용하지 않아야 하며, Viewer shell·template·style 자체를 변경할 때만 `ui-design`을 적용해야 한다.
 - R58. content fragment는 임의 CSS, script, shell markup을 추가하지 않아야 한다.
 - R59. Viewer의 Signature는 장식이 아니라 `Route Map`, `Runtime Atlas`, `AC Coverage`의 콘텐츠 구조에서 만들어야 한다.
 - R60. diagram 추가는 제목, 읽는 법, mobile 대체 요약표와 한 묶음으로 검토해야 한다.
@@ -139,12 +140,12 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R62. Viewer copy는 이 화면에서 확인할 것을 먼저 말하고, 번역해도 의미가 유지되는 label은 사용자 언어로 쓰며 고유 API·service·schema 이름만 원문으로 유지해야 한다.
 - R63. Viewer copy는 요약→시각 흐름→원문 상세 순서로 구성하고 각 diagram 앞에 한 문장의 읽는 법을 제공해야 한다.
 
-### Viewer-only 검증
+### Viewer 생성과 검증 경계
 
-- R64. `verifying-work`는 Viewer-only 변경을 제품 동작이나 spec 구현 완료 검증과 구분해야 한다.
-- R65. Viewer-only 검증은 Level 1에서 panel 6개, Task·Step·AC·Mermaid 수, source Mermaid 일치, unresolved placeholder 0개, fragment의 shell markup 0개를 확인해야 한다.
-- R66. Viewer-only 검증은 desktop·390px mobile render, Mermaid error 0개, tab, deep link, checkbox persistence, offline Mermaid를 실제 브라우저에서 확인해야 한다.
-- R67. Viewer-only 검증 결과만으로 spec의 `Status:`를 `implemented`로 변경하지 않아야 한다.
+- R64. MODIFIED — 고정 Viewer tooling으로 개별 spec 또는 plan `view.html`을 생성하는 작업은 `verifying-work`를 적용하지 않고, build command 성공을 생성 완료의 충분한 근거로 사용해야 한다.
+- R65. MODIFIED — 생성된 개별 Viewer에는 별도 `--check`, source count·hash·Mermaid 일치 확인, unresolved placeholder·shell markup 검사 같은 post-build 검증을 수행하지 않아야 한다.
+- R66. MODIFIED — 생성된 개별 Viewer에는 desktop·390px mobile render, screenshot, layout, print, tab, deep link, checkbox persistence, Mermaid, offline, freshness 상태의 브라우저 검증을 수행하지 않아야 한다.
+- R67. Viewer 생성 결과만으로 governing product spec의 `Status:`를 `implemented`로 변경하지 않아야 하며, Viewer builder·template·style·script·runtime 동작 변경은 일반 구현 검증과 관련 AC 검증을 따라야 한다.
 
 ## Behavior & Flows
 
@@ -313,9 +314,9 @@ Viewer shell의 inherited visual system:
 | `writing-specs` | Markdown 기본 검토, Viewer 효용 안내, 완료 후 생성 여부 질문 |
 | `writing-plans` | 독립 plan ID, 선택적 Related Specs, plan 디렉터리, 진행·Task 분리 기준 |
 | `executing-plans` | plan 디렉터리의 상태·진행 기록과 요청이 있을 때만 plan Viewer 갱신 |
-| `ui-design` | inherited fixed shell 예외와 diagram fallback |
+| `ui-design` | 개별 View 생성 제외와 Viewer tooling 변경 시 UI 검증 |
 | `writing-tone` | 질문형 제목, 읽는 법, 요약 우선, locale copy |
-| `verifying-work` | Viewer-only Level 1 검증과 `implemented` 금지 |
+| `verifying-work` | 개별 View 생성 제외, Viewer tooling 검증, `implemented` 금지 |
 | `using-forge`, portability rules, README | `docs/specs`, `docs/plans`, committed View, `.forge` 임시 파일 계약 동기화 |
 | `systematic-debugging` | 로컬 debug note와 공유·장기 보존 root-cause 문서의 승격 경로 구분 |
 
@@ -336,13 +337,13 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - AC11 (R47): 잘못된 Mermaid fixture를 열면 다른 panel은 정상 동작하고 오류 diagram에는 오류 요약, 가능한 line·column, 원문 source가 표시된다.
 - AC12 (R35–R36): spec View의 R·AC deep link와 plan View의 Task·Step deep link 및 검토 checkbox를 변경하고 page를 reload하면 같은 mode 안에서 target과 종류별 checkbox 상태가 복원된다.
 - AC13 (R53–R56, R72–R75): 복잡한 plan을 작성하면 독립 plan ID, 선택적인 `Related Specs`, 필수 구조, 6~10 Route grouping, plan source로부터 만든 diagram 관점, checkpoint가 존재하고 Task 분리는 독립 소유권·병렬 실행·독립 승인 조건에서만 사용된다.
-- AC14 (R57–R60): Viewer fragment를 검사하면 style·script·doctype·shell markup이 없고, visual system은 inherited로 선언되며 각 diagram에 mobile fallback 요약이 연결된다.
-- AC15 (R64–R67): Viewer-only 변경을 검증하면 Level 1 checklist가 실행되고 결과가 모두 PASS여도 governing spec의 `Status:`는 변경되지 않는다.
+- AC14 (R57–R60): 고정 shell에서 개별 Viewer를 생성할 때 `ui-design` 절차를 적용하지 않고 fragment에 style·script·doctype·shell markup을 추가하지 않으며, Viewer shell·template·style 자체를 변경할 때만 `ui-design`을 적용한다.
+- AC15 (R64–R67): 고정 Viewer tooling으로 개별 View를 build하면 성공한 build에서 작업을 종료하고 별도 checker나 브라우저 검증을 실행하지 않으며 governing spec의 `Status:`를 변경하지 않는다. Viewer tooling 자체를 변경하면 이 예외 없이 일반 구현 검증을 수행한다.
 - AC16 (R18–R19): CDN build와 `--offline` build가 모두 열리고 offline 파일에는 외부 Mermaid script 요청이 없으며 diagram이 렌더된다.
 - AC17 (R21–R28): plan mode에서 6개 panel이 모두 존재하고 각 panel 내용이 mode mapping과 일치하며 요약→시각 흐름→상세 Task→AC evidence 순서가 유지된다.
 - AC18 (R5, R27, R77–R82): History panel에서 source path·생성 당시 hash, mode, locale, counts, 생성 시각, checkpoint, commit, rebuild command를 확인할 수 있고 열람 시 검증 전에는 `unverified`, 현재 source와 불일치하면 `stale`, 모두 일치하면 `current`로 표시된다.
-- AC19 (R51, R65–R66): desktop 1440px와 mobile 390px browser 검증에서 tab, deep link, checkbox persistence, diagram, table, print layout이 정상이며 Mermaid error가 0개다.
-- AC20 (R58, R65): generated fragment의 panel은 정확히 6개이고 unresolved placeholder와 shell markup이 0개다.
+- AC19 (R51, R65–R66): Viewer shell·template·style·script·runtime 동작을 변경한 경우에만 desktop 1440px와 mobile 390px browser 검증에서 tab, deep link, checkbox persistence, diagram, table, print layout이 정상이며 Mermaid error가 0개임을 확인하고, 개별 View 생성에서는 해당 검증을 실행하지 않는다.
+- AC20 (R21, R58): Viewer builder tooling을 검증하는 fixture에서 generated fragment의 panel은 정확히 6개이고 unresolved placeholder와 shell markup이 0개다. 개별 View 생성 뒤에는 이 fixture나 동등한 검사를 반복하지 않는다.
 - AC21 (R68): spec 또는 plan의 Markdown source 작성과 자체 검토가 끝나면, Viewer가 유용한 경우 승인 또는 handoff 메시지에서 생성 여부를 묻고 사용자의 응답 전에는 HTML 파일이 생성되지 않는다.
 - AC22 (R9, R13, R69): 기존 plan Viewer가 있는 Task checkpoint에서 `plan.md` 또는 `progress.md`가 변경되어도 자동 갱신하지 않고 Markdown으로 보고하며, 사용자가 갱신을 명시적으로 요청한 경우에만 현재 plan source 집합을 포함해 재생성한다.
 - AC23 (R1–R2, R6, R18, R70–R71): 새 spec과 새 plan을 만들면 각각 `docs/specs/NNN-<slug>/`와 `docs/plans/PPP-<slug>/`에서 독립 번호를 사용하고, 생성 요청을 받은 각 View는 source 옆 `view.html`로 Git 추적되며 `.forge/`에는 공유 문서나 최종 Viewer가 남지 않는다.
@@ -377,3 +378,5 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - 2026-07-13 [DECISION] plan은 경로와 ID 면에서 spec에 종속되지 않고 `Related Specs`로 0개 이상의 spec을 참조할 수 있지만, 제품 동작 변경에는 기존 approved spec gate를 유지한다.
 - 2026-07-13 [CHANGE] R84 ADDED: `.forge/`의 조사·debug 기록은 로컬 임시 자료로 취급하고, 공유하거나 장기 보존할 자료만 `docs/research/` 또는 `docs/debug/`로 승격한다.
 - 2026-07-13 [DECISION] 사용자가 독립 spec·plan 문서 구조, combined Viewer 제거, plan 진행 기록 구조, 열람 시 SHA-256 freshness 검증 변경안을 승인했다.
+- 2026-07-13 [CHANGE] R51, R57, R64–R67과 AC14–AC15, AC19 MODIFIED: 생성된 개별 spec·plan View는 사용자 검토용 보조 산출물로 취급하고 성공한 build 뒤 별도 checker, 브라우저, screenshot, viewport, layout, interaction 검증을 수행하지 않는다. Viewer tooling 자체의 변경에는 기존 구현 검증을 유지한다.
+- 2026-07-13 [DECISION] 사용자가 Markdown source의 정확성 검증은 유지하되 생성된 개별 HTML View의 post-build 레이아웃 검증은 제외하는 변경을 승인했다.

@@ -30,11 +30,11 @@ Violating the letter of this law is violating its spirit. Rewording a claim ("sh
 - Setting a spec's `Status:` to `implemented` (this skill is the ONLY thing permitted to set that value).
 - Accepting a subagent's success report.
 
-**NOT needed for:** neutral in-progress narration that claims nothing ("running the tests now"), or answering questions that assert nothing about work state.
+**NOT needed for:** neutral in-progress narration that claims nothing ("running the tests now"), answering questions that assert nothing about work state, or a generated spec/plan `view.html` whose build command already succeeded. The generated View exception does not cover changes to the Viewer builder, template, styles, scripts, or runtime behavior.
 
 ## The Process
 
-Verification has two levels. Level 1 always applies. Level 2 additionally applies whenever the work traces to a spec.
+Verification has two levels. Level 1 applies to implementation work. Level 2 additionally applies whenever that work traces to a spec. A generated spec/plan View is handled by the exception below.
 
 ### Level 1 — command-level verification (always)
 
@@ -52,20 +52,11 @@ Verification has two levels. Level 1 always applies. Level 2 additionally applie
 | Subagent finished | You inspected the diff and re-ran checks | The subagent's own report |
 | Requirements met | Level 2 walk below | Tests passing alone |
 
-#### Viewer-only Level 1 scope
+#### Generated Viewer exception
 
-A Viewer-only change alters a read-only review artifact or its presentation without changing product behavior. Verify it separately from product implementation:
+Generating or regenerating a spec/plan `view.html` from unchanged Viewer tooling is read-only document assembly. The successful build command is sufficient evidence to report that the file was generated. Stop there: do not run a second checker, browser or screenshot review, viewport or print inspection, interaction checks, Mermaid render checks, or freshness-state tests. Do not claim that the generated layout or interactions were independently verified.
 
-1. Exactly six fragment panels exist in the required order.
-2. Task, Step, AC, and Mermaid counts equal their sources; include R count when the mode displays requirements.
-3. Every source Mermaid block is byte-for-byte identical to its governing source.
-4. Unresolved placeholders are 0 and fragment shell markup is 0.
-5. At 1440px and 390px, tabs, Task/R/AC deep links, table and diagram scroll, and print layout behave correctly.
-6. Mermaid errors are 0 for valid fixtures; an invalid fixture shows its error location and original source.
-7. AC and Step checkbox states persist independently after reload.
-8. Offline output makes no external Mermaid request and renders the same diagrams.
-
-Record these as Level 1 evidence. Viewer-only PASS never changes the governing product spec to `Status: implemented`, because the Viewer does not implement product behavior. When the Viewer implementation itself has a governing spec, that implementation still requires the full Level 2 walk against its own ACs.
+This exception is artifact-specific. A change to the Viewer builder, template, styles, scripts, or runtime behavior is implementation work and follows normal Level 1 plus every governing Level 2 acceptance criterion. A generated View never changes the governing product spec to `Status: implemented`.
 
 ### Level 2 — spec-level verification (when a spec exists)
 
@@ -121,8 +112,8 @@ If no spec exists, first confirm the change is genuinely on the ceremony-floor e
 | "I'll set implemented now, verify after" | Status is the gate token. It flips only after the evidence exists. |
 | "That AC obviously passes" | The "obvious" AC is where regressions hide. Walk it like every other one. |
 | "No spec exists, so Level 1 is enough" | Only if the change is on the ceremony-floor exemption list. A missing spec for behavior-changing work is a gap to close via the forge writing-specs skill, not a shortcut. |
-| "The Viewer checklist passed, so the product spec is implemented." | Viewer-only evidence proves the review artifact, not product behavior. Leave the product status unchanged. |
-| "Desktop is enough for a read-only document." | Wide diagrams and tables fail differently at 390px. Viewer verification always includes both widths. |
+| "The generated View needs the full completion checklist." | Successful assembly is enough for this convenience artifact. Full verification belongs to Viewer tooling changes, not each generated file. |
+| "I can say the generated layout is verified because the build passed." | Build success proves generation only. Report the artifact without an independent layout claim. |
 
 ## Handoff
 

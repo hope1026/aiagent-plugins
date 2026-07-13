@@ -15,12 +15,15 @@ Assembly, not invention. This skill combines a fixed HTML shell, a source-owned 
 
 The reading order is deliberate: summary table → visual flow → source detail → acceptance evidence. A Viewer helps a person find answers; it never adds decisions that the source does not contain.
 
+The generated file is a convenience artifact for human review, not an implementation deliverable. A successful build ends Viewer generation; do not add a separate validation, render, screenshot, or layout-QA phase for that generated file.
+
 ## Iron Law
 
 ```
 THE HTML IS A VIEW, NEVER THE TRUTH.
 SOURCE MERMAID STAYS VERBATIM. DERIVED VIEWS ADD NO NEW MEANING.
 NO EXPLICIT USER REQUEST, NO BUILD OR REBUILD.
+SUCCESSFUL BUILD ENDS GENERATION. NO POST-BUILD VIEWER QA.
 ```
 
 ## When to Use / When NOT
@@ -60,7 +63,7 @@ Create one todo per numbered step before starting.
 
 5. **Package every diagram for people.** Before each diagram provide a question-shaped title, what to confirm, and a one-sentence reading guide. Before a wide sequence diagram provide a runtime responsibility summary table. Keep wide diagrams in independent horizontal scroll regions and provide a source-derived mobile summary.
 
-6. **Prepare local intermediates.** Keep content fragments and browser evidence in `.forge/scratch/` or `.forge/viewer-build/`. These directories remain uncommitted. The final `view.html` is committed beside its Markdown source.
+6. **Prepare local intermediates.** Keep content fragments and build staging in `.forge/scratch/` or `.forge/viewer-build/`. These directories remain uncommitted. The final `view.html` is committed beside its Markdown source.
 
 7. **Build with source metadata.** Run one matching command from the project root:
 
@@ -84,11 +87,9 @@ Create one todo per numbered step before starting.
 
    Omit `--progress` and `--tasks-dir` when absent. Omit `--locale ko` only when the primary source language is English. Output defaults to `view.html` beside the primary source; `-o` remains available for deliberate overrides. `--offline` inlines Mermaid 11.
 
-8. **Verify assembly and freshness.** Confirm six panels, exact mode-local counts, relative source paths, SHA-256 values, unresolved placeholders 0, source Mermaid equality, and fragment shell markup 0. Run `bash <spec-viewer-skill>/scripts/build-viewer.sh --check <source-dir>/view.html`. In a real browser verify 1440px and 390px, tabs, mode-local deep links, checkbox persistence, independent scroll, Mermaid errors, favicon requests, and offline rendering.
+8. **Stop after a successful build.** If the build command exits successfully, hand the generated View to the user. Do not run `--check`, open it in a browser, render screenshots, resize viewports, inspect layout, or test tabs, deep links, checkboxes, Mermaid, print, offline behavior, or freshness states. Do not invoke the forge verifying-work skill for the generated file. If the build fails, report the failure instead of presenting the View.
 
-9. **Verify read-time states.** Under same-origin HTTP, current Markdown must produce `current` and a changed source must produce `stale`. Under `file://` or blocked source access, the View must start `unverified` and offer local Markdown selection. Missing, ambiguous, or unreadable files remain `unverified`; one mismatched source makes the overall plan View `stale`.
-
-10. **Handle later source changes.** Source edits can make a committed View stale. Report the state; repeat this process only after another explicit user request. Freshness never grants rebuild permission.
+9. **Handle later source changes.** Source edits can make a committed View stale. The View's own read-time freshness UI may report that state; do not manually validate it. Repeat this process only after another explicit user request. Freshness never grants rebuild permission.
 
 ## Diagram Classification
 
@@ -111,7 +112,7 @@ When source Mermaid is invalid, show its error summary, available line and colum
 | `docs/plans/PPP-<slug>/tasks/*.md` | optional independent Task sources | yes |
 | `docs/plans/PPP-<slug>/view.html` | explicitly requested plan View | yes |
 | `.forge/scratch/*-content.html` | six-panel fragment | no |
-| `.forge/viewer-build/` | local build and browser evidence | no |
+| `.forge/viewer-build/` | local build staging | no |
 
 ## Red Flags
 
@@ -125,6 +126,8 @@ When source Mermaid is invalid, show its error summary, available line and colum
 | "A fetch error probably means the file is unchanged." | An unreadable source is `unverified`, never `current`. |
 | "The checkpoint changed only one Task, so I should refresh the View." | Staleness does not grant update permission. Report it and wait for an explicit request. |
 | "Committing HTML makes it the source of truth." | Sharing a derived View does not transfer ownership away from Markdown. |
+| "I should verify the generated layout before handoff." | The fixed shell is not re-qualified for every generated document. Build success ends generation; the user reviews the convenience View. |
+| "A second `--check` is cheap insurance." | Per-artifact verification is intentionally out of scope. Reserve validation for changes to the Viewer builder, template, or scripts. |
 
 ## Handoff
 

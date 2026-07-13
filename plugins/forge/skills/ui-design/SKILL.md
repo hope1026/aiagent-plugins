@@ -32,6 +32,7 @@ If you cannot explain why a font, color, radius, or shadow is there, stop — yo
 
 - Pure logic changes with zero visual surface (API handlers, data pipelines).
 - Terminal-only output with no markup or styling decisions.
+- Generating a spec or plan `view.html` from the fixed Viewer shell without changing the shell, template, styles, or scripts — the forge spec-viewer skill owns that content-only assembly.
 
 ## The Process
 
@@ -57,8 +58,6 @@ If this UI belongs to planned work, read the Task in `docs/plans/PPP-slug/plan.m
 Before any UI code, post this block visibly to the user (in their language) and fill every field.
 
 This applies to existing codebases too: an existing design system does not skip the checkpoint — read the project's actual tokens and styles first, fill the block from them, and mark each field as inherited. Extending a UI whose system you never read is still defaulting.
-
-**Fixed Viewer shell exception:** when a document Viewer ships a fixed, already-reviewed shell, declare Type, Palette, Spacing, and Depth as `inherited` after reading the actual template. Fragment authors add no CSS, script, doctype, head, or shell markup. The Signature comes from content structure such as Route Map, Runtime Atlas, and AC Coverage, not from decorative styling added by the fragment.
 
 ```
 VISUAL SYSTEM — <what you are building>
@@ -119,8 +118,6 @@ Run all four; failing any one means revise before showing the user:
 
 Rendered output is the only truth. Open the page or artifact, check the layout at desktop and mobile widths, and confirm the hard floors survived the build. If a browser genuinely isn't available, say so explicitly instead of claiming it looks right.
 
-For document Viewers, verify both 1440px desktop and 390px mobile. A diagram is a complete review unit only when it includes a title, what to confirm, a one-sentence reading guide, and a mobile fallback summary. Wide sequence and dependency diagrams stay readable through an independent horizontal scroll region; if their text is still difficult to interpret at 390px, place a responsibility summary table or source-derived vertical flow before them.
-
 ## Working Files
 
 | Path | Direction | Purpose |
@@ -142,8 +139,6 @@ For document Viewers, verify both 1440px desktop and 390px mobile. A diagram is 
 | "The user said 'make it pretty', they don't care about a system" | "Pretty" without a system produces the same page every model produces. The system is how it becomes pretty. |
 | "The codebase already has a design system, no checkpoint needed" | Then the checkpoint takes one minute: read the tokens and restate them as inherited. If you can't fill the block from the code, you never knew the system you claim to follow. |
 | "It's a one-line CSS tweak, not real UI work" | One line chosen outside the system is how drift starts. Name the system rule the tweak follows — that IS the checkpoint for a tweak. |
-| "The fixed Viewer shell means the fragment can add one special style." | Fragment CSS creates mode-specific drift. Keep shell decisions inherited and create distinctiveness through source structure. |
-| "The diagram exists, so mobile users can zoom it." | A diagram without a reading guide and mobile summary transfers interpretation work to the reviewer. Package all four parts and verify at 390px. |
 
 ## Handoff
 

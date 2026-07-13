@@ -71,4 +71,5 @@ For sequence diagrams or large dependency graphs:
 1. Show an actor or Route summary table first.
 2. If the horizontal diagram still needs interpretation, add a source-derived vertical ordered list or flowchart.
 3. Keep the original source diagram unchanged inside `.diagram-scroll`.
-4. Verify that the wrapper scrolls independently at 390px and the document viewport does not widen.
+
+The fixed shell owns responsive layout. Do not add a post-build viewport or scroll verification step for an individual generated View.

@@ -227,7 +227,7 @@ After writing the complete plan, reread the spec with fresh eyes and check the p
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 4. **Language consistency:** confirm all human-readable prose uses the governing spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim spec values remain intact.
 5. **Review structure:** confirm complex plans include Routes, dependency, Runtime responsibility, data flow, extension points, R·AC mapping, internal and notify checkpoints, real approval gates, and the three required diagram perspectives when their source relationships exist. Local edits, tests, planned local commits, tier selection, subagents, and parallel groups are not approval gates.
-6. **Viewer request boundary:** confirm no Viewer was created or updated without an explicit user request. If one exists and the source changed, report it as stale. When the user explicitly requested a Viewer, confirm source hash, Task/Step/R/AC/Mermaid counts, and localized labels before handoff.
+6. **Viewer request boundary:** confirm no Viewer was created or updated without an explicit user request. If one exists and the source changed, it may be reported as stale. When the user explicitly requested a Viewer, hand off to the forge spec-viewer skill; do not add source-count, hash, browser, or layout validation after generation.
 
 Fix issues inline and move on — no re-review loop.
 

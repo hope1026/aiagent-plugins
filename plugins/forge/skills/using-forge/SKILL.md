@@ -54,7 +54,7 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 | "Build X" / "add X" / "change X" / new project / unclear requirements | the forge writing-specs skill |
 | "Fix this bug" / error / test failure / unexpected behavior | the forge systematic-debugging skill |
 | "Is it done?" / about to claim complete, fixed, or passing | the forge verifying-work skill |
-| Any UI work — pages, components, dashboards, slides | the forge ui-design skill |
+| Product UI or Viewer shell/template work — pages, components, dashboards, slides, styling | the forge ui-design skill |
 | Writing prose humans will read — docs, PRs, commits, messages | the forge writing-tone skill |
 | "Show me the spec" / render or present a spec for review | the forge spec-viewer skill |
 | Approved spec exists, no plan yet | the forge writing-plans skill |
