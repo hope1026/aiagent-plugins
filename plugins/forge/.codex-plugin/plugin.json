@@ -1,6 +1,6 @@
 {
   "name": "forge",
-  "version": "0.1.1+codex.20260713000717",
+  "version": "0.1.2+codex.20260713012401",
   "description": "Spec-first development process skills: spec, plan, execute, verify, debug, design, writing tone overlays, and lifecycle review Viewers for specs and plans. For Claude Code and Codex.",
   "author": {
     "name": "Onestar Lee"

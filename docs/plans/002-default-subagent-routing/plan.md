@@ -94,7 +94,7 @@ Expected: FAIL because the first missing default-mode assertion exits non-zero
 Run: `bash scripts/tests/test-forge-artifact-contract.sh && bash scripts/validate.sh`
 Expected: `test-forge-artifact-contract: all checks passed` and `validate: all checks passed`
 
-- [ ] **Step 5: Task 1 변경을 commit한다**
+- [x] **Step 5: Task 1 변경을 commit한다**
 
 Run: `git add docs/specs/004-adaptive-execution-routing/spec.md docs/plans/002-default-subagent-routing/plan.md plugins/forge/skills/executing-plans/SKILL.md plugins/forge/skills/executing-plans/references/adaptive-routing.md scripts/tests/test-forge-artifact-contract.sh && git commit -m "feat(forge): default eligible balanced tasks to subagents"`
 
@@ -115,18 +115,18 @@ Run: `git add docs/specs/004-adaptive-execution-routing/spec.md docs/plans/002-d
 - Parallel safety: sequential — release version과 설치 source가 동일 commit을 가리켜야 함
 - Approval gate: satisfied — 사용자가 이 요청에서 push와 현재 머신 업데이트를 명시함
 
-- [ ] **Step 1: Claude patch version과 Codex cachebuster를 갱신한다**
+- [x] **Step 1: Claude patch version과 Codex cachebuster를 갱신한다**
 
 Modify: Claude manifest의 version을 `0.1.2`, Codex manifest의 base version을 `0.1.2`로 변경한다.
 Run: `python3 /Users/han-byeol/.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py plugins/forge`
 Expected: Claude version은 `0.1.2`, Codex version은 `0.1.2+codex.<새 UTC timestamp>`다.
 
-- [ ] **Step 2: plugin과 repository 전체를 fresh 검증한다**
+- [x] **Step 2: plugin과 repository 전체를 fresh 검증한다**
 
 Run: `bash scripts/validate.sh && bash scripts/tests/test-forge-artifact-contract.sh`
 Expected: 모든 command exit 0
 
-- [ ] **Step 3: release manifest와 progress를 commit하고 main에 push한다**
+- [x] **Step 3: release manifest와 progress를 commit하고 main에 push한다**
 
 Run: `git push origin main`
 Expected: remote `refs/heads/main`이 local HEAD와 일치
@@ -141,3 +141,5 @@ Expected: installed versions and policy files match the pushed repository
 - 2026-07-13: plan created; Task 1 routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="routing source-of-truth and its contract test are tightly coupled")
 - 2026-07-13: Task 1 RED confirmed (`test-forge-artifact-contract.sh` exit 1 at the first missing default-mode assertion); minimal routing policy implemented.
 - 2026-07-13: Task 1 GREEN confirmed (`test-forge-artifact-contract: all checks passed`; `validate: all checks passed`); fresh-agent deadline pressure scenario preserved `fast/root`, eligible `balanced/subagent`, `frontier/root`, safe parallel gating, and root-owned review.
+- 2026-07-13: Task 1 complete (commit `002f1fc`); Task 2 routed (impact=high, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="release version, remote state, and local installations must remain consistent").
+- 2026-07-13: Task 2 release validation passed (Codex plugin validator, Claude plugin validator, Forge validator, artifact contract test, diff check).
