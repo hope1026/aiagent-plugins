@@ -2,7 +2,7 @@
 
 > 이 계획은 the forge executing-plans skill로 Task별 검증과 checkpoint를 유지하며 실행한다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - `docs/specs/004-adaptive-execution-routing/spec.md`: R28–R31 · AC17–AC18
@@ -131,7 +131,7 @@ Expected: 모든 command exit 0
 Run: `git push origin main`
 Expected: remote `refs/heads/main`이 local HEAD와 일치
 
-- [ ] **Step 4: Codex·Claude managed plugin과 local dev copies를 갱신한다**
+- [x] **Step 4: Codex·Claude managed plugin과 local dev copies를 갱신한다**
 
 Run: marketplace upgrade, plugin update, `bash scripts/install.sh --agent all --mode copy --plugin forge`
 Expected: installed versions and policy files match the pushed repository
@@ -143,3 +143,4 @@ Expected: installed versions and policy files match the pushed repository
 - 2026-07-13: Task 1 GREEN confirmed (`test-forge-artifact-contract: all checks passed`; `validate: all checks passed`); fresh-agent deadline pressure scenario preserved `fast/root`, eligible `balanced/subagent`, `frontier/root`, safe parallel gating, and root-owned review.
 - 2026-07-13: Task 1 complete (commit `002f1fc`); Task 2 routed (impact=high, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="release version, remote state, and local installations must remain consistent").
 - 2026-07-13: Task 2 release validation passed (Codex plugin validator, Claude plugin validator, Forge validator, artifact contract test, diff check).
+- 2026-07-13: Task 2 complete (release commit `027caeb`; Forge `0.1.2`, Codex `0.1.2+codex.20260713012401`); `origin/main`, Codex managed cache, Claude user plugin, and both local dev copies updated.
