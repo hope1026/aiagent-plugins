@@ -1,6 +1,6 @@
 # 여러 에이전트용 extension 생성
 
-Status: approved
+Status: implemented
 
 ## Overview
 

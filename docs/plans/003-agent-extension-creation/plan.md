@@ -2,7 +2,7 @@
 
 > 이 계획은 the forge executing-plans skill로 Task별 검증과 checkpoint를 유지하며 실행한다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - `docs/specs/005-agent-extension-creation/spec.md`: R1–R18 · AC1–AC13
@@ -454,7 +454,7 @@ Scenario는 native authoring helper가 없고 user HOME에 기존 same-name MCP 
 
 Agent의 reasoning이 gate를 우회하면 해당 rationalization을 governing Red Flags에 대응 문구로 추가하기 전에 재현 contract test를 RED로 만들고, 최소 wording change 뒤 동일 scenario를 다시 실행한다. Root는 agent report만으로 PASS를 선언하지 않고 diff와 fresh test를 직접 확인한다.
 
-- [ ] **Step 4: AC1–AC13을 clean fixtures에서 순서대로 fresh 검증한다**
+- [x] **Step 4: AC1–AC13을 clean fixtures에서 순서대로 fresh 검증한다**
 
 실행:
 
@@ -467,17 +467,35 @@ bash scripts/validate.sh
 
 추가로 manager test suite의 named cases를 AC2–AC10 evidence로 매핑하고, pressure-test 두 scenarios를 AC7·AC8·AC11·AC12 evidence로 기록한다. 어떤 AC도 code reading만으로 PASS 처리하지 않는다.
 
-- [ ] **Step 5: 모든 AC가 PASS일 때만 lifecycle status와 progress를 갱신한다**
+- [x] **Step 5: 모든 AC가 PASS일 때만 lifecycle status와 progress를 갱신한다**
 
 `docs/specs/005-agent-extension-creation/spec.md`의 `Status:`를 `implemented`로 바꾸고, 이 plan의 `Status:`를 `complete`로 바꾸며 Progress History에 Task별 route, mode, commit, verification과 pressure-test verdict를 기록한다. 하나라도 FAIL이면 status를 유지하고 code bug는 the forge systematic-debugging skill, spec bug는 the forge writing-specs skill change mode로 보낸다.
 
-- [ ] **Step 6: status-only 변경을 검증하고 commit한다**
+- [x] **Step 6: status-only 변경을 검증하고 commit한다**
 
 실행: `git diff --check && bash scripts/validate.sh && git status --short`
 
 예상: validator exit 0이고 status에는 의도한 spec·plan 변경만 남는다.
 
 실행: `git add docs/specs/005-agent-extension-creation/spec.md docs/plans/003-agent-extension-creation/plan.md && git commit -m "docs(forge): record agent extension verification"`
+
+## Acceptance Evidence
+
+| AC | Verdict | Fresh evidence |
+|---|---|---|
+| AC1 | PASS | extension contract와 artifact contract가 skill, router, catalog, authoring-only boundary를 검사했고 skill/plugin validator가 통과했다. |
+| AC2 | PASS | `test_repository_skill_render_uses_shared_agents_and_claude_wrappers`가 repository lifecycle, shared `.agents` entry, Claude wrapper와 PASS validation을 실행했다. |
+| AC3 | PASS | `test_user_skill_render_previews_three_targets_before_confirmation`가 write-free preview, confirmation과 세 thin wrapper를 실행했다. |
+| AC4 | PASS | `test_repository_mcp_render_preserves_unrelated_json_and_toml`이 세 native target과 unrelated 설정 보존을 실행했다. |
+| AC5 | PASS | `test_user_mcp_render_requires_confirmation_and_preserves_settings`가 user preview, credential requirement, confirmation과 세 user config merge를 실행했다. |
+| AC6 | PASS | `test_bundle_tracks_skills_and_mcp_in_all_agent_states`가 두 skill, MCP, manifest와 agent별 ownership state를 실행했다. |
+| AC7 | PASS | fresh provider-boundary와 bundled-fallback pressure agents가 staging, fallback과 manager authority를 각각 유지했다. |
+| AC8 | PASS | invalid name/placeholder/secret rejection, credential-reference test와 provider normalization pressure scenario가 통과했다. |
+| AC9 | PASS | skill/MCP collision tests가 unowned same-name target을 non-zero로 거부하고 sentinel content를 보존했다. |
+| AC10 | PASS | canonical resource, skill wrapper, JSON entry와 TOML managed-block drift tests가 위치와 owner를 보고했다. |
+| AC11 | PASS | write-free plan, profile/input rejection과 두 fresh scenarios가 missing input 및 scenario-evidence gate를 유지했다. |
+| AC12 | PASS | extension contract와 agent-specific follow-up pressure test가 hooks/rules/apps를 common component로 분류하지 않았다. |
+| AC13 | PASS | 17 manager tests, 모든 `scripts/tests/*.sh`, Forge validator, system skill validator와 plugin validator가 fresh run에서 exit 0이었다. |
 
 ## Progress History
 
@@ -500,3 +518,6 @@ bash scripts/validate.sh
 - 2026-07-14: Fresh provider-boundary pressure test PASS — direct native writes were treated as unowned, unrelated bytes were preserved, staged candidates were normalized, and manager preview/collision/drift/validation gates remained authoritative despite deadline pressure.
 - 2026-07-14: Fresh bundled-fallback pressure test PASS — user-scope plan and render remained separately confirmable, an unowned same-name MCP entry blocked overwrite, credential values stayed outside canonical/native config, and unavailable target-agent scenarios remained pending rather than being reported complete.
 - 2026-07-14: Root review found one wrapper serialization edge case for apostrophes. A focused regression test failed with single-quoted YAML, then passed after deterministic JSON-style double-quote serialization; provider cleanup wording was also narrowed to remove only the provider's unowned edits while preserving unrelated state.
+- 2026-07-14: Agent-specific follow-up pressure test PASS — Claude hook, Codex rule와 Antigravity app은 portable manifest에서 제외되고 named `adapters/<agent>/` follow-up scope와 별도 native evidence가 필요하다고 판정했다.
+- 2026-07-14: Pressure-test hardening complete (commit `39a3d78`; verification="17 manager tests and targeted extension contract passed").
+- 2026-07-14: Task 5 acceptance PASS — AC1–AC13을 개별 확인했고 17 manager tests, 5 repository shell contracts, Forge validator, system skill validator와 plugin validator가 모두 통과했다. Spec은 implemented, plan은 complete로 전환했으며 release와 push는 수행하지 않았다.
