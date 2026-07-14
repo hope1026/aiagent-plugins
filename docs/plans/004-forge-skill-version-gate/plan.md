@@ -2,7 +2,7 @@
 
 > 이 계획은 forge executing-plans skill로 Task 1을 순서대로 실행하고, 각 검증 checkpoint를 통과한 뒤 다음 단계로 진행한다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - `docs/specs/003-repository-maintenance-runbook/spec.md`: R4, R9 · AC7, AC9
@@ -177,7 +177,7 @@ git diff -- .agent-extensions/maintaining-forge \
 
 예상: canonical source만 상세 절차를 포함하고 native adapter는 pointer 구조를 유지하며, version gate를 우회하는 최신 commit 전용 검사나 다음 release 연기 문구가 없다.
 
-- [ ] **Step 8: 구현 결과를 conventional commit으로 기록한다.**
+- [x] **Step 8: 구현 결과를 conventional commit으로 기록한다.**
 
 실행:
 
@@ -196,3 +196,4 @@ git commit -m "feat(forge): require version bump for skill releases"
 
 - 2026-07-14 Task 1 started: tier `balanced`, mode `root`, parallel group `none` — canonical instruction 판단과 manager hash 갱신이 순차 의존하며 verification이 명확하다.
 - 2026-07-14 Task 1 verification: manager `PASS`, `validate: all checks passed`, Claude pressure scenario push refusal confirmed; Antigravity live scenario pending because local Gemini client returned `UNSUPPORTED_CLIENT`. Commit scope is the approved spec, Plan 004, canonical skill, and three ownership state files.
+- 2026-07-14 Task 1: complete (commit `cd1e9d3`). Internal checkpoint: spec `implemented`, canonical/adapters parity PASS, pressure test PASS, release push not authorized or performed.
