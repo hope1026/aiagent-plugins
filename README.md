@@ -1,21 +1,21 @@
 # aiagent-plugins
 
-AI agent plugins managed from one source tree, usable in both **Claude Code** and **Codex CLI**. Skill files are written once (Agent Skills open standard) and installed into each agent's own structure.
+AI agent plugins managed from one source tree. Forge installs into **Claude Code** and **Codex CLI**, and its cross-agent authoring workflow creates shared skill and MCP structures for those agents plus **Antigravity**.
 
 ## What's here
 
 | Plugin | Purpose |
 |---|---|
-| `forge` | Spec-first development process: spec → plan → execute → verify, plus TDD, debugging, UI design, writing tone overlays, and a lifecycle HTML review Viewer for specs and plans. Install this when starting any project. |
+| `forge` | Spec-first development process: spec → plan → execute → verify, plus TDD, debugging, cross-agent skill/MCP authoring, UI design, writing tone overlays, and a lifecycle HTML review Viewer for specs and plans. Install this when starting any project. |
 
 ```text
 plugins/<name>/
   .claude-plugin/plugin.json   # Claude Code manifest
   .codex-plugin/plugin.json    # Codex manifest
-  skills/<skill>/SKILL.md      # shared skill source (one file, both agents)
+  skills/<skill>/SKILL.md      # shared Agent Skills source
   hooks/                       # Claude-only SessionStart bootstrap (forge)
 .agent-runbooks/               # repository-only shared agent workflows
-.agents/skills/                # thin Codex repository entry skills
+.agents/skills/                # thin Codex + Antigravity repository entry skills
 .claude/skills/                # thin Claude Code repository entry skills
 .claude-plugin/marketplace.json    # this repo is a Claude Code marketplace
 .agents/plugins/marketplace.json   # ...and a Codex marketplace
@@ -73,18 +73,19 @@ bash scripts/install.sh --agent codex --plugin forge
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
 | `marketing-tone` | Marketing and product copy overlay: factual, confident, trust-building claims |
 | `operations-tone` | Customer and operations overlay: confirmed status, impact, next action, and restrained cause detail |
+| `creating-agent-extensions` | Creates one `.agent-extensions/` source with thin Codex, Claude Code, and Antigravity skill/MCP adapters |
 
 ## Repository maintenance
 
 Forge itself is maintained through the repository-only runbook at
-`.agent-runbooks/maintaining-forge/README.md`. Codex and Claude Code discover
-thin local wrappers under `.agents/skills/maintaining-forge/` and
-`.claude/skills/maintaining-forge/`; both wrappers read the same runbook and
-portability reference.
+`.agent-runbooks/maintaining-forge/README.md`. Codex and Antigravity share the
+thin local wrapper under `.agents/skills/maintaining-forge/`; Claude Code uses
+`.claude/skills/maintaining-forge/`. Both physical wrappers read the same
+runbook and portability reference.
 
 Keep detailed maintainer procedures in `.agent-runbooks/`. They stay outside
 `plugins/forge/`, so Marketplace and `scripts/install.sh` distribute only the
-12 user-execution skills listed above.
+13 user-execution skills listed above.
 
 ## Spec-first lifecycle (the short version)
 

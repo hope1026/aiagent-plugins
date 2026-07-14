@@ -709,6 +709,86 @@ class ManagerTestCase(unittest.TestCase):
             validation = self.run_manager("validate", "--extension", str(extension))
             self.assertEqual(validation.returncode, 0, validation.stderr)
 
+    def test_init_copies_skill_resources_and_digest_detects_resource_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            base = root / "repo"
+            source_root = root / "stage" / "resource-skill"
+            base.mkdir()
+            source_root.mkdir(parents=True)
+            skill = source_root / "SKILL.md"
+            skill.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "name: resource-skill",
+                        "description: 'Use when a confirmed resource workflow applies.'",
+                        "---",
+                        "",
+                        "# Resource Skill",
+                        "",
+                        "Read references/guide.md and run scripts/check.py.",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            reference = source_root / "references" / "guide.md"
+            script = source_root / "scripts" / "check.py"
+            reference.parent.mkdir()
+            script.parent.mkdir()
+            reference.write_text("# Confirmed Guide\n\nFollow the confirmed flow.\n")
+            script.write_text("print('confirmed')\n")
+            args = [
+                "--scope",
+                "repository",
+                "--base-dir",
+                str(base),
+                "--name",
+                "resource-extension",
+                "--description",
+                "Resource extension for confirmed workflows.",
+                "--profile",
+                "skill",
+                "--skill-source",
+                str(skill),
+            ]
+
+            preview_result = self.run_manager("plan", *args)
+
+            self.assertEqual(preview_result.returncode, 0, preview_result.stderr)
+            preview = json.loads(preview_result.stdout)
+            self.assertIn(
+                "skills/resource-skill/references/guide.md",
+                preview["canonicalWrites"],
+            )
+            self.assertIn(
+                "skills/resource-skill/scripts/check.py",
+                preview["canonicalWrites"],
+            )
+
+            initialized = self.run_manager("init", *args)
+            self.assertEqual(initialized.returncode, 0, initialized.stderr)
+            extension = base.resolve() / ".agent-extensions" / "resource-extension"
+            canonical_reference = (
+                extension / "skills" / "resource-skill" / "references" / "guide.md"
+            )
+            self.assertEqual(canonical_reference.read_bytes(), reference.read_bytes())
+            rendered = self.run_manager("render", "--extension", str(extension))
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            self.assertEqual(
+                self.run_manager("validate", "--extension", str(extension)).returncode,
+                0,
+            )
+
+            canonical_reference.write_text(
+                canonical_reference.read_text() + "Changed resource.\n",
+                encoding="utf-8",
+            )
+            validation = self.run_manager("validate", "--extension", str(extension))
+            self.assertNotEqual(validation.returncode, 0)
+            self.assertIn("canonical hash", validation.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

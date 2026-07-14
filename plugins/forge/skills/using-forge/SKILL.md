@@ -56,6 +56,7 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 | "Is it done?" / about to claim complete, fixed, or passing | the forge verifying-work skill |
 | Product UI or Viewer shell/template work — pages, components, dashboards, slides, styling | the forge ui-design skill |
 | Writing prose humans will read — docs, PRs, commits, messages | the forge writing-tone skill |
+| Cross-agent skill, MCP, or bundle authoring for Codex, Claude Code, and Antigravity | the forge creating-agent-extensions skill |
 | "Show me the spec" / render or present a spec for review | the forge spec-viewer skill |
 | Approved spec exists, no plan yet | the forge writing-plans skill |
 | Operational, research, or ceremony-floor work needs an execution plan | the forge writing-plans skill |

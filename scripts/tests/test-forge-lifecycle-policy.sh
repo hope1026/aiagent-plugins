@@ -21,7 +21,7 @@ grep -q 'Markdown is the default review path' "$WRITING_SPECS" || \
   fail "writing-specs does not default to Markdown"
 grep -q 'ask whether the user wants a Viewer' "$WRITING_SPECS" || \
   fail "writing-specs does not ask after completion"
-grep -q 'ask whether the user wants a Viewer' "$WRITING_PLANS" || \
+grep -q 'ask whether the user wants a `plan` Viewer' "$WRITING_PLANS" || \
   fail "writing-plans does not ask after completion"
 
 if rg -n 'score 2\+ uses|rebuild an existing Viewer|complex plan.*use the forge spec-viewer' \
@@ -31,7 +31,7 @@ fi
 
 grep -qi 'explicit user request' "$EXECUTING_PLANS" || \
   fail "executing-plans misses explicit Viewer update gate"
-grep -q 'report it as stale' "$EXECUTING_PLANS" || \
+grep -q 'may be reported as stale' "$EXECUTING_PLANS" || \
   fail "executing-plans misses stale Viewer notice"
 if rg -n 'If a lifecycle Viewer exists, rebuild|rebuild it before the first checkpoint' \
   "$EXECUTING_PLANS" >/dev/null; then

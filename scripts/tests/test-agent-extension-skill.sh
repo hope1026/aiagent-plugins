@@ -12,6 +12,7 @@ fail() {
 required=(
   "$SKILL_DIR/SKILL.md"
   "$SKILL_DIR/scripts/manage_extension.py"
+  "$SKILL_DIR/references/authoring-providers.md"
   "$SKILL_DIR/references/layout-contract.md"
   "$SKILL_DIR/tests/test_manage_extension.py"
 )
@@ -19,6 +20,27 @@ required=(
 for path in "${required[@]}"; do
   [[ -f "$path" ]] || fail "missing ${path#$ROOT/}"
 done
+
+grep -q '^name: creating-agent-extensions$' "$SKILL_DIR/SKILL.md" || \
+  fail "skill frontmatter name is missing"
+grep -q 'NO NATIVE WRITE BEFORE A COMPLETE PREVIEW' "$SKILL_DIR/SKILL.md" || \
+  fail "skill confirmation gate is missing"
+for action in plan init render validate; do
+  grep -q "\`$action\`" "$SKILL_DIR/SKILL.md" || \
+    fail "skill workflow misses $action"
+done
+grep -q -- '--confirm-user-write' "$SKILL_DIR/SKILL.md" || \
+  fail "skill workflow misses user write confirmation"
+grep -q 'Capability discovery' "$SKILL_DIR/references/authoring-providers.md" || \
+  fail "provider capability discovery is missing"
+grep -q 'Staging boundary' "$SKILL_DIR/references/authoring-providers.md" || \
+  fail "provider staging boundary is missing"
+grep -q 'Bundled fallback' "$SKILL_DIR/references/authoring-providers.md" || \
+  fail "provider fallback is missing"
+grep -q '.gemini/config/skills/<skill>/SKILL.md' "$SKILL_DIR/references/layout-contract.md" || \
+  fail "Antigravity user skill target is missing"
+grep -q '.gemini/config/mcp_config.json' "$SKILL_DIR/references/layout-contract.md" || \
+  fail "Antigravity user MCP target is missing"
 
 git -C "$ROOT" check-ignore -q --no-index \
   plugins/forge/skills/creating-agent-extensions/tests/__pycache__/probe.pyc || \

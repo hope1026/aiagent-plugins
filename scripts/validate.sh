@@ -87,6 +87,14 @@ done < <(
   } | sort
 )
 
+# 5. Cross-agent extension manager interface is executable without optional dependencies.
+if [[ -f "$ROOT_DIR/plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py" ]]; then
+  python3 "$ROOT_DIR/plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py" --help \
+    >/dev/null 2>&1 || err "creating-agent-extensions: manager --help failed"
+else
+  err "creating-agent-extensions: missing manager script"
+fi
+
 if [[ "$FAIL" -eq 0 ]]; then
   echo "validate: all checks passed"
 else

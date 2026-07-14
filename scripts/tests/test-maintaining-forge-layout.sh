@@ -21,7 +21,7 @@ done
 cmp -s \
   "$ROOT_DIR/.agents/skills/maintaining-forge/SKILL.md" \
   "$ROOT_DIR/.claude/skills/maintaining-forge/SKILL.md" || \
-  fail "Codex and Claude wrappers must match"
+  fail "shared .agents and Claude wrappers must match"
 
 for wrapper in \
   "$ROOT_DIR/.agents/skills/maintaining-forge/SKILL.md" \

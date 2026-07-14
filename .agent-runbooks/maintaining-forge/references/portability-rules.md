@@ -1,6 +1,6 @@
 # Forge Portability Rules
 
-Every distributed Forge skill works unmodified on Claude Code and Codex. The
+Every distributed Forge skill uses portable Agent Skills instructions that work unmodified on Claude Code, Codex, and Antigravity. The
 validator enforces the mechanical subset; the remaining rules require review
 and pressure testing.
 
@@ -68,7 +68,7 @@ Repository-only workflows are not distributed Forge skills.
 | Layer | Location | Responsibility |
 |---|---|---|
 | Shared runbook | `.agent-runbooks/<name>/` | Detailed procedure, scripts, references, validation, and reporting |
-| Codex entry | `.agents/skills/<name>/SKILL.md` | Trigger and shared-runbook link |
+| Codex + Antigravity entry | `.agents/skills/<name>/SKILL.md` | Trigger and shared-runbook link |
 | Claude Code entry | `.claude/skills/<name>/SKILL.md` | Trigger and shared-runbook link |
 
 Keep both wrappers thin and identical when possible. If a wrapper disagrees
@@ -76,21 +76,34 @@ with its runbook, the runbook wins. Repository-only paths stay outside
 `plugins/forge/`, so Marketplace installation cannot copy them into the user
 plugin.
 
-## 9. Mechanical Gates
+## 9. Cross-agent Authoring Structure
+
+The `creating-agent-extensions` distributed skill creates authoring sources, not distribution packages. Repository sources live at `.agent-extensions/<extension-name>/`; user sources live at `~/.agent-extensions/<extension-name>/`. Native entries remain thin or generated and never become an independent source of truth.
+
+| Component | Codex | Claude Code | Antigravity |
+|---|---|---|---|
+| Repository skill | `.agents/skills/<skill>/SKILL.md` | `.claude/skills/<skill>/SKILL.md` | `.agents/skills/<skill>/SKILL.md` |
+| User skill | `~/.agents/skills/<skill>/SKILL.md` | `~/.claude/skills/<skill>/SKILL.md` | `~/.gemini/config/skills/<skill>/SKILL.md` |
+| Repository MCP | `.codex/config.toml` | `.mcp.json` | `.agents/mcp_config.json` |
+| User MCP | `~/.codex/config.toml` | `~/.claude.json` | `~/.gemini/config/mcp_config.json` |
+
+Native or system authoring helpers may propose detailed skill and MCP content inside a staging boundary. They do not own canonical paths, target adapters, collision decisions, merge ownership, or validation.
+
+## 10. Mechanical Gates
 
 - All JSON manifests parse with `jq .`.
 - `bash scripts/validate.sh` checks plugin skills and both repository-local wrapper roots.
 - A fresh validation run must print `validate: all checks passed` before commit.
 
-## Claude Code and Codex Differences
+## Claude Code, Codex, and Antigravity Differences
 
-| Aspect | Claude Code | Codex |
-|---|---|---|
-| Distributed skill invocation | `forge:skill-name` or automatic matching | `$skill-name` or implicit matching |
-| Repository-local skill root | `.claude/skills/` | `.agents/skills/` |
-| Hooks | Forge plugin SessionStart hook | No plugin hook support |
-| Fresh agents | Native agent dispatch | Multi-agent configuration when available; sequential fallback otherwise |
-| Marketplace install | Managed plugin cache from `.claude-plugin/marketplace.json` | Managed plugin cache from `.agents/plugins/marketplace.json` |
-| Local Forge install | `~/.claude/skills/forge` | Per-skill entries under `~/.agents/skills/<skill-name>` |
+| Aspect | Claude Code | Codex | Antigravity |
+|---|---|---|---|
+| Distributed skill invocation | `forge:skill-name` or automatic matching | `$skill-name` or implicit matching | automatic matching or native skill invocation |
+| Repository-local skill root | `.claude/skills/` | `.agents/skills/` | `.agents/skills/` |
+| Hooks | Forge plugin SessionStart hook | No plugin hook support | Agent-specific; never a common dependency |
+| Fresh agents | Native agent dispatch | Multi-agent configuration when available; sequential fallback otherwise | Use current agent capability; sequential fallback otherwise |
+| Marketplace install in this repository | Managed plugin cache from `.claude-plugin/marketplace.json` | Managed plugin cache from `.agents/plugins/marketplace.json` | No Forge distribution manifest in this repository |
+| Local Forge install in this repository | `~/.claude/skills/forge` | Per-skill entries under `~/.agents/skills/<skill-name>` | Consume the Agent Skills source through an explicit Antigravity setup |
 
-Anything Claude-only is an enhancement, never a distributed-skill dependency.
+Anything agent-only is an enhancement, never a distributed-skill dependency.

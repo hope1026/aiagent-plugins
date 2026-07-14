@@ -10,13 +10,14 @@ repository-local wrapper skills stay in English.
 ## Overview
 
 Forge skills are process documentation that must hold up under pressure on
-Claude Code and Codex. Editing a distributed skill is releasing software: the
+Codex, Claude Code, and Antigravity. Editing a distributed skill is releasing software: the
 mechanical gate is the validator, the behavioral gate is a pressure test, and
 pushing to the repository releases the Marketplace package.
 
 Repository-only workflows use a different packaging boundary. Their detailed
-procedure lives under `.agent-runbooks/`, while Claude Code and Codex receive
-thin repository-local wrappers that point to the same runbook.
+procedure lives under `.agent-runbooks/`, while Claude Code uses a thin
+`.claude/skills/` wrapper and Codex plus Antigravity share a thin
+`.agents/skills/` wrapper that point to the same runbook.
 
 ## Iron Law
 
@@ -44,14 +45,14 @@ Decide the audience before writing files.
 
 | Workflow type | Detailed source of truth | Agent entry points | Distribution |
 |---|---|---|---|
-| Marketplace Forge user skill | `plugins/forge/skills/<skill-name>/` | One portable `SKILL.md` used by both agents | Included in the Forge plugin |
-| Repository-only shared workflow | `.agent-runbooks/<name>/` | `.agents/skills/<name>/SKILL.md` and `.claude/skills/<name>/SKILL.md` | Excluded from the Forge plugin |
+| Marketplace Forge user skill | `plugins/forge/skills/<skill-name>/` | One portable `SKILL.md`; Codex and Claude manifests distribute it, and Antigravity can consume the Agent Skills source | Included in the Forge plugin |
+| Repository-only shared workflow | `.agent-runbooks/<name>/` | `.agents/skills/<name>/SKILL.md` for Codex + Antigravity and `.claude/skills/<name>/SKILL.md` for Claude Code | Excluded from the Forge plugin |
 
 For repository-only workflows:
 
 - Put procedures, commands, scripts, references, validation steps, and reporting requirements in `.agent-runbooks/<name>/`.
 - Keep agent wrappers limited to frontmatter, trigger conditions, the runbook path, and conflict-resolution rules.
-- Keep the Claude Code and Codex wrappers identical when tool-specific metadata is unnecessary.
+- Keep the shared `.agents/` and Claude Code wrappers identical when tool-specific metadata is unnecessary.
 - If a wrapper and runbook disagree, the runbook wins; fix the wrapper.
 
 This shared-runbook/thin-wrapper pattern follows the established structure in
@@ -155,6 +156,7 @@ The distributed Forge plugin contains user-execution skills only:
 | `writing-tone` | Shape natural human-readable prose |
 | `marketing-tone` | Apply factual marketing and product tone |
 | `operations-tone` | Apply clear support and operations tone |
+| `creating-agent-extensions` | Author one `.agent-extensions/` source and render owned skill/MCP adapters for Codex, Claude Code, and Antigravity |
 
 This `maintaining-forge` runbook is repository-only and is not part of that
 distributed catalog.
@@ -165,7 +167,7 @@ distributed catalog.
 |---|---|
 | Marketplace Forge skills | `plugins/forge/skills/<skill-name>/` |
 | Repository-only runbooks | `.agent-runbooks/<name>/` |
-| Codex repository wrappers | `.agents/skills/<name>/SKILL.md` |
+| Codex + Antigravity repository wrappers | `.agents/skills/<name>/SKILL.md` |
 | Claude Code repository wrappers | `.claude/skills/<name>/SKILL.md` |
 | Plugin manifests | `plugins/forge/.claude-plugin/plugin.json`, `plugins/forge/.codex-plugin/plugin.json` |
 | Marketplace manifests | `.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json` |

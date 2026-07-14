@@ -15,6 +15,21 @@ manage_extension.py validate
 
 `plan` never writes. User-scope `init` and `render` require `--confirm-user-write`.
 
+New-extension `plan` and `init` share these inputs:
+
+```text
+--scope repository|user
+--base-dir <repository-or-home>
+--name <extension-name>
+--description <description>
+--profile skill|mcp|bundle
+--skill-source <staged-SKILL.md>  # repeatable
+--mcp-source <staged-servers.json>
+--confirm-user-write              # init only, after preview
+```
+
+`render` and `validate` take `--extension <canonical-root>`. `render` accepts `--confirm-user-write`; `validate` never writes.
+
 ## Canonical Manifest
 
 `extension.json` uses schema version 1 and contains exactly these top-level fields:
@@ -40,6 +55,8 @@ manage_extension.py validate
 ```
 
 All component paths are relative to the extension root and must resolve to files inside that root.
+
+When a staged `SKILL.md` has sibling `references/`, `scripts/`, or `assets/`, `init` copies their files into the canonical skill. Generated Python caches and symlinks are excluded or rejected. Every canonical file outside `adapters/` participates in the canonical SHA-256, including approved MCP implementation files under `mcp/<server-name>/` and shared resources under `shared/`.
 
 ## Skill Targets
 
@@ -88,3 +105,16 @@ Each agent has `adapters/<agent>/state.json` with schema version, extension owne
 Codex entries live inside `# BEGIN creating-agent-extensions:<extension>` and matching end markers. Bytes outside that block remain unchanged. Claude Code and Antigravity use the native `mcpServers` JSON object; unrelated keys and server values remain semantically unchanged. A same-name server without matching ownership state is a collision.
 
 The user preview lists every canonical source, native target, entry-level create/update/collision action, and required environment variable before `--confirm-user-write` permits a render.
+
+## Stable Errors
+
+| Code | Contract failure |
+|---|---|
+| `E_CONFIRMATION` | A user-scope write lacks current preview confirmation. |
+| `E_COLLISION` | A same-name native entry has no matching owner state. |
+| `E_DRIFT` | Canonical hash, owner state, or live native entry changed unexpectedly. |
+| `E_PROFILE_INPUT` | The selected profile does not match staged sources. |
+| `E_MCP_SCHEMA` | MCP transport or fields are outside the canonical schema. |
+| `E_SECRET` | A raw credential field or value is present. |
+| `E_PLACEHOLDER` | Canonical content or a copied text resource is unfinished. |
+| `E_NATIVE_CONFIG` | An existing native JSON or managed TOML block cannot be parsed safely. |

@@ -338,7 +338,7 @@ Codex block marker는 `# BEGIN creating-agent-extensions:<extension>`과 `# END 
 
 예상: lifecycle, skill, MCP cases가 모두 PASS하고 credential fixture에 raw secret가 나타나지 않는다.
 
-- [ ] **Step 6: Task 3 변경을 fresh 검증하고 commit한다**
+- [x] **Step 6: Task 3 변경을 fresh 검증하고 commit한다**
 
 실행: `bash scripts/tests/test-agent-extension-skill.sh && bash scripts/validate.sh`
 
@@ -373,7 +373,7 @@ Codex block marker는 `# BEGIN creating-agent-extensions:<extension>`과 `# END 
 - Parallel safety: sequential root — process wording과 repository contract assertions를 함께 맞춰야 함
 - Approval gate: none; manifest version과 remote release는 변경하지 않음
 
-- [ ] **Step 1: routing, provider/fallback, scope gate와 three-agent documentation assertions를 먼저 추가한다**
+- [x] **Step 1: routing, provider/fallback, scope gate와 three-agent documentation assertions를 먼저 추가한다**
 
 `test-agent-extension-skill.sh`와 `test-forge-artifact-contract.sh`는 다음을 검사한다.
 
@@ -387,25 +387,25 @@ layout-contract.md contains all repository and user skill/MCP target paths
 scripts/validate.sh invokes manage_extension.py --help as a mechanical manager gate
 ```
 
-- [ ] **Step 2: contract tests가 새 process wording과 integration 부재로 실패하는지 확인한다**
+- [x] **Step 2: contract tests가 새 process wording과 integration 부재로 실패하는지 확인한다**
 
 실행: `bash scripts/tests/test-agent-extension-skill.sh && bash scripts/tests/test-forge-artifact-contract.sh`
 
 예상: 첫 번째 missing routing 또는 provider assertion에서 non-zero로 종료한다.
 
-- [ ] **Step 3: distributed process skill을 500 lines 이내로 완성한다**
+- [x] **Step 3: distributed process skill을 500 lines 이내로 완성한다**
 
 `SKILL.md`는 announce line, Iron Law, When to Use/When NOT, numbered checklist 기반 Process, Working Files, 최소 5-row Red Flags와 Handoff를 포함한다. Process 순서는 scope/profile 확정 → concrete usage와 transport 확정 → native provider 탐색 → staging/fallback authoring → `plan` preview → user confirmation gate → `init` → `render` → `validate` → pressure test다. Provider가 native path를 직접 쓰거나 platform-only frontmatter, raw credential, 미완성 표식, 범위 밖 component를 제안하면 canonical commit 전에 정규화 또는 거부한다.
 
-- [ ] **Step 4: provider와 layout reference를 완성한다**
+- [x] **Step 4: provider와 layout reference를 완성한다**
 
 `authoring-providers.md`는 capability-based discovery를 사용하고 `skill-creator`, agent-native MCP helper 같은 이름은 example일 뿐 의존성이 아님을 명시한다. `layout-contract.md`는 `extension.json` schema, wrapper shape, canonical MCP schema, target matrix, ownership state와 error codes `E_CONFIRMATION`, `E_COLLISION`, `E_DRIFT`, `E_PROFILE_INPUT`, `E_MCP_SCHEMA`, `E_SECRET`를 manager tests와 동일하게 정의한다.
 
-- [ ] **Step 5: router, catalog, maintainer docs, manifests와 validator를 동기화한다**
+- [x] **Step 5: router, catalog, maintainer docs, manifests와 validator를 동기화한다**
 
 `using-forge` routing table에 cross-agent extension row를 추가한다. README와 maintainer system map의 catalog count를 13으로 바꾸고 새 skill responsibility를 추가한다. Portability reference는 `.agent-extensions/` authoring pattern과 세 agent target matrix를 설명하되 기존 repository-only `.agent-runbooks/` pattern과 혼동하지 않는다. 두 plugin manifest description에는 cross-agent skill/MCP authoring capability를 추가하되 version은 유지한다. Validator는 manager의 `--help`가 exit 0인지 검사한다.
 
-- [ ] **Step 6: integration tests를 GREEN으로 만들고 전체 shell tests를 실행한다**
+- [x] **Step 6: integration tests를 GREEN으로 만들고 전체 shell tests를 실행한다**
 
 실행:
 
@@ -491,3 +491,7 @@ bash scripts/validate.sh
 - 2026-07-14: Task 2 complete (commit `9d35902`; verification="9 manager tests passed; extension contract passed; Forge validator passed").
 - 2026-07-14: Task 3 routed (impact=high, uncertainty=high, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="three native MCP formats must share collision, ownership, and drift semantics without rewriting unrelated configuration").
 - 2026-07-14: Task 3 RED confirmed at unsupported MCP render and overly broad native-file collision detection; GREEN confirmed for stdio/HTTP conversion, unrelated-config preservation, user preview metadata, collision refusal, JSON/TOML drift, credential references, and bundle ownership.
+- 2026-07-14: Task 3 complete (commit `3da22d1`; verification="15 manager tests passed; extension contract passed; Forge validator passed").
+- 2026-07-14: Task 4 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="process instructions, provider boundary, router, catalog, maintainer docs, manifests, and validator assertions must describe one consistent cross-agent contract").
+- 2026-07-14: Task 4 RED confirmed at missing provider reference and repository integration contract; GREEN confirmed after adding the 208-line process skill, provider/fallback and layout references, router/catalog/runbook/manifest synchronization, resource-copy hashing, and manager validator gate.
+- 2026-07-14: Two pre-existing lifecycle exact-string assertions were traced to stale Viewer wording and synchronized to their current governing skills; the direct lifecycle test now passes. `skill-creator` and plugin validators required the existing `.forge/scratch/plugin-validator-venv` because the default Python lacks PyYAML.

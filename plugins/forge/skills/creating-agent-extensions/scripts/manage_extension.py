@@ -71,7 +71,7 @@ def unquote(value: str) -> str:
     return value
 
 
-def parse_skill_source(path: Path) -> dict[str, str]:
+def parse_skill_source(path: Path) -> dict[str, Any]:
     if not path.is_file():
         fail("E_SOURCE", f"skill source does not exist: {path}")
     text = path.read_text(encoding="utf-8")
@@ -100,10 +100,35 @@ def parse_skill_source(path: Path) -> dict[str, str]:
         fail("E_SKILL_SCHEMA", f"skill description must start with 'Use when': {path}")
     if not "\n".join(lines[end + 1 :]).strip():
         fail("E_SKILL_SCHEMA", f"skill body is empty: {path}")
+    resources: list[dict[str, str]] = []
+    for resource_name in ("references", "scripts", "assets"):
+        resource_root = path.parent / resource_name
+        if not resource_root.exists():
+            continue
+        if not resource_root.is_dir() or resource_root.is_symlink():
+            fail("E_RESOURCE", f"skill resource must be a real directory: {resource_root}")
+        for resource in sorted(resource_root.rglob("*")):
+            if resource.is_symlink():
+                fail("E_RESOURCE", f"skill resources may not contain symlinks: {resource}")
+            if not resource.is_file():
+                continue
+            relative = resource.relative_to(path.parent)
+            if "__pycache__" in relative.parts or resource.suffix in {".pyc", ".pyo"}:
+                continue
+            try:
+                resource_text = resource.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                resource_text = ""
+            if resource_text:
+                reject_placeholders(resource_text, f"skill resource {resource}")
+            resources.append(
+                {"source": str(resource.resolve()), "relative": relative.as_posix()}
+            )
     return {
         "name": metadata["name"],
         "description": metadata["description"],
         "source": str(path.resolve()),
+        "resources": resources,
     }
 
 
@@ -326,6 +351,11 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     canonical_writes.extend(
         f"skills/{skill['name']}/SKILL.md" for skill in sources["skills"]
     )
+    for skill in sources["skills"]:
+        canonical_writes.extend(
+            f"skills/{skill['name']}/{resource['relative']}"
+            for resource in skill["resources"]
+        )
     if sources["mcp"] is not None:
         canonical_writes.append("mcp/servers.json")
     native_targets = native_targets_for(
@@ -406,6 +436,10 @@ def initialize(plan: dict[str, Any], confirmed: bool) -> Path:
             destination = temporary / "skills" / skill["name"] / "SKILL.md"
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(skill["source"], destination)
+            for resource in skill["resources"]:
+                resource_destination = destination.parent / resource["relative"]
+                resource_destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(resource["source"], resource_destination)
         mcp_source = plan["sources"]["mcp"]
         if mcp_source is not None:
             destination = temporary / "mcp" / "servers.json"
@@ -430,15 +464,29 @@ def load_manifest(extension_root: Path) -> dict[str, Any]:
 
 
 def canonical_digest(extension_root: Path) -> str:
-    manifest = load_manifest(extension_root)
-    paths = [Path("extension.json")]
-    paths.extend(Path(item["path"]) for item in manifest["components"]["skills"])
-    paths.extend(Path(item["path"]) for item in manifest["components"]["mcpServers"])
+    load_manifest(extension_root)
+    root = extension_root.resolve()
+    paths: list[Path] = []
+    for path in root.rglob("*"):
+        relative = path.relative_to(root)
+        if relative.parts and relative.parts[0] == "adapters":
+            continue
+        if path.is_symlink():
+            fail("E_MANIFEST", f"canonical source may not contain symlinks: {relative}")
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            text = ""
+        if text:
+            reject_placeholders(text, f"canonical source {relative}")
+        paths.append(relative)
     digest = hashlib.sha256()
-    for relative in sorted(set(paths), key=str):
+    for relative in sorted(paths, key=str):
         if relative.is_absolute() or ".." in relative.parts:
             fail("E_MANIFEST", f"manifest path escapes extension root: {relative}")
-        path = extension_root / relative
+        path = root / relative
         if not path.is_file():
             fail("E_MANIFEST", f"manifest path does not resolve to a file: {relative}")
         digest.update(str(relative).encode("utf-8"))
