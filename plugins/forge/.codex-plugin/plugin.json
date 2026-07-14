@@ -1,6 +1,6 @@
 {
   "name": "forge",
-  "version": "0.1.2+codex.20260713012401",
+  "version": "0.1.3+codex.20260714022000",
   "description": "Spec-first development process skills with cross-agent skill and MCP authoring, verification, debugging, design, tone overlays, and lifecycle review Viewers. Produces adapters for Codex, Claude Code, and Antigravity.",
   "author": {
     "name": "Onestar Lee"
