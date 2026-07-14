@@ -259,7 +259,7 @@ If this adapter conflicts with the canonical skill, the canonical skill wins.
 
 예상: lifecycle과 다섯 skill adapter cases가 모두 PASS한다.
 
-- [ ] **Step 5: Task 2 변경을 fresh 검증하고 commit한다**
+- [x] **Step 5: Task 2 변경을 fresh 검증하고 commit한다**
 
 실행: `bash scripts/tests/test-agent-extension-skill.sh && bash scripts/validate.sh`
 
@@ -286,7 +286,7 @@ If this adapter conflicts with the canonical skill, the canonical skill wins.
 - Parallel safety: sequential root — Task 2와 manager/test files가 겹치고 state format을 소비함
 - Approval gate: none
 
-- [ ] **Step 1: stdio·HTTP rendering, unrelated preservation, collision과 drift cases를 실패하는 test로 추가한다**
+- [x] **Step 1: stdio·HTTP rendering, unrelated preservation, collision과 drift cases를 실패하는 test로 추가한다**
 
 | Test method | Fixture | 필수 assertion |
 |---|---|---|
@@ -298,13 +298,13 @@ If this adapter conflicts with the canonical skill, the canonical skill wins.
 
 Codex fixture는 managed block 밖의 original prefix와 suffix가 같은 bytes인지 검사한다. JSON fixtures는 render 전후 unrelated nested object를 deep-equal로 비교한다. Collision과 drift cases는 return code가 non-zero이고 sentinel entry가 유지되는지 검사한다.
 
-- [ ] **Step 2: 새 MCP tests가 native renderer 부재로 실패하는지 확인한다**
+- [x] **Step 2: 새 MCP tests가 native renderer 부재로 실패하는지 확인한다**
 
 실행: `python3 -m unittest discover -s plugins/forge/skills/creating-agent-extensions/tests -p 'test_*.py' -v`
 
 예상: MCP target 또는 merge function 부재로 새 cases가 FAIL한다.
 
-- [ ] **Step 3: canonical MCP schema와 agent-native 변환을 구현한다**
+- [x] **Step 3: canonical MCP schema와 agent-native 변환을 구현한다**
 
 지원 schema는 다음 두 shape로 제한한다.
 
@@ -328,11 +328,11 @@ Codex fixture는 managed block 밖의 original prefix와 suffix가 같은 bytes�
 
 Codex는 stdio의 `command`, `args`, `env_vars`와 HTTP의 `url`, `env_http_headers`를 render한다. Claude Code와 Antigravity는 stdio의 `command`, `args`, `${ENV_NAME}` env mapping과 HTTP의 `type: "http"`, `url`, `${ENV_NAME}` headers를 render한다. Canonical `env`, raw `headers`, secret-like key/value, unsupported transport와 unknown field는 `E_MCP_SCHEMA` 또는 `E_SECRET`으로 거부한다.
 
-- [ ] **Step 4: merge ownership과 drift-safe update를 구현한다**
+- [x] **Step 4: merge ownership과 drift-safe update를 구현한다**
 
 Codex block marker는 `# BEGIN creating-agent-extensions:<extension>`과 `# END creating-agent-extensions:<extension>`을 사용한다. Own block 밖의 same server table, state가 없는 same-name JSON entry, 또는 state hash와 다른 live entry는 쓰기 전에 거부한다. 성공한 render 뒤에만 세 agent state를 함께 갱신하며 실패 중간 결과가 남지 않도록 모든 output을 memory에서 계산한 후 atomic replace한다.
 
-- [ ] **Step 5: MCP suite를 GREEN으로 만들고 refactor한다**
+- [x] **Step 5: MCP suite를 GREEN으로 만들고 refactor한다**
 
 실행: `bash scripts/tests/test-agent-extension-skill.sh`
 
@@ -488,3 +488,6 @@ bash scripts/validate.sh
 - 2026-07-14: Python cache regression guard complete (commit `6f8a4f7`; root cause="unit tests generated an unignored cache inside a directory-level stage boundary").
 - 2026-07-14: Task 2 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="skill target calculation, wrappers, ownership state, and drift validation share one manager transaction").
 - 2026-07-14: Task 2 RED confirmed at unsupported `render`; GREEN confirmed for repository/user wrappers, confirmation preview, collision refusal, wrapper/canonical drift, and multiple-skill ownership across three agents.
+- 2026-07-14: Task 2 complete (commit `9d35902`; verification="9 manager tests passed; extension contract passed; Forge validator passed").
+- 2026-07-14: Task 3 routed (impact=high, uncertainty=high, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="three native MCP formats must share collision, ownership, and drift semantics without rewriting unrelated configuration").
+- 2026-07-14: Task 3 RED confirmed at unsupported MCP render and overly broad native-file collision detection; GREEN confirmed for stdio/HTTP conversion, unrelated-config preservation, user preview metadata, collision refusal, JSON/TOML drift, credential references, and bundle ownership.

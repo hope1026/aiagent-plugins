@@ -53,3 +53,38 @@ Repository wrappers use a relative canonical path so a checkout can move. User w
 ## Ownership State
 
 Each agent has `adapters/<agent>/state.json` with schema version, extension owner, canonical SHA-256, native target, and the rendered entry SHA-256. A render may update an owned entry only when its live hash still matches the previous state. A missing, modified, or differently owned entry is drift or collision, never an implicit adoption.
+
+## Canonical MCP Definition
+
+`mcp/servers.json` contains only `mcpServers`. The portable schema supports stdio and streamable HTTP definitions:
+
+```json
+{
+  "mcpServers": {
+    "local-tools": {
+      "transport": "stdio",
+      "command": "python3",
+      "args": ["server.py"],
+      "envVars": ["LOCAL_TOOLS_TOKEN"]
+    },
+    "remote-tools": {
+      "transport": "http",
+      "url": "https://example.test/mcp",
+      "headersFromEnv": {"Authorization": "REMOTE_TOOLS_TOKEN"}
+    }
+  }
+}
+```
+
+`envVars` and `headersFromEnv` contain environment variable names, never credential values. Raw `env`, raw `headers`, token, password, secret, and authorization values are rejected.
+
+## MCP Targets
+
+| Scope | Codex | Claude Code | Antigravity |
+|---|---|---|---|
+| repository | `.codex/config.toml` | `.mcp.json` | `.agents/mcp_config.json` |
+| user | `~/.codex/config.toml` | `~/.claude.json` | `~/.gemini/config/mcp_config.json` |
+
+Codex entries live inside `# BEGIN creating-agent-extensions:<extension>` and matching end markers. Bytes outside that block remain unchanged. Claude Code and Antigravity use the native `mcpServers` JSON object; unrelated keys and server values remain semantically unchanged. A same-name server without matching ownership state is a collision.
+
+The user preview lists every canonical source, native target, entry-level create/update/collision action, and required environment variable before `--confirm-user-write` permits a render.

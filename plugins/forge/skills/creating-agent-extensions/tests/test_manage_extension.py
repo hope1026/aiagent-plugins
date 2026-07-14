@@ -132,6 +132,69 @@ class ManagerTestCase(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         return base.resolve(), base.resolve() / ".agent-extensions" / "example-extension"
 
+    def init_mcp_extension(
+        self,
+        root: Path,
+        scope: str = "repository",
+        existing_configs: bool = False,
+    ) -> tuple[Path, Path]:
+        base = root / ("home" if scope == "user" else "repo")
+        stage = root / "stage"
+        base.mkdir()
+        if existing_configs:
+            self.write_existing_native_configs(base, scope)
+        mcp = self.write_mcp(stage)
+        args = [
+            "init",
+            "--scope",
+            scope,
+            "--base-dir",
+            str(base),
+            "--name",
+            "example-extension",
+            "--description",
+            "Example extension for confirmed workflows.",
+            "--profile",
+            "mcp",
+            "--mcp-source",
+            str(mcp),
+        ]
+        if scope == "user":
+            args.append("--confirm-user-write")
+        result = self.run_manager(*args)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return base.resolve(), base.resolve() / ".agent-extensions" / "example-extension"
+
+    def write_existing_native_configs(self, base: Path, scope: str) -> None:
+        codex = base / ".codex" / "config.toml"
+        codex.parent.mkdir(parents=True)
+        codex.write_text(
+            'model = "gpt-5"\n\n[mcp_servers.existing]\ncommand = "existing-command"\n',
+            encoding="utf-8",
+        )
+        if scope == "repository":
+            claude = base / ".mcp.json"
+            antigravity = base / ".agents" / "mcp_config.json"
+        else:
+            claude = base / ".claude.json"
+            antigravity = base / ".gemini" / "config" / "mcp_config.json"
+        for path, marker in ((claude, "claude"), (antigravity, "antigravity")):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(
+                json.dumps(
+                    {
+                        "theme": marker,
+                        "nested": {"keep": [1, 2, 3]},
+                        "mcpServers": {
+                            "existing": {"command": "existing-command", "args": []}
+                        },
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
     def test_plan_is_write_free_and_lists_repository_targets(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -167,6 +230,10 @@ class ManagerTestCase(unittest.TestCase):
                 },
             )
             self.assertEqual(preview["collisions"], [])
+            self.assertEqual(
+                preview["credentialRequirements"],
+                ["LOCAL_TOOLS_TOKEN", "REMOTE_TOOLS_TOKEN"],
+            )
             self.assertFalse(preview["requiresConfirmation"])
 
     def test_user_init_requires_confirmation_without_writes(self) -> None:
@@ -347,6 +414,9 @@ class ManagerTestCase(unittest.TestCase):
             self.assertIn("E_CONFIRMATION", refused.stderr)
             preview = json.loads(refused.stdout)
             self.assertEqual(len(preview["nativeTargets"]), 3)
+            self.assertEqual(len(preview["changes"]), 3)
+            self.assertEqual({item["action"] for item in preview["changes"]}, {"create"})
+            self.assertEqual(preview["collisions"], [])
             self.assertEqual(self.snapshot(base), before)
 
             rendered = self.run_manager(
@@ -428,6 +498,216 @@ class ManagerTestCase(unittest.TestCase):
                     {entry["name"] for entry in state["entries"]},
                     {"example-skill", "review-skill"},
                 )
+
+    def test_repository_mcp_render_preserves_unrelated_json_and_toml(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_mcp_extension(
+                Path(temporary), existing_configs=True
+            )
+            codex = base / ".codex" / "config.toml"
+            claude = base / ".mcp.json"
+            antigravity = base / ".agents" / "mcp_config.json"
+            codex_before = codex.read_bytes()
+            json_before = {
+                path: json.loads(path.read_text()) for path in (claude, antigravity)
+            }
+
+            result = self.run_manager("render", "--extension", str(extension))
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(codex.read_bytes().startswith(codex_before))
+            codex_text = codex.read_text()
+            self.assertIn("# BEGIN creating-agent-extensions:example-extension", codex_text)
+            self.assertIn('[mcp_servers."local-tools"]', codex_text)
+            self.assertIn('env_vars = ["LOCAL_TOOLS_TOKEN"]', codex_text)
+            self.assertIn('[mcp_servers."remote-tools"]', codex_text)
+            self.assertIn(
+                'env_http_headers = { "Authorization" = "REMOTE_TOOLS_TOKEN" }',
+                codex_text,
+            )
+            for path in (claude, antigravity):
+                after = json.loads(path.read_text())
+                self.assertEqual(after["theme"], json_before[path]["theme"])
+                self.assertEqual(after["nested"], json_before[path]["nested"])
+                self.assertEqual(
+                    after["mcpServers"]["existing"],
+                    json_before[path]["mcpServers"]["existing"],
+                )
+                self.assertEqual(
+                    after["mcpServers"]["local-tools"]["env"],
+                    {"LOCAL_TOOLS_TOKEN": "${LOCAL_TOOLS_TOKEN}"},
+                )
+                self.assertEqual(
+                    after["mcpServers"]["remote-tools"]["headers"],
+                    {"Authorization": "${REMOTE_TOOLS_TOKEN}"},
+                )
+            validation = self.run_manager("validate", "--extension", str(extension))
+            self.assertEqual(validation.returncode, 0, validation.stderr)
+
+    def test_user_mcp_render_requires_confirmation_and_preserves_settings(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_mcp_extension(
+                Path(temporary), scope="user", existing_configs=True
+            )
+            before = self.snapshot(base)
+
+            refused = self.run_manager("render", "--extension", str(extension))
+
+            self.assertNotEqual(refused.returncode, 0)
+            self.assertIn("E_CONFIRMATION", refused.stderr)
+            preview = json.loads(refused.stdout)
+            self.assertEqual(len(preview["nativeTargets"]), 3)
+            self.assertEqual(len(preview["changes"]), 6)
+            self.assertEqual({item["action"] for item in preview["changes"]}, {"create"})
+            self.assertEqual(
+                preview["credentialRequirements"],
+                ["LOCAL_TOOLS_TOKEN", "REMOTE_TOOLS_TOKEN"],
+            )
+            self.assertEqual(preview["collisions"], [])
+            self.assertEqual(self.snapshot(base), before)
+
+            rendered = self.run_manager(
+                "render",
+                "--extension",
+                str(extension),
+                "--confirm-user-write",
+            )
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            self.assertIn("local-tools", (base / ".codex" / "config.toml").read_text())
+            for path in (
+                base / ".claude.json",
+                base / ".gemini" / "config" / "mcp_config.json",
+            ):
+                document = json.loads(path.read_text())
+                self.assertIn("local-tools", document["mcpServers"])
+                self.assertEqual(document["nested"], {"keep": [1, 2, 3]})
+
+    def test_mcp_collision_refuses_same_name_from_other_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_mcp_extension(Path(temporary))
+            collision = base / ".mcp.json"
+            collision.write_text(
+                json.dumps(
+                    {
+                        "mcpServers": {
+                            "local-tools": {"command": "other-owner", "args": []}
+                        }
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            sentinel = collision.read_bytes()
+
+            result = self.run_manager("render", "--extension", str(extension))
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("E_COLLISION", result.stderr)
+            self.assertEqual(collision.read_bytes(), sentinel)
+            self.assertFalse((base / ".codex" / "config.toml").exists())
+            self.assertFalse((base / ".agents" / "mcp_config.json").exists())
+            self.assertFalse((extension / "adapters").exists())
+
+    def test_validate_reports_json_and_toml_entry_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_mcp_extension(Path(temporary))
+            rendered = self.run_manager("render", "--extension", str(extension))
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            claude = base / ".mcp.json"
+            document = json.loads(claude.read_text())
+            document["mcpServers"]["local-tools"]["command"] = "drifted-command"
+            claude.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+
+            validation = self.run_manager("validate", "--extension", str(extension))
+
+            self.assertNotEqual(validation.returncode, 0)
+            self.assertIn("E_DRIFT", validation.stderr)
+            self.assertIn(str(claude), validation.stderr)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_mcp_extension(Path(temporary))
+            rendered = self.run_manager("render", "--extension", str(extension))
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            codex = base / ".codex" / "config.toml"
+            codex.write_text(
+                codex.read_text().replace('command = "python3"', 'command = "drifted"'),
+                encoding="utf-8",
+            )
+
+            validation = self.run_manager("validate", "--extension", str(extension))
+
+            self.assertNotEqual(validation.returncode, 0)
+            self.assertIn("E_DRIFT", validation.stderr)
+            self.assertIn(str(codex), validation.stderr)
+
+    def test_stdio_env_vars_and_http_headers_from_env_never_embed_secret_values(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_mcp_extension(Path(temporary))
+
+            result = self.run_manager("render", "--extension", str(extension))
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            all_native = "\n".join(
+                [
+                    (base / ".codex" / "config.toml").read_text(),
+                    (base / ".mcp.json").read_text(),
+                    (base / ".agents" / "mcp_config.json").read_text(),
+                ]
+            )
+            self.assertNotIn("plain-secret-value", all_native)
+            self.assertIn("LOCAL_TOOLS_TOKEN", all_native)
+            self.assertIn("REMOTE_TOOLS_TOKEN", all_native)
+
+    def test_bundle_tracks_skills_and_mcp_in_all_agent_states(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            base = root / "repo"
+            stage = root / "stage"
+            base.mkdir()
+            first = self.write_skill(stage, name="example-skill")
+            second = self.write_skill(stage, name="review-skill")
+            mcp = self.write_mcp(stage)
+            init = self.run_manager(
+                "init",
+                "--scope",
+                "repository",
+                "--base-dir",
+                str(base),
+                "--name",
+                "example-extension",
+                "--description",
+                "Example extension for confirmed workflows.",
+                "--profile",
+                "bundle",
+                "--skill-source",
+                str(first),
+                "--skill-source",
+                str(second),
+                "--mcp-source",
+                str(mcp),
+            )
+            self.assertEqual(init.returncode, 0, init.stderr)
+            extension = base.resolve() / ".agent-extensions" / "example-extension"
+
+            rendered = self.run_manager("render", "--extension", str(extension))
+
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            for agent in ("codex", "claude-code", "antigravity"):
+                state = json.loads(
+                    (extension / "adapters" / agent / "state.json").read_text()
+                )
+                self.assertEqual(
+                    {(entry["kind"], entry["name"]) for entry in state["entries"]},
+                    {
+                        ("skill", "example-skill"),
+                        ("skill", "review-skill"),
+                        ("mcp", "local-tools"),
+                        ("mcp", "remote-tools"),
+                    },
+                )
+            validation = self.run_manager("validate", "--extension", str(extension))
+            self.assertEqual(validation.returncode, 0, validation.stderr)
 
 
 if __name__ == "__main__":

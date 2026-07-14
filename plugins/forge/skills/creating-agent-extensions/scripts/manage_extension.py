@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import os
@@ -238,23 +239,79 @@ def native_targets_for(
                 ]
             )
     if has_mcp:
-        if scope == "repository":
-            targets.extend(
-                [
-                    base_dir / ".codex" / "config.toml",
-                    base_dir / ".mcp.json",
-                    base_dir / ".agents" / "mcp_config.json",
-                ]
-            )
-        else:
-            targets.extend(
-                [
-                    base_dir / ".codex" / "config.toml",
-                    base_dir / ".claude.json",
-                    base_dir / ".gemini" / "config" / "mcp_config.json",
-                ]
-            )
+        targets.extend(path for _, path, _ in mcp_target_mappings(scope, base_dir))
     return targets
+
+
+def mcp_target_mappings(scope: str, base_dir: Path) -> list[tuple[str, Path, str]]:
+    if scope == "repository":
+        return [
+            ("codex", base_dir / ".codex" / "config.toml", "toml"),
+            ("claude-code", base_dir / ".mcp.json", "json"),
+            ("antigravity", base_dir / ".agents" / "mcp_config.json", "json"),
+        ]
+    return [
+        ("codex", base_dir / ".codex" / "config.toml", "toml"),
+        ("claude-code", base_dir / ".claude.json", "json"),
+        (
+            "antigravity",
+            base_dir / ".gemini" / "config" / "mcp_config.json",
+            "json",
+        ),
+    ]
+
+
+def toml_server_names(text: str) -> set[str]:
+    pattern = re.compile(
+        r'^\s*\[mcp_servers\.(?:"([^"]+)"|([A-Za-z0-9_-]+))\]\s*$',
+        re.MULTILINE,
+    )
+    return {quoted or bare for quoted, bare in pattern.findall(text)}
+
+
+def existing_mcp_names(path: Path, native_format: str) -> set[str]:
+    if not path.exists():
+        return set()
+    if native_format == "toml":
+        return toml_server_names(path.read_text(encoding="utf-8"))
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        fail("E_NATIVE_CONFIG", f"cannot parse native JSON config {path}: {error}")
+    if not isinstance(document, dict):
+        fail("E_NATIVE_CONFIG", f"native JSON config must be an object: {path}")
+    servers = document.get("mcpServers", {})
+    if not isinstance(servers, dict):
+        fail("E_NATIVE_CONFIG", f"mcpServers must be an object in {path}")
+    return set(servers)
+
+
+def plan_collisions(
+    scope: str,
+    base_dir: Path,
+    extension_root: Path,
+    sources: dict[str, Any],
+) -> list[str]:
+    collisions: list[str] = []
+    if extension_root.exists():
+        collisions.append(str(extension_root))
+    skill_targets_only = native_targets_for(scope, base_dir, sources["skills"], False)
+    collisions.extend(str(path) for path in skill_targets_only if path.exists())
+    if sources["mcp"] is not None:
+        canonical_names = set(sources["mcp"]["servers"])
+        for _, path, native_format in mcp_target_mappings(scope, base_dir):
+            for name in sorted(canonical_names & existing_mcp_names(path, native_format)):
+                collisions.append(f"{path}#{name}")
+    return collisions
+
+
+def source_credential_requirements(sources: dict[str, Any]) -> list[str]:
+    names: set[str] = set()
+    if sources["mcp"] is not None:
+        for server in sources["mcp"]["servers"].values():
+            names.update(server.get("envVars", []))
+            names.update(server.get("headersFromEnv", {}).values())
+    return sorted(names)
 
 
 def build_plan(args: argparse.Namespace) -> dict[str, Any]:
@@ -274,10 +331,7 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     native_targets = native_targets_for(
         args.scope, base_dir, sources["skills"], sources["mcp"] is not None
     )
-    collisions: list[str] = []
-    if extension_root.exists():
-        collisions.append(str(extension_root))
-    collisions.extend(str(path) for path in native_targets if path.exists())
+    collisions = plan_collisions(args.scope, base_dir, extension_root, sources)
     return {
         "action": "plan",
         "scope": args.scope,
@@ -289,6 +343,7 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         "canonicalWrites": canonical_writes,
         "nativeTargets": [str(path) for path in native_targets],
         "collisions": collisions,
+        "credentialRequirements": source_credential_requirements(sources),
         "requiresConfirmation": args.scope == "user",
         "sources": {
             "skills": sources["skills"],
@@ -497,6 +552,131 @@ def skill_targets(
     return descriptors
 
 
+def canonical_mcp_servers(
+    manifest: dict[str, Any], extension_root: Path
+) -> dict[str, dict[str, Any]]:
+    declarations = manifest["components"]["mcpServers"]
+    if not declarations:
+        return {}
+    declared_names: list[str] = []
+    for declaration in declarations:
+        if not isinstance(declaration, dict) or set(declaration) != {"name", "path"}:
+            fail("E_MANIFEST", "each MCP declaration requires name and path")
+        validate_name(declaration["name"], "MCP server name")
+        if declaration["path"] != "mcp/servers.json":
+            fail("E_MANIFEST", "MCP declaration path must be mcp/servers.json")
+        declared_names.append(declaration["name"])
+    parsed = parse_mcp_source(extension_root / "mcp" / "servers.json")
+    servers = parsed["servers"]
+    if declared_names != list(servers):
+        fail("E_MANIFEST", "MCP declarations must match canonical mcpServers order and names")
+    return servers
+
+
+def to_json_native(server: dict[str, Any], extension_root: Path) -> dict[str, Any]:
+    if server["transport"] == "stdio":
+        native: dict[str, Any] = {
+            "type": "stdio",
+            "command": server["command"],
+            "args": list(server.get("args", [])),
+        }
+        if server.get("envVars"):
+            native["env"] = {
+                name: f"${{{name}}}" for name in server["envVars"]
+            }
+        if "cwd" in server:
+            native["cwd"] = str((extension_root / server["cwd"]).resolve())
+        return native
+    native = {"type": "http", "url": server["url"]}
+    if server.get("headersFromEnv"):
+        native["headers"] = {
+            header: f"${{{env_name}}}"
+            for header, env_name in server["headersFromEnv"].items()
+        }
+    return native
+
+
+def toml_string(value: str) -> str:
+    return json.dumps(value, ensure_ascii=False)
+
+
+def toml_array(values: list[str]) -> str:
+    return "[" + ", ".join(toml_string(value) for value in values) + "]"
+
+
+def toml_inline_map(values: dict[str, str]) -> str:
+    pairs = ", ".join(
+        f"{toml_string(key)} = {toml_string(value)}" for key, value in values.items()
+    )
+    return "{ " + pairs + " }"
+
+
+def to_codex_toml(
+    name: str, server: dict[str, Any], extension_root: Path
+) -> str:
+    lines = [f"[mcp_servers.{toml_string(name)}]"]
+    if server["transport"] == "stdio":
+        lines.append(f"command = {toml_string(server['command'])}")
+        if server.get("args"):
+            lines.append(f"args = {toml_array(server['args'])}")
+        if server.get("envVars"):
+            lines.append(f"env_vars = {toml_array(server['envVars'])}")
+        if "cwd" in server:
+            lines.append(f"cwd = {toml_string(str((extension_root / server['cwd']).resolve()))}")
+    else:
+        lines.append(f"url = {toml_string(server['url'])}")
+        if server.get("headersFromEnv"):
+            lines.append(
+                "env_http_headers = "
+                + toml_inline_map(server["headersFromEnv"])
+            )
+    return "\n".join(lines) + "\n"
+
+
+def codex_managed_block(
+    extension_name: str,
+    servers: dict[str, dict[str, Any]],
+    extension_root: Path,
+) -> str:
+    lines = [f"# BEGIN creating-agent-extensions:{extension_name}"]
+    for name, server in servers.items():
+        lines.append(to_codex_toml(name, server, extension_root).rstrip("\n"))
+        lines.append("")
+    if lines[-1] == "":
+        lines.pop()
+    lines.append(f"# END creating-agent-extensions:{extension_name}")
+    return "\n".join(lines) + "\n"
+
+
+def mcp_targets(
+    manifest: dict[str, Any], extension_root: Path, base_dir: Path
+) -> list[dict[str, Any]]:
+    servers = canonical_mcp_servers(manifest, extension_root)
+    descriptors: list[dict[str, Any]] = []
+    for agent, target, native_format in mcp_target_mappings(
+        manifest["scope"], base_dir
+    ):
+        for name, server in servers.items():
+            descriptors.append(
+                {
+                    "agent": agent,
+                    "kind": "mcp",
+                    "name": name,
+                    "target": target,
+                    "stateTarget": state_target(
+                        target, base_dir, manifest["scope"]
+                    ),
+                    "format": native_format,
+                    "native": (
+                        to_json_native(server, extension_root)
+                        if native_format == "json"
+                        else server
+                    ),
+                }
+            )
+    return descriptors
+
+
 def render_skill_wrapper(descriptor: dict[str, Any], scope: str) -> str:
     canonical = descriptor["canonical"]
     if scope == "repository":
@@ -571,16 +751,248 @@ def atomic_write_text(path: Path, text: str) -> None:
         raise
 
 
+def stable_json_hash(value: Any) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def load_native_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        fail("E_NATIVE_CONFIG", f"cannot parse native JSON config {path}: {error}")
+    if not isinstance(document, dict):
+        fail("E_NATIVE_CONFIG", f"native JSON config must be an object: {path}")
+    servers = document.get("mcpServers", {})
+    if not isinstance(servers, dict):
+        fail("E_NATIVE_CONFIG", f"mcpServers must be an object in {path}")
+    return document
+
+
+def split_managed_block(
+    text: str, extension_name: str
+) -> tuple[str, str | None, str]:
+    begin = f"# BEGIN creating-agent-extensions:{extension_name}"
+    end = f"# END creating-agent-extensions:{extension_name}"
+    start = text.find(begin)
+    finish_marker = text.find(end)
+    if start == -1 and finish_marker == -1:
+        return text, None, ""
+    if start == -1 or finish_marker == -1 or finish_marker < start:
+        fail("E_NATIVE_CONFIG", f"malformed managed TOML block for '{extension_name}'")
+    if text.find(begin, start + len(begin)) != -1 or text.find(
+        end, finish_marker + len(end)
+    ) != -1:
+        fail("E_NATIVE_CONFIG", f"duplicate managed TOML block for '{extension_name}'")
+    block_end = finish_marker + len(end)
+    if block_end < len(text) and text[block_end] == "\n":
+        block_end += 1
+    return text[:start], text[start:block_end], text[block_end:]
+
+
+def append_managed_block(text: str, block: str) -> str:
+    if not text:
+        return block
+    separator = "" if text.endswith("\n\n") else ("\n" if text.endswith("\n") else "\n\n")
+    return text + separator + block
+
+
+def prepare_json_mcp_output(
+    target: Path,
+    descriptors: list[dict[str, Any]],
+    state: dict[str, Any] | None,
+    extension_name: str,
+) -> str:
+    document = load_native_json(target)
+    existing_servers = document.get("mcpServers", {})
+    for descriptor in descriptors:
+        prior = previous_entry(state, descriptor)
+        existing = existing_servers.get(descriptor["name"])
+        if existing is not None:
+            if prior is None:
+                fail(
+                    "E_COLLISION",
+                    f"MCP server '{descriptor['name']}' in '{target}' is not owned by extension '{extension_name}'",
+                )
+            if prior.get("owner") != extension_name or stable_json_hash(
+                existing
+            ) != prior.get("renderedHash"):
+                fail(
+                    "E_DRIFT",
+                    f"MCP entry '{descriptor['name']}' drifted at '{target}' for expected owner '{extension_name}'",
+                )
+        elif prior is not None:
+            fail(
+                "E_DRIFT",
+                f"owned MCP entry '{descriptor['name']}' is missing at '{target}'",
+            )
+
+    merged = copy.deepcopy(document)
+    merged_servers = merged.setdefault("mcpServers", {})
+    for descriptor in descriptors:
+        merged_servers[descriptor["name"]] = descriptor["native"]
+        descriptor["renderedHash"] = stable_json_hash(descriptor["native"])
+    return json.dumps(merged, indent=2, ensure_ascii=False) + "\n"
+
+
+def prepare_codex_mcp_output(
+    target: Path,
+    descriptors: list[dict[str, Any]],
+    state: dict[str, Any] | None,
+    extension_name: str,
+    extension_root: Path,
+) -> str:
+    text = target.read_text(encoding="utf-8") if target.exists() else ""
+    before, existing_block, after = split_managed_block(text, extension_name)
+    external_names = toml_server_names(before + after)
+    requested_names = {descriptor["name"] for descriptor in descriptors}
+    collisions = sorted(external_names & requested_names)
+    if collisions:
+        fail(
+            "E_COLLISION",
+            f"MCP server '{collisions[0]}' in '{target}' is not owned by extension '{extension_name}'",
+        )
+    if existing_block is not None:
+        actual_hash = sha256_text(existing_block)
+        for descriptor in descriptors:
+            prior = previous_entry(state, descriptor)
+            if (
+                prior is None
+                or prior.get("owner") != extension_name
+                or prior.get("renderedHash") != actual_hash
+            ):
+                fail(
+                    "E_DRIFT",
+                    f"managed MCP block drifted at '{target}' for expected owner '{extension_name}'",
+                )
+    else:
+        for descriptor in descriptors:
+            if previous_entry(state, descriptor) is not None:
+                fail("E_DRIFT", f"owned managed MCP block is missing at '{target}'")
+
+    servers = canonical_mcp_servers(load_manifest(extension_root), extension_root)
+    block = codex_managed_block(extension_name, servers, extension_root)
+    block_hash = sha256_text(block)
+    for descriptor in descriptors:
+        descriptor["renderedHash"] = block_hash
+    if existing_block is None:
+        return append_managed_block(text, block)
+    return before + block + after
+
+
+def preview_changes(
+    descriptors: list[dict[str, Any]],
+    extension_root: Path,
+    manifest: dict[str, Any],
+) -> list[dict[str, str]]:
+    states = {agent: load_state(extension_root, agent) for agent in TARGETS}
+    changes: list[dict[str, str]] = []
+    codex_cache: dict[Path, tuple[str, str | None, str]] = {}
+    json_cache: dict[Path, dict[str, Any]] = {}
+    for descriptor in descriptors:
+        target = descriptor["target"]
+        prior = previous_entry(states[descriptor["agent"]], descriptor)
+        action = "create"
+        if descriptor["kind"] == "skill":
+            if target.exists():
+                if prior is None:
+                    action = "collision"
+                elif (
+                    prior.get("owner") != manifest["name"]
+                    or hashlib.sha256(target.read_bytes()).hexdigest()
+                    != prior.get("renderedHash")
+                ):
+                    action = "drift"
+                else:
+                    action = "update"
+            elif prior is not None:
+                action = "drift"
+        elif descriptor["format"] == "json":
+            document = json_cache.setdefault(target, load_native_json(target))
+            existing = document.get("mcpServers", {}).get(descriptor["name"])
+            if existing is not None:
+                if prior is None:
+                    action = "collision"
+                elif (
+                    prior.get("owner") != manifest["name"]
+                    or stable_json_hash(existing) != prior.get("renderedHash")
+                ):
+                    action = "drift"
+                else:
+                    action = "update"
+            elif prior is not None:
+                action = "drift"
+        else:
+            if target not in codex_cache:
+                text = target.read_text(encoding="utf-8") if target.exists() else ""
+                codex_cache[target] = split_managed_block(text, manifest["name"])
+            before, block, after = codex_cache[target]
+            if descriptor["name"] in toml_server_names(before + after):
+                action = "collision"
+            elif block is not None:
+                if (
+                    prior is None
+                    or prior.get("owner") != manifest["name"]
+                    or sha256_text(block) != prior.get("renderedHash")
+                ):
+                    action = "drift"
+                else:
+                    action = "update"
+            elif prior is not None:
+                action = "drift"
+        changes.append(
+            {
+                "agent": descriptor["agent"],
+                "kind": descriptor["kind"],
+                "name": descriptor["name"],
+                "target": str(target),
+                "action": action,
+            }
+        )
+    return changes
+
+
+def credential_requirements(
+    manifest: dict[str, Any], extension_root: Path
+) -> list[str]:
+    names: set[str] = set()
+    for server in canonical_mcp_servers(manifest, extension_root).values():
+        names.update(server.get("envVars", []))
+        names.update(server.get("headersFromEnv", {}).values())
+    return sorted(names)
+
+
 def render_preview(extension_root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     root, base_dir, manifest = extension_context(extension_root)
+    descriptors = skill_targets(manifest, root, base_dir) + mcp_targets(
+        manifest, root, base_dir
+    )
+    changes = preview_changes(descriptors, root, manifest)
+    canonical_sources = [
+        str(root / item["path"]) for item in manifest["components"]["skills"]
+    ]
     if manifest["components"]["mcpServers"]:
-        fail("E_NOT_IMPLEMENTED", "MCP adapters are implemented in the next plan Task")
-    descriptors = skill_targets(manifest, root, base_dir)
+        canonical_sources.append(str(root / "mcp" / "servers.json"))
     preview = {
         "action": "render",
         "scope": manifest["scope"],
         "extensionRoot": str(root),
+        "canonicalSources": canonical_sources,
         "nativeTargets": sorted({str(item["target"]) for item in descriptors}),
+        "changes": changes,
+        "credentialRequirements": credential_requirements(manifest, root),
+        "collisions": [
+            f"{item['target']}#{item['name']}"
+            for item in changes
+            if item["action"] == "collision"
+        ],
         "requiresConfirmation": manifest["scope"] == "user",
     }
     return preview, descriptors
@@ -599,7 +1011,10 @@ def render_extension(extension_root: Path, confirmed: bool) -> dict[str, Any]:
     states = {agent: load_state(root, agent) for agent in TARGETS}
     rendered: dict[Path, str] = {}
 
-    for descriptor in descriptors:
+    skill_descriptors = [item for item in descriptors if item["kind"] == "skill"]
+    mcp_descriptors = [item for item in descriptors if item["kind"] == "mcp"]
+
+    for descriptor in skill_descriptors:
         text = render_skill_wrapper(descriptor, manifest["scope"])
         target = descriptor["target"]
         if target in rendered and rendered[target] != text:
@@ -626,6 +1041,28 @@ def render_extension(extension_root: Path, confirmed: bool) -> dict[str, Any]:
                 "E_DRIFT",
                 f"owned target '{target}' is missing for expected owner '{manifest['name']}'",
             )
+        descriptor["renderedHash"] = sha256_text(text)
+
+    mcp_groups: dict[Path, list[dict[str, Any]]] = {}
+    for descriptor in mcp_descriptors:
+        mcp_groups.setdefault(descriptor["target"], []).append(descriptor)
+    for target, group in mcp_groups.items():
+        agent = group[0]["agent"]
+        if group[0]["format"] == "json":
+            rendered[target] = prepare_json_mcp_output(
+                target,
+                group,
+                states[agent],
+                manifest["name"],
+            )
+        else:
+            rendered[target] = prepare_codex_mcp_output(
+                target,
+                group,
+                states[agent],
+                manifest["name"],
+                root,
+            )
 
     new_states: dict[str, dict[str, Any]] = {}
     for agent in TARGETS:
@@ -633,14 +1070,13 @@ def render_extension(extension_root: Path, confirmed: bool) -> dict[str, Any]:
         for descriptor in descriptors:
             if descriptor["agent"] != agent:
                 continue
-            text = rendered[descriptor["target"]]
             entries.append(
                 {
                     "kind": descriptor["kind"],
                     "name": descriptor["name"],
                     "target": descriptor["stateTarget"],
                     "owner": manifest["name"],
-                    "renderedHash": sha256_text(text),
+                    "renderedHash": descriptor["renderedHash"],
                 }
             )
         new_states[agent] = {
@@ -662,10 +1098,10 @@ def render_extension(extension_root: Path, confirmed: bool) -> dict[str, Any]:
 
 def validate_extension(extension_root: Path) -> list[str]:
     root, base_dir, manifest = extension_context(extension_root)
-    if manifest["components"]["mcpServers"]:
-        fail("E_NOT_IMPLEMENTED", "MCP adapters are implemented in the next plan Task")
     digest = canonical_digest(root)
-    descriptors = skill_targets(manifest, root, base_dir)
+    skill_descriptors = skill_targets(manifest, root, base_dir)
+    mcp_descriptors = mcp_targets(manifest, root, base_dir)
+    descriptors = skill_descriptors + mcp_descriptors
     issues: list[str] = []
     states = {agent: load_state(root, agent) for agent in TARGETS}
     for agent, state in states.items():
@@ -680,7 +1116,7 @@ def validate_extension(extension_root: Path) -> list[str]:
             issues.append(
                 f"canonical hash drift for expected owner '{manifest['name']}' and agent '{agent}'"
             )
-    for descriptor in descriptors:
+    for descriptor in skill_descriptors:
         state = states[descriptor["agent"]]
         prior = previous_entry(state, descriptor)
         target = descriptor["target"]
@@ -703,6 +1139,72 @@ def validate_extension(extension_root: Path) -> list[str]:
             issues.append(
                 f"adapter drift at '{target}', expected owner '{manifest['name']}'"
             )
+
+    mcp_groups: dict[Path, list[dict[str, Any]]] = {}
+    for descriptor in mcp_descriptors:
+        mcp_groups.setdefault(descriptor["target"], []).append(descriptor)
+    for target, group in mcp_groups.items():
+        agent = group[0]["agent"]
+        state = states[agent]
+        if group[0]["format"] == "json":
+            document = load_native_json(target)
+            native_servers = document.get("mcpServers", {})
+            for descriptor in group:
+                prior = previous_entry(state, descriptor)
+                native = native_servers.get(descriptor["name"])
+                if prior is None:
+                    issues.append(
+                        f"ownership entry missing for MCP '{descriptor['name']}' at '{target}'"
+                    )
+                    continue
+                if prior.get("owner") != manifest["name"]:
+                    issues.append(
+                        f"owner drift for MCP '{descriptor['name']}' at '{target}'"
+                    )
+                if native is None:
+                    issues.append(
+                        f"owned MCP entry '{descriptor['name']}' missing at '{target}'"
+                    )
+                    continue
+                actual_hash = stable_json_hash(native)
+                expected_hash = stable_json_hash(descriptor["native"])
+                if actual_hash != prior.get("renderedHash") or actual_hash != expected_hash:
+                    issues.append(
+                        f"MCP adapter drift for '{descriptor['name']}' at '{target}', expected owner '{manifest['name']}'"
+                    )
+        else:
+            text = target.read_text(encoding="utf-8") if target.exists() else ""
+            before, block, after = split_managed_block(text, manifest["name"])
+            external_names = toml_server_names(before + after)
+            requested_names = {descriptor["name"] for descriptor in group}
+            if external_names & requested_names:
+                issues.append(
+                    f"MCP collision outside managed block at '{target}' for expected owner '{manifest['name']}'"
+                )
+            expected_block = codex_managed_block(
+                manifest["name"],
+                canonical_mcp_servers(manifest, root),
+                root,
+            )
+            actual_hash = sha256_text(block) if block is not None else None
+            expected_hash = sha256_text(expected_block)
+            for descriptor in group:
+                prior = previous_entry(state, descriptor)
+                if prior is None:
+                    issues.append(
+                        f"ownership entry missing for MCP '{descriptor['name']}' at '{target}'"
+                    )
+                    continue
+                if prior.get("owner") != manifest["name"]:
+                    issues.append(
+                        f"owner drift for MCP '{descriptor['name']}' at '{target}'"
+                    )
+                if block is None:
+                    issues.append(f"owned managed MCP block missing at '{target}'")
+                elif actual_hash != prior.get("renderedHash") or actual_hash != expected_hash:
+                    issues.append(
+                        f"MCP adapter drift for '{descriptor['name']}' at '{target}', expected owner '{manifest['name']}'"
+                    )
     return issues
 
 
