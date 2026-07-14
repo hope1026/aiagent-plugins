@@ -39,10 +39,11 @@ SECRET_KEYS = {
 class ManagerError(Exception):
     """Expected contract failure with a stable error code."""
 
-    def __init__(self, code: str, detail: str) -> None:
+    def __init__(self, code: str, detail: str, payload: dict[str, Any] | None = None) -> None:
         super().__init__(detail)
         self.code = code
         self.detail = detail
+        self.payload = payload
 
 
 def fail(code: str, detail: str) -> None:
@@ -392,6 +393,319 @@ def canonical_digest(extension_root: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def extension_context(extension_root: Path) -> tuple[Path, Path, dict[str, Any]]:
+    root = extension_root.expanduser().resolve()
+    manifest = load_manifest(root)
+    required = {
+        "schemaVersion",
+        "name",
+        "description",
+        "scope",
+        "targets",
+        "components",
+    }
+    if set(manifest) != required:
+        fail("E_MANIFEST", f"manifest keys do not match schema at {root / 'extension.json'}")
+    validate_name(manifest["name"], "extension name")
+    if root.name != manifest["name"] or root.parent.name != ".agent-extensions":
+        fail("E_MANIFEST", f"extension root does not match manifest name: {root}")
+    if manifest["scope"] not in {"repository", "user"}:
+        fail("E_MANIFEST", f"unsupported manifest scope '{manifest['scope']}'")
+    if manifest["targets"] != TARGETS:
+        fail("E_MANIFEST", "manifest targets must be codex, claude-code, and antigravity")
+    components = manifest["components"]
+    if not isinstance(components, dict) or set(components) != {"skills", "mcpServers"}:
+        fail("E_MANIFEST", "manifest components must contain skills and mcpServers")
+    if not isinstance(components["skills"], list) or not isinstance(
+        components["mcpServers"], list
+    ):
+        fail("E_MANIFEST", "manifest component declarations must be arrays")
+    base_dir = root.parent.parent
+    return root, base_dir, manifest
+
+
+def state_target(path: Path, base_dir: Path, scope: str) -> str:
+    if scope == "repository":
+        try:
+            return path.relative_to(base_dir).as_posix()
+        except ValueError:
+            fail("E_MANIFEST", f"repository native target escapes base directory: {path}")
+    return str(path)
+
+
+def skill_targets(
+    manifest: dict[str, Any], extension_root: Path, base_dir: Path
+) -> list[dict[str, Any]]:
+    scope = manifest["scope"]
+    descriptors: list[dict[str, Any]] = []
+    for skill in manifest["components"]["skills"]:
+        if not isinstance(skill, dict) or set(skill) != {"name", "description", "path"}:
+            fail("E_MANIFEST", "each skill declaration requires name, description, and path")
+        validate_name(skill["name"], "skill name")
+        expected_relative = f"skills/{skill['name']}/SKILL.md"
+        if skill["path"] != expected_relative:
+            fail("E_MANIFEST", f"skill path must be {expected_relative}")
+        canonical = extension_root / skill["path"]
+        parsed = parse_skill_source(canonical)
+        if parsed["name"] != skill["name"] or parsed["description"] != skill["description"]:
+            fail("E_MANIFEST", f"skill declaration does not match canonical source: {skill['name']}")
+        if scope == "repository":
+            mappings = [
+                ("codex", base_dir / ".agents" / "skills" / skill["name"] / "SKILL.md"),
+                (
+                    "claude-code",
+                    base_dir / ".claude" / "skills" / skill["name"] / "SKILL.md",
+                ),
+                (
+                    "antigravity",
+                    base_dir / ".agents" / "skills" / skill["name"] / "SKILL.md",
+                ),
+            ]
+        else:
+            mappings = [
+                ("codex", base_dir / ".agents" / "skills" / skill["name"] / "SKILL.md"),
+                (
+                    "claude-code",
+                    base_dir / ".claude" / "skills" / skill["name"] / "SKILL.md",
+                ),
+                (
+                    "antigravity",
+                    base_dir
+                    / ".gemini"
+                    / "config"
+                    / "skills"
+                    / skill["name"]
+                    / "SKILL.md",
+                ),
+            ]
+        for agent, target in mappings:
+            descriptors.append(
+                {
+                    "agent": agent,
+                    "kind": "skill",
+                    "name": skill["name"],
+                    "description": skill["description"],
+                    "canonical": canonical,
+                    "target": target,
+                    "stateTarget": state_target(target, base_dir, scope),
+                }
+            )
+    return descriptors
+
+
+def render_skill_wrapper(descriptor: dict[str, Any], scope: str) -> str:
+    canonical = descriptor["canonical"]
+    if scope == "repository":
+        canonical_reference = os.path.relpath(canonical, descriptor["target"].parent).replace(
+            os.sep, "/"
+        )
+    else:
+        canonical_reference = str(canonical)
+    title = " ".join(part.capitalize() for part in descriptor["name"].split("-"))
+    return "\n".join(
+        [
+            "---",
+            f"name: {descriptor['name']}",
+            f"description: '{descriptor['description']}'",
+            "---",
+            "",
+            f"# {title} Adapter",
+            "",
+            f"Read `{canonical_reference}` completely, then follow it as the source of truth.",
+            "If this adapter conflicts with the canonical skill, the canonical skill wins.",
+            "",
+        ]
+    )
+
+
+def state_path(extension_root: Path, agent: str) -> Path:
+    return extension_root / "adapters" / agent / "state.json"
+
+
+def load_state(extension_root: Path, agent: str) -> dict[str, Any] | None:
+    path = state_path(extension_root, agent)
+    if not path.exists():
+        return None
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        fail("E_STATE", f"cannot read ownership state {path}: {error}")
+    if (
+        not isinstance(state, dict)
+        or state.get("schemaVersion") != SCHEMA_VERSION
+        or not isinstance(state.get("entries"), list)
+    ):
+        fail("E_STATE", f"invalid ownership state: {path}")
+    return state
+
+
+def previous_entry(
+    state: dict[str, Any] | None, descriptor: dict[str, Any]
+) -> dict[str, Any] | None:
+    if state is None:
+        return None
+    for entry in state["entries"]:
+        if (
+            entry.get("kind") == descriptor["kind"]
+            and entry.get("name") == descriptor["name"]
+            and entry.get("target") == descriptor["stateTarget"]
+        ):
+            return entry
+    return None
+
+
+def atomic_write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}-", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(text)
+        os.replace(temporary, path)
+    except Exception:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
+def render_preview(extension_root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    root, base_dir, manifest = extension_context(extension_root)
+    if manifest["components"]["mcpServers"]:
+        fail("E_NOT_IMPLEMENTED", "MCP adapters are implemented in the next plan Task")
+    descriptors = skill_targets(manifest, root, base_dir)
+    preview = {
+        "action": "render",
+        "scope": manifest["scope"],
+        "extensionRoot": str(root),
+        "nativeTargets": sorted({str(item["target"]) for item in descriptors}),
+        "requiresConfirmation": manifest["scope"] == "user",
+    }
+    return preview, descriptors
+
+
+def render_extension(extension_root: Path, confirmed: bool) -> dict[str, Any]:
+    preview, descriptors = render_preview(extension_root)
+    if preview["scope"] == "user" and not confirmed:
+        raise ManagerError(
+            "E_CONFIRMATION",
+            "user-scope render requires --confirm-user-write after preview",
+            preview,
+        )
+    root, _, manifest = extension_context(extension_root)
+    digest = canonical_digest(root)
+    states = {agent: load_state(root, agent) for agent in TARGETS}
+    rendered: dict[Path, str] = {}
+
+    for descriptor in descriptors:
+        text = render_skill_wrapper(descriptor, manifest["scope"])
+        target = descriptor["target"]
+        if target in rendered and rendered[target] != text:
+            fail("E_STATE", f"shared target has conflicting rendered content: {target}")
+        rendered[target] = text
+        state = states[descriptor["agent"]]
+        prior = previous_entry(state, descriptor)
+        if target.exists():
+            if prior is None:
+                fail(
+                    "E_COLLISION",
+                    f"target '{target}' is not owned by extension '{manifest['name']}'",
+                )
+            actual_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+            if prior.get("owner") != manifest["name"] or actual_hash != prior.get(
+                "renderedHash"
+            ):
+                fail(
+                    "E_DRIFT",
+                    f"target '{target}' drifted from expected owner '{manifest['name']}'",
+                )
+        elif prior is not None:
+            fail(
+                "E_DRIFT",
+                f"owned target '{target}' is missing for expected owner '{manifest['name']}'",
+            )
+
+    new_states: dict[str, dict[str, Any]] = {}
+    for agent in TARGETS:
+        entries = []
+        for descriptor in descriptors:
+            if descriptor["agent"] != agent:
+                continue
+            text = rendered[descriptor["target"]]
+            entries.append(
+                {
+                    "kind": descriptor["kind"],
+                    "name": descriptor["name"],
+                    "target": descriptor["stateTarget"],
+                    "owner": manifest["name"],
+                    "renderedHash": sha256_text(text),
+                }
+            )
+        new_states[agent] = {
+            "schemaVersion": SCHEMA_VERSION,
+            "extension": manifest["name"],
+            "canonicalHash": digest,
+            "entries": entries,
+        }
+
+    for path, text in rendered.items():
+        atomic_write_text(path, text)
+    for agent, state in new_states.items():
+        atomic_write_text(
+            state_path(root, agent),
+            json.dumps(state, indent=2, ensure_ascii=False) + "\n",
+        )
+    return {**preview, "canonicalHash": digest, "requiresConfirmation": False}
+
+
+def validate_extension(extension_root: Path) -> list[str]:
+    root, base_dir, manifest = extension_context(extension_root)
+    if manifest["components"]["mcpServers"]:
+        fail("E_NOT_IMPLEMENTED", "MCP adapters are implemented in the next plan Task")
+    digest = canonical_digest(root)
+    descriptors = skill_targets(manifest, root, base_dir)
+    issues: list[str] = []
+    states = {agent: load_state(root, agent) for agent in TARGETS}
+    for agent, state in states.items():
+        if state is None:
+            issues.append(
+                f"ownership state missing for expected owner '{manifest['name']}' and agent '{agent}'"
+            )
+            continue
+        if state.get("extension") != manifest["name"]:
+            issues.append(f"state owner mismatch for agent '{agent}'")
+        if state.get("canonicalHash") != digest:
+            issues.append(
+                f"canonical hash drift for expected owner '{manifest['name']}' and agent '{agent}'"
+            )
+    for descriptor in descriptors:
+        state = states[descriptor["agent"]]
+        prior = previous_entry(state, descriptor)
+        target = descriptor["target"]
+        if prior is None:
+            issues.append(
+                f"ownership entry missing for expected owner '{manifest['name']}' at '{target}'"
+            )
+            continue
+        if prior.get("owner") != manifest["name"]:
+            issues.append(f"owner drift at '{target}', expected '{manifest['name']}'")
+        if not target.is_file():
+            issues.append(
+                f"owned target missing at '{target}', expected owner '{manifest['name']}'"
+            )
+            continue
+        actual_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+        expected_text = render_skill_wrapper(descriptor, manifest["scope"])
+        expected_hash = sha256_text(expected_text)
+        if actual_hash != prior.get("renderedHash") or actual_hash != expected_hash:
+            issues.append(
+                f"adapter drift at '{target}', expected owner '{manifest['name']}'"
+            )
+    return issues
+
+
 def add_source_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--scope", choices=("repository", "user"), required=True)
     parser.add_argument("--base-dir", required=True)
@@ -433,9 +747,25 @@ def main(argv: list[str] | None = None) -> int:
                     "extensionRoot": str(extension_root),
                     "manifest": str(extension_root / "extension.json"),
                 }
+        elif args.action == "render":
+            output = render_extension(
+                Path(args.extension),
+                args.confirm_user_write,
+            )
         else:
-            fail("E_NOT_IMPLEMENTED", f"{args.action} is not implemented yet")
+            extension_root = Path(args.extension)
+            issues = validate_extension(extension_root)
+            if issues:
+                fail("E_DRIFT", "; ".join(issues))
+            output = {
+                "action": "validate",
+                "status": "PASS",
+                "extensionRoot": str(extension_root.expanduser().resolve()),
+                "canonicalHash": canonical_digest(extension_root.expanduser().resolve()),
+            }
     except ManagerError as error:
+        if error.payload is not None:
+            print(json.dumps(error.payload, indent=2, ensure_ascii=False))
         print(f"ERROR {error.code}: {error.detail}", file=sys.stderr)
         return 2
     print(json.dumps(output, indent=2, ensure_ascii=False))

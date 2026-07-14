@@ -217,7 +217,7 @@ manager는 `NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")`를 
 - Parallel safety: sequential root — manager source와 single test module ownership이 Task 3과 겹침
 - Approval gate: none
 
-- [ ] **Step 1: repository·user skill adapter와 collision·drift cases를 실패하는 test로 추가한다**
+- [x] **Step 1: repository·user skill adapter와 collision·drift cases를 실패하는 test로 추가한다**
 
 | Test method | Fixture | 필수 assertion |
 |---|---|---|
@@ -229,13 +229,13 @@ manager는 `NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")`를 
 
 Repository wrapper는 canonical path를 repository-relative path로 가리키고 `.agents/skills/` target을 Codex와 Antigravity가 공유하는지 assert한다. User wrapper는 fixture HOME의 absolute canonical path를 가리키고 confirmation 전 snapshot이 동일한지 assert한다. Collision fixture는 sentinel content가 byte-for-byte 유지되는지도 검사한다.
 
-- [ ] **Step 2: 새 tests가 `render` action 또는 target functions 부재로 실패하는지 확인한다**
+- [x] **Step 2: 새 tests가 `render` action 또는 target functions 부재로 실패하는지 확인한다**
 
 실행: `python3 -m unittest discover -s plugins/forge/skills/creating-agent-extensions/tests -p 'test_*.py' -v`
 
 예상: 새 skill render cases가 expected target 부재 또는 unsupported action으로 FAIL한다.
 
-- [ ] **Step 3: thin wrapper와 state ownership implementation을 작성한다**
+- [x] **Step 3: thin wrapper와 state ownership implementation을 작성한다**
 
 Wrapper는 canonical content를 복제하지 않고 다음 instruction shape만 사용한다.
 
@@ -253,7 +253,7 @@ If this adapter conflicts with the canonical skill, the canonical skill wins.
 
 각 agent state는 `schemaVersion`, `extension`, `canonicalHash`, 그리고 `entries[]`의 `kind`, `name`, `target`, `owner`, `renderedHash`를 기록한다. 기존 state가 있으면 live wrapper hash가 직전 `renderedHash`와 같을 때만 canonical update를 render하며, 다르면 `E_DRIFT`로 중단한다. State가 없고 target이 존재하면 expected wrapper와 완전히 같은 경우만 shared `.agents/skills/` target으로 인정하고 나머지는 `E_COLLISION`으로 거부한다.
 
-- [ ] **Step 4: skill adapter suite를 GREEN으로 만들고 refactor한다**
+- [x] **Step 4: skill adapter suite를 GREEN으로 만들고 refactor한다**
 
 실행: `bash scripts/tests/test-agent-extension-skill.sh`
 
@@ -485,3 +485,6 @@ bash scripts/validate.sh
 - 2026-07-14: Task 1 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="manager CLI, schema, and lifecycle tests define one tightly coupled source-of-truth contract").
 - 2026-07-14: Task 1 RED confirmed first at missing `creating-agent-extensions/SKILL.md`, then at absent plan/init behavior; GREEN confirmed for four canonical lifecycle cases.
 - 2026-07-14: Task 1 complete (commit `172c07d`; verification="4 manager tests passed; extension contract passed; Forge validator passed"). A generated Python cache was traced to missing root ignore rules; a RED ignore regression contract now prevents recurrence.
+- 2026-07-14: Python cache regression guard complete (commit `6f8a4f7`; root cause="unit tests generated an unignored cache inside a directory-level stage boundary").
+- 2026-07-14: Task 2 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="skill target calculation, wrappers, ownership state, and drift validation share one manager transaction").
+- 2026-07-14: Task 2 RED confirmed at unsupported `render`; GREEN confirmed for repository/user wrappers, confirmation preview, collision refusal, wrapper/canonical drift, and multiple-skill ownership across three agents.

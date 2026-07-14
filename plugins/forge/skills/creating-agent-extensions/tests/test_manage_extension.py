@@ -101,6 +101,37 @@ class ManagerTestCase(unittest.TestCase):
             str(mcp),
         ]
 
+    def init_skill_extension(
+        self,
+        root: Path,
+        scope: str = "repository",
+        skill_names: tuple[str, ...] = ("example-skill",),
+    ) -> tuple[Path, Path]:
+        base = root / ("home" if scope == "user" else "repo")
+        stage = root / "stage"
+        base.mkdir()
+        skills = [self.write_skill(stage, name=name) for name in skill_names]
+        args = [
+            "init",
+            "--scope",
+            scope,
+            "--base-dir",
+            str(base),
+            "--name",
+            "example-extension",
+            "--description",
+            "Example extension for confirmed workflows.",
+            "--profile",
+            "skill",
+        ]
+        for skill in skills:
+            args.extend(["--skill-source", str(skill)])
+        if scope == "user":
+            args.append("--confirm-user-write")
+        result = self.run_manager(*args)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return base.resolve(), base.resolve() / ".agent-extensions" / "example-extension"
+
     def test_plan_is_write_free_and_lists_repository_targets(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -269,6 +300,134 @@ class ManagerTestCase(unittest.TestCase):
             self.assertNotEqual(secret.returncode, 0)
             self.assertIn("E_SECRET", secret.stderr)
             self.assertFalse((secret_base / ".agent-extensions").exists())
+
+    def test_repository_skill_render_uses_shared_agents_and_claude_wrappers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_skill_extension(Path(temporary))
+
+            result = self.run_manager("render", "--extension", str(extension))
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            agents_wrapper = base / ".agents" / "skills" / "example-skill" / "SKILL.md"
+            claude_wrapper = base / ".claude" / "skills" / "example-skill" / "SKILL.md"
+            self.assertEqual(agents_wrapper.read_text(), claude_wrapper.read_text())
+            self.assertIn(
+                "../../../.agent-extensions/example-extension/skills/example-skill/SKILL.md",
+                agents_wrapper.read_text(),
+            )
+            self.assertNotIn("Follow the confirmed example workflow.", agents_wrapper.read_text())
+
+            expected_targets = {
+                "codex": ".agents/skills/example-skill/SKILL.md",
+                "claude-code": ".claude/skills/example-skill/SKILL.md",
+                "antigravity": ".agents/skills/example-skill/SKILL.md",
+            }
+            for agent, expected_target in expected_targets.items():
+                state = json.loads(
+                    (extension / "adapters" / agent / "state.json").read_text()
+                )
+                self.assertEqual(state["extension"], "example-extension")
+                self.assertEqual(len(state["canonicalHash"]), 64)
+                self.assertEqual(len(state["entries"]), 1)
+                self.assertEqual(state["entries"][0]["kind"], "skill")
+                self.assertEqual(state["entries"][0]["target"], expected_target)
+
+            validation = self.run_manager("validate", "--extension", str(extension))
+            self.assertEqual(validation.returncode, 0, validation.stderr)
+            self.assertEqual(json.loads(validation.stdout)["status"], "PASS")
+
+    def test_user_skill_render_previews_three_targets_before_confirmation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_skill_extension(Path(temporary), scope="user")
+            before = self.snapshot(base)
+
+            refused = self.run_manager("render", "--extension", str(extension))
+
+            self.assertNotEqual(refused.returncode, 0)
+            self.assertIn("E_CONFIRMATION", refused.stderr)
+            preview = json.loads(refused.stdout)
+            self.assertEqual(len(preview["nativeTargets"]), 3)
+            self.assertEqual(self.snapshot(base), before)
+
+            rendered = self.run_manager(
+                "render",
+                "--extension",
+                str(extension),
+                "--confirm-user-write",
+            )
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            wrapper_paths = [
+                base / ".agents" / "skills" / "example-skill" / "SKILL.md",
+                base / ".claude" / "skills" / "example-skill" / "SKILL.md",
+                base / ".gemini" / "config" / "skills" / "example-skill" / "SKILL.md",
+            ]
+            for wrapper_path in wrapper_paths:
+                self.assertTrue(wrapper_path.is_file())
+                self.assertIn(str(extension / "skills" / "example-skill" / "SKILL.md"), wrapper_path.read_text())
+
+    def test_skill_collision_never_overwrites_other_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_skill_extension(Path(temporary))
+            collision = base / ".agents" / "skills" / "example-skill" / "SKILL.md"
+            collision.parent.mkdir(parents=True)
+            sentinel = b"owned by another source\n"
+            collision.write_bytes(sentinel)
+
+            result = self.run_manager("render", "--extension", str(extension))
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("E_COLLISION", result.stderr)
+            self.assertEqual(collision.read_bytes(), sentinel)
+            self.assertFalse(
+                (base / ".claude" / "skills" / "example-skill" / "SKILL.md").exists()
+            )
+            self.assertFalse((extension / "adapters").exists())
+
+    def test_validate_reports_skill_wrapper_and_canonical_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base, extension = self.init_skill_extension(Path(temporary))
+            rendered = self.run_manager("render", "--extension", str(extension))
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            wrapper = base / ".claude" / "skills" / "example-skill" / "SKILL.md"
+            wrapper.write_text(wrapper.read_text() + "drift\n", encoding="utf-8")
+
+            validation = self.run_manager("validate", "--extension", str(extension))
+
+            self.assertNotEqual(validation.returncode, 0)
+            self.assertIn("E_DRIFT", validation.stderr)
+            self.assertIn("example-extension", validation.stderr)
+            self.assertIn(str(wrapper), validation.stderr)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            _, extension = self.init_skill_extension(Path(temporary))
+            rendered = self.run_manager("render", "--extension", str(extension))
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            canonical = extension / "skills" / "example-skill" / "SKILL.md"
+            canonical.write_text(canonical.read_text() + "Canonical change.\n", encoding="utf-8")
+
+            validation = self.run_manager("validate", "--extension", str(extension))
+
+            self.assertNotEqual(validation.returncode, 0)
+            self.assertIn("E_DRIFT", validation.stderr)
+            self.assertIn("canonical hash", validation.stderr)
+
+    def test_multiple_skills_are_tracked_in_all_agent_states(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            _, extension = self.init_skill_extension(
+                Path(temporary), skill_names=("example-skill", "review-skill")
+            )
+
+            result = self.run_manager("render", "--extension", str(extension))
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for agent in ("codex", "claude-code", "antigravity"):
+                state = json.loads(
+                    (extension / "adapters" / agent / "state.json").read_text()
+                )
+                self.assertEqual(
+                    {entry["name"] for entry in state["entries"]},
+                    {"example-skill", "review-skill"},
+                )
 
 
 if __name__ == "__main__":
