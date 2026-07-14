@@ -1,6 +1,6 @@
 # Forge 유지보수 canonical extension
 
-Status: approved
+Status: implemented
 
 ## Overview
 
@@ -11,18 +11,21 @@ Forge 플러그인은 설치 사용자가 실행하는 스킬만 배포한다. F
 - Forge 사용자 실행 스킬의 spec-first 동작 변경
 - Marketplace 설치 명령이나 플러그인 이름 변경
 - 저장소 전용 유지보수 스킬의 사용자 환경 전역 설치
-- 배포 패키지 생성 또는 원격 push
+- 배포 패키지 생성 또는 원격 push 실행 자체
 
 ## Requirements
+
+`R`은 Requirement이며, 반드시 지켜야 하는 동작 또는 제약을 뜻한다.
 
 - R1. `plugins/forge/skills/`에는 설치 사용자가 실행하는 스킬만 존재해야 하며, `maintaining-forge`와 유지보수 전용 reference는 포함하지 않아야 한다.
 - R2. `.agent-extensions/maintaining-forge/`는 `extension.json`, canonical `skills/maintaining-forge/SKILL.md`, portability reference, agent별 ownership state를 포함하는 repository-scope skill extension이어야 한다.
 - R3. `.agents/skills/maintaining-forge/SKILL.md`와 `.claude/skills/maintaining-forge/SKILL.md`는 canonical skill을 가리키는 manager-rendered adapter여야 하며 독립 절차를 포함하거나 수동으로 수정해서는 안 된다.
-- R4. canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.
+- R4. MODIFIED: canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.
 - R5. `scripts/validate.sh`는 plugin skills, canonical extension skills, native adapters를 lint하고 모든 repository extension에 manager `validate`를 실행해 collision, drift, parity 오류를 거부해야 한다.
 - R6. Marketplace와 `scripts/install.sh`는 `plugins/forge/`만 배포하며 `.agent-extensions/`, `.agents/skills/`, `.claude/skills/`의 repository-only 항목을 설치 사용자에게 복사하지 않아야 한다.
 - R7. README와 현재 설계 문서는 repository-only workflow의 정본을 `.agent-extensions/`로 설명하고 legacy `.agent-runbooks/`를 현재 경로로 안내하지 않아야 한다.
 - R8. canonical 또는 native same-name entry의 충돌·drift는 manager ownership state로 판정하며 암묵적으로 덮어쓰지 않아야 한다.
+- R9. ADDED: push 대상 commit에 `plugins/forge/skills/` 변경이 포함되면 canonical skill은 push 전에 Claude plugin의 base version을 이전 release보다 올리고, Codex plugin은 동일한 base version과 새로운 UTC timestamp suffix로 갱신하도록 요구해야 한다. 두 manifest 중 하나라도 이 조건을 충족하지 않으면 push를 중단해야 한다.
 
 ## Behavior & Flows
 
@@ -36,6 +39,10 @@ flowchart LR
   Change --> Render["Manager render"]
   Render --> Validate["Lint + parity validation"]
   Validate --> Pressure["Realistic pressure test"]
+  Pressure --> SkillChange{"Distributed skill changed?"}
+  SkillChange -- "yes" --> Version["Bump Claude and Codex versions"]
+  SkillChange -- "no" --> Release["Release authorization gate"]
+  Version --> Release
 ```
 
 구조 선택:
@@ -60,14 +67,17 @@ flowchart LR
 
 ## Acceptance Criteria
 
+`AC`는 Acceptance Criterion이며, 인용한 requirement가 충족됐음을 관찰 가능한 증거로 확인하는 기준을 뜻한다.
+
 - AC1 (R1, R6): `plugins/forge/skills/maintaining-forge`가 없고 설치 스크립트가 repository-only extension이나 adapter를 배포하지 않는다.
 - AC2 (R2, R4): canonical manifest, skill, portability reference, codex·claude-code·antigravity state가 존재하며 frontmatter와 내용 검증을 통과한다.
 - AC3 (R3): 두 native adapter가 동일한 canonical `SKILL.md`를 가리키고 별도 유지보수 절차를 복제하지 않는다.
 - AC4 (R5, R8): manager `validate`가 PASS를 반환하고, 임시 adapter drift를 주입하면 main validator가 실패한 뒤 unrelated content를 변경하지 않는다.
 - AC5 (R5): canonical skill root에 금지 토큰을 주입한 probe를 main validator가 거부한다.
 - AC6 (R7): README와 현재 설계 문서가 `.agent-extensions/maintaining-forge/`를 repository-only source로 안내한다.
-- AC7 (R4, R8): 현실적인 pressure scenario에서 agent가 canonical source만 수정하고 validation·pressure-test·push authorization gate를 유지한다.
+- AC7 (R4, R8): 현실적인 pressure scenario에서 agent가 canonical source만 수정하고 validation·pressure-test·version gate·push authorization gate를 유지한다.
 - AC8 (R2, R3): legacy `.agent-runbooks/`가 제거되고 manager render를 다시 실행해도 collision이나 drift 없이 parity가 유지된다.
+- AC9 (R4, R9): upstream 이후 `plugins/forge/skills/`가 변경됐지만 manifest version이 그대로인 pressure scenario에서 agent가 push를 거부하고, Claude base version과 Codex base version을 함께 올린 뒤 Codex UTC timestamp suffix를 새 값으로 갱신한다.
 
 ## Decisions & History
 
@@ -76,3 +86,5 @@ flowchart LR
 - 2026-07-12 [CHANGE] 기존 배포 스킬 `maintaining-forge`를 사용자 플러그인에서 제거하고 repository-only workflow로 재분류했다.
 - 2026-07-14 [CHANGE] cross-agent ownership과 drift 검사를 제공하는 `.agent-extensions/` 구조가 기존 `.agent-runbooks/` 구조를 supersede한다.
 - 2026-07-14 [DECISION] 사용자가 기존 same-name wrapper의 adopt와 legacy runbook 제거를 승인했다.
+- 2026-07-14 [CHANGE] R4 MODIFIED, R9 ADDED: distributed Forge skill 변경을 push할 때 Claude·Codex plugin version을 함께 올리는 version gate를 추가한다.
+- 2026-07-14 [DECISION] 사용자가 R4·R9 version gate 변경안을 승인했다.

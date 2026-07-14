@@ -27,6 +27,7 @@ entries under `.agents/skills/` and `.claude/skills/` only point back to it.
 
 ```text
 VALIDATE BEFORE COMMIT. PRESSURE-TEST BEFORE PUSH. PUSH IS RELEASE.
+DISTRIBUTED SKILL CHANGES REQUIRE A VERSION BUMP BEFORE PUSH.
 ```
 
 No exception exists for a one-line tweak, a wording-only gate change, or a
@@ -107,7 +108,11 @@ Forge skill.
 6. Pressure-test every new skill and every edit that changes instructions.
    Typos, formatting-only changes, and link fixes may skip the live test, but
    never the adversarial self-read.
-7. Use a conventional commit. Do not push until every gate passes and the user
+7. Before push, inspect the commits that are ahead of the configured upstream.
+   If the push target includes `plugins/forge/skills/`, run the Version Gate
+   Before Push below. A version bump is part of the same release, not a later
+   follow-up.
+8. Use a conventional commit. Do not push until every gate passes and the user
    has authorized release; push publishes the Marketplace state.
 
 ## Pre-ship Checklist
@@ -122,9 +127,31 @@ Create one checklist item per applicable item and record evidence for each.
 - [ ] `SKILL.md` stays within 500 lines and support files use `references/`, `scripts/`, or `assets/`.
 - [ ] Repository-only detail lives in one owned `.agent-extensions/` source; native wrappers are manager-rendered adapters.
 - [ ] `bash scripts/validate.sh` printed `validate: all checks passed` in a fresh run.
+- [ ] When the push target includes `plugins/forge/skills/`, both plugin
+      manifests satisfy the Version Gate Before Push.
 - [ ] Instruction changes passed a live pressure test; every change passed an adversarial self-read.
 - [ ] The commit uses a conventional message.
 - [ ] Push occurs only with release authorization.
+
+## Version Gate Before Push
+
+Before pushing, resolve the configured upstream and inspect the commits that
+would be published. If that range changes any path under
+`plugins/forge/skills/`:
+
+1. Read the upstream release versions from
+   `plugins/forge/.claude-plugin/plugin.json` and
+   `plugins/forge/.codex-plugin/plugin.json`.
+2. Increase the Claude plugin base version above the upstream release version.
+3. Set the Codex plugin to the same base version and append a fresh UTC
+   `+codex.YYYYMMDDHHMMSS` suffix.
+4. Re-run validation after changing the manifests. Stop before push if either
+   manifest is unchanged, the base versions differ, or the Codex suffix is not
+   fresh.
+
+This gate applies to the complete outgoing commit range, not only the latest
+commit or the current working tree. Multiple skill commits may share one
+release version bump when they are pushed together.
 
 ## Pressure-testing Skills
 
@@ -196,6 +223,7 @@ and repository adapters, then validates each extension's ownership and parity.
 | "Edit the wrapper because it is only a small change." | Owned adapters are generated artifacts; edit canonical content and render again. |
 | "Repository-only means validation can be lighter." | Local agent workflows can still release the plugin; the same mechanical and behavioral gates apply. |
 | "No fresh agent is available, so skip the test." | Perform and record the adversarial self-read; do not silently omit the gate. |
+| "The skill change is already committed; bump the version next time." | The outgoing commits are the release unit. Bump both manifests before this push or stop. |
 
 ## Handoff
 
