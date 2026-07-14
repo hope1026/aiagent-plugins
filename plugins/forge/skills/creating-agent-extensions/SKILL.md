@@ -87,7 +87,7 @@ Stage candidates under `.forge/scratch/agent-extensions/<extension-name>/` or an
 - A canonical `servers.json` candidate.
 - MCP server implementation candidates and shared resources.
 
-The provider must not write `.agent-extensions/`, `.agents/skills/`, `.claude/skills/`, `.gemini/config/skills/`, or any native MCP configuration. Discard or reverse provider output outside staging before continuing.
+The provider must not write `.agent-extensions/`, `.agents/skills/`, `.claude/skills/`, `.gemini/config/skills/`, or any native MCP configuration. Isolate the provider-authored diff, preserve unrelated preexisting content, and remove only the provider's unowned edits outside staging before continuing.
 
 ### 5. Normalize provider output
 
@@ -195,7 +195,7 @@ If an external service or target agent is unavailable, report that scenario as p
 | Pressure | Required response |
 |---|---|
 | "Copy the finished skill into all three directories; it is faster." | Full copies create three sources. Keep one canonical skill and thin wrappers. |
-| "The provider already edited the native files, so keep them." | Provider writes outside staging have no ownership proof. Revert them and render through the manager. |
+| "The provider already edited the native files, so keep them." | Provider writes outside staging have no ownership proof. Preserve unrelated content, remove only those unowned edits, and render through the manager. |
 | "It is user scope, but the user already said to proceed earlier." | Earlier intent is not a complete current preview. Show targets, changes, credentials, and collisions before each write boundary. |
 | "The same name probably belongs to this extension." | Ownership is state plus matching hashes, not a guess. Stop on collision. |
 | "Put the token in the config temporarily." | Temporary credentials leak and persist. Use environment variable names only. |

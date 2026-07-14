@@ -2,6 +2,8 @@
 
 The canonical repository root is `<repo>/.agent-extensions/<extension-name>/`. The canonical user root is `~/.agent-extensions/<extension-name>/`.
 
+On Windows, the same user root is `%USERPROFILE%\.agent-extensions\<extension-name>\`.
+
 Each extension has one `extension.json`, canonical skills under `skills/<skill-name>/SKILL.md`, canonical MCP definitions under `mcp/servers.json`, and derived ownership state under `adapters/<agent>/state.json`.
 
 The deterministic manager exposes four actions:
@@ -57,6 +59,10 @@ New-extension `plan` and `init` share these inputs:
 All component paths are relative to the extension root and must resolve to files inside that root.
 
 When a staged `SKILL.md` has sibling `references/`, `scripts/`, or `assets/`, `init` copies their files into the canonical skill. Generated Python caches and symlinks are excluded or rejected. Every canonical file outside `adapters/` participates in the canonical SHA-256, including approved MCP implementation files under `mcp/<server-name>/` and shared resources under `shared/`.
+
+## Agent-Specific Extension Points
+
+Agent-only hooks/rules/apps are not portable common components and the version 1 manager does not render them. Classify them as a separately approved follow-up under the relevant `adapters/<agent>/` extension point; only `state.json` is managed there today. Do not add them to the canonical manifest's common skill or MCP component lists or claim cross-agent parity.
 
 ## Skill Targets
 

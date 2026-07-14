@@ -738,7 +738,7 @@ def render_skill_wrapper(descriptor: dict[str, Any], scope: str) -> str:
         [
             "---",
             f"name: {descriptor['name']}",
-            f"description: '{descriptor['description']}'",
+            "description: " + json.dumps(descriptor["description"], ensure_ascii=False),
             "---",
             "",
             f"# {title} Adapter",

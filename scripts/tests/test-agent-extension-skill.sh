@@ -25,6 +25,10 @@ grep -q '^name: creating-agent-extensions$' "$SKILL_DIR/SKILL.md" || \
   fail "skill frontmatter name is missing"
 grep -q 'NO NATIVE WRITE BEFORE A COMPLETE PREVIEW' "$SKILL_DIR/SKILL.md" || \
   fail "skill confirmation gate is missing"
+grep -q 'This is an authoring workflow, not a distribution workflow' "$SKILL_DIR/SKILL.md" || \
+  fail "skill distribution boundary is missing"
+grep -q 'The request is only for hooks, rules, apps' "$SKILL_DIR/SKILL.md" || \
+  fail "agent-specific component boundary is missing"
 for action in plan init render validate; do
   grep -q "\`$action\`" "$SKILL_DIR/SKILL.md" || \
     fail "skill workflow misses $action"
@@ -41,6 +45,8 @@ grep -q '.gemini/config/skills/<skill>/SKILL.md' "$SKILL_DIR/references/layout-c
   fail "Antigravity user skill target is missing"
 grep -q '.gemini/config/mcp_config.json' "$SKILL_DIR/references/layout-contract.md" || \
   fail "Antigravity user MCP target is missing"
+grep -q 'Agent-only hooks/rules/apps are not portable common components' "$SKILL_DIR/references/layout-contract.md" || \
+  fail "agent-specific adapter extension point is missing"
 
 git -C "$ROOT" check-ignore -q --no-index \
   plugins/forge/skills/creating-agent-extensions/tests/__pycache__/probe.pyc || \

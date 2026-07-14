@@ -789,6 +789,61 @@ class ManagerTestCase(unittest.TestCase):
             self.assertNotEqual(validation.returncode, 0)
             self.assertIn("canonical hash", validation.stderr)
 
+    def test_wrapper_quotes_descriptions_with_apostrophes_safely(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            base = root / "repo"
+            stage = root / "stage"
+            base.mkdir()
+            stage.mkdir()
+            skill = stage / "quoted-skill.md"
+            description = "Use when a user's confirmed workflow applies."
+            skill.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "name: quoted-skill",
+                        f'description: "{description}"',
+                        "---",
+                        "",
+                        "# Quoted Skill",
+                        "",
+                        "Follow the confirmed workflow.",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            init = self.run_manager(
+                "init",
+                "--scope",
+                "repository",
+                "--base-dir",
+                str(base),
+                "--name",
+                "quoted-extension",
+                "--description",
+                "Quoted extension for confirmed workflows.",
+                "--profile",
+                "skill",
+                "--skill-source",
+                str(skill),
+            )
+            self.assertEqual(init.returncode, 0, init.stderr)
+            extension = base.resolve() / ".agent-extensions" / "quoted-extension"
+
+            rendered = self.run_manager("render", "--extension", str(extension))
+
+            self.assertEqual(rendered.returncode, 0, rendered.stderr)
+            wrapper = base / ".agents" / "skills" / "quoted-skill" / "SKILL.md"
+            description_line = next(
+                line for line in wrapper.read_text().splitlines() if line.startswith("description:")
+            )
+            self.assertEqual(
+                json.loads(description_line.split(":", 1)[1].strip()),
+                description,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
