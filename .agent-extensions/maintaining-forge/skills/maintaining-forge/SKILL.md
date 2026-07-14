@@ -1,11 +1,16 @@
-# Maintaining Forge Runbook
+---
+name: maintaining-forge
+description: 'Use when creating, editing, reviewing, or testing Forge skills or changing Forge plugin manifests, hooks, validators, install scripts, or release documentation in this repository. Triggers: "스킬 수정", "스킬 추가", "forge 수정", "플러그인 수정", editing files under plugins/forge/.'
+---
+
+# Maintaining Forge
 
 Use this runbook when creating, editing, reviewing, or testing Forge skills, or
 when changing Forge plugin manifests, hooks, validators, install scripts, or
 release documentation in this repository.
 
 Respond to the user in the user's language. Forge plugin skill files and the
-repository-local wrapper skills stay in English.
+repository-local adapter skills stay in English.
 
 ## Overview
 
@@ -14,10 +19,9 @@ Codex, Claude Code, and Antigravity. Editing a distributed skill is releasing so
 mechanical gate is the validator, the behavioral gate is a pressure test, and
 pushing to the repository releases the Marketplace package.
 
-Repository-only workflows use a different packaging boundary. Their detailed
-procedure lives under `.agent-runbooks/`, while Claude Code uses a thin
-`.claude/skills/` wrapper and Codex plus Antigravity share a thin
-`.agents/skills/` wrapper that point to the same runbook.
+Repository-only workflows use a different packaging boundary. Their canonical
+source lives under `.agent-extensions/<extension-name>/`; generated native
+entries under `.agents/skills/` and `.claude/skills/` only point back to it.
 
 ## Iron Law
 
@@ -31,7 +35,7 @@ promise to test after pushing.
 ## When to Use
 
 - Adding or editing a user-facing Forge skill under `plugins/forge/skills/`
-- Creating or editing a repository-only shared workflow under `.agent-runbooks/`
+- Creating or editing a repository-only shared workflow under `.agent-extensions/`
 - Editing Forge skill references, scripts, assets, manifests, or hooks
 - Changing the validator, local install script, Marketplace metadata, or release documentation
 - Reviewing or pressure-testing Forge skill behavior
@@ -46,17 +50,14 @@ Decide the audience before writing files.
 | Workflow type | Detailed source of truth | Agent entry points | Distribution |
 |---|---|---|---|
 | Marketplace Forge user skill | `plugins/forge/skills/<skill-name>/` | One portable `SKILL.md`; Codex and Claude manifests distribute it, and Antigravity can consume the Agent Skills source | Included in the Forge plugin |
-| Repository-only shared workflow | `.agent-runbooks/<name>/` | `.agents/skills/<name>/SKILL.md` for Codex + Antigravity and `.claude/skills/<name>/SKILL.md` for Claude Code | Excluded from the Forge plugin |
+| Repository-only shared workflow | `.agent-extensions/<extension-name>/skills/<skill-name>/` | Manager-owned thin wrappers under `.agents/skills/` and `.claude/skills/` | Excluded from the Forge plugin |
 
 For repository-only workflows:
 
-- Put procedures, commands, scripts, references, validation steps, and reporting requirements in `.agent-runbooks/<name>/`.
-- Keep agent wrappers limited to frontmatter, trigger conditions, the runbook path, and conflict-resolution rules.
-- Keep the shared `.agents/` and Claude Code wrappers identical when tool-specific metadata is unnecessary.
-- If a wrapper and runbook disagree, the runbook wins; fix the wrapper.
-
-This shared-runbook/thin-wrapper pattern follows the established structure in
-the sibling `weppy-roblox-mcp-private` repository.
+- Put the complete portable skill and its resources in one owned `.agent-extensions/<extension-name>/` canonical root.
+- Create and update native wrappers only through the creating-agent-extensions manager.
+- Stop on unowned same-name entries or changed owned wrappers; rename, adopt, or merge only after an explicit user decision.
+- Treat the canonical skill as the source of truth and repair adapters by rendering again, never by hand-editing wrappers.
 
 ## Distributed Forge Skill Anatomy
 
@@ -97,8 +98,8 @@ Forge skill.
    existing process skill as a structural model.
 2. Confirm whether the workflow is Marketplace user-facing or repository-only,
    then use the corresponding boundary table above.
-3. Write the smallest complete change. Do not copy detailed repository-only
-   procedures into the two wrapper skills.
+3. Write the smallest complete change. For repository-only workflows, edit only
+   the owned canonical skill and render its native adapters through the manager.
 4. Run `bash scripts/validate.sh` from the repository root. It must print
    `validate: all checks passed` before commit.
 5. Search changed skill files for banned tokens and re-read every gate under
@@ -111,7 +112,7 @@ Forge skill.
 
 ## Pre-ship Checklist
 
-Create one todo per applicable item and record evidence for each.
+Create one checklist item per applicable item and record evidence for each.
 
 - [ ] The workflow audience is classified as Marketplace user-facing or repository-only.
 - [ ] Distributed skill frontmatter contains exactly `name` and `description` and the name matches its directory.
@@ -119,7 +120,7 @@ Create one todo per applicable item and record evidence for each.
 - [ ] Distributed skill bodies name actions, not harness-specific tools.
 - [ ] Process skill structure includes its announce line, Iron Law, Red Flags, and terminal handoff.
 - [ ] `SKILL.md` stays within 500 lines and support files use `references/`, `scripts/`, or `assets/`.
-- [ ] Repository-only detail lives in `.agent-runbooks/`; both wrappers point to it and do not duplicate it.
+- [ ] Repository-only detail lives in one owned `.agent-extensions/` source; native wrappers are manager-rendered adapters.
 - [ ] `bash scripts/validate.sh` printed `validate: all checks passed` in a fresh run.
 - [ ] Instruction changes passed a live pressure test; every change passed an adversarial self-read.
 - [ ] The commit uses a conventional message.
@@ -166,9 +167,9 @@ distributed catalog.
 | Purpose | Path |
 |---|---|
 | Marketplace Forge skills | `plugins/forge/skills/<skill-name>/` |
-| Repository-only runbooks | `.agent-runbooks/<name>/` |
-| Codex + Antigravity repository wrappers | `.agents/skills/<name>/SKILL.md` |
-| Claude Code repository wrappers | `.claude/skills/<name>/SKILL.md` |
+| Repository-only canonical extensions | `.agent-extensions/<extension-name>/` |
+| Codex + Antigravity repository adapters | `.agents/skills/<name>/SKILL.md` |
+| Claude Code repository adapters | `.claude/skills/<name>/SKILL.md` |
 | Plugin manifests | `plugins/forge/.claude-plugin/plugin.json`, `plugins/forge/.codex-plugin/plugin.json` |
 | Marketplace manifests | `.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json` |
 | Claude-only hooks | `plugins/forge/hooks/` |
@@ -179,8 +180,8 @@ distributed catalog.
 | Repository plans | `docs/plans/PPP-<slug>/plan.md` |
 | Shared research and debug records | `docs/research/`, `docs/debug/` |
 
-The validator checks distributed plugin skills plus repository-local wrapper
-skills under `.agents/skills/` and `.claude/skills/`.
+The validator checks distributed plugin skills, canonical extension skills,
+and repository adapters, then validates each extension's ownership and parity.
 
 ## Red Flags
 
@@ -191,8 +192,8 @@ skills under `.agents/skills/` and `.claude/skills/`.
 | "Validation passed, so it can ship." | Mechanical validation does not prove behavior; pressure-test instruction changes. |
 | "I will test after pushing." | Push is release; Marketplace users can receive the defect first. |
 | "Put the repository workflow in the plugin for convenience." | That exposes maintainer-only behavior to installation users and breaks the packaging boundary. |
-| "Copy the procedure into both wrappers." | Duplicate procedures drift; the shared runbook is the only detailed source. |
-| "The wrappers differ only a little." | Keep them identical unless a real harness-specific requirement exists and is documented. |
+| "Copy the procedure into both wrappers." | Duplicate procedures drift; the canonical extension is the only detailed source. |
+| "Edit the wrapper because it is only a small change." | Owned adapters are generated artifacts; edit canonical content and render again. |
 | "Repository-only means validation can be lighter." | Local agent workflows can still release the plugin; the same mechanical and behavioral gates apply. |
 | "No fresh agent is available, so skip the test." | Perform and record the adversarial self-read; do not silently omit the gate. |
 

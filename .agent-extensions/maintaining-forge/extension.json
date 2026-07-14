@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "name": "maintaining-forge",
+  "description": "Repository-local workflow for safely maintaining and validating Forge skills and plugin infrastructure.",
+  "scope": "repository",
+  "targets": [
+    "codex",
+    "claude-code",
+    "antigravity"
+  ],
+  "components": {
+    "skills": [
+      {
+        "name": "maintaining-forge",
+        "description": "Use when creating, editing, reviewing, or testing Forge skills or changing Forge plugin manifests, hooks, validators, install scripts, or release documentation in this repository. Triggers: \"스킬 수정\", \"스킬 추가\", \"forge 수정\", \"플러그인 수정\", editing files under plugins/forge/.",
+        "path": "skills/maintaining-forge/SKILL.md"
+      }
+    ],
+    "mcpServers": []
+  }
+}

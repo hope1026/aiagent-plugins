@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "extension": "maintaining-forge",
+  "canonicalHash": "3138f2f7b301ae2eef861f6090ef56d1757b6a0922f4b7ff7b0ee71e59107739",
+  "entries": [
+    {
+      "kind": "skill",
+      "name": "maintaining-forge",
+      "target": ".claude/skills/maintaining-forge/SKILL.md",
+      "owner": "maintaining-forge",
+      "renderedHash": "a476b4ad55d9ce77ea8dea45d95a24b9b83b111cb4a79fc701761b9e47cf059e"
+    }
+  ]
+}

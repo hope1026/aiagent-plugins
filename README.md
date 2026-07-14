@@ -14,9 +14,9 @@ plugins/<name>/
   .codex-plugin/plugin.json    # Codex manifest
   skills/<skill>/SKILL.md      # shared Agent Skills source
   hooks/                       # Claude-only SessionStart bootstrap (forge)
-.agent-runbooks/               # repository-only shared agent workflows
-.agents/skills/                # thin Codex + Antigravity repository entry skills
-.claude/skills/                # thin Claude Code repository entry skills
+.agent-extensions/             # canonical repository-only agent extensions
+.agents/skills/                # generated Codex + Antigravity repository adapters
+.claude/skills/                # generated Claude Code repository adapters
 .claude-plugin/marketplace.json    # this repo is a Claude Code marketplace
 .agents/plugins/marketplace.json   # ...and a Codex marketplace
 docs/specs/                    # specs for this repo (spec-first, dogfooded)
@@ -55,7 +55,7 @@ bash scripts/install.sh --agent codex --plugin forge
 - Codex target: per-skill entries in `~/.agents/skills/` + `~/.agents/plugins/marketplace.json`.
 - Claude target: `~/.claude/skills/<plugin>`. Note: the forge SessionStart hook only runs for marketplace-installed plugins.
 - Windows: `--mode link` is auto-downgraded to copy (symlinks need admin/Developer Mode); re-run install after edits.
-- Marketplace and local dev installs use `plugins/forge/` only. Repository-only runbooks and their local wrapper skills are not installed for plugin users.
+- Marketplace and local dev installs use `plugins/forge/` only. Repository-only canonical extensions and their adapters are not installed for plugin users.
 
 ## forge user skill catalog
 
@@ -77,15 +77,16 @@ bash scripts/install.sh --agent codex --plugin forge
 
 ## Repository maintenance
 
-Forge itself is maintained through the repository-only runbook at
-`.agent-runbooks/maintaining-forge/README.md`. Codex and Antigravity share the
-thin local wrapper under `.agents/skills/maintaining-forge/`; Claude Code uses
-`.claude/skills/maintaining-forge/`. Both physical wrappers read the same
-runbook and portability reference.
+Forge itself is maintained through the repository-only canonical extension at
+`.agent-extensions/maintaining-forge/`. Codex and Antigravity share the
+manager-owned adapter under `.agents/skills/maintaining-forge/`; Claude Code
+uses `.claude/skills/maintaining-forge/`. Both adapters point to the same
+canonical skill, whose ownership state detects collisions and drift.
 
-Keep detailed maintainer procedures in `.agent-runbooks/`. They stay outside
-`plugins/forge/`, so Marketplace and `scripts/install.sh` distribute only the
-13 user-execution skills listed above.
+Keep detailed maintainer procedures in `.agent-extensions/` and render native
+entries through the `creating-agent-extensions` manager. These files stay
+outside `plugins/forge/`, so Marketplace and `scripts/install.sh` distribute
+only the 13 user-execution skills listed above.
 
 ## Spec-first lifecycle (the short version)
 

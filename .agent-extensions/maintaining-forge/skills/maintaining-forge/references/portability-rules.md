@@ -21,7 +21,7 @@ and established technical terms in their original form.
 ## 3. Name Actions, Not Harness Tools
 
 Do not place harness-specific tool names in distributed skill bodies. Describe
-the action: create a todo, dispatch a subagent, run in the shell, or edit a
+the action: create a checklist item, dispatch a subagent, run in the shell, or edit a
 file. The validator rejects the following tokens:
 
 ```text
@@ -58,7 +58,7 @@ commands. Install paths differ across harnesses and install modes.
 ## 7. Process-skill Structure
 
 Each distributed process skill includes an announce line, Iron Law, Red Flags
-table with at least five rows, explicit todo creation for checklists, and a
+table with at least five rows, explicit checklist-item creation, and a
 terminal handoff naming the next Forge skill.
 
 ## 8. Repository-only Shared Workflows
@@ -67,14 +67,14 @@ Repository-only workflows are not distributed Forge skills.
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| Shared runbook | `.agent-runbooks/<name>/` | Detailed procedure, scripts, references, validation, and reporting |
-| Codex + Antigravity entry | `.agents/skills/<name>/SKILL.md` | Trigger and shared-runbook link |
-| Claude Code entry | `.claude/skills/<name>/SKILL.md` | Trigger and shared-runbook link |
+| Canonical extension | `.agent-extensions/<extension-name>/` | Complete portable skill, resources, manifest, and ownership state |
+| Codex + Antigravity entry | `.agents/skills/<name>/SKILL.md` | Manager-owned thin canonical pointer |
+| Claude Code entry | `.claude/skills/<name>/SKILL.md` | Manager-owned thin canonical pointer |
 
-Keep both wrappers thin and identical when possible. If a wrapper disagrees
-with its runbook, the runbook wins. Repository-only paths stay outside
-`plugins/forge/`, so Marketplace installation cannot copy them into the user
-plugin.
+Keep native entries generated and thin. If an adapter differs from its recorded
+ownership hash, stop on drift; update the canonical source and render again.
+Repository-only paths stay outside `plugins/forge/`, so Marketplace
+installation cannot copy them into the user plugin.
 
 ## 9. Cross-agent Authoring Structure
 

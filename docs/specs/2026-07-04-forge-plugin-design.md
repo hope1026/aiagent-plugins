@@ -20,7 +20,7 @@ Core philosophy: **the spec is the source of truth**. Code follows the spec; fea
 | Project working dir | `.forge/` at target-repo root |
 | Spec location | `docs/specs/` (committed, source of truth) |
 | Skill language | English body + Korean trigger keywords in descriptions; skills instruct responding to the user in the user's language |
-| Approach | Lean spec-first core (12 user-facing skills), not a full superpowers mirror |
+| Approach | Lean spec-first core (13 user-facing skills), not a full superpowers mirror |
 | superpowers | Keep installed during forge validation; replace (disable) once forge is stable |
 
 **Non-goals:**
@@ -81,12 +81,13 @@ plugins/forge/
     marketing-tone/SKILL.md         # marketing/product copy overlay on writing-tone
     operations-tone/SKILL.md        # customer/operations reply overlay on writing-tone
 plugins/onestar-ai-tools/           # keeps ai-council; tone-and-manner removed
-.agent-runbooks/
+.agent-extensions/
   maintaining-forge/
-    README.md                        # repository-only Forge maintenance source of truth
-    references/portability-rules.md
-.agents/skills/maintaining-forge/   # thin Codex repository entry skill
-.claude/skills/maintaining-forge/   # thin Claude Code repository entry skill
+    extension.json                   # repository-only extension manifest
+    skills/maintaining-forge/        # canonical Forge maintenance skill and references
+    adapters/                        # manager ownership state for all target agents
+.agents/skills/maintaining-forge/   # generated Codex + Antigravity adapter
+.claude/skills/maintaining-forge/   # generated Claude Code adapter
 scripts/
   install.sh                        # dev-mode install (see §8)
   validate.sh                       # extended: frontmatter + portability lint (see §8)
@@ -157,7 +158,7 @@ Spec-first is exempt ONLY when the change alters no documented or documentable b
 
 Everything else gets a spec. (Research finding: unmatched ceremony is the #1 spec-driven-development failure mode, but a vague carve-out gets rationalized — hence a closed list.)
 
-## 6. User skill catalog (12 skills)
+## 6. User skill catalog (13 skills)
 
 Every process skill bakes in the superpowers discipline patterns: an **Iron Law** fenced block, **Red Flags** list + rationalization table (`| Excuse | Reality |`), "announce at start" line, checklist→one-todo-per-item, and an explicit **terminal handoff** naming the next skill. Process-flow `dot` graphs only where a decision is non-obvious.
 
@@ -179,8 +180,9 @@ Every process skill bakes in the superpowers discipline patterns: an **Iron Law*
 **Skill routing (encoded in using-forge):** process skills fire before implementation skills. "Build X" → writing-specs. "Fix this bug" → systematic-debugging (+ TDD for the fix). "Is it done?" → verifying-work. UI work inside a task → ui-design. Human-readable prose → writing-tone. Marketing copy → writing-tone plus marketing-tone. Customer or operations replies → writing-tone plus operations-tone.
 
 Forge maintenance is a repository-only workflow, not a user plugin skill. Its
-shared source is `.agent-runbooks/maintaining-forge/`; Codex and Claude Code use
-thin local wrappers under `.agents/skills/` and `.claude/skills/`.
+canonical source is `.agent-extensions/maintaining-forge/`; Codex,
+Claude Code, and Antigravity use manager-owned adapters under
+`.agents/skills/` and `.claude/skills/`.
 
 **Excluded** (and why): code-review skills (harness built-ins cover it; revisit later), git-worktrees / finishing-a-branch (harness-specific), separate brainstorming skill (merged into writing-specs).
 
@@ -225,7 +227,8 @@ Symlinks are an iteration convenience on Unix, never a correctness requirement �
 - frontmatter: `name` + `description` present; description ≤1024 chars, third-person "Use when…" shape
 - **banned-token lint** in skill bodies: `TodoWrite`, `Task tool`, `Bash tool`, `@`-path includes, `/skill-name` references
 - SKILL.md ≤500 lines; manifests parse as JSON; marketplace entries resolve to existing dirs
-- the same skill checks cover `plugins/*/skills/`, `.agents/skills/`, and `.claude/skills/`
+- the same skill checks cover `plugins/*/skills/`, `.agent-extensions/*/skills/`, `.agents/skills/`, and `.claude/skills/`
+- every repository extension runs manager `validate` to enforce canonical/native parity and ownership hashes
 
 ### Migration & rollout
 
@@ -240,10 +243,11 @@ Symlinks are an iteration convenience on Unix, never a correctness requirement �
 
 ### Repository maintenance separation
 
-- 2026-07-12 [CHANGE] Removed `maintaining-forge` from the Marketplace user skill catalog. `.agent-runbooks/maintaining-forge/` is now the shared repository-only source, with thin Codex and Claude Code wrapper skills.
+- 2026-07-12 [CHANGE] Removed `maintaining-forge` from the Marketplace user skill catalog and made it repository-only.
+- 2026-07-14 [CHANGE] Adopted `.agent-extensions/maintaining-forge/` as the canonical source with manager-owned Codex, Claude Code, and Antigravity adapters; this supersedes `.agent-runbooks/`.
 
 ## 9. Testing the plugin itself
 
 - `validate.sh` green on every commit.
 - Smoke test per harness: fresh session in a scratch project → "build a tiny feature X" must trigger writing-specs (not direct coding); "fix this bug" must trigger systematic-debugging; spec-viewer output opens and renders all diagram types offline and via CDN; on Codex, `$writing-specs` explicit invocation works and skills appear in `/skills`.
-- Fresh-agent skill pressure-testing follows `.agent-runbooks/maintaining-forge/README.md`: give a fresh agent the scenario, local wrapper, shared runbook, and portability reference, then check that it keeps every gate.
+- Fresh-agent skill pressure-testing follows `.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md`: give a fresh agent the scenario, native adapter, canonical skill, and portability reference, then check that it keeps every gate.

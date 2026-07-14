@@ -5,9 +5,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
 required=(
-  ".agent-runbooks/README.md"
-  ".agent-runbooks/maintaining-forge/README.md"
-  ".agent-runbooks/maintaining-forge/references/portability-rules.md"
+  ".agent-extensions/maintaining-forge/extension.json"
+  ".agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md"
+  ".agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
+  ".agent-extensions/maintaining-forge/adapters/codex/state.json"
+  ".agent-extensions/maintaining-forge/adapters/claude-code/state.json"
+  ".agent-extensions/maintaining-forge/adapters/antigravity/state.json"
   ".agents/skills/maintaining-forge/SKILL.md"
   ".claude/skills/maintaining-forge/SKILL.md"
 )
@@ -17,6 +20,8 @@ done
 
 [[ ! -e "$ROOT_DIR/plugins/forge/skills/maintaining-forge" ]] || \
   fail "maintaining-forge must not ship in plugins/forge/skills"
+[[ ! -e "$ROOT_DIR/.agent-runbooks" ]] || \
+  fail "legacy .agent-runbooks must be removed after canonical adoption"
 
 cmp -s \
   "$ROOT_DIR/.agents/skills/maintaining-forge/SKILL.md" \
@@ -26,18 +31,20 @@ cmp -s \
 for wrapper in \
   "$ROOT_DIR/.agents/skills/maintaining-forge/SKILL.md" \
   "$ROOT_DIR/.claude/skills/maintaining-forge/SKILL.md"; do
-  grep -q '../../../.agent-runbooks/maintaining-forge/README.md' "$wrapper" || \
-    fail "$wrapper does not reference the shared runbook"
-  grep -q '../../../.agent-runbooks/maintaining-forge/references/portability-rules.md' "$wrapper" || \
-    fail "$wrapper does not reference portability rules"
+  grep -q '../../../.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md' "$wrapper" || \
+    fail "$wrapper does not reference the canonical skill"
 done
+
+python3 "$ROOT_DIR/plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py" \
+  validate --extension "$ROOT_DIR/.agent-extensions/maintaining-forge" \
+  | grep -q '"status": "PASS"' || fail "canonical extension validation failed"
 
 if rg -n 'maintaining-forge' "$ROOT_DIR/plugins/forge" >/dev/null; then
   rg -n 'maintaining-forge' "$ROOT_DIR/plugins/forge" >&2
   fail "Forge user plugin still references maintaining-forge"
 fi
 
-grep -q '.agent-runbooks/maintaining-forge/' "$ROOT_DIR/README.md" || \
+grep -q '.agent-extensions/maintaining-forge/' "$ROOT_DIR/README.md" || \
   fail "README does not document repository-only Forge maintenance"
 
 echo "layout: all checks passed"

@@ -81,7 +81,10 @@ while IFS= read -r skill; do
 done < <(
   {
     find "$ROOT_DIR/plugins" -name SKILL.md -not -path '*/node_modules/*'
-    for root in "$ROOT_DIR/.agents/skills" "$ROOT_DIR/.claude/skills"; do
+    for root in \
+      "$ROOT_DIR/.agent-extensions"/*/skills \
+      "$ROOT_DIR/.agents/skills" \
+      "$ROOT_DIR/.claude/skills"; do
       [[ -d "$root" ]] && find "$root" -name SKILL.md -not -path '*/node_modules/*'
     done
   } | sort
@@ -89,8 +92,17 @@ done < <(
 
 # 5. Cross-agent extension manager interface is executable without optional dependencies.
 if [[ -f "$ROOT_DIR/plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py" ]]; then
-  python3 "$ROOT_DIR/plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py" --help \
+  MANAGER="$ROOT_DIR/plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py"
+  python3 "$MANAGER" --help \
     >/dev/null 2>&1 || err "creating-agent-extensions: manager --help failed"
+  for manifest in "$ROOT_DIR"/.agent-extensions/*/extension.json; do
+    [[ -f "$manifest" ]] || continue
+    extension_dir="$(dirname "$manifest")"
+    extension_name="$(basename "$extension_dir")"
+    if ! extension_output="$(python3 "$MANAGER" validate --extension "$extension_dir" 2>&1)"; then
+      err "$extension_name: extension validation failed: $extension_output"
+    fi
+  done
 else
   err "creating-agent-extensions: missing manager script"
 fi
