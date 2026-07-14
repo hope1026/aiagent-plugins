@@ -20,6 +20,10 @@ for path in "${required[@]}"; do
   [[ -f "$path" ]] || fail "missing ${path#$ROOT/}"
 done
 
+git -C "$ROOT" check-ignore -q --no-index \
+  plugins/forge/skills/creating-agent-extensions/tests/__pycache__/probe.pyc || \
+  fail "Python cache files are not ignored"
+
 python3 -m unittest discover \
   -s "$SKILL_DIR/tests" \
   -p 'test_*.py' \

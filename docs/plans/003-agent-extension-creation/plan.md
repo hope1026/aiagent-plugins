@@ -190,7 +190,7 @@ manager는 `NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")`를 
 
 예상: 네 lifecycle cases가 PASS하고 script가 `agent extension skill: all checks passed`를 출력한다.
 
-- [ ] **Step 6: Task 1 변경을 fresh 검증하고 commit한다**
+- [x] **Step 6: Task 1 변경을 fresh 검증하고 commit한다**
 
 실행: `bash scripts/tests/test-agent-extension-skill.sh && bash scripts/validate.sh`
 
@@ -484,3 +484,4 @@ bash scripts/validate.sh
 - 2026-07-14: plan created; approved spec R1–R18 and AC1–AC13 mapped to five sequential implementation and verification Tasks. No release or push authority assumed.
 - 2026-07-14: Task 1 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="manager CLI, schema, and lifecycle tests define one tightly coupled source-of-truth contract").
 - 2026-07-14: Task 1 RED confirmed first at missing `creating-agent-extensions/SKILL.md`, then at absent plan/init behavior; GREEN confirmed for four canonical lifecycle cases.
+- 2026-07-14: Task 1 complete (commit `172c07d`; verification="4 manager tests passed; extension contract passed; Forge validator passed"). A generated Python cache was traced to missing root ignore rules; a RED ignore regression contract now prevents recurrence.
