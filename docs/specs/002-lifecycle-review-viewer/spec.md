@@ -130,9 +130,9 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R55. `writing-plans`는 Task 22개를 한 diagram에 평면적으로 연결하지 않고 먼저 6~10개의 Route로 묶도록 요구해야 한다.
 - R56. MODIFIED — plan의 diagram과 책임 표는 plan에서 선택한 언어로 작성하되 관련 spec에서 인용한 값과 API, service, schema, code identifier는 원문을 유지해야 한다.
 
-### ui-design과 writing-tone 규칙
+### UI 디자인과 writing-tone 규칙
 
-- R57. MODIFIED — 고정 Viewer shell로 spec 또는 plan `view.html`을 생성하는 작업은 `ui-design`을 적용하지 않아야 하며, Viewer shell·template·style 자체를 변경할 때만 `ui-design`을 적용해야 한다.
+- R57. MODIFIED — 고정 Viewer shell로 spec 또는 plan `view.html`을 생성하는 작업은 `web-app-design`, `website-design`, deprecated `ui-design`을 적용하지 않아야 하며, Viewer shell·template·style 자체를 변경할 때만 `web-app-design`을 적용해야 한다.
 - R58. content fragment는 임의 CSS, script, shell markup을 추가하지 않아야 한다.
 - R59. Viewer의 Signature는 장식이 아니라 `Route Map`, `Runtime Atlas`, `AC Coverage`의 콘텐츠 구조에서 만들어야 한다.
 - R60. diagram 추가는 제목, 읽는 법, mobile 대체 요약표와 한 묶음으로 검토해야 한다.
@@ -314,7 +314,7 @@ Viewer shell의 inherited visual system:
 | `writing-specs` | Markdown 기본 검토, Viewer 효용 안내, 완료 후 생성 여부 질문 |
 | `writing-plans` | 독립 plan ID, 선택적 Related Specs, plan 디렉터리, 진행·Task 분리 기준 |
 | `executing-plans` | plan 디렉터리의 상태·진행 기록과 요청이 있을 때만 plan Viewer 갱신 |
-| `ui-design` | 개별 View 생성 제외와 Viewer tooling 변경 시 UI 검증 |
+| `web-app-design` | 개별 View 생성 제외와 Viewer tooling 변경 시 browser app UI 검증 |
 | `writing-tone` | 질문형 제목, 읽는 법, 요약 우선, locale copy |
 | `verifying-work` | 개별 View 생성 제외, Viewer tooling 검증, `implemented` 금지 |
 | `using-forge`, portability rules, README | `docs/specs`, `docs/plans`, committed View, `.forge` 임시 파일 계약 동기화 |
@@ -337,7 +337,7 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - AC11 (R47): 잘못된 Mermaid fixture를 열면 다른 panel은 정상 동작하고 오류 diagram에는 오류 요약, 가능한 line·column, 원문 source가 표시된다.
 - AC12 (R35–R36): spec View의 R·AC deep link와 plan View의 Task·Step deep link 및 검토 checkbox를 변경하고 page를 reload하면 같은 mode 안에서 target과 종류별 checkbox 상태가 복원된다.
 - AC13 (R53–R56, R72–R75): 복잡한 plan을 작성하면 독립 plan ID, 선택적인 `Related Specs`, 필수 구조, 6~10 Route grouping, plan source로부터 만든 diagram 관점, checkpoint가 존재하고 Task 분리는 독립 소유권·병렬 실행·독립 승인 조건에서만 사용된다.
-- AC14 (R57–R60): 고정 shell에서 개별 Viewer를 생성할 때 `ui-design` 절차를 적용하지 않고 fragment에 style·script·doctype·shell markup을 추가하지 않으며, Viewer shell·template·style 자체를 변경할 때만 `ui-design`을 적용한다.
+- AC14 (R57–R60): 고정 shell에서 개별 Viewer를 생성할 때 `web-app-design`, `website-design`, deprecated `ui-design` 절차를 적용하지 않고 fragment에 style·script·doctype·shell markup을 추가하지 않으며, Viewer shell·template·style 자체를 변경할 때만 `web-app-design`을 적용한다.
 - AC15 (R64–R67): 고정 Viewer tooling으로 개별 View를 build하면 성공한 build에서 작업을 종료하고 별도 checker나 브라우저 검증을 실행하지 않으며 governing spec의 `Status:`를 변경하지 않는다. Viewer tooling 자체를 변경하면 이 예외 없이 일반 구현 검증을 수행한다.
 - AC16 (R18–R19): CDN build와 `--offline` build가 모두 열리고 offline 파일에는 외부 Mermaid script 요청이 없으며 diagram이 렌더된다.
 - AC17 (R21–R28): plan mode에서 6개 panel이 모두 존재하고 각 panel 내용이 mode mapping과 일치하며 요약→시각 흐름→상세 Task→AC evidence 순서가 유지된다.
@@ -380,3 +380,5 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - 2026-07-13 [DECISION] 사용자가 독립 spec·plan 문서 구조, combined Viewer 제거, plan 진행 기록 구조, 열람 시 SHA-256 freshness 검증 변경안을 승인했다.
 - 2026-07-13 [CHANGE] R51, R57, R64–R67과 AC14–AC15, AC19 MODIFIED: 생성된 개별 spec·plan View는 사용자 검토용 보조 산출물로 취급하고 성공한 build 뒤 별도 checker, 브라우저, screenshot, viewport, layout, interaction 검증을 수행하지 않는다. Viewer tooling 자체의 변경에는 기존 구현 검증을 유지한다.
 - 2026-07-13 [DECISION] 사용자가 Markdown source의 정확성 검증은 유지하되 생성된 개별 HTML View의 post-build 레이아웃 검증은 제외하는 변경을 승인했다.
+- 2026-07-31 [CHANGE] R57과 AC14 MODIFIED: `ui-design` 분리 계획에 따라 개별 Viewer 생성은 모든 UI 디자인 스킬에서 제외하고 Viewer tooling 변경은 `web-app-design`으로 라우팅한다.
+- 2026-07-31 [APPROVED] 사용자가 R57과 AC14의 `web-app-design`·`website-design` Viewer routing delta를 승인하고 구현 계획 진행을 요청했다.
