@@ -25,8 +25,9 @@ grep -q '`frontier` defaults to `root`' "$ROOT/plugins/forge/skills/executing-pl
 grep -q 'User execution preferences override these defaults' "$ROOT/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
 grep -q 'Do not ask the user to choose an execution mode' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
 grep -q 'creating-agent-extensions' "$ROOT/plugins/forge/skills/using-forge/SKILL.md"
-grep -q '14 active user-execution skills plus 1 deprecated compatibility router' "$ROOT/README.md"
+grep -q '14 active user-execution skills listed above' "$ROOT/README.md"
 grep -q '| `creating-agent-extensions` |' "$ROOT/README.md"
+[[ ! -e "$ROOT/plugins/forge/skills/ui-design" ]]
 grep -q 'Codex, Claude Code, and Antigravity' "$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md"
 grep -q '.agent-extensions/' "$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
 grep -q 'python3 "$MANAGER" --help' "$ROOT/scripts/validate.sh"
@@ -43,7 +44,6 @@ grep -q 'Do not add a post-build viewport or scroll verification step' "$ROOT/pl
 grep -q 'Building a browser application UI' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
 grep -q 'Building a public website' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
 grep -q 'Changing the Viewer shell' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'DO NOT DESIGN' "$ROOT/plugins/forge/skills/ui-design/SKILL.md"
 grep -q 'The successful build command is sufficient evidence' "$ROOT/plugins/forge/skills/verifying-work/SKILL.md"
 grep -q 'do not add source-count, hash, browser, or layout validation after generation' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
 grep -q 'needs no hash, browser, or layout check' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"

@@ -12,6 +12,7 @@ jobs:
           bash scripts/tests/test-validator-skill-roots.sh
           bash scripts/tests/test-forge-artifact-contract.sh
           bash scripts/tests/test-ui-design-skill-routing.sh
+          bash scripts/tests/test-forge-ui-skill-install.sh
           node plugins/forge/skills/spec-viewer/tests/test-viewer-freshness.mjs
           bash plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh
           bash scripts/validate.sh

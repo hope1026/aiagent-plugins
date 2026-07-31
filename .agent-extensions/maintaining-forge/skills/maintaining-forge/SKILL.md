@@ -182,7 +182,6 @@ The distributed Forge plugin contains user-execution skills only:
 | `spec-viewer` | Render lifecycle review Views from source documents |
 | `web-app-design` | Design browser application hierarchy, state geometry, and interaction |
 | `website-design` | Design public website content composition, imagery, and responsive behavior |
-| `ui-design` | Deprecated compatibility router for explicit legacy calls |
 | `writing-tone` | Shape natural human-readable prose |
 | `marketing-tone` | Apply factual marketing and product tone |
 | `operations-tone` | Apply clear support and operations tone |

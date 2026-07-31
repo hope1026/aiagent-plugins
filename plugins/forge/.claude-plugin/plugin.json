@@ -1,9 +1,9 @@
 {
   "name": "forge",
   "displayName": "Forge",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Spec-first development process skills with cross-agent authoring, verification, debugging, browser application design, public website design, tone overlays, and lifecycle review Viewers. Produces adapters for Codex, Claude Code, and Antigravity.",
   "author": { "name": "Onestar Lee" },
   "skills": "./skills/",
-  "keywords": ["spec-first", "process", "tdd", "debugging", "agent-skills", "mcp", "web-app-design", "website-design", "ui-design", "tone", "marketing", "operations", "customer-support", "korean", "codex", "claude-code", "antigravity"]
+  "keywords": ["spec-first", "process", "tdd", "debugging", "agent-skills", "mcp", "web-app-design", "website-design", "tone", "marketing", "operations", "customer-support", "korean", "codex", "claude-code", "antigravity"]
 }
