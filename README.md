@@ -69,7 +69,9 @@ bash scripts/install.sh --agent codex --plugin forge
 | `systematic-debugging` | Reproduce → isolate → root-cause → fix; no fix without an understood cause |
 | `verifying-work` | Evidence before claims; walks acceptance criteria; flips spec to `implemented` |
 | `spec-viewer` | Renders an independent spec or plan View with Mermaid, read-time SHA-256 freshness, and persistent checklists |
-| `ui-design` | Declared visual system before UI code; numeric floors; anti-slop ban list; self-tests |
+| `web-app-design` | Browser app hierarchy, control affordance, state geometry, and viewport×state verification |
+| `website-design` | Public website visual thesis, content composition, imagery, responsive behavior, and restrained motion |
+| `ui-design` | Deprecated one-release compatibility router for explicit legacy calls |
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
 | `marketing-tone` | Marketing and product copy overlay: factual, confident, trust-building claims |
 | `operations-tone` | Customer and operations overlay: confirmed status, impact, next action, and restrained cause detail |
@@ -86,7 +88,7 @@ canonical skill, whose ownership state detects collisions and drift.
 Keep detailed maintainer procedures in `.agent-extensions/` and render native
 entries through the `creating-agent-extensions` manager. These files stay
 outside `plugins/forge/`, so Marketplace and `scripts/install.sh` distribute
-only the 13 user-execution skills listed above.
+the 14 active user-execution skills plus 1 deprecated compatibility router listed above.
 
 ## Spec-first lifecycle (the short version)
 
