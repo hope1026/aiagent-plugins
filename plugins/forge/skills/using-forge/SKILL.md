@@ -44,7 +44,7 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 1. **Route before responding.** Match the task against the routing table below BEFORE answering questions, exploring, or touching any file.
 2. **Announce** the routed skill: "Using the forge <name> skill to <purpose>."
 3. **Follow it exactly.** If the skill has a checklist, create one todo per checklist item — never track checklist items only in memory.
-4. **When multiple skills apply,** process skills come first — they set the approach; implementation skills (ui-design, writing-tone, test-driven-development) carry it out inside that process.
+4. **When multiple skills apply,** process skills come first — they set the approach; implementation skills (web-app-design, website-design, writing-tone, test-driven-development) carry it out inside that process. Apply both UI design skills only when one approved Task explicitly changes separately owned application and public website files.
 5. **Setting a skill aside** is allowed only after reading it, and only by stating explicitly — in your response — why it does not apply. Silently dropping a skill is skipping, not setting aside.
 
 ### Routing
@@ -54,7 +54,11 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 | "Build X" / "add X" / "change X" / new project / unclear requirements | the forge writing-specs skill |
 | "Fix this bug" / error / test failure / unexpected behavior | the forge systematic-debugging skill |
 | "Is it done?" / about to claim complete, fixed, or passing | the forge verifying-work skill |
-| Product UI or Viewer shell/template work — pages, components, dashboards, slides, styling | the forge ui-design skill |
+| Browser application UI — dashboards, admin, settings, tables, forms, controls, internal tools, SaaS workspaces, PWAs | the forge web-app-design skill |
+| Public website — landing pages, homepages, marketing or product sites, editorial, portfolios, public documentation | the forge website-design skill |
+| UI request with no evidence of application state/workflow or public content/acquisition | ask one classification question: "Is this a stateful browser application or a public content website?" Then route to exactly one UI skill |
+| Native mobile or desktop app while its specialist skill is not available | state that the specialist skill is not available; do not force-route it to a web UI skill |
+| Viewer shell, template, style, or interaction tooling changes | the forge web-app-design skill; fixed Viewer generation remains the forge spec-viewer skill alone |
 | Writing prose humans will read — docs, PRs, commits, messages | the forge writing-tone skill |
 | Cross-agent skill, MCP, or bundle authoring for Codex, Claude Code, and Antigravity | the forge creating-agent-extensions skill |
 | "Show me the spec" / render or present a spec for review | the forge spec-viewer skill |

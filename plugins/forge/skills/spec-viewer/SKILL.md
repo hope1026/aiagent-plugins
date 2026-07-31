@@ -37,7 +37,9 @@ SUCCESSFUL BUILD ENDS GENERATION. NO POST-BUILD VIEWER QA.
 
 - The source itself needs writing or changing — use the forge writing-specs or writing-plans skill.
 - The user did not explicitly request Viewer creation or update. Complexity, approval, handoff, checkpoint, and an existing stale Viewer do not grant permission.
-- Building product UI — use the forge ui-design skill.
+- Building a browser application UI — use the forge web-app-design skill.
+- Building a public website — use the forge website-design skill.
+- Changing the Viewer shell, template, styles, scripts, or interaction tooling — use the forge web-app-design skill.
 - A plan links Related Specs and the desired relationship is absent from the plan — keep the link; do not merge spec content into the plan View.
 
 ## Source Ownership and Modes
