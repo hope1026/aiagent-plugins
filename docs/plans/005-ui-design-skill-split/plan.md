@@ -163,7 +163,7 @@ flowchart TD
 - 병렬 안전성: sequential — 뒤 Task들의 RED 기준을 먼저 고정해야 한다.
 - 승인 gate: none
 
-- [ ] **Step 1: 다음 contract test를 생성한다.**
+- [x] **Step 1: 다음 contract test를 생성한다.**
 
 ```bash
 #!/usr/bin/env bash
@@ -257,19 +257,19 @@ assert_has 'test-ui-design-skill-routing.sh' "$ROOT/.github/workflows/validate.y
 echo "ui-design-skill-routing: all checks passed"
 ```
 
-- [ ] **Step 2: 실행 권한을 부여한다.**
+- [x] **Step 2: 실행 권한을 부여한다.**
 
 실행: `chmod +x scripts/tests/test-ui-design-skill-routing.sh`
 
 예상: 파일 mode가 executable로 바뀐다.
 
-- [ ] **Step 3: contract가 신규 skill 부재로 실패하는지 확인한다.**
+- [x] **Step 3: contract가 신규 skill 부재로 실패하는지 확인한다.**
 
 실행: `bash scripts/tests/test-ui-design-skill-routing.sh`
 
 예상: exit 1과 `FAIL: missing skill: .../web-app-design/SKILL.md`가 출력된다.
 
-- [ ] **Step 4: 승인된 계약과 실행 계획을 먼저 commit한다.**
+- [x] **Step 4: 승인된 계약과 실행 계획을 먼저 commit한다.**
 
 실행:
 
@@ -298,7 +298,7 @@ git commit -m "docs(forge): approve UI design skill split"
 - 병렬 안전성: Task 3과 병렬 가능 — 파일 소유권과 active surface가 분리된다.
 - 승인 gate: spec과 다른 native platform 소유권 또는 typography floor가 필요하면 중단하고 spec delta 승인을 받는다.
 
-- [ ] **Step 1: 다음 내용으로 `web-app-design/SKILL.md`를 생성한다.**
+- [x] **Step 1: 다음 내용으로 `web-app-design/SKILL.md`를 생성한다.**
 
 ````markdown
 ---
@@ -430,7 +430,7 @@ Rendered behavior is the evidence. If a real browser is unavailable, report the 
 - Claiming completion → return to the forge executing-plans skill, then use the forge verifying-work skill against the approved acceptance criteria.
 ````
 
-- [ ] **Step 2: app-specific static contract를 실행한다.**
+- [x] **Step 2: app-specific static contract를 실행한다.**
 
 실행:
 
@@ -444,13 +444,13 @@ grep -Eq 'within 1px' plugins/forge/skills/web-app-design/SKILL.md
 
 예상: 모든 명령이 exit 0이다.
 
-- [ ] **Step 3: validator로 frontmatter·line cap·portable token을 확인한다.**
+- [x] **Step 3: validator로 frontmatter·line cap·portable token을 확인한다.**
 
 실행: `bash scripts/validate.sh`
 
 예상: `validate: all checks passed`
 
-- [ ] **Step 4: 독립 skill 변경을 commit한다.**
+- [x] **Step 4: 독립 skill 변경을 commit한다.**
 
 실행:
 
@@ -477,7 +477,7 @@ git commit -m "feat(forge): add web app design skill"
 - 병렬 안전성: Task 2와 병렬 가능 — 파일 소유권과 active surface가 분리된다.
 - 승인 gate: authenticated workflow 또는 native app까지 범위를 넓혀야 하면 중단하고 surface 소유권을 재확인한다.
 
-- [ ] **Step 1: 다음 내용으로 `website-design/SKILL.md`를 생성한다.**
+- [x] **Step 1: 다음 내용으로 `website-design/SKILL.md`를 생성한다.**
 
 ````markdown
 ---
@@ -600,7 +600,7 @@ Rendered output is the evidence. If a real browser or performance inspection is 
 - Claiming completion → return to the forge executing-plans skill, then use the forge verifying-work skill against the approved acceptance criteria.
 ````
 
-- [ ] **Step 2: website-specific static contract를 실행한다.**
+- [x] **Step 2: website-specific static contract를 실행한다.**
 
 실행:
 
@@ -615,13 +615,13 @@ grep -Eq 'restrained' plugins/forge/skills/website-design/SKILL.md
 
 예상: 모든 명령이 exit 0이다.
 
-- [ ] **Step 3: validator로 frontmatter·line cap·portable token을 확인한다.**
+- [x] **Step 3: validator로 frontmatter·line cap·portable token을 확인한다.**
 
 실행: `bash scripts/validate.sh`
 
 예상: `validate: all checks passed`
 
-- [ ] **Step 4: 독립 skill 변경을 commit한다.**
+- [x] **Step 4: 독립 skill 변경을 commit한다.**
 
 실행:
 
@@ -656,7 +656,7 @@ git commit -m "feat(forge): add website design skill"
 - 병렬 안전성: sequential — 같은 routing contract와 manager ownership state를 원자적으로 맞춰야 한다.
 - 승인 gate: `ui-design` source 삭제, native platform 자동 routing, 고정 Viewer 생성에 UI skill 적용이 필요하면 중단하고 spec delta 승인을 받는다.
 
-- [ ] **Step 1: `using-forge`의 implementation skill 문장을 교체한다.**
+- [x] **Step 1: `using-forge`의 implementation skill 문장을 교체한다.**
 
 기존:
 
@@ -670,7 +670,7 @@ git commit -m "feat(forge): add website design skill"
 4. **When multiple skills apply,** process skills come first — they set the approach; implementation skills (web-app-design, website-design, writing-tone, test-driven-development) carry it out inside that process. Apply both UI design skills only when one approved Task explicitly changes separately owned application and public website files.
 ```
 
-- [ ] **Step 2: `using-forge` routing table의 broad UI row를 다음 다섯 행으로 교체한다.**
+- [x] **Step 2: `using-forge` routing table의 broad UI row를 다음 다섯 행으로 교체한다.**
 
 ```markdown
 | Browser application UI — dashboards, admin, settings, tables, forms, controls, internal tools, SaaS workspaces, PWAs | the forge web-app-design skill |
@@ -680,7 +680,7 @@ git commit -m "feat(forge): add website design skill"
 | Viewer shell, template, style, or interaction tooling changes | the forge web-app-design skill; fixed Viewer generation remains the forge spec-viewer skill alone |
 ```
 
-- [ ] **Step 3: 기존 `ui-design/SKILL.md` 전체를 다음 compatibility router로 교체한다.**
+- [x] **Step 3: 기존 `ui-design/SKILL.md` 전체를 다음 compatibility router로 교체한다.**
 
 ````markdown
 ---
@@ -737,7 +737,7 @@ Do NOT select this skill for a new general UI request. The forge using-forge ski
 The selected active replacement owns the task immediately. This compatibility router performs no later verification or completion claim.
 ````
 
-- [ ] **Step 4: `spec-viewer`의 product UI 제외 문장을 정확한 surface route로 교체한다.**
+- [x] **Step 4: `spec-viewer`의 product UI 제외 문장을 정확한 surface route로 교체한다.**
 
 기존:
 
@@ -755,7 +755,7 @@ The selected active replacement owns the task immediately. This compatibility ro
 
 고정 Viewer 생성은 현재 `spec-viewer`의 `SUCCESSFUL BUILD ENDS GENERATION. NO POST-BUILD VIEWER QA.` 계약을 그대로 유지한다.
 
-- [ ] **Step 5: canonical `maintaining-forge` System Map의 UI row를 세 행으로 교체한다.**
+- [x] **Step 5: canonical `maintaining-forge` System Map의 UI row를 세 행으로 교체한다.**
 
 기존:
 
@@ -771,7 +771,7 @@ The selected active replacement owns the task immediately. This compatibility ro
 | `ui-design` | Deprecated compatibility router for explicit legacy calls |
 ```
 
-- [ ] **Step 6: canonical maintainer extension을 manager로 render한다.**
+- [x] **Step 6: canonical maintainer extension을 manager로 render한다.**
 
 실행:
 
@@ -782,7 +782,7 @@ python3 plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.
 
 예상: canonical hash와 Codex·Claude Code·Antigravity ownership state가 갱신되고 collision이 없다.
 
-- [ ] **Step 7: routing과 extension parity를 검증한다.**
+- [x] **Step 7: routing과 extension parity를 검증한다.**
 
 실행:
 
@@ -798,7 +798,7 @@ bash scripts/validate.sh
 
 예상: grep가 모두 exit 0, manager JSON의 `status`가 `PASS`, validator가 `validate: all checks passed`를 출력한다.
 
-- [ ] **Step 8: routing migration을 commit한다.**
+- [x] **Step 8: routing migration을 commit한다.**
 
 실행:
 
@@ -837,7 +837,7 @@ git commit -m "refactor(forge): route UI work by web surface"
 - 병렬 안전성: sequential — routing 이름이 확정된 후 외부 discovery metadata를 동기화한다.
 - 승인 gate: manifest version 변경과 원격 push는 Task 6의 release gate 전에는 수행하지 않는다.
 
-- [ ] **Step 1: README skill catalog의 `ui-design` 한 행을 세 행으로 교체한다.**
+- [x] **Step 1: README skill catalog의 `ui-design` 한 행을 세 행으로 교체한다.**
 
 ```markdown
 | `web-app-design` | Browser app hierarchy, control affordance, state geometry, and viewport×state verification |
@@ -845,7 +845,7 @@ git commit -m "refactor(forge): route UI work by web surface"
 | `ui-design` | Deprecated one-release compatibility router for explicit legacy calls |
 ```
 
-- [ ] **Step 2: README 배포 개수 문장을 교체한다.**
+- [x] **Step 2: README 배포 개수 문장을 교체한다.**
 
 기존:
 
@@ -859,7 +859,7 @@ only the 13 user-execution skills listed above.
 the 14 active user-execution skills plus 1 deprecated compatibility router listed above.
 ```
 
-- [ ] **Step 3: Claude plugin manifest의 description과 keywords를 갱신한다.**
+- [x] **Step 3: Claude plugin manifest의 description과 keywords를 갱신한다.**
 
 `description` 값:
 
@@ -875,7 +875,7 @@ Spec-first development process skills with cross-agent authoring, verification, 
 
 `ui-design` keyword는 compatibility release 검색을 위해 이번 계획에서 유지한다.
 
-- [ ] **Step 4: Codex plugin manifest의 description, longDescription, defaultPrompt를 갱신한다.**
+- [x] **Step 4: Codex plugin manifest의 description, longDescription, defaultPrompt를 갱신한다.**
 
 `description` 값은 Claude manifest와 같은 문장을 사용한다.
 
@@ -897,7 +897,7 @@ Forge packages a complete spec-first workflow - brainstorm to spec, spec to plan
 ]
 ```
 
-- [ ] **Step 5: 기존 artifact contract의 broad `ui-design` Viewer 검사 두 줄을 교체한다.**
+- [x] **Step 5: 기존 artifact contract의 broad `ui-design` Viewer 검사 두 줄을 교체한다.**
 
 제거:
 
@@ -915,7 +915,7 @@ grep -q 'Changing the Viewer shell' "$ROOT/plugins/forge/skills/spec-viewer/SKIL
 grep -q 'DO NOT DESIGN' "$ROOT/plugins/forge/skills/ui-design/SKILL.md"
 ```
 
-- [ ] **Step 6: GitHub Actions validation 목록에 신규 regression test를 추가한다.**
+- [x] **Step 6: GitHub Actions validation 목록에 신규 regression test를 추가한다.**
 
 `bash scripts/tests/test-forge-artifact-contract.sh` 다음 줄에 추가:
 
@@ -923,7 +923,7 @@ grep -q 'DO NOT DESIGN' "$ROOT/plugins/forge/skills/ui-design/SKILL.md"
           bash scripts/tests/test-ui-design-skill-routing.sh
 ```
 
-- [ ] **Step 7: 전체 정적 contract를 GREEN으로 만든다.**
+- [x] **Step 7: 전체 정적 contract를 GREEN으로 만든다.**
 
 실행:
 
@@ -937,7 +937,7 @@ git diff --check
 
 예상: 세 test와 validator가 각 success 문구를 출력하고 `git diff --check`가 출력 없이 exit 0이다.
 
-- [ ] **Step 8: catalog와 regression 변경을 commit한다.**
+- [x] **Step 8: catalog와 regression 변경을 commit한다.**
 
 실행:
 
@@ -975,7 +975,7 @@ git commit -m "docs(forge): publish split UI skill catalog"
 - 병렬 안전성: static 검증 뒤 pressure scenario는 독립 실행 가능하지만 결과 종합과 release 판정은 sequential이다.
 - 승인 gate: plugin version 변경과 push는 사용자의 명시적 release 승인이 있어야 한다. 승인이 없으면 local implementation evidence까지만 기록하고 plan을 release-ready 상태로 유지한다.
 
-- [ ] **Step 1: fresh static verification을 실행한다.**
+- [x] **Step 1: fresh static verification을 실행한다.**
 
 실행:
 
@@ -992,13 +992,13 @@ git diff --check
 
 예상: 모든 test와 validator가 PASS하고 manager JSON의 `status`가 `PASS`다.
 
-- [ ] **Step 2: 사용할 수 있는 Codex·Claude Code·Antigravity runtime에서 skill discovery를 확인한다.**
+- [x] **Step 2: 사용할 수 있는 Codex·Claude Code·Antigravity runtime에서 skill discovery를 확인한다.**
 
 각 runtime에 “설치된 Forge skill 이름만 나열하고 파일을 수정하지 마라”라고 요청한다. 사용할 수 있는 runtime은 `web-app-design`, `website-design`, `ui-design`을 모두 발견해야 한다. 사용할 수 없는 runtime은 이름, frontmatter, directory, validator 결과를 static evidence로 기록하고 live discovery를 실행하지 못했다고 명시한다.
 
 결과는 `.forge/scratch/ui-design-skill-pressure-test.md`의 `Runtime discovery` 표에 runtime, available 여부, 세 이름 발견 여부, evidence를 기록한다.
 
-- [ ] **Step 3: fresh agent에 다음 여섯 pressure scenario를 각각 독립적으로 제공한다.**
+- [x] **Step 3: fresh agent에 다음 여섯 pressure scenario를 각각 독립적으로 제공한다.**
 
 각 scenario에는 `using-forge`, 선택 후보 skill, 관련 spec AC를 제공하되 기대 답을 알려주지 않는다.
 
@@ -1013,7 +1013,7 @@ git diff --check
 
 FAIL이면 agent의 우회 문장을 그대로 기록하고 governing skill의 Red Flags를 보강한 뒤 해당 scenario를 새 session에서 다시 실행한다.
 
-- [ ] **Step 4: app scenario 결과로 임시 interactive fixture를 만들고 browser에서 상태 geometry를 검증한다.**
+- [x] **Step 4: app scenario 결과로 임시 interactive fixture를 만들고 browser에서 상태 geometry를 검증한다.**
 
 fresh agent에게 `web-app-design`을 적용해 `.forge/scratch/ui-design-skill-fixtures/app.html`을 만들도록 요청한다. fixture는 다음 안정된 selector를 포함해야 한다.
 
@@ -1050,7 +1050,7 @@ const action = document.querySelector('[data-role="action-slot"]');
 
 Auto와 Manual의 `rowHeight`, `coreWidth`, `actionWidth` 차이가 각각 1px 이내이고, 열린 help의 secondary size·weight가 primary를 넘지 않으며, control hit area가 최소 44×44px이고 keyboard focus가 보여야 PASS다.
 
-- [ ] **Step 5: website scenario 결과로 임시 public-page fixture를 만들고 desktop·mobile browser 검증을 수행한다.**
+- [x] **Step 5: website scenario 결과로 임시 public-page fixture를 만들고 desktop·mobile browser 검증을 수행한다.**
 
 fresh agent에게 `website-design`을 적용해 `.forge/scratch/ui-design-skill-fixtures/website.html`을 만들도록 요청한다. desktop working width와 390px에서 다음을 확인한다.
 
@@ -1063,13 +1063,13 @@ fresh agent에게 `website-design`을 적용해 `.forge/scratch/ui-design-skill-
 
 결과와 screenshot이 아니라 측정값·accessibility snapshot의 관찰 내용을 scratch pressure-test 기록에 남긴다.
 
-- [ ] **Step 6: mixed-surface ownership과 Viewer 예외를 adversarial self-read한다.**
+- [x] **Step 6: mixed-surface ownership과 Viewer 예외를 adversarial self-read한다.**
 
 `public landing page와 authenticated dashboard가 같은 repository에 있고 한 Task가 둘 다 수정한다`는 조건에서 file ownership이 두 그룹으로 나뉘는지 확인한다. 이어 `고정 Viewer 생성`과 `Viewer tooling 변경`을 같은 요청에 넣어 전자에 UI skill이 적용되지 않고 후자만 `web-app-design`을 사용하는지 확인한다.
 
 예상: 두 surface의 검증 기준이 섞이지 않고, deprecated `ui-design`은 어느 실행 절차도 소유하지 않는다.
 
-- [ ] **Step 7: release authorization이 없으면 local handoff를 기록하고 멈춘다.**
+- [x] **Step 7: release authorization이 없으면 local handoff를 기록하고 멈춘다.**
 
 보고할 내용:
 
@@ -1110,3 +1110,14 @@ git diff --check
 
 - 2026-07-31 Plan created: approved Spec 006의 compatibility release 범위와 Spec 002의 Viewer routing delta를 6개 Route로 분해했다. R10, R13, AC9, AC12의 source·machine 삭제는 후속 approved change로 명시적으로 제외했다.
 - 2026-07-31 Task 1 routed: impact `low`, uncertainty `low`, context coupling `low`, verification clarity `strong`, tier `fast`, mode `root`, parallel group `none` — 후속 구현의 정적 계약을 먼저 고정하는 기계적 작업이다.
+- 2026-07-31 Task 1: complete (commit `d43c109`; verification="contract test가 missing web-app-design으로 예상대로 RED, repository validator PASS").
+- 2026-07-31 Task 2 routed: impact `medium`, uncertainty `low`, context coupling `low`, verification clarity `strong`, tier `balanced`, mode `parallel`, parallel group `active-ui-skills` — `web-app-design` 단일 파일과 독립 static contract를 소유한다.
+- 2026-07-31 Task 3 routed: impact `medium`, uncertainty `low`, context coupling `low`, verification clarity `strong`, tier `balanced`, mode `parallel`, parallel group `active-ui-skills` — `website-design` 단일 파일과 독립 static contract를 소유한다.
+- 2026-07-31 Task 2: complete (commit `e358744`; verification="app-specific contract, portability validator, root diff review PASS").
+- 2026-07-31 Task 3: complete (commit `a999b32`; verification="website-specific contract, portability validator, root diff review PASS").
+- 2026-07-31 Task 4 routed: impact `high`, uncertainty `low`, context coupling `high`, verification clarity `strong`, tier `frontier`, mode `root`, parallel group `none` — canonical router, legacy shim, Viewer 예외와 manager-owned adapter state를 원자적으로 맞춘다.
+- 2026-07-31 Task 4: complete (commit `b685502`; verification="routing grep, legacy process contract, manager parity, repository validator PASS"). Plan의 legacy Red Flags 4행 결함은 regression RED를 추가한 뒤 5행과 checklist 문장으로 보완했다.
+- 2026-07-31 Task 5 routed: impact `medium`, uncertainty `low`, context coupling `medium`, verification clarity `strong`, tier `balanced`, mode `root`, parallel group `none` — README, 두 manifest, artifact contract와 CI가 같은 catalog를 원자적으로 노출해야 한다.
+- 2026-07-31 Task 5: complete (commit `a7b285a`; verification="routing contract, artifact contract, maintainer layout, validator, diff check PASS"). 기존 artifact contract의 13-skill assertion은 새 14 active + 1 compatibility catalog로 동기화했다.
+- 2026-07-31 Task 6 routed: impact `high`, uncertainty `medium`, context coupling `high`, verification clarity `partial`, tier `frontier`, mode `root`, parallel group `none` — final behavior, rendered fixtures와 release authority 판정은 root가 종합하고 fresh agents는 독립 pressure evidence만 수집한다.
+- 2026-07-31 Task 6 local verification: PASS — static suite와 six-scenario Codex pressure test를 통과했다. Claude Code는 expired OAuth, Gemini/Antigravity는 `UNSUPPORTED_CLIENT`로 live discovery가 불가능해 static fallback을 기록했다. Browser fixture는 app geometry·hierarchy와 website desktop·390px·reduced-motion을 측정했고, 첫 mobile CTA 실패를 수정한 뒤 재검증했다. Step 8 release gate는 승인되지 않아 실행하지 않았다.
