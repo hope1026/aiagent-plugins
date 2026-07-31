@@ -2,7 +2,7 @@
 
 > 이 계획은 forge executing-plans skill로 Task를 순서대로 실행하고, 내부 검증 checkpoint를 연속 통과한 뒤 release 승인 경계에서만 대기한다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - `docs/specs/007-ui-design-removal/spec.md`: R1–R8 · AC1–AC7
@@ -578,7 +578,7 @@ pending authority: commit, push, Claude Marketplace/plugin update
 
 예상: 사용자의 명시적 release 승인 전에는 `git commit`, `git push`, `claude plugin marketplace update`, `claude plugin update`를 실행하지 않는다.
 
-- [ ] **Step 6: release 승인 후 변경을 commit하고 push한다.**
+- [x] **Step 6: release 승인 후 변경을 commit하고 push한다.**
 
 실행:
 
@@ -603,7 +603,7 @@ git push origin main
 
 예상: focused commit 하나가 생성되고 `origin/main` push가 성공한다.
 
-- [ ] **Step 7: release 승인 후 Claude Marketplace와 active plugin을 공식 명령으로 갱신한다.**
+- [x] **Step 7: release 승인 후 Claude Marketplace와 active plugin을 공식 명령으로 갱신한다.**
 
 실행:
 
@@ -615,7 +615,7 @@ claude plugin list
 
 예상: `forge@hope1026` active version이 `0.1.5`다. 인증 또는 외부 오류가 발생하면 error와 현재 active version을 기록하고 `~/.claude/plugins/cache/hope1026/forge/`를 직접 수정하지 않는다.
 
-- [ ] **Step 8: GitHub Actions와 원격 version을 확인한다.**
+- [x] **Step 8: GitHub Actions와 원격 version을 확인한다.**
 
 실행:
 
@@ -643,3 +643,4 @@ git show origin/main:plugins/forge/.codex-plugin/plugin.json | jq -r '.version'
 - 2026-07-31 Task 5: checkpoint (commits none—release gate; verification="repository suite PASS, version 0.1.5 gate PASS, Codex live 7-scenario routing PASS, Claude Marketplace update는 release 이후 pending")
 - 2026-07-31 Task 5: approval checkpoint (resume at Step 6; verification="17 extension unit tests와 모든 repository shell·Viewer·validator test PASS, 실제 Codex·Claude dev install 0.1.5 확인, git diff --check PASS"; pending authority="commit, origin/main push, Claude Marketplace/plugin update")
 - 2026-07-31 Task 5: release approved (사용자가 commit, origin/main push, Claude Marketplace/plugin update 진행을 승인)
+- 2026-07-31 Task 5: complete (commit `8cf0fbb`; verification="origin/main push, Claude Marketplace forge 0.1.5 update, managed cache 신규 두 skill만 존재, GitHub Actions run 30597214271 success, Spec 007 AC1–AC7 PASS")

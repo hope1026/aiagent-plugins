@@ -1,6 +1,6 @@
 # Forge `ui-design` 최종 제거와 설치 갱신
 
-Status: approved
+Status: implemented
 
 ## Overview
 
@@ -91,3 +91,4 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - 2026-07-31 [DECISION] Codex의 확인된 stale 독립 복사본은 복구 가능한 위치로 이동하고, Claude Marketplace cache는 plugin manager 소유권을 존중해 공식 update 명령으로만 갱신한다.
 - 2026-07-31 [DECISION] 과거 spec과 완료된 plan의 `ui-design` 기록은 migration 근거이므로 보존한다.
 - 2026-07-31 [APPROVED] 사용자가 `ui-design` source 제거, Codex·Claude 개발 설치 갱신, 공식 Marketplace update 경계와 회귀 검증 계약을 승인했다.
+- 2026-07-31 [IMPLEMENTED] Forge 0.1.5에서 `ui-design` source와 활성 참조를 제거하고 Codex·Claude 개발 설치와 Claude Marketplace plugin을 신규 두 skill로 갱신했다. 모든 AC와 GitHub Actions validate run 30597214271이 PASS했다.
