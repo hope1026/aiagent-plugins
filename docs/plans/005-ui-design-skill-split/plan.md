@@ -2,7 +2,7 @@
 
 > 이 계획은 forge executing-plans skill로 Task를 순서대로 실행하고, 각 검증 checkpoint를 통과한 뒤 다음 단계로 진행한다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - `docs/specs/006-ui-design-skill-split/spec.md`: R1–R9, R11–R12 · AC1–AC8, AC10–AC11
@@ -1083,7 +1083,7 @@ Machine ui-design copy deletion: not performed
 
 예상: plugin version과 원격 repository는 바뀌지 않는다.
 
-- [ ] **Step 8: 사용자가 별도로 release를 승인한 경우에만 Version Gate Before Push를 실행한다.**
+- [x] **Step 8: 사용자가 별도로 release를 승인한 경우에만 Version Gate Before Push를 실행한다.**
 
 실행 순서:
 
@@ -1121,3 +1121,4 @@ git diff --check
 - 2026-07-31 Task 5: complete (commit `a7b285a`; verification="routing contract, artifact contract, maintainer layout, validator, diff check PASS"). 기존 artifact contract의 13-skill assertion은 새 14 active + 1 compatibility catalog로 동기화했다.
 - 2026-07-31 Task 6 routed: impact `high`, uncertainty `medium`, context coupling `high`, verification clarity `partial`, tier `frontier`, mode `root`, parallel group `none` — final behavior, rendered fixtures와 release authority 판정은 root가 종합하고 fresh agents는 독립 pressure evidence만 수집한다.
 - 2026-07-31 Task 6 local verification: PASS — static suite와 six-scenario Codex pressure test를 통과했다. Claude Code는 expired OAuth, Gemini/Antigravity는 `UNSUPPORTED_CLIENT`로 live discovery가 불가능해 static fallback을 기록했다. Browser fixture는 app geometry·hierarchy와 website desktop·390px·reduced-motion을 측정했고, 첫 mobile CTA 실패를 수정한 뒤 재검증했다. Step 8 release gate는 승인되지 않아 실행하지 않았다.
+- 2026-07-31 Task 6: complete (commit `17c6f2a`; verification="Claude 0.1.4, Codex 0.1.4+codex.20260731011233 version gate와 full release suite PASS"). 사용자의 후속 승인으로 `54ffac5..17c6f2a`를 `origin/main`에 push했다. Spec 006 R10/R13·AC9/AC12의 후속 source·machine 삭제는 이 Plan의 완료 범위에 포함하지 않는다.
