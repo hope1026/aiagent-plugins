@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>{{TITLE}}</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231f5fbf'/%3E%3Cpath d='M18 16h28v6H24v9h18v6H24v11h22v6H18z' fill='white'/%3E%3C/svg%3E">
+<style>
+:root{--page:#f7f4ee;--surface:#fffdf8;--ink:#25282c;--muted:#687078;--line:#d8d2c7;--accent:#1f5fbf;--accent-soft:#e7eefb;font-size:16px}*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6}a{color:var(--accent);text-underline-offset:.16em}a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.shell{width:min(100% - 32px,76rem);margin-inline:auto}.site-header{padding:40px 0 28px;border-bottom:1px solid var(--line);background:var(--surface)}.eyebrow,.catalog-id{margin:0;color:var(--muted);font:600 .78rem/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase}.site-header h1{margin:6px 0 8px;font-size:clamp(2rem,4vw,3.4rem);line-height:1.08;letter-spacing:-.035em}.site-header p:last-child{max-width:76ch}.filters{display:grid;grid-template-columns:minmax(14rem,2fr) repeat(4,minmax(8rem,1fr));gap:12px;padding-block:20px;border-bottom:1px solid var(--line)}.filters label{display:grid;gap:4px;color:var(--muted);font-size:.8rem;font-weight:650}.filters input,.filters select{min-height:42px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:3px;background:var(--surface);color:var(--ink);font:inherit}.catalog{padding-block:24px 72px}.catalog-entry{display:grid;grid-template-columns:minmax(0,1fr) minmax(14rem,.45fr);gap:8px 24px;padding:24px 0;border-bottom:1px solid var(--line)}.catalog-entry h2{margin:2px 0;font-size:1.35rem;line-height:1.25}.catalog-state,.catalog-relations,.catalog-links{margin:4px 0}.catalog-tags{grid-column:1}.catalog-relations{grid-column:1}.catalog-links{grid-column:2;grid-row:1/5;align-self:center;display:flex;gap:16px;justify-content:flex-end}.tag,.status{display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:.82rem}.status{border-color:var(--accent);color:var(--accent);font-weight:700}.catalog-relations span,.empty-value{color:var(--muted)}@media(max-width:60rem){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.filters label:first-child{grid-column:1/-1}}@media(max-width:38rem){.shell{width:min(100% - 24px,76rem)}.filters{grid-template-columns:1fr}.filters label:first-child{grid-column:auto}.catalog-entry{grid-template-columns:1fr}.catalog-links{grid-column:1;grid-row:auto;justify-content:flex-start;flex-wrap:wrap}}
+</style>
+</head>
+<body data-forge-spec-catalog="forge/spec-catalog@1">
+<header class="site-header"><div class="shell"><p class="eyebrow">Forge Spec Catalog · read-only</p><h1>{{TITLE}}</h1><p>{{INTRO}}</p></div></header>
+<form class="shell filters" aria-label="Spec filters">
+  <label>{{SEARCH_LABEL}}<input type="search" name="query" autocomplete="off"></label>
+  <label>{{STATUS_LABEL}}<select name="status">{{STATUS_OPTIONS}}</select></label>
+  <label>{{KIND_LABEL}}<select name="kind">{{KIND_OPTIONS}}</select></label>
+  <label>{{AREA_LABEL}}<select name="area">{{AREA_OPTIONS}}</select></label>
+  <label>{{COMPONENT_LABEL}}<select name="component">{{COMPONENT_OPTIONS}}</select></label>
+</form>
+<main class="shell catalog">{{ENTRIES}}</main>
+<script type="application/json" id="forge-spec-manifest">{{MANIFEST}}</script>
+</body>
+</html>
