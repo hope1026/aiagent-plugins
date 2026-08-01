@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import json
 import os
 from pathlib import Path
@@ -159,7 +160,9 @@ class SpecRenderTest(unittest.TestCase):
         self.assertTrue(catalog.endswith("\n"))
         self.assertFalse(catalog.endswith("\n\n"))
         self.assertNotIn("\r", catalog)
-        self.assertNotIn("{{", page)
+        unresolved_token = r"\{\{[A-Z][A-Z0-9_]*\}\}"
+        self.assertNotRegex(page, unresolved_token)
+        self.assertNotRegex(catalog, unresolved_token)
         self.assertIn('data-forge-spec-page="forge/spec-page@1"', page)
         self.assertIn('id="forge-spec-manifest"', page)
         self.assertIn('href="spec.md"', page)
@@ -200,6 +203,28 @@ class SpecRenderTest(unittest.TestCase):
             self.assertNotIn(forbidden, page)
             self.assertNotIn(forbidden, catalog)
         self.assertIsNone(re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}", page))
+
+    def test_catalog_metadata_values_with_spaces_are_json_encoded_losslessly(self) -> None:
+        outputs = expected_outputs(self.repo_root, self._documents())
+        catalog = outputs[self.spec_root / "index.html"].decode("utf-8")
+        expected_components = [
+            "parser",
+            "developer tools",
+            "deterministic-renderer-with-an-intentionally-long-component-label",
+        ]
+        encoded = (
+            '[&quot;parser&quot;,&quot;developer tools&quot;,'
+            '&quot;deterministic-renderer-with-an-intentionally-long-component-label&quot;]'
+        )
+        entry = re.search(
+            r'<article class="catalog-entry" data-spec-id="002-related"[^>]*'
+            r'data-components="([^"]*)"',
+            catalog,
+        )
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.group(1), encoded)
+        self.assertEqual(json.loads(html.unescape(entry.group(1))), expected_components)
+        self.assertIn('<option value="developer tools">developer tools</option>', catalog)
 
     def test_two_builds_are_byte_stable_and_check_is_read_only(self) -> None:
         first = self._build()
@@ -357,6 +382,38 @@ class SpecRenderTest(unittest.TestCase):
                     self.assertTrue(
                         all(path.stat().st_mtime_ns != 1_000_000_000 for path in outputs)
                     )
+                self._build()
+
+    def test_runtime_and_mermaid_asset_drift_are_stale_and_expand_changed_build(self) -> None:
+        cases = (
+            (
+                "RUNTIME_PATH",
+                TEST_DIR.parent / "assets/spec-pages-runtime.mjs",
+            ),
+            (
+                "MERMAID_PATH",
+                TEST_DIR.parent / "assets/mermaid.min.js",
+            ),
+        )
+        for constant, source_asset in cases:
+            with self.subTest(asset=source_asset.name):
+                outputs = self._build()
+                replacement = self.repo_root / source_asset.name
+                original = source_asset.read_bytes()
+                replacement.write_bytes(
+                    (b"'" if original[:1] != b"'" else b'"') + original[1:]
+                )
+                with patch.object(spec_render, constant, replacement, create=True):
+                    self.assertIn("SPEC_PAGE_STALE", self._codes())
+                    built = build_pages(
+                        self.repo_root,
+                        Path("docs/specs"),
+                        changed=Path("docs/specs/001-basic/spec.md"),
+                        offline=True,
+                    )
+                    self.assertEqual(set(built), set(outputs))
+                    self.assertEqual(self._codes(), set())
+                self.assertIn("SPEC_PAGE_STALE", self._codes())
                 self._build()
 
     def test_render_failure_computes_all_bytes_before_any_write(self) -> None:

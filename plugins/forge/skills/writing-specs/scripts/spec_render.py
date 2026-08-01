@@ -21,6 +21,8 @@ GENERATOR_VERSION = "forge-spec-pages/1"
 ASSET_ROOT = Path(__file__).resolve().parent.parent / "assets"
 PAGE_TEMPLATE_PATH = ASSET_ROOT / "spec-page-template.html"
 CATALOG_TEMPLATE_PATH = ASSET_ROOT / "spec-catalog-template.html"
+RUNTIME_PATH = ASSET_ROOT / "spec-pages-runtime.mjs"
+MERMAID_PATH = ASSET_ROOT / "mermaid.min.js"
 _PLACEHOLDER_RE = re.compile(r"\{\{([A-Z][A-Z0-9_]*)\}\}")
 _MANIFEST_RE = re.compile(
     rb'<script type="application/json" id="forge-spec-manifest">(.*?)</script>',
@@ -66,6 +68,10 @@ def _json_for_html(value: object) -> str:
     )
 
 
+def _json_attribute(values: Sequence[str]) -> str:
+    return html.escape(_json_for_html(list(values)), quote=True)
+
+
 def _fill_template(template: str, values: Mapping[str, str]) -> str:
     placeholders = set(_PLACEHOLDER_RE.findall(template))
     missing = sorted(placeholders - set(values))
@@ -97,11 +103,18 @@ def _framed_hash(items: Sequence[tuple[str, bytes]]) -> str:
     return digest.hexdigest()
 
 
-def _asset_fingerprint(page_bytes: bytes, catalog_bytes: bytes) -> str:
+def _asset_fingerprint(
+    page_bytes: bytes,
+    catalog_bytes: bytes,
+    runtime_bytes: bytes,
+    mermaid_bytes: bytes,
+) -> str:
     return _framed_hash(
         (
             (PAGE_TEMPLATE_PATH.name, page_bytes),
             (CATALOG_TEMPLATE_PATH.name, catalog_bytes),
+            (RUNTIME_PATH.name, runtime_bytes),
+            (MERMAID_PATH.name, mermaid_bytes),
         )
     )
 
@@ -218,7 +231,13 @@ def render_spec_page(
     document: SpecDocument,
     template: str,
     asset_fingerprint: str,
+    runtime: str | None = None,
+    mermaid: str | None = None,
 ) -> bytes:
+    if runtime is None:
+        runtime, _ = _read_template(RUNTIME_PATH)
+    if mermaid is None:
+        mermaid, _ = _read_template(MERMAID_PATH)
     labels = _labels(document.metadata.language)
     manifest = PageManifest(
         schema="forge/spec-page@1",
@@ -261,6 +280,8 @@ def render_spec_page(
                 "ACCEPTANCE": _acceptance(document),
                 "HISTORY_LABEL": labels["history"],
                 "HISTORY": render_markdown(document.sections["Decisions & History"]),
+                "MERMAID_RUNTIME": mermaid,
+                "SPEC_PAGES_RUNTIME": runtime,
             },
         )
     )
@@ -289,6 +310,7 @@ def _render_catalog(
     template: str,
     asset_fingerprint: str,
     spec_root: Path,
+    runtime: str,
 ) -> bytes:
     locale = "ko" if any(document.metadata.language == "ko" for document in documents) else "en"
     labels = _labels(locale)
@@ -313,9 +335,9 @@ def _render_catalog(
             f'data-spec-id="{html.escape(metadata.id, quote=True)}" '
             f'data-status="{html.escape(metadata.status, quote=True)}" '
             f'data-kind="{html.escape(metadata.kind, quote=True)}" '
-            f'data-areas="{html.escape(" ".join(metadata.areas), quote=True)}" '
-            f'data-components="{html.escape(" ".join(metadata.components), quote=True)}" '
-            f'data-related="{html.escape(" ".join(item.id for item in metadata.related_specs), quote=True)}">'
+            f'data-areas="{_json_attribute(metadata.areas)}" '
+            f'data-components="{_json_attribute(metadata.components)}" '
+            f'data-related="{_json_attribute(tuple(item.id for item in metadata.related_specs))}">'
             f'<p class="catalog-id">{html.escape(metadata.id)}</p>'
             f'<h2><a href="{html.escape(metadata.id, quote=True)}/index.html">{html.escape(document.title)}</a></h2>'
             f'<p class="catalog-state"><span class="status status-{html.escape(metadata.status)}">{html.escape(metadata.status)}</span> '
@@ -346,6 +368,7 @@ def _render_catalog(
             [value for item in documents for value in item.metadata.components], labels["all"]
         ),
         "ENTRIES": "\n".join(entries),
+        "SPEC_PAGES_RUNTIME": runtime,
     }
     return _finish_bytes(_fill_template(template, values))
 
@@ -370,7 +393,14 @@ def expected_outputs(
 
     page_template, page_bytes = _read_template(PAGE_TEMPLATE_PATH)
     catalog_template, catalog_bytes = _read_template(CATALOG_TEMPLATE_PATH)
-    fingerprint = _asset_fingerprint(page_bytes, catalog_bytes)
+    runtime, runtime_bytes = _read_template(RUNTIME_PATH)
+    mermaid, mermaid_bytes = _read_template(MERMAID_PATH)
+    fingerprint = _asset_fingerprint(
+        page_bytes,
+        catalog_bytes,
+        runtime_bytes,
+        mermaid_bytes,
+    )
     outputs: dict[Path, bytes] = {}
     for document in ordered_documents:
         output = (repository / document.path.parent / "index.html").resolve()
@@ -378,13 +408,20 @@ def expected_outputs(
             output.relative_to(repository)
         except ValueError as error:
             raise RenderFailure("A generated page path escaped the repository root.") from error
-        outputs[output] = render_spec_page(document, page_template, fingerprint)
+        outputs[output] = render_spec_page(
+            document,
+            page_template,
+            fingerprint,
+            runtime,
+            mermaid,
+        )
     catalog_path = resolved_spec_root / "index.html"
     outputs[catalog_path] = _render_catalog(
         ordered_documents,
         catalog_template,
         fingerprint,
         spec_root,
+        runtime,
     )
     return {path: outputs[path] for path in sorted(outputs)}
 
