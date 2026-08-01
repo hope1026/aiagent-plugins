@@ -1305,7 +1305,7 @@ Baseline은 declaration whole-file SHA-256를 고정하므로 action, adapter ma
 
 예상: invalid fixture에서는 exit 1이며 root의 `git status --short`와 `git ls-files -s` fingerprint가 Step 1 결과와 동일하다. valid overlay만 build/check까지 PASS하고 성공 전에는 tracked source를 교체하지 않는다.
 
-- [ ] **Step 4: validated source부터 commit 직전까지를 하나의 rollback coordinator로 정의한다.**
+- [x] **Step 4: validated source부터 commit 직전까지를 하나의 rollback coordinator로 정의한다.**
 
 `.forge/viewer-build/forge-spec-cutover/run_cutover.sh`는 `set -eEuo pipefail`로 시작하고 exact `START_HEAD`를 기록한다. Apply 호출 전에 restore 책임을 arm하며 `EXIT`, `INT`, `TERM` trap은 shell boolean만 신뢰하지 않고 `git rev-parse HEAD`를 다시 읽는다. Current HEAD가 `START_HEAD`와 같으면 `python3 apply_cutover.py --restore --report ... --repo-root . --restore-index`를 idempotent하게 호출하고 baseline의 full target working-tree/index fingerprint가 정확히 복원됐는지 재검증한다. Current HEAD가 다르면 새 HEAD의 parent가 exact `START_HEAD`이고 commit tree의 changed path/action이 report와 정확히 같은 dedicated cutover commit인지 검증하며, 맞으면 commit 직후 signal로 판정해 pre-cutover bytes를 복원하지 않는다. 그 외 HEAD 변화는 자동 수정하지 않고 hard failure로 보고한다. Coordinator test는 apply 직후, validation failure, post-stage failure, commit 성공 직후 signal을 각각 주입해 HEAD-aware rollback 경로를 먼저 증명한다.
 
@@ -1317,13 +1317,13 @@ Coordinator의 첫 production command는 Overlay validation 뒤 `python3 .forge/
 
 8개 source, generated page, lifecycle skill, old `spec-viewer` 삭제, CI path, research·debug 문서의 old-delete/new-add와 active instruction link rewrite가 한 working-tree cutover를 이룬다. `006` R8, `007` Data & Interfaces의 Viewer routing row와 `007` AC2의 normative `spec-viewer` 표기는 `review-viewer`로 바꾸고 Decisions & History의 과거 명칭은 보존한다. Tracked `.forge/plans/` 5개는 corresponding numbered spec 또는 research design 문서에 permanent decision이 존재함을 migration report에 기록한 뒤 제거한다. Untracked `.forge/viewer/`·`.forge/scratch/`와 `docs/specs/005-portable-skill-creation/` empty directory는 transaction 밖 사용자/local inventory로 그대로 두며 이동·삭제·stage하지 않는다.
 
-- [ ] **Step 5: coordinator 안에서 전체 Spec Pages build와 strict check를 실행한다.**
+- [x] **Step 5: coordinator 안에서 전체 Spec Pages build와 strict check를 실행한다.**
 
 Coordinator command: `bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh validate --root docs/specs && bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh build --root docs/specs --offline && bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh check --root docs/specs && bash scripts/tests/test-forge-artifact-contract.sh`
 
 예상: exit 0, per-spec page 8개와 catalog 1개가 생성되고 source hash가 일치한다. 하나라도 실패하면 Step 4 trap이 working tree와 index를 pre-cutover 상태로 복원한다.
 
-- [ ] **Step 6: coordinator 안에서 legacy·orphan·temporary artifact zero gate를 실행한다.**
+- [x] **Step 6: coordinator 안에서 legacy·orphan·temporary artifact zero gate를 실행한다.**
 
 Coordinator command: `test "$(rg -l '^Status:' docs/specs/*/spec.md | wc -l | tr -d ' ')" -eq 0 && test "$(find docs -type f -name view.html | wc -l | tr -d ' ')" -eq 0 && test ! -e .forge/debug/2026-07-12-codex-hooks-manifest.md && test ! -e .forge/debug/2026-07-12-offline-mermaid-template-token.md && test ! -e .forge/plans/001-forge-plugin.md && test ! -e .forge/plans/001-tone-overlays.md && test ! -e .forge/plans/002-lifecycle-review-viewer.md && test ! -e .forge/plans/003-repository-maintenance-runbook.md && test ! -e .forge/plans/004-adaptive-execution-routing.md && test "$(rg -l 'spec-viewer|build-viewer\.sh' plugins/forge/skills README.md scripts/validate.sh .github --glob '!**/tests/**' | wc -l | tr -d ' ')" -eq 0 && bash scripts/tests/test-forge-artifact-contract.sh && git check-ignore .forge/reviews/probe/view.html`
 
@@ -1331,13 +1331,13 @@ Coordinator command: `python3 .forge/viewer-build/forge-spec-cutover/build_repor
 
 예상: active scope count가 0이고 Decisions & History의 historical term만 explicit allowlist에 남으며 `weppy-roblox-mcp-private`의 tracked/untracked fingerprint는 변경 전과 같다. Sibling before/after JSON은 exact `headOid`, `headRef`, `indexSha256`, `indexFlagsSha256`, `paths`, `schema` field contract을 공유하고 index entry bytes와 assume-unchanged/skip-worktree flags를 모두 비교한다. Historical allowlist는 spec parser가 `Decisions & History` section으로 판별하고 root `rg` zero gate의 대상에는 포함하지 않는다. 실패하면 coordinator가 cutover를 복구한다.
 
-- [ ] **Step 7: coordinator 안에서 두 번째 build가 diff 0인지 확인한다.**
+- [x] **Step 7: coordinator 안에서 두 번째 build가 diff 0인지 확인한다.**
 
 Coordinator command: `SPEC_PAGE_SNAPSHOT="$(mktemp -d)" && test -n "$SPEC_PAGE_SNAPSHOT" && cp -R docs/specs "$SPEC_PAGE_SNAPSHOT/specs" && bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh build --root docs/specs --offline && diff -ru "$SPEC_PAGE_SNAPSHOT/specs" docs/specs && rm -rf -- "$SPEC_PAGE_SNAPSHOT"`
 
 예상: 두 번째 build 후 generated page diff가 0이다. Temp cleanup도 coordinator trap과 별도 cleanup function으로 보장한다.
 
-- [ ] **Step 8: coordinator가 exact stage·post-stage gate·commit을 실행한다.**
+- [x] **Step 8: coordinator가 exact stage·post-stage gate·commit을 실행한다.**
 
 Coordinator의 마지막 command sequence는 stage 직전 모든 cutover target의 root working-tree exists/type/mode/SHA-256/symlink target을 report overlay state와 exact 비교한다. `emit_pathspec.py`는 report actual-diff `cutoverPaths[]`만 NUL sorted file로 만들고 `git add --pathspec-from-file=... --pathspec-file-nul`로 그 path만 stage한다. Migration map union과 `adapterWrites[]` 전용 byte-identical wrapper는 emit하지 않는다. `verify_index.py`는 staged path/action뿐 아니라 각 index blob bytes와 mode, delete absence를 report final state와 exact 비교한다. Post-stage legacy gate 뒤 commit은 `git -c core.hooksPath=/dev/null commit ...`으로 이미 검증한 index를 사용한다. Commit 직후 commit tree bytes/mode/symlink/delete와 index/worktree exact state를 다시 검증한다. Rogue pre-commit stage/target rewrite와 post-commit dirty fixture는 bad child HEAD와 dirty tree를 0으로 복구해야 한다.
 
@@ -1371,7 +1371,7 @@ Coordinator의 마지막 command sequence는 stage 직전 모든 cutover target�
 - 병렬 안전성: 마지막 단독 Task; complete outgoing diff와 upstream version을 함께 검사한다.
 - 승인 gate: push는 Marketplace release이므로 local evidence 후 사용자 승인 전 중단한다.
 
-- [ ] **Step 1: clean install과 CI path를 요구하는 failing test를 작성한다.**
+- [x] **Step 1: clean install과 CI path를 요구하는 failing test를 작성한다.**
 
 먼저 current root가 Task 8 dedicated commit을 가리키고 tracked working tree와 index가 clean인지 확인한다. Configured upstream ref를 current root에서 resolve해 ignored metadata에 기록한다. `FORGE_RELEASE_STAGE_ROOT="$(mktemp -d)"` 아래 아직 존재하지 않는 `worktree/` path에 `git worktree add --detach "$FORGE_RELEASE_STAGE_ROOT/worktree" HEAD`를 실행하고 두 exact path를 coordination metadata에 기록한다. Task 9의 모든 edit와 Step 1–7 command는 이 detached worktree 안에서만 수행한다.
 
@@ -1397,19 +1397,19 @@ test ! -e "$INSTALL_TARGET_ROOT/antigravity/agent-skills/spec-viewer"
 
 `--target-root`가 있는 `--agent all`은 Codex·Claude Code·Antigravity export 세 곳을 모두 isolated root 아래에 생성하고, option이 없는 기존 `all`은 기존 Codex·Claude 사용자 설치 동작을 유지한다. `--agent antigravity`는 `--target-root`가 없으면 usage exit 2로 거부해 이 plan이 사용자 홈의 외부 상태를 새로 만들지 않게 한다. 새 shell file은 implementation에서 `chmod +x`로 executable bit를 명시적으로 설정한다.
 
-- [ ] **Step 2: install test를 실행해 CI·new skill 경로 부재 실패를 확인한다.**
+- [x] **Step 2: install test를 실행해 CI·new skill 경로 부재 실패를 확인한다.**
 
 실행: `FORGE_RELEASE_WORKTREE="$(<.forge/viewer-build/forge-release/worktree-path.txt)" && cd "$FORGE_RELEASE_WORKTREE" && bash scripts/tests/test-forge-review-viewer-install.sh`
 
 예상: workflow 또는 renamed executable assertion이 아직 연결되지 않아 실패한다.
 
-- [ ] **Step 3: isolated installer destination contract, root validator와 GitHub Actions를 구현한다.**
+- [x] **Step 3: isolated installer destination contract, root validator와 GitHub Actions를 구현한다.**
 
 `scripts/install.sh`는 `--target-root <path>`를 parse하고 destination 생성 전 target의 absolute realpath를 확정한다. Symlink component나 `..`로 target 밖에 벗어나는 destination을 usage exit 2로 거부하고, 모든 planned write를 먼저 계산해 `codex/`, `claude/`, `antigravity/` exact child인지 확인한 뒤에만 copy한다. `--target-root`가 있는 `--agent all`은 세 export를 모두 생성하고 trace의 모든 destination을 출력한다. Option이 없을 때 기존 Codex·Claude 사용자 설치 동작은 그대로 유지하되, 이 Task의 test와 command는 그 경로를 호출하지 않는다. `--agent antigravity`는 target 없이 거부한다. Invalid relative escape, symlink escape, read-only target, partial-copy fault fixture는 target 밖 write 0개와 actionable exit를 검증한다.
 
 CI는 spec model/validator/renderer tests, Spec Pages runtime, Review Viewer source/renderer/freshness/build tests, root policy/install tests, `spec-docs check`, `scripts/validate.sh`를 모두 실행한다. Browser job은 package-lock과 같은 Playwright 1.55.0의 pinned `mcr.microsoft.com/playwright:v1.55.0-noble` container에서 두 harness를 실행해 clean runner에 browser binary·Linux dependency가 없는 문제를 제거한다. Root validator는 active structured spec과 generated page freshness를 검사한다.
 
-- [ ] **Step 4: fresh install matrix를 Codex·Claude Code·Antigravity 경로에서 실제 실행한다.**
+- [x] **Step 4: fresh install matrix를 Codex·Claude Code·Antigravity 경로에서 실제 실행한다.**
 
 실행: `FORGE_RELEASE_WORKTREE="$(<.forge/viewer-build/forge-release/worktree-path.txt)" && cd "$FORGE_RELEASE_WORKTREE" && bash scripts/tests/test-forge-review-viewer-install.sh`
 
@@ -1417,13 +1417,13 @@ CI는 spec model/validator/renderer tests, Spec Pages runtime, Review Viewer sou
 
 예상: isolated three destinations에서 commands/assets가 실제로 동작하고 `spec-viewer`가 설치되지 않는다. Installer trace의 모든 destination은 exact `INSTALL_TARGET_ROOT`로 시작하고 실제 `~/.agents`와 `~/.claude`에 write가 0개다.
 
-- [ ] **Step 5: complete outgoing skill diff에 manifest version gate를 적용한다.**
+- [x] **Step 5: complete outgoing skill diff에 manifest version gate를 적용한다.**
 
 Step 1에서 current root의 `git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}'`로 해결해 둔 configured upstream을 detached worktree에서 읽고 `git show "$UPSTREAM_REF:plugins/forge/.claude-plugin/plugin.json"`, `git show "$UPSTREAM_REF:plugins/forge/.codex-plugin/plugin.json"`의 base version과 current local base를 읽는다. SemVer parser가 최댓값의 patch를 1 증가시킨 값을 Claude base로 쓰고 Codex는 같은 base+fresh UTC suffix를 쓴다. Upstream이 없거나 version을 parse할 수 없으면 worktree 생성 전에 중단하고 임의 버전을 사용하지 않는다.
 
 계산된 두 manifest base는 같아야 하고 Codex suffix는 실행 시각의 `date -u +%Y%m%d%H%M%S`로 생성한다. 두 manifest description/default prompt의 `spec-viewer`를 `Review Viewer`와 Spec Pages 계약으로 바꾼다.
 
-- [ ] **Step 6: 전체 fresh verification을 실행한다.**
+- [x] **Step 6: 전체 fresh verification을 실행한다.**
 
 실행:
 
@@ -1455,13 +1455,13 @@ git diff --check
 
 예상: 모든 command exit 0, `validate: all checks passed`, current source와 generated page mismatch 0개다.
 
-- [ ] **Step 7: instruction pressure test와 AC evidence table을 기록한다.**
+- [x] **Step 7: instruction pressure test와 AC evidence table을 기록한다.**
 
 Fresh agent에게 detached worktree source를 제공하고 deadline+sunk-cost scenario에서 structured spec gate, status writer page transaction, explicit Review Viewer request, sibling migration exclusion, no post-build individual Viewer QA를 검사한다. `acceptance-evidence.md`의 고정 table schema에 `008` AC1–AC12와 `002` AC1–AC31 각각 fresh command/browser evidence row를 연결하고, 두 요구사항 set·Task header·AC Coverage table의 정적 traceability audit 결과를 서두에 기록한다. 실패한 AC가 있으면 implemented 전환을 금지한다.
 
 Step 1–7에서 migration 결함이 확인되면 먼저 detached worktree의 `git diff --binary`와 untracked inventory를 ignored root coordination directory에 failure evidence로 보존한다. Metadata의 stage root/worktree path가 exact realpath와 일치하고 OS temp 아래이며, worktree의 `.git` file이 current repository의 registered worktree를 가리키고 HEAD가 시작 Task 8 commit인지 검증한 뒤에만 `git worktree remove --force <exact-worktree-path>`로 이 disposable dirty worktree를 폐기한다. Expected marker가 하나라도 다르면 force removal과 revert를 중단한다. Empty exact `mktemp` parent를 `rmdir`하고 current root가 clean Task 8 state인지 확인한 뒤, Task 8의 dedicated cutover commit을 `git revert --no-edit <cutoverCommit>`로 전체 revert하고 중단한다. 일반 Task 9 tooling failure라면 root와 Task 8 commit은 그대로 두고 detached worktree에서 수정·재검증한다.
 
-- [ ] **Step 8: verified release commit만 current root에 적용하고 push approval gate에서 중단한다.**
+- [x] **Step 8: verified release commit만 current root에 적용하고 push approval gate에서 중단한다.**
 
 Detached worktree에서 exact allowlist만 stage하고 index path set을 검증한 뒤 `git commit -m "chore(forge): release structured spec experience"`로 release commit SHA를 만든다. Current root의 HEAD가 여전히 Task 8 commit이고 tracked tree/index가 clean인지 재확인한 뒤 exact release SHA를 `git cherry-pick <releaseCommit>`한다. Root에서 `bash scripts/validate.sh`, `spec-docs check`, `git diff --check`를 다시 실행한다. Cherry-pick 자체가 실패하면 `git cherry-pick --abort`로 Task 8 clean state를 복원한다. Cherry-pick 후 검증 실패가 Task 9 defect이면 release commit만 revert하고, migration defect이면 release commit을 먼저 revert해 Task 8 clean state로 만든 뒤 cutover commit도 revert한다.
 

@@ -13,8 +13,8 @@
 | 5 | subagent in parallel with Task 3 | `review-viewer` source model은 Spec Pages 파일과 write set이 분리되고 Task 2 parser를 read-only 소비함 | completed |
 | 6 | root or subagent after Tasks 3–5 | shared renderer, provenance, browser matrix를 함께 통합해야 함 | completed |
 | 7 | root | lifecycle source와 adapter contract가 넓게 결합되고 atomic overlay 준비가 필요함 | completed |
-| 8 | root | 기존 source 일괄 migration과 exact rollback coordinator를 소유하는 고위험 cutover임 | pending |
-| 9 | root | release version, clean install, evidence, push approval gate를 한 경계에서 판단해야 함 | pending |
+| 8 | root | 기존 source 일괄 migration과 exact rollback coordinator를 소유하는 고위험 cutover임 | completed |
+| 9 | root | release version, clean install, evidence, push approval gate를 한 경계에서 판단해야 함 | Steps 1–7 completed; Step 8 pending |
 
 ## Plan corrections
 
@@ -157,3 +157,33 @@
 - Replay: a fresh root copy excluding `.git/` and `.forge/` received the prior final report's exact 78 final path states with canonical-path, type, mode, content/symlink and exact-delete checks. The legacy Viewer subtree remained file/symlink-empty and its six empty directories were removed with exact bottom-up `rmdir`.
 - Frozen coordinator: `apply_cutover.py`, `emit_pathspec.py`, `verify_index.py`, `run_cutover.sh` and `test_cutover_transaction.py` were restored byte-identically and remain outside this correction's write ownership.
 - Review Viewer HTML generation: 0.
+
+### Task 9 Steps 1–7
+
+- Status: completed in detached release worktree; commit, cherry-pick, root verification and push approval gate remain coordinator-owned Step 8.
+- RED: the new isolated install test first failed because CI did not invoke it. Independent audit then reproduced three additional failures: the exact macOS `mktemp -d` `/var` path was rejected, a later promotion failure could lose an existing export and leave transaction residue, and `INT`/`TERM` during promotion deleted the backup without rollback.
+- GREEN: `test-forge-review-viewer-install.sh` passes the Codex, Claude Code and Antigravity matrix with identical inspect JSON, Spec Page and Review Viewer SHA-256 values. Relative and custom-symlink escapes, read-only targets, staged-copy faults, later-promotion faults and promotion signals fail closed; all existing export sentinels are restored and transaction residue is 0. Trap-visible transaction state makes unexpected EXIT and `INT`/`TERM` roll back before cleanup.
+- Compatibility: `--target-root` writes only canonical `codex/`, `claude/` and `antigravity/` children. Without the option, `all` retains existing Codex plus Claude behavior; targetless Antigravity exits with usage status 2.
+- CI: non-browser structured spec, Review Viewer, lifecycle, install and root validation run on Ubuntu; browser harnesses run in pinned `mcr.microsoft.com/playwright:v1.55.0-noble`.
+- Browser: Spec Pages desktop/mobile 6/6 and Review Viewer desktop/mobile 6/6 PASS. The pinned temporary Playwright dependency continues to report the known two test-only high audit findings and leaves repository artifacts 0.
+- Version: configured `refs/remotes/origin/main` and local base maximum `0.1.5` produced Claude `0.1.6` and Codex `0.1.6+codex.20260801164150`.
+- Evidence: stable cutover commit `749e2d4d5d993f7e74cba385a78491d3b9dd46e9` is recorded in the migration map. The acceptance table contains exactly 43 schema-valid rows: 008 AC1–AC12 and 002 AC1–AC31. Spec AC sets, AC Coverage rows and Task header traces match exactly.
+- Pressure: deadline and sunk cost did not bypass structured validation, the status plus Spec Pages transaction, explicit-only Review Viewer generation, sibling migration exclusion or the no-post-build-QA rule for individual Viewer output.
+- Independent review: final P0 0, P1 0. Separate `INT` and unexpected-exit promotion probes preserved all three prior exports, returned their original 130/73 statuses, left transaction residue 0 and emitted no unbound or unsafe-cleanup diagnostics.
+- Request-only Review Viewer HTML generated in the repository: 0. Install and browser proof outputs existed only in OS temporary fixtures and were removed.
+
+### Task 8 Steps 4–8
+
+- Status: completed.
+- Atomic cutover commit: `749e2d4d5d993f7e74cba385a78491d3b9dd46e9`.
+- Coordinator: transaction fixtures 32/32 and build-report fixtures 13/13 PASS before the successful run; final independent security audit P0 0, P1 0.
+- Recovery evidence: two pre-commit production attempts exposed ignored tracked-delete staging and Git rename normalization gaps; both attempts restored the full repository fingerprint, index, HEAD and ref exactly before their TDD fixes.
+- Final run: strict migration verifier, Spec Pages build/check, artifact zero gates, sibling fingerprint, deterministic second build, exact index/tree verification and hooks-disabled commit all PASS.
+- Post-commit: root validator, migration provenance, Spec Pages freshness, commit-tree state, sibling fingerprint and clean working tree/index PASS.
+
+### Task 9 Step 8
+
+- Status: completed at the push approval gate.
+- Release payload: exact ten-path allowlist, Claude `0.1.6`, Codex `0.1.6+codex.20260801164150`, migration cutover SHA and 43 AC evidence rows.
+- Independent review: installer/CI audit P0 0, P1 0 after macOS lexical target, promotion-fault and `INT`/`TERM` rollback regressions were closed.
+- Root handoff contract: only the verified detached release commit is applied to current root; root validation and Spec Pages freshness must pass before the local staging worktree is cleaned up. Push remains explicitly unperformed pending user approval.

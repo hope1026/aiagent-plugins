@@ -7,7 +7,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate structured specs, viewers, policies, and installs
+        run: |
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts \
+            python3 -m unittest discover \
+              -s plugins/forge/skills/writing-specs/tests -p 'test_*.py' -v
+          node plugins/forge/skills/writing-specs/tests/test_mermaid_validate.mjs
+          node plugins/forge/skills/writing-specs/tests/test_spec_pages_runtime.mjs
+          python3 plugins/forge/skills/review-viewer/tests/test_review_sources.py
+          python3 plugins/forge/skills/review-viewer/tests/test_review_renderer.py
+          node plugins/forge/skills/review-viewer/tests/test-viewer-freshness.mjs
+          bash plugins/forge/skills/review-viewer/tests/test-build-review-viewer.sh
           bash scripts/tests/test-maintaining-forge-layout.sh
           bash scripts/tests/test-validator-skill-roots.sh
           bash scripts/tests/test-forge-spec-docs-policy.sh
@@ -15,6 +31,21 @@ jobs:
           bash scripts/tests/test-forge-lifecycle-policy.sh
           bash scripts/tests/test-ui-design-skill-routing.sh
           bash scripts/tests/test-forge-ui-skill-install.sh
-          node plugins/forge/skills/review-viewer/tests/test-viewer-freshness.mjs
-          bash plugins/forge/skills/review-viewer/tests/test-build-review-viewer.sh
+          bash scripts/tests/test-forge-review-viewer-install.sh
+          bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
+            validate --root docs/specs --baseline-ref HEAD
+          bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
+            inspect --spec docs/specs/008-structured-spec-pages/spec.md --format json
+          bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
+            check --root docs/specs
           bash scripts/validate.sh
+
+  browser:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.55.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run pinned browser harnesses
+        run: |
+          bash plugins/forge/skills/writing-specs/tests/run-spec-pages-browser.sh
+          bash plugins/forge/skills/review-viewer/tests/run-review-viewer-browser.sh

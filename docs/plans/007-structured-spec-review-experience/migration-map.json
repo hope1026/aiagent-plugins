@@ -2,7 +2,7 @@
   "schema": "forge/spec-migration@1",
   "sourceRepository": "aiagent-plugins",
   "rollbackPoint": "7d807e1d452171b9d27c24a12b1130324270b497",
-  "cutoverCommit": null,
+  "cutoverCommit": "749e2d4d5d993f7e74cba385a78491d3b9dd46e9",
   "entries": [
     {
       "oldPath": "docs/specs/001-tone-overlays/spec.md",

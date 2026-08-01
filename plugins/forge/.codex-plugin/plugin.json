@@ -1,7 +1,7 @@
 {
   "name": "forge",
-  "version": "0.1.5+codex.20260731013439",
-  "description": "Spec-first development process skills with cross-agent authoring, verification, debugging, browser application design, public website design, tone overlays, and lifecycle review Viewers. Produces adapters for Codex, Claude Code, and Antigravity.",
+  "version": "0.1.6+codex.20260801164150",
+  "description": "Spec-first development skills with structured spec authoring, validation, maintained Spec Pages, request-only Review Viewer output, cross-agent authoring, verification, debugging, and interface design. Produces adapters for Codex, Claude Code, and Antigravity.",
   "author": {
     "name": "Onestar Lee"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Forge",
     "shortDescription": "Spec-first process skills for real projects.",
-    "longDescription": "Forge packages a complete spec-first workflow - brainstorm to spec, spec to plan, plan to verified implementation - plus one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design with stable state geometry, public website design with deliberate content composition, tone overlays, systematic debugging, TDD, and lifecycle HTML review Viewers. Specs, plans, and canonical agent extensions remain source of truth while generated adapters and views stay derived.",
+    "longDescription": "Forge packages a complete spec-first workflow - structured spec authoring and validation, maintained Spec Pages, planning, execution, and verified implementation - plus one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design, website design, tone overlays, systematic debugging, and TDD. Specs and plans remain source of truth; Spec Pages stay synchronized with spec changes, while Review Viewer HTML is generated only on explicit request.",
     "developerName": "Onestar Lee",
     "category": "Productivity",
     "capabilities": [
@@ -20,7 +20,8 @@
       "Create one skill and MCP bundle for Codex, Claude Code, and Antigravity.",
       "Use web-app-design to improve this dashboard settings workflow.",
       "Use website-design to create this public product landing page.",
-      "Render docs/specs/001 as an HTML viewer."
+      "Validate this structured spec and update its maintained Spec Page.",
+      "Create a Review Viewer for this spec only for this review request."
     ]
   }
 }
