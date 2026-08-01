@@ -38,11 +38,11 @@ The startup checklist and every plan task become todos — create one todo per i
 
 ### Phase 1: Startup
 
-1. **Read the plan** in `docs/plans/` end to end. Review it critically: unclear instructions, contradictions, missing preconditions, and invalid Related Specs. Raise concerns with the user BEFORE executing — not mid-task.
+1. **Read the plan** in `docs/plans/` end to end. For every canonical Related Specs entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json`. Require `schema` = `forge/spec@1`, `status` in `approved|implemented`, and empty `diagnostics`; historical execution may continue from either approved lifecycle state. Review unclear instructions, contradictions, and missing preconditions before execution.
 2. **Open progress state.** The default source is Task checkboxes plus `Progress History` in `plan.md`. When `progress.md` exists beside the plan, use it for detailed routing and checkpoint evidence. When `tasks/*.md` exists, confirm each Task ID appears once in the plan index and once in its owned Task file.
 3. **Skip completed work.** Tasks the plan-local progress state marks complete are DONE — do not redo them. Resume at the first task not marked complete. After any compaction or resume, trust plan-local progress and commit history over recollection.
 4. **Create one todo per remaining task.**
-5. **Ignore the review view during execution.** A `view.html` beside the plan is not an execution source and needs no hash, browser, or layout check. Do not create or update a Viewer without an explicit user request.
+5. **Ignore Review Viewer snapshots during execution.** `.forge/reviews/<review-id>/view.html` is not an execution source. Do not inspect, create, or update it without explicit user intent to create, refresh, or freshness-check a Review Viewer. Resolve source, mode, and review-id from current context during handoff.
 6. **Route the remaining Tasks.** Read `references/adaptive-routing.md`. For each Task, use `impact`, `uncertainty`, `context_coupling`, and `verification_clarity` to choose the capability tier and likely execution mode. Use plan dependency, Files, Interfaces, and verification to form only safe `parallel_group` values. Record the final route immediately before the Task starts so repository changes can invalidate an earlier estimate.
 
 ### Phase 2: Per-task loop
@@ -54,7 +54,7 @@ For each task, in plan order:
 3. Run the task's verification commands NOW and read the actual output. Expected output only counts when you saw it.
 4. Commit as the plan directs.
 5. Check the Task boxes and append one `Progress History` line: `Task N: complete (commits <a>..<b>)`. When `progress.md` exists, append detailed route evidence there and keep the summary in `plan.md`.
-6. If a plan Viewer exists and any plan source changed, it may be reported as stale. Do not inspect, validate, or rebuild it unless the user explicitly requests the current `plan` Viewer; after such a request, use the forge spec-viewer skill and stop when its build succeeds.
+6. If a Review Viewer exists and plan source changed, report possible staleness without assuming freshness. Only explicit create or refresh intent permits one `review-viewer` handoff; resolve its options and stop when the single build succeeds.
 7. Mark the todo complete and record an **internal checkpoint**: verification, checkbox, ledger, and planned local commit are the durable recovery point. Start the next safe Task without waiting for the user.
 8. Send a non-blocking **notify checkpoint** when a Route or Milestone completes, a `frontier` Task completes, or automatic tier escalation occurs. Summarize completed work, fresh evidence, tier and execution mode, and what continues next. Do not wait for a response before starting the next safe Task.
 
@@ -83,7 +83,7 @@ Do not dispatch one fresh subagent mechanically for every Task. Delegate only bo
 | `docs/plans/PPP-<slug>/progress.md` | Optional detailed route and checkpoint evidence | Yes |
 | `docs/plans/PPP-<slug>/tasks/*.md` | Optional independently owned Task details | Yes |
 | Related `docs/specs/NNN-<slug>/spec.md` files | Product source of truth, when present | Yes |
-| `docs/plans/PPP-<slug>/view.html` | Plan View created or updated only on explicit request | Yes |
+| `.forge/reviews/<review-id>/view.html` | Optional requested Review Viewer snapshot | No |
 
 ## Red Flags
 

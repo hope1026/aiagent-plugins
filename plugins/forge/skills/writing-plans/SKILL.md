@@ -31,10 +31,10 @@ EVERY RELATED ACCEPTANCE CRITERION MAPS TO A TASK.
 
 ## Precondition Gate
 
-Before drafting anything, classify the plan's `Related Specs` as 0 or more references:
+Before drafting anything, classify the plan's `Related Specs` as 0 or more canonical references:
 
 1. Decide whether the work changes documented or documentable product behavior.
-2. For behavior-changing work, locate every governing spec, confirm each `Status: approved`, and confirm zero `[NEEDS CLARIFICATION]` markers.
+2. For behavior-changing work, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json` for every governing spec. Require `schema` = `forge/spec@1`, `status` = `approved`, and an empty `diagnostics` array. Require canonical entry `id` == inspect `id`, a repository-contained relative `path`, no duplicate spec IDs, and every listed `requirements` and `acceptance` ID to exist in the inspect arrays. A new plan never accepts `implemented` as a substitute for new approval.
 3. For work with no related spec, record `None — <reason>` and confirm the work is on the Forge ceremony floor or is non-product operational or research work.
 
 If behavior-changing work has no approved spec, STOP. Do not sketch "a rough plan in the meantime." Use the forge writing-specs skill, then return here.
@@ -64,7 +64,9 @@ Create one todo per numbered step below and work through them in order.
 6. **Write each task** (template below) with bite-sized steps and full traceability.
 7. **Self-review** (section below), fixing issues inline.
 8. **Save** to `docs/plans/PPP-<slug>/plan.md`, where `PPP` is the next unused three-digit plan number independent of every spec number.
-9. **Offer the review view.** Markdown is the default review path. After the plan is saved and self-reviewed, notify the user when a Viewer would help and ask whether the user wants a `plan` Viewer. Build it only after an explicit user request for the current sources; an existing Viewer may be reported as stale but is not an update trigger. Viewer choice does not change execution approval gates.
+9. **Offer the review path.** Markdown is the default. Mention Review Viewer only when useful. Create it solely after an explicit user request to create or refresh a Review Viewer, then resolve source, mode, and review-id from current context and hand off once to `review-viewer`. An existing snapshot or plan edit never authorizes refresh.
+
+Keep the plan source compact by default. Create `progress.md` only for long history or multiple independent executors. Create `tasks/*.md` only when a large plan, independent ownership, parallel execution, and independent approval are all true; if any condition is false, keep Task detail in `plan.md`. Before deleting any completed plan, confirm permanent decisions were promoted to a governing spec, `docs/research/`, an ADR, or another durable document.
 
 ## Review Structure for Complex Plans
 
@@ -91,9 +93,13 @@ Do not flatten 22 Tasks into one graph. Group them into Routes first, then show 
 
 This is the forge addition on top of ordinary planning discipline:
 
-- **Every task governed by a spec cites the R-IDs and AC-IDs it implements**, e.g. `### Task 3: Login endpoint (R2, R4 · AC2)`.
+- **Every task governed by a spec uses a source-qualified clause even when one spec is related**, e.g. `### Task 3: Login endpoint (008 R2, R4, AC2)`.
+- Multiple spec clauses use ` ·`, for example `### Task 3: ... (008 R2, R4, AC2 · 002 R7, AC3)`. A unique three-digit spec prefix owns every clause and range; mixed-prefix or descending ranges are forbidden.
+- Canonical Related Specs contains exactly `id`, `path`, `requirements`, and `acceptance`. Its arrays list individual IDs only; range tokens are forbidden. Task headings may compact only ascending same-prefix ranges. Unknown or ambiguous prefixes, mixed-prefix ranges, and descending ranges are errors.
 - **Every referenced AC-ID appears in at least one task.** An AC no task covers means the plan is incomplete — add the task.
 - **The plan starts with a coverage table** so gaps are visible at a glance:
+
+Multi-spec AC Coverage is always source-qualified: use `008 AC1`, not bare `AC1`, so duplicate IDs remain unambiguous. A single-spec plan may keep the compact AC column only when its one Related Spec is explicit immediately above.
 
 ```markdown
 ## AC Coverage
@@ -120,9 +126,12 @@ Every plan MUST start with this header:
 Status: active
 
 **Related Specs:**
-- `docs/specs/NNN-<slug>/spec.md`: R1, R2 · AC1
+- id: NNN-<slug>
+  path: docs/specs/NNN-<slug>/spec.md
+  requirements: [R1, R2]
+  acceptance: [AC1]
 
-Use `None — <qualifying reason>` when the plan has no related spec.
+With no related spec, use the exact one-line form `**Related Specs:** None — <qualifying reason>` and omit the list.
 
 **<Localized Goal label>:** [one sentence in the plan language describing what this builds]
 
@@ -146,7 +155,7 @@ section.]
 ## Task Structure Template
 
 ````markdown
-### Task N: <Component name in the plan language> (R-IDs · AC-IDs)
+### Task N: <Component name in the plan language> (NNN R-IDs, AC-IDs)
 
 **<Localized Files label>:**
 - <Localized Create label>: `exact/path/to/file.py`
@@ -227,7 +236,9 @@ After writing the complete plan, reread the spec with fresh eyes and check the p
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 4. **Language consistency:** confirm all human-readable prose uses the governing spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim spec values remain intact.
 5. **Review structure:** confirm complex plans include Routes, dependency, Runtime responsibility, data flow, extension points, R·AC mapping, internal and notify checkpoints, real approval gates, and the three required diagram perspectives when their source relationships exist. Local edits, tests, planned local commits, tier selection, subagents, and parallel groups are not approval gates.
-6. **Viewer request boundary:** confirm no Viewer was created or updated without an explicit user request. If one exists and the source changed, it may be reported as stale. When the user explicitly requested a Viewer, hand off to the forge spec-viewer skill; do not add source-count, hash, browser, or layout validation after generation.
+6. **Review Viewer request boundary:** confirm no snapshot was created or updated without explicit create or refresh intent. Resolve source, mode, and review-id at handoff. If requested, hand off once to `review-viewer`; fixed generation receives no extra browser or layout QA.
+7. **Plan artifact lifetime:** confirm `progress.md` and `tasks/*.md` meet their closed creation gates. Before deleting a plan, verify every permanent decision is promoted to a spec, research record, ADR, or another durable source.
+8. **Canonical Related Specs:** re-run inspect for each entry and confirm entry id equality, repository containment, unique spec IDs, and existence of every listed R/AC ID before authoring or approval. Review Viewer presence is irrelevant to this gate.
 
 Fix issues inline and move on — no re-review loop.
 
@@ -235,18 +246,18 @@ Fix issues inline and move on — no re-review loop.
 
 | Path | Role |
 |---|---|
-| `docs/specs/NNN-<slug>/spec.md` | Read: each related approved spec, when present |
+| `docs/specs/NNN-<slug>/spec.md` | Read: each related structured spec whose inspect JSON is approved and diagnostic-free |
 | `docs/plans/PPP-<slug>/plan.md` | Write: independently identified work plan; committed |
 | `docs/plans/PPP-<slug>/progress.md` | Optional long or multi-writer progress history; committed |
 | `docs/plans/PPP-<slug>/tasks/*.md` | Optional independently owned Task details; committed |
-| `docs/plans/PPP-<slug>/view.html` | Generated plan review View after explicit request; committed |
+| `.forge/reviews/<review-id>/view.html` | Optional requested Review Viewer snapshot; untracked |
 
 ## Red Flags
 
 | Excuse | Reality |
 |---|---|
-| "The spec is basically approved, I'll start planning" | For behavior-changing work, "basically approved" is draft. The gate is the literal `Status: approved` line. |
-| "The requirements are all in this conversation — effectively a spec" | Chat scrollback is not a source of truth; it has no status line, no R-IDs, and it evaporates. Capture it in `docs/specs/` via the forge writing-specs skill first. |
+| "The spec is basically approved, I'll start planning" | The inspect JSON must report `forge/spec@1`, `approved`, and zero diagnostics. |
+| "The requirements are all in this conversation — effectively a spec" | Chat has no structured lifecycle or stable R/AC IDs. Capture and approve the spec first. |
 | "I'll fill in this step's code during execution" | The executor may be a fresh context with zero knowledge. A step without content is a placeholder, and placeholders are plan failures. |
 | "Similar to Task 2 — no need to repeat" | Implementers read tasks in isolation. Repeat the code. |
 | "This coverage table is just bookkeeping" | The table is how uncovered related ACs become visible. Skipping it is how requirements silently drop. |

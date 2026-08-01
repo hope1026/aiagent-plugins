@@ -5,7 +5,10 @@
 Status: complete
 
 **Related Specs:**
-- `docs/specs/005-agent-extension-creation/spec.md`: R1–R18 · AC1–AC13
+- id: 005-agent-extension-creation
+  path: docs/specs/005-agent-extension-creation/spec.md
+  requirements: [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18]
+  acceptance: [AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9, AC10, AC11, AC12, AC13]
 
 **목표:** Forge에 `creating-agent-extensions`를 추가하여 하나의 `.agent-extensions/` 정본에서 Codex, Claude Code, Antigravity용 skill entry와 MCP configuration adapter를 안전하게 생성·갱신·검증한다.
 
@@ -107,7 +110,7 @@ sequenceDiagram
 | user MCP | `~/.agent-extensions/<extension>/mcp/servers.json` | `~/.codex/config.toml` | `~/.claude.json` | `~/.gemini/config/mcp_config.json` |
 | agent-only hooks/rules/apps | `adapters/<agent>/` extension point | 지원 agent만 명시 | 지원 agent만 명시 | 지원 agent만 명시 |
 
-### Task 1: canonical lifecycle manager와 manifest 계약 (R2, R3, R4, R5, R6, R7, R10, R13, R14, R15, R16 · AC2, AC3, AC4, AC5, AC6, AC8, AC11)
+### Task 1: canonical lifecycle manager와 manifest 계약 (005 R2, R3, R4, R5, R6, R7, R10, R13, R14, R15, R16, AC2, AC3, AC4, AC5, AC6, AC8, AC11)
 
 **Files:**
 - 생성: `plugins/forge/skills/creating-agent-extensions/SKILL.md`
@@ -122,6 +125,7 @@ sequenceDiagram
 - Python API: `build_plan(args: argparse.Namespace) -> dict`, `initialize(plan: dict, confirmed: bool) -> pathlib.Path`, `load_manifest(extension_root: pathlib.Path) -> dict`, `canonical_digest(extension_root: pathlib.Path) -> str`
 
 **Execution metadata:**
+- Route: route-1
 - Dependencies: none
 - Write ownership: 위 Files 전체
 - Parallel safety: sequential root — schema, CLI와 lifecycle tests가 같은 contract를 함께 정의함
@@ -198,7 +202,7 @@ manager는 `NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")`를 
 
 실행: `git add docs/specs/005-agent-extension-creation/spec.md docs/plans/003-agent-extension-creation/plan.md plugins/forge/skills/creating-agent-extensions scripts/tests/test-agent-extension-skill.sh && git commit -m "feat(forge): add agent extension lifecycle manager"`
 
-### Task 2: thin skill entry와 ownership drift 검사 (R3, R7, R8, R9, R13, R14, R15, R16 · AC2, AC3, AC6, AC9, AC10)
+### Task 2: thin skill entry와 ownership drift 검사 (005 R3, R7, R8, R9, R13, R14, R15, R16, AC2, AC3, AC6, AC9, AC10)
 
 **Files:**
 - 수정: `plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py`
@@ -212,6 +216,7 @@ manager는 `NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")`를 
 - Python API: `skill_targets(manifest: dict, extension_root: Path) -> list[Target]`, `render_skill_wrapper(target: Target) -> str`, `render_extension(extension_root: Path, confirmed: bool) -> dict`, `validate_extension(extension_root: Path) -> list[str]`
 
 **Execution metadata:**
+- Route: route-2
 - Dependencies: Task 1
 - Write ownership: 위 Files 전체
 - Parallel safety: sequential root — manager source와 single test module ownership이 Task 3과 겹침
@@ -267,7 +272,7 @@ If this adapter conflicts with the canonical skill, the canonical skill wins.
 
 실행: `git add docs/plans/003-agent-extension-creation/plan.md plugins/forge/skills/creating-agent-extensions && git commit -m "feat(forge): render portable skill adapters"`
 
-### Task 3: merge-safe MCP adapter와 native parity (R3, R4, R6, R10, R11, R12, R13, R14, R15 · AC4, AC5, AC6, AC8, AC9, AC10)
+### Task 3: merge-safe MCP adapter와 native parity (005 R3, R4, R6, R10, R11, R12, R13, R14, R15, AC4, AC5, AC6, AC8, AC9, AC10)
 
 **Files:**
 - 수정: `plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py`
@@ -281,6 +286,7 @@ If this adapter conflicts with the canonical skill, the canonical skill wins.
 - Python API: `validate_server(name: str, server: dict) -> None`, `to_codex_toml(name: str, server: dict) -> str`, `to_json_native(server: dict) -> dict`, `merge_toml(text: str, extension: str, entries: dict, state: dict | None) -> str`, `merge_json(document: dict, entries: dict, state: dict | None) -> dict`
 
 **Execution metadata:**
+- Route: route-2
 - Dependencies: Task 1; Task 2의 state format
 - Write ownership: 위 Files 전체
 - Parallel safety: sequential root — Task 2와 manager/test files가 겹치고 state format을 소비함
@@ -346,7 +352,7 @@ Codex block marker는 `# BEGIN creating-agent-extensions:<extension>`과 `# END 
 
 실행: `git add docs/plans/003-agent-extension-creation/plan.md plugins/forge/skills/creating-agent-extensions && git commit -m "feat(forge): render owned MCP adapters"`
 
-### Task 4: Forge process skill과 repository integration (R1, R5, R6, R16, R17, R18 · AC1, AC7, AC8, AC11, AC12, AC13)
+### Task 4: Forge process skill과 repository integration (005 R1, R5, R6, R16, R17, R18, AC1, AC7, AC8, AC11, AC12, AC13)
 
 **Files:**
 - 수정: `plugins/forge/skills/creating-agent-extensions/SKILL.md`
@@ -368,6 +374,7 @@ Codex block marker는 `# BEGIN creating-agent-extensions:<extension>`과 `# END 
 - Provider contract: `staging input → canonical content candidate + support files + self-review`; provider는 final path, adapter, merge, collision, validation verdict를 소유하지 않음
 
 **Execution metadata:**
+- Route: route-3
 - Dependencies: Tasks 1–3
 - Write ownership: 위 Files 전체
 - Parallel safety: sequential root — process wording과 repository contract assertions를 함께 맞춰야 함
@@ -425,7 +432,7 @@ bash scripts/validate.sh
 
 실행: `git add README.md .agent-runbooks plugins/forge scripts docs/plans/003-agent-extension-creation/plan.md && git commit -m "docs(forge): integrate cross-agent extension workflow"`
 
-### Task 5: live pressure test와 acceptance verification (R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18 · AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9, AC10, AC11, AC12, AC13)
+### Task 5: live pressure test와 acceptance verification (005 R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9, AC10, AC11, AC12, AC13)
 
 **Files:**
 - 수정: `docs/plans/003-agent-extension-creation/plan.md`
@@ -437,6 +444,7 @@ bash scripts/validate.sh
 - 출력: fresh-agent behavior verdict, root-owned full verification evidence, `Status: implemented` 또는 구체적 FAIL
 
 **Execution metadata:**
+- Route: route-4
 - Dependencies: Tasks 1–4
 - Write ownership: plan progress와 verification 뒤 spec status; pressure-test defect가 있으면 해당 file을 root가 수정하고 targeted RED/GREEN을 반복함
 - Parallel safety: fresh agent는 read-only scenario evaluation만 수행하고 root가 모든 file write와 verification을 소유함

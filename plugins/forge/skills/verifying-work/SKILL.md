@@ -27,14 +27,14 @@ Violating the letter of this law is violating its spirit. Rewording a claim ("sh
 
 - Any statement that work is complete, fixed, passing, working, or done — exact words, synonyms, or implication.
 - Committing, creating a PR, reporting progress, or moving to the next plan task.
-- Setting a spec's `Status:` to `implemented` (this skill is the ONLY thing permitted to set that value).
+- Setting structured spec frontmatter `status` to `implemented` (this skill is the ONLY workflow permitted to set that value).
 - Accepting a subagent's success report.
 
-**NOT needed for:** neutral in-progress narration that claims nothing ("running the tests now"), answering questions that assert nothing about work state, or a generated spec/plan `view.html` whose build command already succeeded. The generated View exception does not cover changes to the Viewer builder, template, styles, scripts, or runtime behavior.
+**NOT needed for:** neutral in-progress narration that claims nothing, answering questions that assert nothing about work state, or a fixed Review Viewer snapshot whose one requested build already succeeded. Review Viewer tooling and Spec Pages tooling changes still require full verification.
 
 ## The Process
 
-Verification has two levels. Level 1 applies to implementation work. Level 2 additionally applies whenever that work traces to a spec. A generated spec/plan View is handled by the exception below.
+Verification has two levels. Level 1 applies to implementation work. Level 2 additionally applies whenever that work traces to a spec. A fixed requested Review Viewer snapshot is handled by the exception below.
 
 ### Level 1 — command-level verification (always)
 
@@ -52,15 +52,15 @@ Verification has two levels. Level 1 applies to implementation work. Level 2 add
 | Subagent finished | You inspected the diff and re-ran checks | The subagent's own report |
 | Requirements met | Level 2 walk below | Tests passing alone |
 
-#### Generated Viewer exception
+#### Fixed Review Viewer generation exception
 
-Generating or regenerating a spec/plan `view.html` from unchanged Viewer tooling is read-only document assembly. The successful build command is sufficient evidence to report that the file was generated. Stop there: do not run a second checker, browser or screenshot review, viewport or print inspection, interaction checks, Mermaid render checks, or freshness-state tests. Do not claim that the generated layout or interactions were independently verified.
+Generating `.forge/reviews/<review-id>/view.html` from unchanged `review-viewer` tooling after explicit user intent to create or refresh a Review Viewer is read-only assembly. The agent resolves source, mode, and review-id from current context. The successful single build is sufficient evidence; do not add a second checker, browser, screenshot, layout, interaction, Mermaid, or freshness run.
 
-This exception is artifact-specific. A change to the Viewer builder, template, styles, scripts, or runtime behavior is implementation work and follows normal Level 1 plus every governing Level 2 acceptance criterion. A generated View never changes the governing product spec to `Status: implemented`.
+This exception is artifact-specific. Review Viewer tooling changes and Spec Pages tooling changes use `web-app-design` plus normal Level 1 and every governing Level 2 AC. A snapshot never changes structured spec frontmatter status.
 
 ### Level 2 — spec-level verification (when a spec exists)
 
-1. Open `docs/specs/NNN-<slug>/spec.md` and read the Acceptance Criteria section.
+1. Run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec docs/specs/NNN-<slug>/spec.md --format json`. Require `schema` = `forge/spec@1`, lifecycle `status` in `approved|implemented`, and empty `diagnostics`, then read the typed acceptance array.
 2. Create one todo per acceptance criterion (AC1..ACn) so none can be silently skipped.
 3. **Check route evidence** in the plan's `Progress History` and optional `progress.md`: every executed Task records tier, execution mode, parallel group or `none`, verification, and commit scope. For subagent work, confirm the root agent inspected the result and produced fresh verification; a worker report alone is not acceptance evidence.
 4. Walk each AC in order: reproduce its precondition, perform its action, and observe its expected outcome against the real implementation. Record a verdict — **PASS** or **FAIL** — with the exact command output or concrete observation as evidence. No AC may be judged from memory or from reading the code.
@@ -79,8 +79,12 @@ One of the two must change, explicitly. Never adjust both silently, and never re
 
 Only after **every** AC records PASS with evidence for the actual implementation governed by that spec:
 
-1. Set the spec's `Status:` line to `implemented`. This value is set only by this skill, only at this point.
-2. Report the AC table to the user.
+1. Set the spec frontmatter `status` to `implemented`. This value is set only by this skill at this point.
+2. Run the same source transaction used by the writer. A failure blocks handoff and completion reporting:
+   `spec-docs.sh --repo-root . validate --root docs/specs --baseline-ref HEAD` →
+   `spec-docs.sh --repo-root . build --root docs/specs --changed docs/specs/NNN-<slug>/spec.md --offline` →
+   `spec-docs.sh --repo-root . check --root docs/specs`.
+3. Report the AC table to the user only after all three commands pass.
 
 If no spec exists, first confirm the change is genuinely on the ceremony-floor exemption list (typo/comment/formatting, no-API dependency bump, non-output CI config, behavior-preserving refactor with passing tests). Only then does Level 1 alone gate the claim — and say explicitly that verification was command-level only. If the work altered behavior and has no spec, that is a process gap: route to the forge writing-specs skill before any completion claim, never around it.
 
@@ -96,7 +100,7 @@ If no spec exists, first confirm the change is genuinely on the ceremony-floor e
 ## Working Files
 
 - Reads: every related `docs/specs/NNN-<slug>/spec.md` and the current `docs/plans/PPP-<slug>/plan.md`, plus optional `progress.md` and `tasks/*.md`.
-- Writes: the `Status: implemented` line in `docs/specs/NNN-<slug>/spec.md` — only after all ACs PASS. The AC report goes to the user in chat, not to a file.
+- Writes: structured spec frontmatter `status: implemented` and the matching tracked per-spec page/catalog bytes, only after all ACs pass. The AC report goes to the user in chat.
 
 ## Red Flags
 
@@ -109,7 +113,7 @@ If no spec exists, first confirm the change is genuinely on the ceremony-floor e
 | "The subagent reported success" | A report is a claim, not evidence. Inspect the diff and re-run the checks yourself. |
 | "The Task passed, so route evidence is optional." | Adaptive execution must remain auditable. Record tier, mode, group, verification, and root review before using the Task as AC evidence. |
 | "Lint is clean, so it builds" | A linter is neither a compiler nor a test suite. |
-| "I'll set implemented now, verify after" | Status is the gate token. It flips only after the evidence exists. |
+| "I'll set implemented now, verify after" | Frontmatter status changes only after evidence and is incomplete until Spec Pages build/check pass. |
 | "That AC obviously passes" | The "obvious" AC is where regressions hide. Walk it like every other one. |
 | "No spec exists, so Level 1 is enough" | Only if the change is on the ceremony-floor exemption list. A missing spec for behavior-changing work is a gap to close via the forge writing-specs skill, not a shortcut. |
 | "The generated View needs the full completion checklist." | Successful assembly is enough for this convenience artifact. Full verification belongs to Viewer tooling changes, not each generated file. |
@@ -117,4 +121,4 @@ If no spec exists, first confirm the change is genuinely on the ceremony-floor e
 
 ## Handoff
 
-**If any AC failed: the next step is the forge systematic-debugging skill (code bug) or the forge writing-specs skill in change mode (spec bug) — then return here and re-verify from Level 1. If all ACs passed: set the spec `Status: implemented`, report the AC table to the user — the lifecycle is complete.**
+**If any AC failed: use the forge systematic-debugging skill for a code bug or the forge writing-specs skill in change mode for a spec bug, then re-verify from Level 1. If all ACs passed: set frontmatter `status: implemented`, complete the validate → changed offline build → check Spec Pages transaction, and only then report the AC table.**

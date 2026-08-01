@@ -5,8 +5,14 @@
 Status: complete
 
 **Related Specs:**
-- `docs/specs/006-ui-design-skill-split/spec.md`: R1–R9, R11–R12 · AC1–AC8, AC10–AC11
-- `docs/specs/002-lifecycle-review-viewer/spec.md`: R57 · AC14
+- id: 006-ui-design-skill-split
+  path: docs/specs/006-ui-design-skill-split/spec.md
+  requirements: [R1, R2, R3, R4, R5, R6, R7, R8, R9, R11, R12]
+  acceptance: [AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC10, AC11]
+- id: 002-lifecycle-review-viewer
+  path: docs/specs/002-lifecycle-review-viewer/spec.md
+  requirements: [R57]
+  acceptance: [AC14]
 
 **목표:** browser application UI와 공개 website 디자인을 각각 `web-app-design`, `website-design`으로 분리하고, 기존 `ui-design`은 한 release 동안 직접 디자인하지 않는 compatibility router로 운영한다.
 
@@ -146,7 +152,7 @@ flowchart TD
 | AC11 | 1, 4, 6 |
 | AC14 | 1, 4, 6 |
 
-### Task 1: UI skill routing contract를 RED로 고정 (R1–R9, R11–R12, R57 · AC1–AC4, AC7, AC10–AC11, AC14)
+### Task 1: UI skill routing contract를 RED로 고정 (006 R1–R9, R11–R12, AC1–AC4, AC7, AC10–AC11 · 002 R57, AC14)
 
 **파일:**
 - 생성: `scripts/tests/test-ui-design-skill-routing.sh`
@@ -158,6 +164,7 @@ flowchart TD
 - 출력: 신규 skill 본문·router·catalog·manifest가 함께 충족해야 하는 executable text contract
 
 **실행 메타데이터:**
+- Route: route-1
 - 의존성: none
 - 쓰기 소유권: `scripts/tests/test-ui-design-skill-routing.sh`
 - 병렬 안전성: sequential — 뒤 Task들의 RED 기준을 먼저 고정해야 한다.
@@ -282,7 +289,7 @@ git commit -m "docs(forge): approve UI design skill split"
 
 예상: approved spec 두 개와 Plan 005만 commit되고, 아직 RED인 test 파일은 후속 구현이 GREEN이 될 때까지 working tree에 남는다.
 
-### Task 2: `web-app-design` process skill 구현 (R1, R2, R5, R11–R12 · AC1, AC5, AC10–AC11)
+### Task 2: `web-app-design` process skill 구현 (006 R1, R2, R5, R11–R12, AC1, AC5, AC10–AC11)
 
 **파일:**
 - 생성: `plugins/forge/skills/web-app-design/SKILL.md`
@@ -293,6 +300,7 @@ git commit -m "docs(forge): approve UI design skill split"
 - 출력: inherited role hierarchy, state geometry, viewport×state matrix를 UI 코드 전 선언하는 process skill
 
 **실행 메타데이터:**
+- Route: route-2
 - 의존성: Task 1
 - 쓰기 소유권: `plugins/forge/skills/web-app-design/`
 - 병렬 안전성: Task 3과 병렬 가능 — 파일 소유권과 active surface가 분리된다.
@@ -461,7 +469,7 @@ git commit -m "feat(forge): add web app design skill"
 
 예상: `web-app-design` 파일만 포함한 commit이 생성되고 push는 수행되지 않는다.
 
-### Task 3: `website-design` process skill 구현 (R3–R5, R11–R12 · AC2, AC6, AC10–AC11)
+### Task 3: `website-design` process skill 구현 (006 R3–R5, R11–R12, AC2, AC6, AC10–AC11)
 
 **파일:**
 - 생성: `plugins/forge/skills/website-design/SKILL.md`
@@ -472,6 +480,7 @@ git commit -m "feat(forge): add web app design skill"
 - 출력: visual thesis, content hierarchy, imagery, responsive composition을 UI 코드 전 선언하는 process skill
 
 **실행 메타데이터:**
+- Route: route-3
 - 의존성: Task 1
 - 쓰기 소유권: `plugins/forge/skills/website-design/`
 - 병렬 안전성: Task 2와 병렬 가능 — 파일 소유권과 active surface가 분리된다.
@@ -632,7 +641,7 @@ git commit -m "feat(forge): add website design skill"
 
 예상: `website-design` 파일만 포함한 commit이 생성되고 push는 수행되지 않는다.
 
-### Task 4: canonical routing과 legacy compatibility 전환 (R6–R8, R11–R12, R57 · AC1–AC4, AC7, AC10–AC11, AC14)
+### Task 4: canonical routing과 legacy compatibility 전환 (006 R6–R8, R11–R12, AC1–AC4, AC7, AC10–AC11 · 002 R57, AC14)
 
 **파일:**
 - 수정: `plugins/forge/skills/using-forge/SKILL.md`
@@ -651,6 +660,7 @@ git commit -m "feat(forge): add website design skill"
 - 출력: 일반 prompt와 explicit legacy prompt가 한 active skill로만 도달하는 canonical route
 
 **실행 메타데이터:**
+- Route: route-4
 - 의존성: Task 2, Task 3
 - 쓰기 소유권: 위 Routing·Viewer·maintainer canonical·manager output 파일
 - 병렬 안전성: sequential — 같은 routing contract와 manager ownership state를 원자적으로 맞춰야 한다.
@@ -817,7 +827,7 @@ git commit -m "refactor(forge): route UI work by web surface"
 
 예상: active routing, compatibility shim, Viewer exception, manager-owned maintainer adapters가 한 commit에 포함되고 push는 수행되지 않는다.
 
-### Task 5: catalog·manifest·CI 동기화 (R8–R9 · AC7–AC8)
+### Task 5: catalog·manifest·CI 동기화 (006 R8–R9, AC7–AC8)
 
 **파일:**
 - 수정: `README.md`
@@ -832,6 +842,7 @@ git commit -m "refactor(forge): route UI work by web surface"
 - 출력: 14 active skills와 1 compatibility router를 동일하게 노출하는 docs, manifests, CI
 
 **실행 메타데이터:**
+- Route: route-5
 - 의존성: Task 4
 - 쓰기 소유권: 위 catalog·manifest·test·workflow 파일
 - 병렬 안전성: sequential — routing 이름이 확정된 후 외부 discovery metadata를 동기화한다.
@@ -953,7 +964,7 @@ git commit -m "docs(forge): publish split UI skill catalog"
 
 예상: catalog, discovery metadata, executable regression test, CI 등록만 한 commit에 포함되고 manifest version과 원격 상태는 바뀌지 않는다.
 
-### Task 6: agent behavior·rendered fixture·release gate 검증 (R1–R9, R11–R12, R57 · AC1–AC8, AC10–AC11, AC14)
+### Task 6: agent behavior·rendered fixture·release gate 검증 (006 R1–R9, R11–R12, AC1–AC8, AC10–AC11 · 002 R57, AC14)
 
 **파일:**
 - 참조: `plugins/forge/skills/using-forge/SKILL.md`
@@ -970,6 +981,7 @@ git commit -m "docs(forge): publish split UI skill catalog"
 - 출력: static PASS, target discovery evidence, 여섯 routing scenario 결과, browser geometry·responsive evidence, release 보류 또는 승인된 version gate 결과
 
 **실행 메타데이터:**
+- Route: route-6
 - 의존성: Task 5
 - 쓰기 소유권: `.forge/scratch/ui-design-skill-*`; release 승인 후에만 두 plugin manifest version
 - 병렬 안전성: static 검증 뒤 pressure scenario는 독립 실행 가능하지만 결과 종합과 release 판정은 sequential이다.

@@ -1,6 +1,14 @@
+---
+schema: forge/spec@1
+id: 001-tone-overlays
+status: implemented
+language: en
+kind: feature
+areas: ["forge", "writing"]
+components: ["writing-tone", "marketing-tone", "operations-tone"]
+relatedSpecs: []
+---
 # Tone Overlay Skills
-
-Status: implemented
 
 ## Overview
 
@@ -59,7 +67,7 @@ flowchart TD
 - AC3 (R4, R5, R6, R7): GIVEN a customer support reply request, WHEN `operations-tone` is read, THEN it prioritizes confirmed status, customer impact, next action, and minimal cause detail unless the cause is requested, confirmed, and useful.
 - AC4 (R8, R9): GIVEN the current `operations-private` skills, WHEN deduplication is complete, THEN general marketing/support tone rules are reduced or delegated to Forge tone skills while WEPPY-specific workflows, links, templates, and existing user edits remain intact.
 - AC5 (R10): GIVEN the Forge README and plugin manifests, WHEN skill catalogs are inspected, THEN `marketing-tone` and `operations-tone` are listed and `writing-tone` is described as the base prose layer.
-- AC6 (R1-R10): GIVEN the repository after implementation, WHEN `bash scripts/validate.sh` is run from `aiagent-plugins`, THEN it prints `validate: all checks passed`.
+- AC6 (R1–R10): GIVEN the repository after implementation, WHEN `bash scripts/validate.sh` is run from `aiagent-plugins`, THEN it prints `validate: all checks passed`.
 
 ## Decisions & History
 

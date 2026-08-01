@@ -1,6 +1,14 @@
+---
+schema: forge/spec@1
+id: 005-agent-extension-creation
+status: implemented
+language: ko
+kind: feature
+areas: ["forge", "extensions"]
+components: ["creating-agent-extensions", "extension-manager"]
+relatedSpecs: [{"id":"003-repository-maintenance-runbook","relation":"relatedTo"}]
+---
 # 여러 에이전트용 extension 생성
-
-Status: implemented
 
 ## Overview
 

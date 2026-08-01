@@ -5,7 +5,10 @@
 Status: complete
 
 **Related Specs:**
-- `docs/specs/004-adaptive-execution-routing/spec.md`: R28–R31 · AC17–AC18
+- id: 004-adaptive-execution-routing
+  path: docs/specs/004-adaptive-execution-routing/spec.md
+  requirements: [R28, R29, R30, R31]
+  acceptance: [AC17, AC18]
 
 **목표:** capability tier별 기본 execution mode를 결정적으로 고정하고 안전한 `balanced` Task를 질문 없이 subagent에 위임한다.
 
@@ -48,7 +51,7 @@ flowchart LR
 | subagent | 이번 Task에서는 사용하지 않음 — source-of-truth 파일과 계약 테스트가 tightly coupled됨 |
 | plugin manager | push된 version의 Codex·Claude 설치본 갱신 |
 
-### Task 1: 기본 execution mode 정책과 계약 구현 (R28–R31 · AC17–AC18)
+### Task 1: 기본 execution mode 정책과 계약 구현 (004 R28–R31, AC17–AC18)
 
 **Files:**
 - Modify: `scripts/tests/test-forge-artifact-contract.sh`
@@ -61,6 +64,7 @@ flowchart LR
 - Produces: deterministic `fast→root`, eligible `balanced→subagent`, `frontier→root` selection and safe `parallel` override
 
 **Execution metadata:**
+- Route: route-1
 - Dependencies: none
 - Write ownership: 위 Files 전체
 - Parallel safety: sequential root — policy source와 contract assertion이 같은 의미를 함께 변경함
@@ -98,7 +102,7 @@ Expected: `test-forge-artifact-contract: all checks passed` and `validate: all c
 
 Run: `git add docs/specs/004-adaptive-execution-routing/spec.md docs/plans/002-default-subagent-routing/plan.md plugins/forge/skills/executing-plans/SKILL.md plugins/forge/skills/executing-plans/references/adaptive-routing.md scripts/tests/test-forge-artifact-contract.sh && git commit -m "feat(forge): default eligible balanced tasks to subagents"`
 
-### Task 2: Forge release와 현재 머신 설치 (R31 · AC18)
+### Task 2: Forge release와 현재 머신 설치 (004 R31, AC18)
 
 **Files:**
 - Modify: `plugins/forge/.claude-plugin/plugin.json`
@@ -110,6 +114,7 @@ Run: `git add docs/specs/004-adaptive-execution-routing/spec.md docs/plans/002-d
 - Produces: 새 patch version, pushed `main`, 최신 Codex managed cache, Claude user plugin, local dev copies
 
 **Execution metadata:**
+- Route: route-2
 - Dependencies: Task 1
 - Write ownership: plugin manifest 2개와 plan progress
 - Parallel safety: sequential — release version과 설치 source가 동일 commit을 가리켜야 함

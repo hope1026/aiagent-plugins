@@ -1,6 +1,14 @@
+---
+schema: forge/spec@1
+id: 004-adaptive-execution-routing
+status: approved
+language: ko
+kind: policy
+areas: ["forge", "execution"]
+components: ["executing-plans", "adaptive-routing"]
+relatedSpecs: []
+---
 # 적응형 실행 라우팅과 비차단 Checkpoint
-
-Status: approved
 
 ## Overview
 
@@ -27,8 +35,6 @@ Forge는 구현 계획의 Task 특성에 따라 적절한 LLM capability tier와
 
 R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약을 뜻한다.
 
-### 자동 capability-tier 라우팅
-
 - R1. plan 실행을 시작할 때 root agent는 각 Task의 영향도, 불확실성, context 결합도, 검증 명확성을 평가해 실행 route를 자동으로 결정해야 한다.
 - R2. Forge는 model slug 대신 `fast`, `balanced`, `frontier` capability tier를 사용해야 하며, 플랫폼별 설정이 각 tier를 실제 model과 reasoning 설정에 연결하도록 해야 한다.
 - R3. 범위가 좁고 영향도가 낮으며 결정적 검증이 있고 source-of-truth 결정을 포함하지 않는 Task는 `fast` tier를 우선 사용해야 한다.
@@ -36,22 +42,12 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R5. spec·architecture 결정, 높은 영향도, 큰 불확실성, 여러 subsystem에 걸친 변경, 보안·데이터 위험, 약한 검증 신호 중 하나라도 있는 Task는 `frontier` tier를 사용해야 한다.
 - R6. 실행 중 같은 원인의 검증 실패가 두 번 반복되거나 root agent가 Task의 route 판단 근거가 무효라고 확인하면, Forge는 한 단계 높은 tier로 자동 escalation하고 progress ledger에 이유를 기록해야 한다.
 - R7. 플랫폼이 custom agent role이나 model 선택을 지원하지 않으면 Forge는 선택한 tier에 현재 model을 상속해야 한다. 이 경우에도 subagent 기능이 있으면 병렬 실행할 수 있고, subagent 기능까지 없을 때만 동일한 route·검증 규칙으로 순차 실행해야 하며, 지원하지 않는 model 선택이나 subagent 호출을 가장하지 않아야 한다.
-- R28. ADDED — `fast` tier Task는 root agent가 직접 실행하는 것을 기본값으로 사용해야 한다. 단, 여러 정형 Task가 병렬 안전성 조건을 모두 만족하고 dispatch·review 비용보다 wall-clock 절감이 큰 경우에는 병렬 subagent 실행을 선택할 수 있어야 한다.
-- R29. ADDED — `balanced` tier Task는 `context_coupling=low`, `verification_clarity=strong`, 완전한 handoff, 독립적인 write ownership을 모두 만족하고 root review가 직접 실행보다 저렴하면 단일 subagent 실행을 기본값으로 사용해야 한다. 하나라도 만족하지 않으면 root agent가 실행해야 한다.
-- R30. ADDED — `frontier` tier Task는 root agent가 직접 실행하는 것을 기본값으로 사용해야 한다. 증거 수집처럼 source-of-truth 판단과 분리된 bounded work만 subagent에 위임할 수 있으며, spec·architecture·security·data safety·root cause·최종 통합 판단은 root agent가 소유해야 한다.
-- R31. ADDED — Forge는 R28–R30의 기본 실행 주체를 사용자에게 매번 질문하지 않고 자동 선택해야 한다. 사용자가 `root-only`, subagent 사용 여부 또는 동시 실행 상한을 명시한 경우에는 그 선호를 안전성 조건 안에서 우선 적용하고, 자동 위임 결과는 notify 또는 최종 보고에서 알려야 한다.
-
-### Subagent와 병렬 실행
-
 - R8. Forge는 입력, 출력, Interface, 파일 소유권, 검증 방법이 명확하고 다른 진행 중 Task와 dependency나 write 대상이 겹치지 않는 Task만 subagent에 위임해야 한다.
 - R9. 독립적인 Task가 둘 이상이고 병렬 실행의 예상 이득이 coordination 비용보다 크면 root agent는 사용자 승인 없이 subagent 병렬 실행을 선택할 수 있어야 한다.
 - R10. plan의 dependency, Files, Interfaces, Route 또는 Milestone 정보를 기준으로 병렬 안전성을 판단해야 하며, 정보가 부족하거나 충돌 가능성이 있으면 순차 실행을 선택해야 한다.
 - R11. 동시에 실행하는 subagent 수는 플랫폼 제한과 사용자 설정을 모두 지켜야 하며, 별도 사용자 설정이 없으면 최대 3개로 제한해야 한다.
 - R12. root agent는 subagent 결과를 그대로 완료 처리하지 않고 diff와 산출물을 검토하고, Task verification을 fresh하게 실행한 뒤에만 완료로 기록해야 한다.
 - R13. root agent는 spec과 plan의 source of truth 수정, 결과 통합, approval 요청, 최종 verification과 완료 판정을 계속 소유해야 한다.
-
-### Checkpoint 분류와 연속 실행
-
 - R14. Forge는 checkpoint를 `internal`, `notify`, `approval` 세 유형으로 구분해야 한다.
 - R15. `internal` checkpoint는 각 Task가 끝날 때 verification 실행, plan checkbox 갱신, progress ledger 기록, 계획된 local commit을 수행해야 하며, 성공하면 사용자 응답을 기다리지 않고 다음 Task를 계속 실행해야 한다.
 - R16. `notify` checkpoint는 Route 또는 Milestone 완료, `frontier` tier Task 완료, 자동 tier escalation 발생 시 진행 상황과 증거를 사용자에게 알리되, 응답을 기다리지 않고 다음 안전한 작업을 계속해야 한다.
@@ -63,9 +59,6 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R18. local file edit, test, 계획된 local commit, capability tier 선택, subagent 위임, 병렬 실행, internal checkpoint, notify checkpoint만으로는 사용자 approval을 요구하지 않아야 한다.
 - R19. approval checkpoint에서 root agent는 완료된 작업을 progress ledger에 먼저 기록하고, 필요한 결정, 선택지, 영향, 응답 후 재개 지점을 사용자에게 명확히 제시한 뒤 멈춰야 한다.
 - R20. 모든 Task가 끝나면 Forge는 별도의 중간 approval 없이 the forge verifying-work skill로 이동하고, 최종 검증 결과를 사용자에게 보고해야 한다.
-
-### 계획, 기록과 투명성
-
 - R21. `writing-plans`는 각 Task에 정확한 dependency, Files, Interfaces, verification을 제공하고, 사용자 결정이 실제로 필요한 지점만 `approval` gate로 표시해야 한다.
 - R22. `executing-plans`는 기존의 Task별 사용자 checkpoint를 제거하고, Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용해야 한다.
 - R23. progress ledger는 Task별 capability tier, 실행 주체, 병렬 group, route 선택 이유, escalation, verification, commit 범위를 기록해야 한다.
@@ -73,6 +66,10 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R25. 기존 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.
 - R26. distributed Forge skill은 `fast`, `balanced`, `frontier`의 의미와 fallback 동작만 정의하고, 실제 model·agent role mapping은 platform adaptation reference 또는 사용자 설정에 두어야 한다.
 - R27. `frontier` tier에서 같은 원인의 verification failure가 반복되거나 tier escalation 후에도 같은 failure가 다시 발생하면 자동 재시도를 중단하고 the forge systematic-debugging skill로 원인을 조사해야 한다. 조사 결과가 spec divergence나 추가 사용자 권한을 요구할 때만 approval checkpoint로 전환해야 한다.
+- R28. ADDED — `fast` tier Task는 root agent가 직접 실행하는 것을 기본값으로 사용해야 한다. 단, 여러 정형 Task가 병렬 안전성 조건을 모두 만족하고 dispatch·review 비용보다 wall-clock 절감이 큰 경우에는 병렬 subagent 실행을 선택할 수 있어야 한다.
+- R29. ADDED — `balanced` tier Task는 `context_coupling=low`, `verification_clarity=strong`, 완전한 handoff, 독립적인 write ownership을 모두 만족하고 root review가 직접 실행보다 저렴하면 단일 subagent 실행을 기본값으로 사용해야 한다. 하나라도 만족하지 않으면 root agent가 실행해야 한다.
+- R30. ADDED — `frontier` tier Task는 root agent가 직접 실행하는 것을 기본값으로 사용해야 한다. 증거 수집처럼 source-of-truth 판단과 분리된 bounded work만 subagent에 위임할 수 있으며, spec·architecture·security·data safety·root cause·최종 통합 판단은 root agent가 소유해야 한다.
+- R31. ADDED — Forge는 R28–R30의 기본 실행 주체를 사용자에게 매번 질문하지 않고 자동 선택해야 한다. 사용자가 `root-only`, subagent 사용 여부 또는 동시 실행 상한을 명시한 경우에는 그 선호를 안전성 조건 안에서 우선 적용하고, 자동 위임 결과는 notify 또는 최종 보고에서 알려야 한다.
 
 ## Behavior & Flows
 

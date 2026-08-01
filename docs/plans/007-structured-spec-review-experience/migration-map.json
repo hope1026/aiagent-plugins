@@ -1,0 +1,1382 @@
+{
+  "schema": "forge/spec-migration@1",
+  "sourceRepository": "aiagent-plugins",
+  "rollbackPoint": "7d807e1d452171b9d27c24a12b1130324270b497",
+  "cutoverCommit": null,
+  "entries": [
+    {
+      "oldPath": "docs/specs/001-tone-overlays/spec.md",
+      "newSpecIds": [
+        "001-tone-overlays"
+      ],
+      "status": "implemented",
+      "statusEvidence": "body Status: implemented",
+      "language": "en",
+      "kind": "feature",
+      "areas": [
+        "forge",
+        "writing"
+      ],
+      "components": [
+        "writing-tone",
+        "marketing-tone",
+        "operations-tone"
+      ],
+      "relatedSpecs": [],
+      "sectionProvenance": [
+        {
+          "from": "Overview",
+          "to": "Overview"
+        },
+        {
+          "from": "Requirements",
+          "to": "Requirements"
+        },
+        {
+          "from": "Behavior & Flows",
+          "to": "Behavior & Flows"
+        },
+        {
+          "from": "Data & Interfaces",
+          "to": "Data & Interfaces"
+        },
+        {
+          "from": "Acceptance Criteria",
+          "to": "Acceptance Criteria"
+        },
+        {
+          "from": "Decisions & History",
+          "to": "Decisions & History"
+        }
+      ],
+      "disposition": "whole",
+      "sourceSha256": "94f1eec22a2ff8fd58babe8d513dadf3c863df185317a9f58d082950c5f33f33",
+      "overlaySha256": "c469c0c23427a06908df940876db41a3f6c6f52b2d43df0081c6895c29488823"
+    },
+    {
+      "oldPath": "docs/specs/002-lifecycle-review-viewer/spec.md",
+      "newSpecIds": [
+        "002-lifecycle-review-viewer"
+      ],
+      "status": "approved",
+      "statusEvidence": "body Status: approved",
+      "language": "ko",
+      "kind": "system",
+      "areas": [
+        "forge",
+        "review"
+      ],
+      "components": [
+        "review-viewer",
+        "writing-specs",
+        "writing-plans",
+        "executing-plans"
+      ],
+      "relatedSpecs": [
+        {
+          "id": "008-structured-spec-pages",
+          "relation": "relatedTo"
+        }
+      ],
+      "sectionProvenance": [
+        {
+          "from": "Overview",
+          "to": "Overview"
+        },
+        {
+          "from": "Requirements",
+          "to": "Requirements"
+        },
+        {
+          "from": "Behavior & Flows",
+          "to": "Behavior & Flows"
+        },
+        {
+          "from": "Data & Interfaces",
+          "to": "Data & Interfaces"
+        },
+        {
+          "from": "Acceptance Criteria",
+          "to": "Acceptance Criteria"
+        },
+        {
+          "from": "Decisions & History",
+          "to": "Decisions & History"
+        }
+      ],
+      "disposition": "whole",
+      "sourceSha256": "8c23d8d0e008d3af19406a9abd615092d99cb0c42359418cbf3bc961d73c41e3",
+      "overlaySha256": "75b91e1fa8e46e3c433635adfb0dc047eb773664093d12f9d01ff8445e3805e1"
+    },
+    {
+      "oldPath": "docs/specs/003-repository-maintenance-runbook/spec.md",
+      "newSpecIds": [
+        "003-repository-maintenance-runbook"
+      ],
+      "status": "implemented",
+      "statusEvidence": "body Status: implemented",
+      "language": "ko",
+      "kind": "policy",
+      "areas": [
+        "forge",
+        "maintenance"
+      ],
+      "components": [
+        "maintaining-forge",
+        "extension-manager"
+      ],
+      "relatedSpecs": [
+        {
+          "id": "005-agent-extension-creation",
+          "relation": "relatedTo"
+        }
+      ],
+      "sectionProvenance": [
+        {
+          "from": "Overview",
+          "to": "Overview"
+        },
+        {
+          "from": "Requirements",
+          "to": "Requirements"
+        },
+        {
+          "from": "Behavior & Flows",
+          "to": "Behavior & Flows"
+        },
+        {
+          "from": "Data & Interfaces",
+          "to": "Data & Interfaces"
+        },
+        {
+          "from": "Acceptance Criteria",
+          "to": "Acceptance Criteria"
+        },
+        {
+          "from": "Decisions & History",
+          "to": "Decisions & History"
+        }
+      ],
+      "disposition": "whole",
+      "sourceSha256": "d8f755f4c22052a3770a14b552c293335a4777a430e465cd02e0ebc9595d401b",
+      "overlaySha256": "c7d1779354a9ae0771e6187655f5c247c2c58ce0c16a707582bc704c7f6f879a"
+    },
+    {
+      "oldPath": "docs/specs/004-adaptive-execution-routing/spec.md",
+      "newSpecIds": [
+        "004-adaptive-execution-routing"
+      ],
+      "status": "approved",
+      "statusEvidence": "body Status: approved",
+      "language": "ko",
+      "kind": "policy",
+      "areas": [
+        "forge",
+        "execution"
+      ],
+      "components": [
+        "executing-plans",
+        "adaptive-routing"
+      ],
+      "relatedSpecs": [],
+      "sectionProvenance": [
+        {
+          "from": "Overview",
+          "to": "Overview"
+        },
+        {
+          "from": "Requirements",
+          "to": "Requirements"
+        },
+        {
+          "from": "Behavior & Flows",
+          "to": "Behavior & Flows"
+        },
+        {
+          "from": "Data & Interfaces",
+          "to": "Data & Interfaces"
+        },
+        {
+          "from": "Acceptance Criteria",
+          "to": "Acceptance Criteria"
+        },
+        {
+          "from": "Decisions & History",
+          "to": "Decisions & History"
+        }
+      ],
+      "disposition": "whole",
+      "sourceSha256": "ccbcb55916113c53caf589039fb3082cd0075e77d41998596d4103e05736f9da",
+      "overlaySha256": "3f410d113254307eac87e4d6a1f61d55dec2fb5ebac87f0273fb482a9fa49e4a"
+    },
+    {
+      "oldPath": "docs/specs/005-agent-extension-creation/spec.md",
+      "newSpecIds": [
+        "005-agent-extension-creation"
+      ],
+      "status": "implemented",
+      "statusEvidence": "body Status: implemented",
+      "language": "ko",
+      "kind": "feature",
+      "areas": [
+        "forge",
+        "extensions"
+      ],
+      "components": [
+        "creating-agent-extensions",
+        "extension-manager"
+      ],
+      "relatedSpecs": [
+        {
+          "id": "003-repository-maintenance-runbook",
+          "relation": "relatedTo"
+        }
+      ],
+      "sectionProvenance": [
+        {
+          "from": "Overview",
+          "to": "Overview"
+        },
+        {
+          "from": "Requirements",
+          "to": "Requirements"
+        },
+        {
+          "from": "Behavior & Flows",
+          "to": "Behavior & Flows"
+        },
+        {
+          "from": "Data & Interfaces",
+          "to": "Data & Interfaces"
+        },
+        {
+          "from": "Acceptance Criteria",
+          "to": "Acceptance Criteria"
+        },
+        {
+          "from": "Decisions & History",
+          "to": "Decisions & History"
+        }
+      ],
+      "disposition": "whole",
+      "sourceSha256": "49c46c360e83382726ccbec0c232c44961bfbf4c90046bdba658b80391b8df84",
+      "overlaySha256": "cf6ab710c03359a5c00688be3ba36a9a5c70aab8841cbcbb72eba704a2517973"
+    },
+    {
+      "oldPath": "docs/specs/006-ui-design-skill-split/spec.md",
+      "newSpecIds": [
+        "006-ui-design-skill-split"
+      ],
+      "status": "approved",
+      "statusEvidence": "body Status: approved",
+      "language": "ko",
+      "kind": "feature",
+      "areas": [
+        "forge",
+        "design"
+      ],
+      "components": [
+        "web-app-design",
+        "website-design",
+        "using-forge"
+      ],
+      "relatedSpecs": [
+        {
+          "id": "002-lifecycle-review-viewer",
+          "relation": "relatedTo"
+        }
+      ],
+      "sectionProvenance": [
+        {
+          "from": "Overview",
+          "to": "Overview"
+        },
+        {
+          "from": "Requirements",
+          "to": "Requirements"
+        },
+        {
+          "from": "Behavior & Flows",
+          "to": "Behavior & Flows"
+        },
+        {
+          "from": "Data & Interfaces",
+          "to": "Data & Interfaces"
+        },
+        {
+          "from": "Acceptance Criteria",
+          "to": "Acceptance Criteria"
+        },
+        {
+          "from": "Decisions & History",
+          "to": "Decisions & History"
+        }
+      ],
+      "disposition": "whole",
+      "sourceSha256": "4f011616a4f5cc255a2743bd5f6e6f5e3f5a1bfa499e448555443c72a8445fb9",
+      "overlaySha256": "826b3e1eb45c28f88ad5767fe8dbcc2d815c0d41ce865520572bc63cc16e1a43"
+    },
+    {
+      "oldPath": "docs/specs/007-ui-design-removal/spec.md",
+      "newSpecIds": [
+        "007-ui-design-removal"
+      ],
+      "status": "implemented",
+      "statusEvidence": "body Status: implemented",
+      "language": "ko",
+      "kind": "feature",
+      "areas": [
+        "forge",
+        "design"
+      ],
+      "components": [
+        "web-app-design",
+        "website-design",
+        "using-forge"
+      ],
+      "relatedSpecs": [
+        {
+          "id": "006-ui-design-skill-split",
+          "relation": "refines"
+        },
+        {
+          "id": "002-lifecycle-review-viewer",
+          "relation": "relatedTo"
+        }
+      ],
+      "sectionProvenance": [
+        {
+          "from": "Overview",
+          "to": "Overview"
+        },
+        {
+          "from": "Requirements",
+          "to": "Requirements"
+        },
+        {
+          "from": "Behavior & Flows",
+          "to": "Behavior & Flows"
+        },
+        {
+          "from": "Data & Interfaces",
+          "to": "Data & Interfaces"
+        },
+        {
+          "from": "Acceptance Criteria",
+          "to": "Acceptance Criteria"
+        },
+        {
+          "from": "Decisions & History",
+          "to": "Decisions & History"
+        }
+      ],
+      "disposition": "whole",
+      "sourceSha256": "34063b3c1b70f9d21790e929b37d9f33f79aac0d306fbc76c15bccd2cd7447e2",
+      "overlaySha256": "ee3a081bdcb04ba14308eff14c6b999acd30619fd0e7c06cf89b82ad9b68b344"
+    },
+    {
+      "oldPath": "docs/specs/008-structured-spec-pages/spec.md",
+      "newSpecIds": [
+        "008-structured-spec-pages"
+      ],
+      "status": "approved",
+      "statusEvidence": "body Status: approved",
+      "language": "ko",
+      "kind": "system",
+      "areas": [
+        "forge",
+        "specs"
+      ],
+      "components": [
+        "writing-specs",
+        "spec-docs"
+      ],
+      "relatedSpecs": [
+        {
+          "id": "002-lifecycle-review-viewer",
+          "relation": "relatedTo"
+        }
+      ],
+      "sectionProvenance": [
+        {
+          "from": "Overview",
+          "to": "Overview"
+        },
+        {
+          "from": "Requirements",
+          "to": "Requirements"
+        },
+        {
+          "from": "Behavior & Flows",
+          "to": "Behavior & Flows"
+        },
+        {
+          "from": "Data & Interfaces",
+          "to": "Data & Interfaces"
+        },
+        {
+          "from": "Acceptance Criteria",
+          "to": "Acceptance Criteria"
+        },
+        {
+          "from": "Decisions & History",
+          "to": "Decisions & History"
+        }
+      ],
+      "disposition": "whole",
+      "sourceSha256": "ec6a581e12dc6bbf26f16fe30683ecff0412d2ab1419d3625fa5d8b183881b1f",
+      "overlaySha256": "b5c67b3ec4c53e73aaf7c912eb25b41ae031282e332573367157f43a20b2ec15"
+    }
+  ],
+  "nonSpecDocuments": [
+    {
+      "oldPath": "docs/specs/2026-07-04-forge-plugin-design.md",
+      "newPath": "docs/research/2026-07-04-forge-plugin-design.md",
+      "disposition": "move",
+      "sourceSha256": "fde1f774ce36fcb29e6daa6956526cc0eeb6f47a5b09c0bbd1d8876d91c92f2e"
+    }
+  ],
+  "artifactDispositions": [
+    {
+      "oldPath": "docs/plans/001-viewer-artifact-lifecycle/plan.md",
+      "newPath": null,
+      "disposition": "delete",
+      "sourceSha256": "5b8b26671af2ef583fd02e3114eb3d70ca8669e8c6d0b91ad4c1a19c5945a1bf",
+      "provenanceTarget": [
+        "002-lifecycle-review-viewer",
+        "008-structured-spec-pages"
+      ],
+      "reason": "active legacy plan is superseded by approved specs and plan 007"
+    },
+    {
+      "oldPath": "docs/plans/002-default-subagent-routing/plan.md",
+      "newPath": "docs/plans/002-default-subagent-routing/plan.md",
+      "disposition": "preserve-and-migrate-header-trace-metadata",
+      "sourceSha256": "35566e90929cb63451e9793cc211a5bb542f1ffafdbd433d05b1bc5b87bfae7a",
+      "overlaySha256": "debd1c7c4f1091fe4767b5d721432618d3ba80f1dea0b3328a55dd0c3a07876f",
+      "allowedRewrites": [
+        {
+          "type": "header",
+          "task": null,
+          "baseline": {
+            "startByte": 172,
+            "endByte": 271,
+            "text": "**Related Specs:**\n- `docs/specs/004-adaptive-execution-routing/spec.md`: R28–R31 · AC17–AC18\n",
+            "sha256": "6725794d6ae37daa063d3c6098cfa4ca0ee1a6b7cfee04b0d0db504e50c20796"
+          },
+          "overlay": {
+            "startByte": 172,
+            "endByte": 350,
+            "text": "**Related Specs:**\n- id: 004-adaptive-execution-routing\n  path: docs/specs/004-adaptive-execution-routing/spec.md\n  requirements: [R28, R29, R30, R31]\n  acceptance: [AC17, AC18]\n",
+            "sha256": "96b63f05c04111184f099cd51d276850eb29b461c1d1f8feb32b3b4b1e950531"
+          },
+          "provenance": "canonical Related Specs object list"
+        },
+        {
+          "type": "trace",
+          "task": 1,
+          "baseline": {
+            "startByte": 2282,
+            "endByte": 2309,
+            "text": " (R28–R31 · AC17–AC18)",
+            "sha256": "eb0abe4ed14eb8aa244091d879ef2bdf83afc757ffe1ba822c4234c80752f769"
+          },
+          "overlay": {
+            "startByte": 2361,
+            "endByte": 2390,
+            "text": " (004 R28–R31, AC17–AC18)",
+            "sha256": "775cd905b53efe506029c523074ae1b1e3bcdeb7c113330f42f6e7682f11d97b"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 1,
+          "baseline": {
+            "startByte": 2908,
+            "endByte": 2929,
+            "text": "- Dependencies: none\n",
+            "sha256": "2384f2257a81109488436a77f66ff23e8c999967d48cb600b000d400e4047e53"
+          },
+          "overlay": {
+            "startByte": 2989,
+            "endByte": 3027,
+            "text": "- Route: route-1\n- Dependencies: none\n",
+            "sha256": "3b89a63c733b0277810ce8c0c4eda19acc69ccc323ae461894c7bfa8573b608c"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 2,
+          "baseline": {
+            "startByte": 5052,
+            "endByte": 5066,
+            "text": " (R31 · AC18)",
+            "sha256": "4ee9161d03238614c438b8320d26528049c4744986f5f8fb02ae7dc0186da82d"
+          },
+          "overlay": {
+            "startByte": 5150,
+            "endByte": 5166,
+            "text": " (004 R31, AC18)",
+            "sha256": "292db4cbaad559aebc6af100527e035fdc208f7fd8af972117874649155449af"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 2,
+          "baseline": {
+            "startByte": 5480,
+            "endByte": 5503,
+            "text": "- Dependencies: Task 1\n",
+            "sha256": "ca437f107ab2d8a771650d99889aa1560a3ef6b4f23204da167697d955da1dfb"
+          },
+          "overlay": {
+            "startByte": 5580,
+            "endByte": 5620,
+            "text": "- Route: route-2\n- Dependencies: Task 1\n",
+            "sha256": "bf137538e6072e81d9ea1c48a6a550be5b81aed5eccfe518894de4542253c70e"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        }
+      ],
+      "provenanceTarget": [
+        "004-adaptive-execution-routing"
+      ],
+      "reason": "completed historical plan remains selectable by the canonical plan parser; only header, Task trace, and direct Route/dependency metadata are rewritten"
+    },
+    {
+      "oldPath": "docs/plans/003-agent-extension-creation/plan.md",
+      "newPath": "docs/plans/003-agent-extension-creation/plan.md",
+      "disposition": "preserve-and-migrate-header-trace-metadata",
+      "sourceSha256": "333eddd75a6ecde53b5ec8bf0cf07567ea5a90deb5fa9e0e10cc9b4c2a54f796",
+      "overlaySha256": "0f5275b31aa19269ccd548ccf83d54eb8c87eef7f307c377695485dbfe51114b",
+      "allowedRewrites": [
+        {
+          "type": "header",
+          "task": null,
+          "baseline": {
+            "startByte": 186,
+            "endByte": 281,
+            "text": "**Related Specs:**\n- `docs/specs/005-agent-extension-creation/spec.md`: R1–R18 · AC1–AC13\n",
+            "sha256": "8ecae2c1f6529f873d76a64cfa78528853e536e759154a2688ea3be5b69e40f5"
+          },
+          "overlay": {
+            "startByte": 186,
+            "endByte": 478,
+            "text": "**Related Specs:**\n- id: 005-agent-extension-creation\n  path: docs/specs/005-agent-extension-creation/spec.md\n  requirements: [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18]\n  acceptance: [AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9, AC10, AC11, AC12, AC13]\n",
+            "sha256": "0d129b754c2867827aac0efc7acbc3910daa992e2950fe034ab1b312835ccc73"
+          },
+          "provenance": "canonical Related Specs object list"
+        },
+        {
+          "type": "trace",
+          "task": 1,
+          "baseline": {
+            "startByte": 6514,
+            "endByte": 6602,
+            "text": " (R2, R3, R4, R5, R6, R7, R10, R13, R14, R15, R16 · AC2, AC3, AC4, AC5, AC6, AC8, AC11)",
+            "sha256": "5fa0798c849f7d2f71ad07766c73556e523a58a436daae6c04232df00d0f5e8d"
+          },
+          "overlay": {
+            "startByte": 6711,
+            "endByte": 6801,
+            "text": " (005 R2, R3, R4, R5, R6, R7, R10, R13, R14, R15, R16, AC2, AC3, AC4, AC5, AC6, AC8, AC11)",
+            "sha256": "d350ad24c7ecd2753e1924a750d253e503f0be8aa053cbc8d183df30089c0dae"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 1,
+          "baseline": {
+            "startByte": 7645,
+            "endByte": 7666,
+            "text": "- Dependencies: none\n",
+            "sha256": "2384f2257a81109488436a77f66ff23e8c999967d48cb600b000d400e4047e53"
+          },
+          "overlay": {
+            "startByte": 7844,
+            "endByte": 7882,
+            "text": "- Route: route-1\n- Dependencies: none\n",
+            "sha256": "3b89a63c733b0277810ce8c0c4eda19acc69ccc323ae461894c7bfa8573b608c"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 2,
+          "baseline": {
+            "startByte": 12330,
+            "endByte": 12395,
+            "text": " (R3, R7, R8, R9, R13, R14, R15, R16 · AC2, AC3, AC6, AC9, AC10)",
+            "sha256": "aff8031b739b689030b870c071d00516e8acf0cb82b040210c1ace92b4a3bda3"
+          },
+          "overlay": {
+            "startByte": 12546,
+            "endByte": 12613,
+            "text": " (005 R3, R7, R8, R9, R13, R14, R15, R16, AC2, AC3, AC6, AC9, AC10)",
+            "sha256": "a48afba85377b81f1dca7bc1afb7f6633d55c8f59cdf3d253ebbfc8fe1beff75"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 2,
+          "baseline": {
+            "startByte": 13237,
+            "endByte": 13260,
+            "text": "- Dependencies: Task 1\n",
+            "sha256": "ca437f107ab2d8a771650d99889aa1560a3ef6b4f23204da167697d955da1dfb"
+          },
+          "overlay": {
+            "startByte": 13455,
+            "endByte": 13495,
+            "text": "- Route: route-2\n- Dependencies: Task 1\n",
+            "sha256": "bf137538e6072e81d9ea1c48a6a550be5b81aed5eccfe518894de4542253c70e"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 3,
+          "baseline": {
+            "startByte": 16682,
+            "endByte": 16758,
+            "text": " (R3, R4, R6, R10, R11, R12, R13, R14, R15 · AC4, AC5, AC6, AC8, AC9, AC10)",
+            "sha256": "340620d48ec1feb4bcf2f55423a4bcd71df0d5618072b22bf2b7477438760dd6"
+          },
+          "overlay": {
+            "startByte": 16917,
+            "endByte": 16995,
+            "text": " (005 R3, R4, R6, R10, R11, R12, R13, R14, R15, AC4, AC5, AC6, AC8, AC9, AC10)",
+            "sha256": "e72564f50f255889ed0bf97aeec0d43cb77109e5612919af9fec59c100c1d57d"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 3,
+          "baseline": {
+            "startByte": 17634,
+            "endByte": 17681,
+            "text": "- Dependencies: Task 1; Task 2의 state format\n",
+            "sha256": "80f579d9567cc9582a6740f9dc83abb426147b16ac484c749142f2b86b1184ea"
+          },
+          "overlay": {
+            "startByte": 17871,
+            "endByte": 17935,
+            "text": "- Route: route-2\n- Dependencies: Task 1; Task 2의 state format\n",
+            "sha256": "f2991baa6b9f747349c59ba0026a296ffb84e05b8e7baef288babbf10e9a7c38"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 4,
+          "baseline": {
+            "startByte": 21571,
+            "endByte": 21634,
+            "text": " (R1, R5, R6, R16, R17, R18 · AC1, AC7, AC8, AC11, AC12, AC13)",
+            "sha256": "23d91c784a9488f7db28f4788a0fd28a781898ef2985eacb62c8eae41414dce2"
+          },
+          "overlay": {
+            "startByte": 21825,
+            "endByte": 21890,
+            "text": " (005 R1, R5, R6, R16, R17, R18, AC1, AC7, AC8, AC11, AC12, AC13)",
+            "sha256": "785006b2c85bf5e220bb2fa2d285e39c6f0a8b57efd057bd449cd58822bb5d4b"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 4,
+          "baseline": {
+            "startByte": 22767,
+            "endByte": 22795,
+            "text": "- Dependencies: Tasks 1–3\n",
+            "sha256": "a8b33bde322f5a9d216fc2d67e94d2010a54ff453667517633f88abee9145e81"
+          },
+          "overlay": {
+            "startByte": 23023,
+            "endByte": 23068,
+            "text": "- Route: route-3\n- Dependencies: Tasks 1–3\n",
+            "sha256": "90d811805586aff78ad6ce1108546d3a951ff1f184bc2b3ca6952a29db44b853"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 5,
+          "baseline": {
+            "startByte": 26933,
+            "endByte": 27086,
+            "text": " (R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18 · AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9, AC10, AC11, AC12, AC13)",
+            "sha256": "f234dd284ac0ace90103c770abf4a4e9a7e7a49126d4b1334cc99b6da69fcaf5"
+          },
+          "overlay": {
+            "startByte": 27206,
+            "endByte": 27361,
+            "text": " (005 R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9, AC10, AC11, AC12, AC13)",
+            "sha256": "4201797c3803bb1b4779b9632f336e3afb2581685dd4abf6f7124234ad15ed92"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 5,
+          "baseline": {
+            "startByte": 27578,
+            "endByte": 27606,
+            "text": "- Dependencies: Tasks 1–4\n",
+            "sha256": "b05652c47159368a28398ca62e26db35bd2551ac76550a463925e2c9d3d191e9"
+          },
+          "overlay": {
+            "startByte": 27853,
+            "endByte": 27898,
+            "text": "- Route: route-4\n- Dependencies: Tasks 1–4\n",
+            "sha256": "12cdf2a4479973af05a9a0ce2762772fcd410a004df78d4c2d63e4501024de37"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        }
+      ],
+      "provenanceTarget": [
+        "005-agent-extension-creation"
+      ],
+      "reason": "completed historical plan remains selectable by the canonical plan parser; only header, Task trace, and direct Route/dependency metadata are rewritten"
+    },
+    {
+      "oldPath": "docs/plans/004-forge-skill-version-gate/plan.md",
+      "newPath": "docs/plans/004-forge-skill-version-gate/plan.md",
+      "disposition": "preserve-and-migrate-header-trace-metadata",
+      "sourceSha256": "2f2788508c5f178a03aab7d4baaff57beba1d5922a2534413600939aa05ff60b",
+      "overlaySha256": "74a746842ca68d8dbde6937ac747ab4df93ed6b62a55dbf20d11ff1f188a601a",
+      "allowedRewrites": [
+        {
+          "type": "header",
+          "task": null,
+          "baseline": {
+            "startByte": 223,
+            "endByte": 320,
+            "text": "**Related Specs:**\n- `docs/specs/003-repository-maintenance-runbook/spec.md`: R4, R9 · AC7, AC9\n",
+            "sha256": "c936c4b574c09e3e757b14cf644c06ce8c0de02ad1622e4fe73ab2ca57d15803"
+          },
+          "overlay": {
+            "startByte": 223,
+            "endByte": 395,
+            "text": "**Related Specs:**\n- id: 003-repository-maintenance-runbook\n  path: docs/specs/003-repository-maintenance-runbook/spec.md\n  requirements: [R4, R9]\n  acceptance: [AC7, AC9]\n",
+            "sha256": "d2b390660449beaaa2fbd57cf973b3e5b620c6ce450dab026236768902c4425f"
+          },
+          "provenance": "canonical Related Specs object list"
+        },
+        {
+          "type": "trace",
+          "task": 1,
+          "baseline": {
+            "startByte": 1775,
+            "endByte": 1796,
+            "text": " (R4, R9 · AC7, AC9)",
+            "sha256": "b21c2f5caaeee84a826d30c1bd48036d39efee8d4b33705e59ce8469e3fb1975"
+          },
+          "overlay": {
+            "startByte": 1850,
+            "endByte": 1873,
+            "text": " (003 R4, R9, AC7, AC9)",
+            "sha256": "0adb5d3619da0918b7e1731dd5ba038eadf6966afa361538bfac2ed537388f9a"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 1,
+          "baseline": {
+            "startByte": 2646,
+            "endByte": 2664,
+            "text": "- 의존성: none\n",
+            "sha256": "0a6f1f1b04bbb8a925bf29f442d3b8214f98ed1c16016b43b47b879f0108e5d9"
+          },
+          "overlay": {
+            "startByte": 2723,
+            "endByte": 2758,
+            "text": "- Route: route-1\n- 의존성: none\n",
+            "sha256": "bbcdfff7da120690cee26225cc61c94d3c275eaf2078839743ec3857daf5daeb"
+          },
+          "provenance": "single-task deterministic fallback; synthetic route-1"
+        }
+      ],
+      "provenanceTarget": [
+        "003-repository-maintenance-runbook"
+      ],
+      "reason": "completed historical plan remains selectable by the canonical plan parser; only header, Task trace, and direct Route/dependency metadata are rewritten"
+    },
+    {
+      "oldPath": "docs/plans/005-ui-design-skill-split/plan.md",
+      "newPath": "docs/plans/005-ui-design-skill-split/plan.md",
+      "disposition": "preserve-and-migrate-header-trace-metadata",
+      "sourceSha256": "94815c65e34f03a6afd032785a700f0cf8083e2c2a93537c88c06b0129755b4e",
+      "overlaySha256": "d0192101e11084f25287eabc8cb8588d5a391907ace5a214cd7341f0f60dd8c7",
+      "allowedRewrites": [
+        {
+          "type": "header",
+          "task": null,
+          "baseline": {
+            "startByte": 221,
+            "endByte": 399,
+            "text": "**Related Specs:**\n- `docs/specs/006-ui-design-skill-split/spec.md`: R1–R9, R11–R12 · AC1–AC8, AC10–AC11\n- `docs/specs/002-lifecycle-review-viewer/spec.md`: R57 · AC14\n",
+            "sha256": "4e9e0e436d7d2418273032eadf53afacff782ab6e0de81a6eebf4836d32183fb"
+          },
+          "overlay": {
+            "startByte": 221,
+            "endByte": 587,
+            "text": "**Related Specs:**\n- id: 006-ui-design-skill-split\n  path: docs/specs/006-ui-design-skill-split/spec.md\n  requirements: [R1, R2, R3, R4, R5, R6, R7, R8, R9, R11, R12]\n  acceptance: [AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC10, AC11]\n- id: 002-lifecycle-review-viewer\n  path: docs/specs/002-lifecycle-review-viewer/spec.md\n  requirements: [R57]\n  acceptance: [AC14]\n",
+            "sha256": "0641883465cf6ed5a9b77d5056e9151543ccfa348b428c383b7de9f66499eef4"
+          },
+          "provenance": "canonical Related Specs object list"
+        },
+        {
+          "type": "trace",
+          "task": 1,
+          "baseline": {
+            "startByte": 7322,
+            "endByte": 7385,
+            "text": " (R1–R9, R11–R12, R57 · AC1–AC4, AC7, AC10–AC11, AC14)",
+            "sha256": "3b0710aea0dc46daf1b94932f0f7ade0665eab70fdfe257ba8ce18a9ef3d178a"
+          },
+          "overlay": {
+            "startByte": 7510,
+            "endByte": 7581,
+            "text": " (006 R1–R9, R11–R12, AC1–AC4, AC7, AC10–AC11 · 002 R57, AC14)",
+            "sha256": "21bf2482d56a727f07300955c468e2bc2616ee258e0d7541b56ab1d6f4fa0e7f"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 1,
+          "baseline": {
+            "startByte": 7824,
+            "endByte": 7842,
+            "text": "- 의존성: none\n",
+            "sha256": "0a6f1f1b04bbb8a925bf29f442d3b8214f98ed1c16016b43b47b879f0108e5d9"
+          },
+          "overlay": {
+            "startByte": 8020,
+            "endByte": 8055,
+            "text": "- Route: route-1\n- 의존성: none\n",
+            "sha256": "bbcdfff7da120690cee26225cc61c94d3c275eaf2078839743ec3857daf5daeb"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 2,
+          "baseline": {
+            "startByte": 12345,
+            "endByte": 12394,
+            "text": " (R1, R2, R5, R11–R12 · AC1, AC5, AC10–AC11)",
+            "sha256": "a74edd3f6b8f2c1c8224af10ccd357db3bb61594f804da2817697b2d5d38065c"
+          },
+          "overlay": {
+            "startByte": 12558,
+            "endByte": 12609,
+            "text": " (006 R1, R2, R5, R11–R12, AC1, AC5, AC10–AC11)",
+            "sha256": "d6b83a1009db16449733c6b1a955ef842a925c06e697ee2931453e722ebb51bb"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 2,
+          "baseline": {
+            "startByte": 12784,
+            "endByte": 12804,
+            "text": "- 의존성: Task 1\n",
+            "sha256": "e3c63d535650f3da7155262dff1c4498bfd7377daf48c40b120553baf2b6fd34"
+          },
+          "overlay": {
+            "startByte": 12999,
+            "endByte": 13036,
+            "text": "- Route: route-2\n- 의존성: Task 1\n",
+            "sha256": "030a348f1bfe3df912138f9178ca67f8e74bdb26916ee2b64f1a021f5e9fce61"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 3,
+          "baseline": {
+            "startByte": 21583,
+            "endByte": 21629,
+            "text": " (R3–R5, R11–R12 · AC2, AC6, AC10–AC11)",
+            "sha256": "3780f7df83945effea02caa3fd04a9d058a70bea6ae3231f3871e1d6cb539210"
+          },
+          "overlay": {
+            "startByte": 21815,
+            "endByte": 21863,
+            "text": " (006 R3–R5, R11–R12, AC2, AC6, AC10–AC11)",
+            "sha256": "b075186bfbd94b4e78889ef938ba44d0b71d1ebd5002795829407e0ce832f580"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 3,
+          "baseline": {
+            "startByte": 22014,
+            "endByte": 22034,
+            "text": "- 의존성: Task 1\n",
+            "sha256": "e3c63d535650f3da7155262dff1c4498bfd7377daf48c40b120553baf2b6fd34"
+          },
+          "overlay": {
+            "startByte": 22248,
+            "endByte": 22285,
+            "text": "- Route: route-3\n- 의존성: Task 1\n",
+            "sha256": "5dd5f569d25b25f14412da1831cb3cadd3e64d02051de9012e4550060ed1a2d1"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 4,
+          "baseline": {
+            "startByte": 30130,
+            "endByte": 30193,
+            "text": " (R6–R8, R11–R12, R57 · AC1–AC4, AC7, AC10–AC11, AC14)",
+            "sha256": "2fb4a7f727f526004ac10e7ffd9c96e7a75cb05a5c20df1f99d3d67dbb263ea8"
+          },
+          "overlay": {
+            "startByte": 30381,
+            "endByte": 30452,
+            "text": " (006 R6–R8, R11–R12, AC1–AC4, AC7, AC10–AC11 · 002 R57, AC14)",
+            "sha256": "6d191b29aa8609ac13ec7719438195dc7a3f77859bd61f202e9c8dc6ca01283c"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 4,
+          "baseline": {
+            "startByte": 31145,
+            "endByte": 31173,
+            "text": "- 의존성: Task 2, Task 3\n",
+            "sha256": "86c7fcae94330a38a1ff196c72ec26298edb5098e1e6b720f687e0386554e4f0"
+          },
+          "overlay": {
+            "startByte": 31404,
+            "endByte": 31449,
+            "text": "- Route: route-4\n- 의존성: Task 2, Task 3\n",
+            "sha256": "2e8123dabfadb97eaa4d16bf55bed84415d250b025f690f406c94f871dc6d7ac"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 5,
+          "baseline": {
+            "startByte": 39387,
+            "endByte": 39410,
+            "text": " (R8–R9 · AC7–AC8)",
+            "sha256": "8d4086687bd449db89909739904277168bc80a016b282e176996cc705d6b29ff"
+          },
+          "overlay": {
+            "startByte": 39663,
+            "endByte": 39688,
+            "text": " (006 R8–R9, AC7–AC8)",
+            "sha256": "595e48eb1aa50a8f85ef0ed82639613adb820f13141057e46238cbab8c4e33ea"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 5,
+          "baseline": {
+            "startByte": 39916,
+            "endByte": 39936,
+            "text": "- 의존성: Task 4\n",
+            "sha256": "2f66c7fa3a1418df43d1086aa8bc5800e57d27662d7915b7c262725d58f04b6f"
+          },
+          "overlay": {
+            "startByte": 40194,
+            "endByte": 40231,
+            "text": "- Route: route-5\n- 의존성: Task 4\n",
+            "sha256": "18412aaf40d5cffee7d25955c5e00c41485ba42eb7297fa36089eda7e5058895"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 6,
+          "baseline": {
+            "startByte": 44745,
+            "endByte": 44803,
+            "text": " (R1–R9, R11–R12, R57 · AC1–AC8, AC10–AC11, AC14)",
+            "sha256": "67b516b70b22ed82888800903cf32d2e3d75d57d68d13ed34a9f57b1825b7ec4"
+          },
+          "overlay": {
+            "startByte": 45040,
+            "endByte": 45106,
+            "text": " (006 R1–R9, R11–R12, AC1–AC8, AC10–AC11 · 002 R57, AC14)",
+            "sha256": "f80e0c42052ca0f8ac9c0fa0db70da1c10739de2bcc2ac8254ffba16ad8624a8"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 6,
+          "baseline": {
+            "startByte": 45619,
+            "endByte": 45639,
+            "text": "- 의존성: Task 5\n",
+            "sha256": "bb9b088a669d6d28ae456840c6bb74c692d8753d71bb54fb16dca71c2b3ff232"
+          },
+          "overlay": {
+            "startByte": 45922,
+            "endByte": 45959,
+            "text": "- Route: route-6\n- 의존성: Task 5\n",
+            "sha256": "9b43b67b3cdc0f17c2ec2511681fa0cf92904b4dafbff0de68cda9c00e1dc566"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        }
+      ],
+      "provenanceTarget": [
+        "006-ui-design-skill-split",
+        "002-lifecycle-review-viewer"
+      ],
+      "reason": "completed historical plan remains selectable by the canonical plan parser; only header, Task trace, and direct Route/dependency metadata are rewritten"
+    },
+    {
+      "oldPath": "docs/plans/006-ui-design-removal/plan.md",
+      "newPath": "docs/plans/006-ui-design-removal/plan.md",
+      "disposition": "preserve-and-migrate-header-trace-metadata",
+      "sourceSha256": "c8e3c41c1e29cec36880af230328981a18930b66fed757529051806d163c6b3f",
+      "overlaySha256": "583cdb1d1dacfad83bf6a2c5fc41c6edf1a7bbec1a4796a641c6cbc8cc5adb4c",
+      "allowedRewrites": [
+        {
+          "type": "header",
+          "task": null,
+          "baseline": {
+            "startByte": 244,
+            "endByte": 402,
+            "text": "**Related Specs:**\n- `docs/specs/007-ui-design-removal/spec.md`: R1–R8 · AC1–AC7\n- `docs/specs/006-ui-design-skill-split/spec.md`: R10, R13 · AC9, AC12\n",
+            "sha256": "f06c19524fb37b154337572d37ab043789ced5fc5e21716e360c8b20d42d5024"
+          },
+          "overlay": {
+            "startByte": 244,
+            "endByte": 577,
+            "text": "**Related Specs:**\n- id: 007-ui-design-removal\n  path: docs/specs/007-ui-design-removal/spec.md\n  requirements: [R1, R2, R3, R4, R5, R6, R7, R8]\n  acceptance: [AC1, AC2, AC3, AC4, AC5, AC6, AC7]\n- id: 006-ui-design-skill-split\n  path: docs/specs/006-ui-design-skill-split/spec.md\n  requirements: [R10, R13]\n  acceptance: [AC9, AC12]\n",
+            "sha256": "3d60750ae794a5eecde396003a91b1aa09b90231d9bd74e7b8919634bf135f03"
+          },
+          "provenance": "canonical Related Specs object list"
+        },
+        {
+          "type": "trace",
+          "task": 1,
+          "baseline": {
+            "startByte": 3856,
+            "endByte": 3918,
+            "text": " (007:R1–R3, R7 · 007:AC1–AC2, AC6 · 006:R10 · 006:AC9)",
+            "sha256": "f526c39e36e19afd1f94be91b25f91f75c47f41c23e53c31cf608d25e84e61b9"
+          },
+          "overlay": {
+            "startByte": 4031,
+            "endByte": 4081,
+            "text": " (007 R1–R3, R7, AC1–AC2, AC6 · 006 R10, AC9)",
+            "sha256": "112a1d85c5d72ed6788cfcd41feea82d420fbdef80ab518ce5b911a64c6ff66e"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 1,
+          "baseline": {
+            "startByte": 4432,
+            "endByte": 4450,
+            "text": "- 의존성: none\n",
+            "sha256": "0a6f1f1b04bbb8a925bf29f442d3b8214f98ed1c16016b43b47b879f0108e5d9"
+          },
+          "overlay": {
+            "startByte": 4595,
+            "endByte": 4630,
+            "text": "- Route: route-1\n- 의존성: none\n",
+            "sha256": "bbcdfff7da120690cee26225cc61c94d3c275eaf2078839743ec3857daf5daeb"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 2,
+          "baseline": {
+            "startByte": 8041,
+            "endByte": 8094,
+            "text": " (007:R2–R3 · 007:AC1–AC2 · 006:R10 · 006:AC9)",
+            "sha256": "ed9d80ff43ea02fd8b908a0664b4e06f3aeaafbcad7cf1c8b10d49bf1c9405a4"
+          },
+          "overlay": {
+            "startByte": 8221,
+            "endByte": 8262,
+            "text": " (007 R2–R3, AC1–AC2 · 006 R10, AC9)",
+            "sha256": "3a0ac40f43c24b8339a4c797d502a29845656a2757acda358e0550ff547f7d8b"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 2,
+          "baseline": {
+            "startByte": 8865,
+            "endByte": 8885,
+            "text": "- 의존성: Task 1\n",
+            "sha256": "e3c63d535650f3da7155262dff1c4498bfd7377daf48c40b120553baf2b6fd34"
+          },
+          "overlay": {
+            "startByte": 9033,
+            "endByte": 9070,
+            "text": "- Route: route-2\n- 의존성: Task 1\n",
+            "sha256": "030a348f1bfe3df912138f9178ca67f8e74bdb26916ee2b64f1a021f5e9fce61"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 3,
+          "baseline": {
+            "startByte": 11590,
+            "endByte": 11649,
+            "text": " (007:R4–R7 · 007:AC3–AC4, AC6 · 006:R13 · 006:AC12)",
+            "sha256": "13517790d490512da1ae9168706bfeadcbd431c35c06898eaffa48e5b90373f5"
+          },
+          "overlay": {
+            "startByte": 11775,
+            "endByte": 11822,
+            "text": " (007 R4–R7, AC3–AC4, AC6 · 006 R13, AC12)",
+            "sha256": "1bb6d48887b4be1990689b0d23b7de857dfb9cd887d002efaea6b650b421e235"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 3,
+          "baseline": {
+            "startByte": 12083,
+            "endByte": 12103,
+            "text": "- 의존성: Task 2\n",
+            "sha256": "28643f5779cb48c761769b8dde6441f172032be4af0a5f3f30c89c41f0a7b495"
+          },
+          "overlay": {
+            "startByte": 12256,
+            "endByte": 12293,
+            "text": "- Route: route-3\n- 의존성: Task 2\n",
+            "sha256": "f2199e1aec6e49676931637a8465b71995b18562d3e56e64249f3581ec31b644"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 4,
+          "baseline": {
+            "startByte": 15135,
+            "endByte": 15189,
+            "text": " (007:R4–R6 · 007:AC3–AC4 · 006:R13 · 006:AC12)",
+            "sha256": "297550afff7e18e400f8a2a542a64ad9b5f808d68e47e902f97ab5b1e9de18ac"
+          },
+          "overlay": {
+            "startByte": 15325,
+            "endByte": 15367,
+            "text": " (007 R4–R6, AC3–AC4 · 006 R13, AC12)",
+            "sha256": "5cb451f4cc312159d32316c27548a2b87f1615a17c88d337725da8e48708daa3"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 4,
+          "baseline": {
+            "startByte": 15747,
+            "endByte": 15767,
+            "text": "- 의존성: Task 3\n",
+            "sha256": "17f9f76cf2d024e701c11b7904eac70b7a05d88e0843020ac974edf604c1c0da"
+          },
+          "overlay": {
+            "startByte": 15925,
+            "endByte": 15962,
+            "text": "- Route: route-4\n- 의존성: Task 3\n",
+            "sha256": "4b0b7ab12a90369f736bcbcbe7f047f1ab66345ea2b699cf7c10780faa5fbaf6"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        },
+        {
+          "type": "trace",
+          "task": 5,
+          "baseline": {
+            "startByte": 18608,
+            "endByte": 18691,
+            "text": " (007:R1, R5, R7–R8 · 007:AC1–AC2, AC5–AC7 · 006:R10, R13 · 006:AC9, AC12)",
+            "sha256": "a85640cab1144a70dec78968e3c27e46ad474970cd4eb92450870c4e0efa3613"
+          },
+          "overlay": {
+            "startByte": 18803,
+            "endByte": 18874,
+            "text": " (007 R1, R5, R7–R8, AC1–AC2, AC5–AC7 · 006 R10, R13, AC9, AC12)",
+            "sha256": "80d34c01fc47c7ae5d7512983bc7aaa58fd5c73d63295cffc1bb60c487325068"
+          },
+          "provenance": "source-qualified canonical Task trace"
+        },
+        {
+          "type": "metadata",
+          "task": 5,
+          "baseline": {
+            "startByte": 19159,
+            "endByte": 19179,
+            "text": "- 의존성: Task 4\n",
+            "sha256": "2f66c7fa3a1418df43d1086aa8bc5800e57d27662d7915b7c262725d58f04b6f"
+          },
+          "overlay": {
+            "startByte": 19342,
+            "endByte": 19379,
+            "text": "- Route: route-5\n- 의존성: Task 4\n",
+            "sha256": "18412aaf40d5cffee7d25955c5e00c41485ba42eb7297fa36089eda7e5058895"
+          },
+          "provenance": "canonical route plus byte-preserved dependency metadata"
+        }
+      ],
+      "provenanceTarget": [
+        "007-ui-design-removal",
+        "006-ui-design-skill-split"
+      ],
+      "reason": "completed historical plan remains selectable by the canonical plan parser; only header, Task trace, and direct Route/dependency metadata are rewritten"
+    },
+    {
+      "oldPath": ".forge/debug/2026-07-12-codex-hooks-manifest.md",
+      "newPath": "docs/debug/2026-07-12-codex-hooks-manifest.md",
+      "disposition": "move",
+      "sourceSha256": "f116cceb12a8042d7998824e4b2c317f609230db2caf5ec341f664f8cc1832d1",
+      "provenanceTarget": [
+        "003-repository-maintenance-runbook"
+      ],
+      "reason": "durable debug evidence leaves the local-only namespace"
+    },
+    {
+      "oldPath": ".forge/debug/2026-07-12-offline-mermaid-template-token.md",
+      "newPath": "docs/debug/2026-07-12-offline-mermaid-template-token.md",
+      "disposition": "move",
+      "sourceSha256": "97b863b95971534382e8063beebb1ef8a328a9c60eab5545313412843108f407",
+      "provenanceTarget": [
+        "002-lifecycle-review-viewer"
+      ],
+      "reason": "durable debug evidence leaves the local-only namespace"
+    },
+    {
+      "oldPath": ".forge/plans/001-forge-plugin.md",
+      "newPath": null,
+      "disposition": "delete",
+      "sourceSha256": "a6bb334953035c846775d932e4374bfd60e8df1ead53217ee95772adc750ae31",
+      "provenanceTarget": [
+        "docs/research/2026-07-04-forge-plugin-design.md"
+      ],
+      "reason": "implementation decisions are preserved by the promoted design record"
+    },
+    {
+      "oldPath": ".forge/plans/001-tone-overlays.md",
+      "newPath": null,
+      "disposition": "delete",
+      "sourceSha256": "527204d45b0fb385002164b35970afb161883fc1d209713bf791b66d9f575290",
+      "provenanceTarget": [
+        "001-tone-overlays"
+      ],
+      "reason": "implementation decisions are preserved by the numbered spec"
+    },
+    {
+      "oldPath": ".forge/plans/002-lifecycle-review-viewer.md",
+      "newPath": null,
+      "disposition": "delete",
+      "sourceSha256": "55ea35e2bf91174b631c05ca6b3aaa76bad1fb1d840161022847d8c8b42eafef",
+      "provenanceTarget": [
+        "002-lifecycle-review-viewer"
+      ],
+      "reason": "implementation decisions are preserved by the numbered spec"
+    },
+    {
+      "oldPath": ".forge/plans/003-repository-maintenance-runbook.md",
+      "newPath": null,
+      "disposition": "delete",
+      "sourceSha256": "c5dd127512517423ce8d45600ff7b4e271629d68b00029d0710452be111a0575",
+      "provenanceTarget": [
+        "003-repository-maintenance-runbook"
+      ],
+      "reason": "implementation decisions are preserved by the numbered spec"
+    },
+    {
+      "oldPath": ".forge/plans/004-adaptive-execution-routing.md",
+      "newPath": null,
+      "disposition": "delete",
+      "sourceSha256": "5a326b5dab7a85f89fe5ba32ef80067f6d3e900c6c65152cae094410f509f8d6",
+      "provenanceTarget": [
+        "004-adaptive-execution-routing"
+      ],
+      "reason": "implementation decisions are preserved by the numbered spec"
+    }
+  ],
+  "rewrittenLinks": [
+    {
+      "kind": "plain-token",
+      "old": "spec-viewer",
+      "new": "review-viewer",
+      "updatedFiles": [
+        "docs/specs/006-ui-design-skill-split/spec.md",
+        "docs/specs/007-ui-design-removal/spec.md"
+      ],
+      "historicalFiles": [
+        "docs/plans/005-ui-design-skill-split/plan.md",
+        "docs/plans/006-ui-design-removal/plan.md",
+        "docs/plans/007-structured-spec-review-experience/plan.md",
+        "docs/plans/007-structured-spec-review-experience/progress.md",
+        "docs/specs/002-lifecycle-review-viewer/spec.md",
+        "scripts/tests/test-forge-artifact-contract.sh",
+        "scripts/tests/test-ui-design-skill-routing.sh"
+      ],
+      "deletedFiles": [
+        ".forge/debug/2026-07-12-offline-mermaid-template-token.md",
+        ".forge/plans/001-forge-plugin.md",
+        ".forge/plans/002-lifecycle-review-viewer.md",
+        ".forge/plans/003-repository-maintenance-runbook.md",
+        ".forge/plans/004-adaptive-execution-routing.md",
+        "docs/plans/001-viewer-artifact-lifecycle/plan.md",
+        "docs/specs/2026-07-04-forge-plugin-design.md",
+        "plugins/forge/skills/spec-viewer/SKILL.md",
+        "plugins/forge/skills/spec-viewer/tests/test-build-viewer.sh"
+      ]
+    },
+    {
+      "kind": "literal-path",
+      "old": "plugins/forge/skills/spec-viewer/",
+      "new": "plugins/forge/skills/review-viewer/",
+      "updatedFiles": [
+        ".github/workflows/validate.yml",
+        "scripts/tests/test-forge-artifact-contract.sh",
+        "scripts/tests/test-forge-lifecycle-policy.sh",
+        "scripts/tests/test-ui-design-skill-routing.sh"
+      ],
+      "historicalFiles": [
+        "docs/plans/005-ui-design-skill-split/plan.md",
+        "docs/plans/006-ui-design-removal/plan.md",
+        "docs/plans/007-structured-spec-review-experience/plan.md"
+      ],
+      "deletedFiles": [
+        ".forge/debug/2026-07-12-offline-mermaid-template-token.md",
+        ".forge/plans/001-forge-plugin.md",
+        ".forge/plans/002-lifecycle-review-viewer.md",
+        ".forge/plans/003-repository-maintenance-runbook.md",
+        ".forge/plans/004-adaptive-execution-routing.md",
+        "docs/plans/001-viewer-artifact-lifecycle/plan.md"
+      ]
+    }
+  ],
+  "adapterWrites": [
+    ".agent-extensions/maintaining-forge/adapters/antigravity/state.json",
+    ".agent-extensions/maintaining-forge/adapters/claude-code/state.json",
+    ".agent-extensions/maintaining-forge/adapters/codex/state.json",
+    ".agents/skills/maintaining-forge/SKILL.md",
+    ".claude/skills/maintaining-forge/SKILL.md"
+  ]
+}

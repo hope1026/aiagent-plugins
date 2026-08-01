@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>구조화 Spec 목록</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231f5fbf'/%3E%3Cpath d='M18 16h28v6H24v9h18v6H24v11h22v6H18z' fill='white'/%3E%3C/svg%3E">
+<style>
+:root{--page:#f7f4ee;--surface:#fffdf8;--ink:#25282c;--muted:#687078;--line:#d8d2c7;--accent:#1f5fbf;--accent-soft:#e7eefb;font-size:16px}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--page);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6}a{color:var(--accent);text-underline-offset:.16em}a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.shell{width:min(100% - 32px,76rem);margin-inline:auto}.site-header{padding:40px 0 28px;border-bottom:1px solid var(--line);background:var(--surface)}.eyebrow,.catalog-id{margin:0;color:var(--muted);font:600 .78rem/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase}.site-header h1{margin:6px 0 8px;font-size:clamp(2rem,4vw,3.4rem);line-height:1.08;letter-spacing:-.035em}.site-header p:last-child{max-width:76ch}.filters{display:grid;grid-template-columns:minmax(14rem,2fr) repeat(4,minmax(8rem,1fr));gap:12px;padding-block:20px;border-bottom:1px solid var(--line)}.filters label{display:grid;gap:4px;color:var(--muted);font-size:.8rem;font-weight:650}.filters input,.filters select{min-height:44px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:3px;background:var(--surface);color:var(--ink);font:inherit}.filter-count{margin-block:14px 0;color:var(--muted);font-variant-numeric:tabular-nums}.catalog{padding-block:24px 72px}.catalog-empty{margin:0 0 24px;padding:16px;border:1px solid var(--line);background:var(--surface)}.catalog-entry{display:grid;grid-template-columns:minmax(0,1fr) minmax(14rem,.45fr);gap:8px 24px;padding:24px 0;border-bottom:1px solid var(--line)}.catalog-entry h2{margin:2px 0;font-size:1.35rem;line-height:1.25}.catalog-state,.catalog-relations,.catalog-links{margin:4px 0}.catalog-tags{grid-column:1;min-width:0}.catalog-relations{grid-column:1}.catalog-links{grid-column:2;grid-row:1/5;align-self:center;display:flex;gap:16px;justify-content:flex-end}.tag,.status{display:inline-block;max-width:100%;margin:2px 4px 2px 0;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:.82rem;overflow-wrap:anywhere}.status{border-color:var(--accent);color:var(--accent);font-weight:700}.catalog-relations span,.empty-value{color:var(--muted)}@media(max-width:60rem){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.filters label:first-child{grid-column:1/-1}}@media(max-width:38rem){.shell{width:min(100% - 24px,76rem)}.filters{grid-template-columns:1fr}.filters label:first-child{grid-column:auto}.catalog-entry{grid-template-columns:1fr}.catalog-links{grid-column:1;grid-row:auto;justify-content:flex-start;flex-wrap:wrap}}
+</style>
+</head>
+<body data-forge-spec-catalog="forge/spec-catalog@1">
+<header class="site-header"><div class="shell"><p class="eyebrow">Forge Spec Catalog · read-only</p><h1>구조화 Spec 목록</h1><p>현재 Markdown source metadata에서 계산된 읽기 전용 catalog다.</p></div></header>
+<form class="shell filters" aria-label="Spec filters">
+  <label>Spec 검색<input type="search" name="query" autocomplete="off"></label>
+  <label>상태<select name="status"><option value="">전체</option><option value="approved">approved</option><option value="implemented">implemented</option></select></label>
+  <label>종류<select name="kind"><option value="">전체</option><option value="feature">feature</option><option value="policy">policy</option><option value="system">system</option></select></label>
+  <label>영역<select name="area"><option value="">전체</option><option value="design">design</option><option value="execution">execution</option><option value="extensions">extensions</option><option value="forge">forge</option><option value="maintenance">maintenance</option><option value="review">review</option><option value="specs">specs</option><option value="writing">writing</option></select></label>
+  <label>컴포넌트<select name="component"><option value="">전체</option><option value="adaptive-routing">adaptive-routing</option><option value="creating-agent-extensions">creating-agent-extensions</option><option value="executing-plans">executing-plans</option><option value="extension-manager">extension-manager</option><option value="maintaining-forge">maintaining-forge</option><option value="marketing-tone">marketing-tone</option><option value="operations-tone">operations-tone</option><option value="review-viewer">review-viewer</option><option value="spec-docs">spec-docs</option><option value="using-forge">using-forge</option><option value="web-app-design">web-app-design</option><option value="website-design">website-design</option><option value="writing-plans">writing-plans</option><option value="writing-specs">writing-specs</option><option value="writing-tone">writing-tone</option></select></label>
+</form>
+<main class="shell catalog"><article class="catalog-entry" data-spec-id="001-tone-overlays" data-status="implemented" data-kind="feature" data-areas="[&quot;forge&quot;,&quot;writing&quot;]" data-components="[&quot;writing-tone&quot;,&quot;marketing-tone&quot;,&quot;operations-tone&quot;]" data-related="[]"><p class="catalog-id">001-tone-overlays</p><h2><a href="001-tone-overlays/index.html">Tone Overlay Skills</a></h2><p class="catalog-state"><span class="status status-implemented">implemented</span> <span>feature</span></p><div class="catalog-tags"><span class="tag">forge</span><span class="tag">writing</span><span class="tag">writing-tone</span><span class="tag">marketing-tone</span><span class="tag">operations-tone</span></div><p class="catalog-relations">관련 Spec: <span class="empty-value">—</span></p><p class="catalog-links"><a href="001-tone-overlays/spec.md">Markdown source</a><a href="001-tone-overlays/index.html">Spec Page</a></p></article>
+<article class="catalog-entry" data-spec-id="002-lifecycle-review-viewer" data-status="approved" data-kind="system" data-areas="[&quot;forge&quot;,&quot;review&quot;]" data-components="[&quot;review-viewer&quot;,&quot;writing-specs&quot;,&quot;writing-plans&quot;,&quot;executing-plans&quot;]" data-related="[&quot;008-structured-spec-pages&quot;]"><p class="catalog-id">002-lifecycle-review-viewer</p><h2><a href="002-lifecycle-review-viewer/index.html">사람 중심 Review Viewer</a></h2><p class="catalog-state"><span class="status status-approved">approved</span> <span>system</span></p><div class="catalog-tags"><span class="tag">forge</span><span class="tag">review</span><span class="tag">review-viewer</span><span class="tag">writing-specs</span><span class="tag">writing-plans</span><span class="tag">executing-plans</span></div><p class="catalog-relations">관련 Spec: <a href="008-structured-spec-pages/index.html">008-structured-spec-pages <span>relatedTo</span></a></p><p class="catalog-links"><a href="002-lifecycle-review-viewer/spec.md">Markdown source</a><a href="002-lifecycle-review-viewer/index.html">Spec Page</a></p></article>
+<article class="catalog-entry" data-spec-id="003-repository-maintenance-runbook" data-status="implemented" data-kind="policy" data-areas="[&quot;forge&quot;,&quot;maintenance&quot;]" data-components="[&quot;maintaining-forge&quot;,&quot;extension-manager&quot;]" data-related="[&quot;005-agent-extension-creation&quot;]"><p class="catalog-id">003-repository-maintenance-runbook</p><h2><a href="003-repository-maintenance-runbook/index.html">Forge 유지보수 canonical extension</a></h2><p class="catalog-state"><span class="status status-implemented">implemented</span> <span>policy</span></p><div class="catalog-tags"><span class="tag">forge</span><span class="tag">maintenance</span><span class="tag">maintaining-forge</span><span class="tag">extension-manager</span></div><p class="catalog-relations">관련 Spec: <a href="005-agent-extension-creation/index.html">005-agent-extension-creation <span>relatedTo</span></a></p><p class="catalog-links"><a href="003-repository-maintenance-runbook/spec.md">Markdown source</a><a href="003-repository-maintenance-runbook/index.html">Spec Page</a></p></article>
+<article class="catalog-entry" data-spec-id="004-adaptive-execution-routing" data-status="approved" data-kind="policy" data-areas="[&quot;forge&quot;,&quot;execution&quot;]" data-components="[&quot;executing-plans&quot;,&quot;adaptive-routing&quot;]" data-related="[]"><p class="catalog-id">004-adaptive-execution-routing</p><h2><a href="004-adaptive-execution-routing/index.html">적응형 실행 라우팅과 비차단 Checkpoint</a></h2><p class="catalog-state"><span class="status status-approved">approved</span> <span>policy</span></p><div class="catalog-tags"><span class="tag">forge</span><span class="tag">execution</span><span class="tag">executing-plans</span><span class="tag">adaptive-routing</span></div><p class="catalog-relations">관련 Spec: <span class="empty-value">—</span></p><p class="catalog-links"><a href="004-adaptive-execution-routing/spec.md">Markdown source</a><a href="004-adaptive-execution-routing/index.html">Spec Page</a></p></article>
+<article class="catalog-entry" data-spec-id="005-agent-extension-creation" data-status="implemented" data-kind="feature" data-areas="[&quot;forge&quot;,&quot;extensions&quot;]" data-components="[&quot;creating-agent-extensions&quot;,&quot;extension-manager&quot;]" data-related="[&quot;003-repository-maintenance-runbook&quot;]"><p class="catalog-id">005-agent-extension-creation</p><h2><a href="005-agent-extension-creation/index.html">여러 에이전트용 extension 생성</a></h2><p class="catalog-state"><span class="status status-implemented">implemented</span> <span>feature</span></p><div class="catalog-tags"><span class="tag">forge</span><span class="tag">extensions</span><span class="tag">creating-agent-extensions</span><span class="tag">extension-manager</span></div><p class="catalog-relations">관련 Spec: <a href="003-repository-maintenance-runbook/index.html">003-repository-maintenance-runbook <span>relatedTo</span></a></p><p class="catalog-links"><a href="005-agent-extension-creation/spec.md">Markdown source</a><a href="005-agent-extension-creation/index.html">Spec Page</a></p></article>
+<article class="catalog-entry" data-spec-id="006-ui-design-skill-split" data-status="approved" data-kind="feature" data-areas="[&quot;forge&quot;,&quot;design&quot;]" data-components="[&quot;web-app-design&quot;,&quot;website-design&quot;,&quot;using-forge&quot;]" data-related="[&quot;002-lifecycle-review-viewer&quot;]"><p class="catalog-id">006-ui-design-skill-split</p><h2><a href="006-ui-design-skill-split/index.html">Forge UI 디자인 스킬 분리와 `ui-design` 폐기</a></h2><p class="catalog-state"><span class="status status-approved">approved</span> <span>feature</span></p><div class="catalog-tags"><span class="tag">forge</span><span class="tag">design</span><span class="tag">web-app-design</span><span class="tag">website-design</span><span class="tag">using-forge</span></div><p class="catalog-relations">관련 Spec: <a href="002-lifecycle-review-viewer/index.html">002-lifecycle-review-viewer <span>relatedTo</span></a></p><p class="catalog-links"><a href="006-ui-design-skill-split/spec.md">Markdown source</a><a href="006-ui-design-skill-split/index.html">Spec Page</a></p></article>
+<article class="catalog-entry" data-spec-id="007-ui-design-removal" data-status="implemented" data-kind="feature" data-areas="[&quot;forge&quot;,&quot;design&quot;]" data-components="[&quot;web-app-design&quot;,&quot;website-design&quot;,&quot;using-forge&quot;]" data-related="[&quot;006-ui-design-skill-split&quot;,&quot;002-lifecycle-review-viewer&quot;]"><p class="catalog-id">007-ui-design-removal</p><h2><a href="007-ui-design-removal/index.html">Forge `ui-design` 최종 제거와 설치 갱신</a></h2><p class="catalog-state"><span class="status status-implemented">implemented</span> <span>feature</span></p><div class="catalog-tags"><span class="tag">forge</span><span class="tag">design</span><span class="tag">web-app-design</span><span class="tag">website-design</span><span class="tag">using-forge</span></div><p class="catalog-relations">관련 Spec: <a href="006-ui-design-skill-split/index.html">006-ui-design-skill-split <span>refines</span></a><a href="002-lifecycle-review-viewer/index.html">002-lifecycle-review-viewer <span>relatedTo</span></a></p><p class="catalog-links"><a href="007-ui-design-removal/spec.md">Markdown source</a><a href="007-ui-design-removal/index.html">Spec Page</a></p></article>
+<article class="catalog-entry" data-spec-id="008-structured-spec-pages" data-status="approved" data-kind="system" data-areas="[&quot;forge&quot;,&quot;specs&quot;]" data-components="[&quot;writing-specs&quot;,&quot;spec-docs&quot;]" data-related="[&quot;002-lifecycle-review-viewer&quot;]"><p class="catalog-id">008-structured-spec-pages</p><h2><a href="008-structured-spec-pages/index.html">구조화 Spec 계약과 상시 Spec Pages</a></h2><p class="catalog-state"><span class="status status-approved">approved</span> <span>system</span></p><div class="catalog-tags"><span class="tag">forge</span><span class="tag">specs</span><span class="tag">writing-specs</span><span class="tag">spec-docs</span></div><p class="catalog-relations">관련 Spec: <a href="002-lifecycle-review-viewer/index.html">002-lifecycle-review-viewer <span>relatedTo</span></a></p><p class="catalog-links"><a href="008-structured-spec-pages/spec.md">Markdown source</a><a href="008-structured-spec-pages/index.html">Spec Page</a></p></article></main>
+<script type="application/json" id="forge-spec-manifest">{"asset_fingerprint":"f416a37d923a548bbd5ff8ab1faaee97aef1985bcb4eed9f0ceec1adecf88512","generator":"forge-spec-pages/1","locale":"ko","schema":"forge/spec-catalog@1","source_path":"docs/specs","source_sha256":"d7e1273a94f5d8b742567bc9f0ca8679940f895edb735d658de3071aa0dafe96"}</script>
+<script type="module">const SECTION_IDS = new Set([
+  'overview',
+  'flows',
+  'requirements',
+  'data',
+  'acceptance',
+  'history',
+]);
+
+
+function normalized(value) {
+  return String(value ?? '').trim().toLocaleLowerCase('en');
+}
+
+
+export function filterCatalog(records, filters) {
+  const query = normalized(filters.query);
+  const status = normalized(filters.status);
+  const kind = normalized(filters.kind);
+  const area = normalized(filters.area);
+  const component = normalized(filters.component);
+  return records.filter((record) => {
+    const searchable = normalized(`${record.id} ${record.title}`);
+    return (
+      (!query || searchable.includes(query))
+      && (!status || normalized(record.status) === status)
+      && (!kind || normalized(record.kind) === kind)
+      && (!area || (record.areas ?? []).some((item) => normalized(item) === area))
+      && (!component || (record.components ?? []).some((item) => normalized(item) === component))
+    );
+  });
+}
+
+
+export function normalizeHashTarget(hash) {
+  let target;
+  try {
+    target = decodeURIComponent(String(hash ?? '').replace(/^#/, ''));
+  } catch {
+    return 'overview';
+  }
+  if (SECTION_IDS.has(target)) {
+    return target;
+  }
+  if (/^R\d+$/.test(target)) {
+    return 'requirements';
+  }
+  if (/^AC\d+$/.test(target)) {
+    return 'acceptance';
+  }
+  return 'overview';
+}
+
+
+export function aggregateRelationTargets(relations) {
+  return [...new Set(relations.map((item) => item.id).filter(Boolean))].sort();
+}
+
+
+export function decodeCatalogValues(value) {
+  try {
+    const parsed = JSON.parse(String(value ?? ''));
+    return Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')
+      ? parsed
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+
+function catalogRecords(document) {
+  return [...document.querySelectorAll('.catalog-entry')].map((element) => ({
+    areas: decodeCatalogValues(element.dataset.areas),
+    components: decodeCatalogValues(element.dataset.components),
+    element,
+    id: element.dataset.specId ?? '',
+    kind: element.dataset.kind ?? '',
+    status: element.dataset.status ?? '',
+    title: element.querySelector('h2')?.textContent ?? '',
+  }));
+}
+
+
+function catalogFilters(form) {
+  return {
+    query: form.elements.namedItem('query')?.value ?? '',
+    status: form.elements.namedItem('status')?.value ?? '',
+    kind: form.elements.namedItem('kind')?.value ?? '',
+    area: form.elements.namedItem('area')?.value ?? '',
+    component: form.elements.namedItem('component')?.value ?? '',
+  };
+}
+
+
+function installCatalog(document) {
+  const form = document.querySelector('.filters');
+  if (!form) {
+    return;
+  }
+  const records = catalogRecords(document);
+  const status = document.createElement('p');
+  status.className = 'filter-count shell';
+  status.setAttribute('aria-live', 'polite');
+  const count = document.createElement('span');
+  count.dataset.filterCount = '';
+  status.append(count, document.createTextNode(' specs'));
+  form.insertAdjacentElement('afterend', status);
+
+  const empty = document.createElement('p');
+  empty.className = 'catalog-empty';
+  empty.dataset.emptyState = '';
+  empty.textContent = document.documentElement.lang === 'ko'
+    ? '조건과 일치하는 Spec이 없습니다.'
+    : 'No specs match these filters.';
+  empty.hidden = true;
+  document.querySelector('.catalog')?.prepend(empty);
+
+  const apply = () => {
+    const visible = new Set(filterCatalog(records, catalogFilters(form)));
+    for (const record of records) {
+      record.element.hidden = !visible.has(record);
+    }
+    count.textContent = String(visible.size);
+    empty.hidden = visible.size !== 0;
+  };
+  form.addEventListener('input', apply);
+  form.addEventListener('change', apply);
+  form.addEventListener('submit', (event) => event.preventDefault());
+  apply();
+}
+
+
+function installSectionNavigation(document) {
+  const navigation = document.querySelector('.section-nav');
+  if (!navigation) {
+    return;
+  }
+  const links = [...navigation.querySelectorAll('a[href^="#"]')];
+  const update = () => {
+    const active = normalizeHashTarget(globalThis.location?.hash ?? '');
+    for (const link of links) {
+      const current = link.getAttribute('href') === `#${active}`;
+      if (current) {
+        link.setAttribute('aria-current', 'location');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    }
+  };
+  navigation.addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      return;
+    }
+    const current = links.indexOf(document.activeElement);
+    if (current === -1) {
+      return;
+    }
+    event.preventDefault();
+    const direction = event.key === 'ArrowRight' ? 1 : -1;
+    links[(current + direction + links.length) % links.length].focus();
+  });
+  globalThis.addEventListener?.('hashchange', update);
+  update();
+}
+
+
+function errorText(error) {
+  return String(error?.message ?? error ?? 'render failed').split('\n', 1)[0];
+}
+
+
+async function renderDiagrams(document, mermaid) {
+  const blocks = [...document.querySelectorAll('pre.mermaid')];
+  if (blocks.length === 0) {
+    return;
+  }
+  if (!mermaid || typeof mermaid.render !== 'function') {
+    mermaid = {
+      async parse() {
+        throw new Error('Mermaid runtime unavailable');
+      },
+    };
+  } else {
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: 'neutral',
+    });
+  }
+
+  for (const [index, block] of blocks.entries()) {
+    const wrapper = block.closest('.diagram-scroll') ?? block.parentElement;
+    const source = block.textContent ?? '';
+    try {
+      await mermaid.parse(source);
+      const result = await mermaid.render(`forge-spec-diagram-${index}`, source);
+      const rendered = document.createElement('div');
+      rendered.className = 'mermaid-rendered';
+      rendered.innerHTML = result.svg;
+      result.bindFunctions?.(rendered);
+
+      const disclosure = document.createElement('details');
+      disclosure.className = 'mermaid-source-disclosure';
+      const summary = document.createElement('summary');
+      summary.textContent = document.documentElement.lang === 'ko'
+        ? 'Mermaid source 보기'
+        : 'Show Mermaid source';
+      const preserved = document.createElement('pre');
+      preserved.className = 'mermaid-source';
+      preserved.textContent = source;
+      disclosure.append(summary, preserved);
+      wrapper.replaceChildren(rendered, disclosure);
+    } catch (error) {
+      wrapper.classList.add('diagram-error');
+      const message = document.createElement('p');
+      message.className = 'mermaid-error-message';
+      message.textContent = `${document.documentElement.lang === 'ko' ? 'Diagram을 렌더링하지 못했습니다' : 'Diagram render failed'}: ${errorText(error)}`;
+      const preserved = document.createElement('pre');
+      preserved.className = 'mermaid-error-source';
+      preserved.textContent = source;
+      wrapper.replaceChildren(message, preserved);
+    }
+  }
+}
+
+
+export async function initializeSpecPages(
+  document = globalThis.document,
+  mermaid = globalThis.mermaid,
+) {
+  if (!document) {
+    return;
+  }
+  installCatalog(document);
+  installSectionNavigation(document);
+  await renderDiagrams(document, mermaid);
+  document.documentElement.dataset.specPagesReady = 'true';
+}
+
+
+if (typeof document !== 'undefined') {
+  const start = () => {
+    initializeSpecPages().catch((error) => {
+      document.documentElement.dataset.specPagesReady = 'error';
+      console.error('Spec Pages runtime failed', error);
+    });
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    queueMicrotask(start);
+  }
+}
+</script>
+</body>
+</html>

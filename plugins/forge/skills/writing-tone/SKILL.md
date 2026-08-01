@@ -39,9 +39,9 @@ Above all: **lead with the point** — decision, result, or ask first; backgroun
 4. Cut pass: delete hedges, filler, and anything the reader does not need in order to act.
 5. Read once as the reader: is the ask explicit — who does what, by when, and what happens next?
 
-## Viewer Copy
+## Review Surface Copy
 
-For spec and plan review Viewers:
+For durable Spec Pages and requested Review Viewers:
 
 - Frame the page and diagram title as the question the reviewer wants answered, not as an internal system name.
 - State what to confirm before background or source detail.
@@ -77,7 +77,7 @@ This skill creates no artifacts in the forge working directory `.forge/` — the
 | "My default writing is already clear" | Unedited drafts hedge and pad. These rules exist because default output reads as default. |
 | "I know Korean; I don't need part 2" | Part 2 encodes house voice and message shapes, not grammar. Fluency is not the standard — the shapes are. |
 | "The diagram explains itself." | A reviewer needs the question, what to confirm, and a reading guide before interpreting nodes and arrows. |
-| "Technical Viewer labels should stay English." | Localize translatable labels in the user's language; preserve only established names and identifiers whose exact form matters. |
+| "Technical review labels should stay English." | Localize translatable labels in the user's language; preserve only established names and identifiers whose exact form matters. |
 
 ## Handoff
 

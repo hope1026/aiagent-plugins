@@ -1,6 +1,14 @@
+---
+schema: forge/spec@1
+id: 006-ui-design-skill-split
+status: approved
+language: ko
+kind: feature
+areas: ["forge", "design"]
+components: ["web-app-design", "website-design", "using-forge"]
+relatedSpecs: [{"id":"002-lifecycle-review-viewer","relation":"relatedTo"}]
+---
 # Forge UI 디자인 스킬 분리와 `ui-design` 폐기
-
-Status: approved
 
 ## Overview
 
@@ -23,7 +31,7 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R5. 두 신규 스킬은 visual system을 UI 코드보다 먼저 선언하고 실제 browser에서 검증한다는 최소 공통 원칙을 각각 자급적으로 포함해야 한다. 한 스킬이 다른 스킬의 상대 경로나 설치 위치에 의존하면 안 된다.
 - R6. `using-forge`는 web app과 website의 trigger를 서로 겹치지 않게 설명해야 한다. 사용자의 요청이 `UI를 만들어줘`처럼 surface를 판별할 근거가 없으면 한 가지 질문으로 상태 조작 중심 web app인지 콘텐츠 전달 중심 website인지 확정하고 두 스킬을 동시에 적용하지 않아야 한다.
 - R7. 기존 `ui-design`은 첫 마이그레이션 release에서 UI 구현 절차를 직접 수행하지 않는 deprecated compatibility router로 축소해야 한다. explicit `ui-design` 요청을 받으면 surface를 분류해 `web-app-design` 또는 `website-design`으로 handoff하고 deprecation을 짧게 알려야 한다.
-- R8. README, `using-forge`, `spec-viewer`, repository-only `maintaining-forge`, validator regression test, plugin keyword와 현재 numbered spec의 `ui-design` 참조는 active skill 이름과 Viewer 예외 계약에 맞게 동기화해야 한다. 과거 설계 문서와 완료된 plan의 역사적 기록은 변경하지 않아야 한다.
+- R8. README, `using-forge`, `review-viewer`, repository-only `maintaining-forge`, validator regression test, plugin keyword와 현재 numbered spec의 `ui-design` 참조는 active skill 이름과 Viewer 예외 계약에 맞게 동기화해야 한다. 과거 설계 문서와 완료된 plan의 역사적 기록은 변경하지 않아야 한다.
 - R9. 두 신규 스킬과 compatibility router는 `bash scripts/validate.sh`, 사용 가능한 target agent의 discovery, 사용할 수 없는 target의 static portability 검증, app·web·ambiguous·Viewer scenario pressure test를 통과해야 한다. distributed skill 변경이 포함된 push 전에는 두 plugin manifest의 version gate를 통과해야 한다.
 - R10. `ui-design` 최종 삭제는 신규 라우팅이 한 release 이상 배포되고, active source·README·router·test·manifest keyword에서 runtime 참조가 0개이며, explicit legacy invocation을 제외한 pressure test가 모두 신규 스킬을 발견한다는 별도 승인 변경에서만 수행해야 한다.
 - R11. Forge UI skill 이름은 `<platform>-app-design` 또는 `website-design` taxonomy를 따라야 한다. `web-app-design`은 browser·PWA에만 적용하고, native iOS·Android·React Native·Flutter는 향후 `mobile-app-design`, native desktop·Electron·Tauri는 향후 `desktop-app-design`이 소유해야 하며, 해당 skill이 아직 없을 때 `web-app-design`이 native platform 규칙을 대신한다고 주장하지 않아야 한다.
@@ -67,7 +75,7 @@ Surface 분류 계약:
 | Native mobile app | 향후 `mobile-app-design` | iOS, Android, React Native, Flutter | browser·PWA |
 | Native desktop app | 향후 `desktop-app-design` | native desktop, Electron, Tauri | browser website |
 | Legacy | `ui-design` compatibility router | explicit `ui-design`, 오래된 prompt | 직접 UI 구현 |
-| Fixed Viewer generation | `spec-viewer` | 기존 shell로 spec·plan View 생성 | 두 신규 UI 스킬 |
+| Fixed Viewer generation | `review-viewer` | 기존 shell로 spec·plan View 생성 | 두 신규 UI 스킬 |
 | Viewer tooling | `web-app-design` | Viewer shell·template·style 변경 | 개별 View 생성 |
 
 신규 스킬 파일 계약:

@@ -29,7 +29,8 @@ Do NOT use for:
 
 - authenticated dashboards, settings, operational tables, admin panels, or SaaS workflows — use the forge web-app-design skill;
 - native mobile or desktop app interfaces;
-- fixed spec or plan Viewer generation;
+- fixed Review Viewer generation;
+- Review Viewer tooling or Spec Pages tooling, which are browser application review surfaces owned by `web-app-design`;
 - a content-only copy change with no visual or layout decision.
 
 ## The Process

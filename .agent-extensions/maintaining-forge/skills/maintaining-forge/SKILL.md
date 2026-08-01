@@ -101,18 +101,19 @@ Forge skill.
    then use the corresponding boundary table above.
 3. Write the smallest complete change. For repository-only workflows, edit only
    the owned canonical skill and render its native adapters through the manager.
-4. Run `bash scripts/validate.sh` from the repository root. It must print
+4. When a Spec Pages generator, template, runtime, or bundled asset changes, run `spec-docs.sh --repo-root . build --root docs/specs --offline` with no `--changed`, then `spec-docs.sh --repo-root . check --root docs/specs`. Complete this full rebuild before validation or commit.
+5. Run `bash scripts/validate.sh` from the repository root. It must print
    `validate: all checks passed` before commit.
-5. Search changed skill files for banned tokens and re-read every gate under
+6. Search changed skill files for banned tokens and re-read every gate under
    deadline pressure. Add explicit counters for any plausible loophole.
-6. Pressure-test every new skill and every edit that changes instructions.
+7. Pressure-test every new skill and every edit that changes instructions.
    Typos, formatting-only changes, and link fixes may skip the live test, but
    never the adversarial self-read.
-7. Before push, inspect the commits that are ahead of the configured upstream.
+8. Before push, inspect the commits that are ahead of the configured upstream.
    If the push target includes `plugins/forge/skills/`, run the Version Gate
    Before Push below. A version bump is part of the same release, not a later
    follow-up.
-8. Use a conventional commit. Do not push until every gate passes and the user
+9. Use a conventional commit. Do not push until every gate passes and the user
    has authorized release; push publishes the Marketplace state.
 
 ## Pre-ship Checklist
@@ -173,13 +174,13 @@ The distributed Forge plugin contains user-execution skills only:
 | Skill | Responsibility |
 |---|---|
 | `using-forge` | Route user project work into the spec-first lifecycle |
-| `writing-specs` | Create and approve the source-of-truth spec |
+| `writing-specs` | Create and approve structured source, then keep tracked Spec Pages synchronized |
 | `writing-plans` | Create independently identified plans with optional Related Specs |
 | `executing-plans` | Execute tasks with plan-local progress and checkpoints |
 | `test-driven-development` | Enforce red, green, refactor |
 | `systematic-debugging` | Reproduce, isolate, and establish root cause |
 | `verifying-work` | Gather fresh acceptance evidence |
-| `spec-viewer` | Render lifecycle review Views from source documents |
+| `review-viewer` | Build an untracked spec or plan review snapshot only on explicit request |
 | `web-app-design` | Design browser application hierarchy, state geometry, and interaction |
 | `website-design` | Design public website content composition, imagery, and responsive behavior |
 | `writing-tone` | Shape natural human-readable prose |
@@ -205,7 +206,9 @@ distributed catalog.
 | Dev install script | `scripts/install.sh` |
 | Pressure-test notes | `.forge/scratch/` |
 | Repository specs | `docs/specs/NNN-<slug>/spec.md` |
+| Tracked Spec Pages | `docs/specs/NNN-<slug>/index.html`, `docs/specs/index.html` |
 | Repository plans | `docs/plans/PPP-<slug>/plan.md` |
+| Requested Review Viewer | `.forge/reviews/<review-id>/view.html` |
 | Shared research and debug records | `docs/research/`, `docs/debug/` |
 
 The validator checks distributed plugin skills, canonical extension skills,

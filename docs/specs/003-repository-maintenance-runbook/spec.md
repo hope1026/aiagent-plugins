@@ -1,6 +1,14 @@
+---
+schema: forge/spec@1
+id: 003-repository-maintenance-runbook
+status: implemented
+language: ko
+kind: policy
+areas: ["forge", "maintenance"]
+components: ["maintaining-forge", "extension-manager"]
+relatedSpecs: [{"id":"005-agent-extension-creation","relation":"relatedTo"}]
+---
 # Forge 유지보수 canonical extension
-
-Status: implemented
 
 ## Overview
 

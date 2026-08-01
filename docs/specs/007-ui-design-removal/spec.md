@@ -1,6 +1,14 @@
+---
+schema: forge/spec@1
+id: 007-ui-design-removal
+status: implemented
+language: ko
+kind: feature
+areas: ["forge", "design"]
+components: ["web-app-design", "website-design", "using-forge"]
+relatedSpecs: [{"id":"006-ui-design-skill-split","relation":"refines"},{"id":"002-lifecycle-review-viewer","relation":"relatedTo"}]
+---
 # Forge `ui-design` 최종 제거와 설치 갱신
-
-Status: implemented
 
 ## Overview
 
@@ -69,7 +77,7 @@ flowchart TD
 | Browser application | `web-app-design` | `ui-design`, `website-design`의 동시 적용 |
 | Public website | `website-design` | `ui-design`, `web-app-design`의 동시 적용 |
 | Native mobile·desktop | 향후 전용 skill 또는 범위 확인 | `ui-design`, web skill 강제 적용 |
-| Fixed Viewer 생성 | `spec-viewer` | `ui-design`, 두 UI skill |
+| Fixed Viewer 생성 | `review-viewer` | `ui-design`, 두 UI skill |
 | Viewer tooling 변경 | `web-app-design` | `ui-design` |
 
 ## Acceptance Criteria
@@ -77,7 +85,7 @@ flowchart TD
 AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 관찰 가능한 완료 기준을 뜻한다.
 
 - AC1 (R1, R2): 원격 기본 브랜치에서 Forge 0.1.4 이상의 migration release를 확인한 뒤 활성 repository를 검색하면 `plugins/forge/skills/ui-design/`이 없고, 역사 spec·완료 plan을 제외한 README, router, maintainer catalog, manifest keyword와 test에 `ui-design` runtime 참조가 0개다.
-- AC2 (R3): app·website·ambiguous·native·Viewer routing fixture를 실행하면 app은 `web-app-design`, website는 `website-design`, ambiguous는 한 가지 질문, native는 전용 skill 또는 범위 확인, fixed Viewer는 `spec-viewer`, Viewer tooling은 `web-app-design`으로 판정되며 `ui-design`은 어떤 결과에도 나타나지 않는다.
+- AC2 (R3): app·website·ambiguous·native·Viewer routing fixture를 실행하면 app은 `web-app-design`, website는 `website-design`, ambiguous는 한 가지 질문, native는 전용 skill 또는 범위 확인, fixed Viewer는 `review-viewer`, Viewer tooling은 `web-app-design`으로 판정되며 `ui-design`은 어떤 결과에도 나타나지 않는다.
 - AC3 (R4, R6): 확인된 `~/.agents/skills/ui-design`을 복구 가능한 위치로 이동하고 Codex 개발 설치를 두 번 실행하면 `web-app-design`과 `website-design`은 발견되고 `ui-design`은 다시 생성되지 않으며, Forge 범위 밖의 기존 skill 목록은 변하지 않는다.
 - AC4 (R5, R6): Claude Code 개발 설치를 두 번 실행하면 `~/.claude/skills/forge/skills/`에 두 신규 스킬이 있고 `ui-design`은 없으며, Marketplace version cache는 수동 삭제되지 않는다.
 - AC5 (R5, R8): 승인된 release가 원격에 반영된 뒤 공식 marketplace update와 `claude plugin update forge@hope1026 --scope user`를 실행하면 활성 version이 제거 release로 갱신되고 두 신규 스킬만 발견된다. 인증 또는 외부 오류가 나면 명령, 오류, 현재 활성 version을 기록하고 cache를 직접 수정하지 않는다.

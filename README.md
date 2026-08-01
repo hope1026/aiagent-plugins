@@ -6,7 +6,7 @@ AI agent plugins managed from one source tree. Forge installs into **Claude Code
 
 | Plugin | Purpose |
 |---|---|
-| `forge` | Spec-first development process: spec → plan → execute → verify, plus TDD, debugging, cross-agent skill/MCP authoring, UI design, writing tone overlays, and a lifecycle HTML review Viewer for specs and plans. Install this when starting any project. |
+| `forge` | Spec-first development process: structured spec → tracked Spec Pages → plan → execute → verify, plus TDD, debugging, cross-agent authoring, UI design, writing tone overlays, and request-only Review Viewer snapshots. |
 
 ```text
 plugins/<name>/
@@ -23,7 +23,7 @@ docs/specs/                    # specs for this repo (spec-first, dogfooded)
 docs/plans/                    # independent, work-scoped implementation plans
 docs/research/                 # promoted research worth sharing
 docs/debug/                    # promoted root-cause records
-.forge/                        # local, regenerable scratch and build files
+.forge/                        # local scratch, research, review snapshots, ledgers, and build files
 ```
 
 ## Install (recommended: GitHub marketplace)
@@ -62,13 +62,13 @@ bash scripts/install.sh --agent codex --plugin forge
 | Skill | One line |
 |---|---|
 | `using-forge` | Entry point: routes any task to the right forge skill; spec-first iron law; shared artifact contract |
-| `writing-specs` | Idea → approved spec (new/change/clarify/sync modes); the spec is the source of truth |
+| `writing-specs` | Idea → approved `forge/spec@1`; validates source and keeps tracked Spec Pages synchronized |
 | `writing-plans` | Independent task-level plan with 0..N Related Specs; behavior changes still require approval |
 | `executing-plans` | Task-by-task execution with checkpoints and plan-local progress history |
 | `test-driven-development` | RED → GREEN → REFACTOR; no implementation without a failing test |
 | `systematic-debugging` | Reproduce → isolate → root-cause → fix; no fix without an understood cause |
 | `verifying-work` | Evidence before claims; walks acceptance criteria; flips spec to `implemented` |
-| `spec-viewer` | Renders an independent spec or plan View with Mermaid, read-time SHA-256 freshness, and persistent checklists |
+| `review-viewer` | Builds an untracked spec or plan review snapshot only after explicit create or refresh intent; the agent resolves source, mode, and review-id |
 | `web-app-design` | Browser app hierarchy, control affordance, state geometry, and viewport×state verification |
 | `website-design` | Public website visual thesis, content composition, imagery, responsive behavior, and restrained motion |
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
@@ -97,9 +97,9 @@ the 14 active user-execution skills listed above.
 4. Verification is against the spec's acceptance criteria, with fresh evidence.
 5. Spec status `draft → approved` (human) `→ implemented` (verified only).
 6. Drift repair (`sync` mode) reconciles brownfield code against its spec.
-7. Markdown stays authoritative; explicitly requested Views are shared beside it and verify source SHA-256 at read time.
+7. Markdown stays authoritative; tracked Spec Pages update in the same source transaction, while Review Viewer snapshots are request-only and untracked.
 
-Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`; work-scoped plans live independently in `docs/plans/PPP-<slug>/plan.md`; explicitly requested Views are committed as `view.html` beside their Markdown source. Research and debug records move to `docs/research/` or `docs/debug/` when they are worth sharing or preserving. `.forge/scratch/` and `.forge/viewer-build/` contain local, regenerable files only.
+Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`; generated `index.html` pages beside each spec plus `docs/specs/index.html` are tracked and refreshed with source, status, or tooling changes. Work-scoped plans live at `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay only while that plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html` and remain untracked. `.forge/research/` is local-only; promote durable findings to `docs/research/` and root-cause records to `docs/debug/`. Promote permanent decisions before deleting a completed plan.
 
 ## Validate
 
@@ -107,4 +107,4 @@ Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`; 
 bash scripts/validate.sh
 ```
 
-Lints plugin skills and both repository-local wrapper roots: frontmatter shape, description rules (trigger-only, ≤1024 chars, YAML quoting), 500-line cap, and banned harness-specific tokens (portability). CI runs the layout tests and validator on every push.
+Lints plugin skills and repository-local wrappers, validates extensions, and runs strict structured-spec validation plus a deterministic Spec Pages check with an explicit repository root. CI runs lifecycle, artifact, UI routing, and renderer contracts on every push.

@@ -5,8 +5,14 @@
 Status: complete
 
 **Related Specs:**
-- `docs/specs/007-ui-design-removal/spec.md`: R1–R8 · AC1–AC7
-- `docs/specs/006-ui-design-skill-split/spec.md`: R10, R13 · AC9, AC12
+- id: 007-ui-design-removal
+  path: docs/specs/007-ui-design-removal/spec.md
+  requirements: [R1, R2, R3, R4, R5, R6, R7, R8]
+  acceptance: [AC1, AC2, AC3, AC4, AC5, AC6, AC7]
+- id: 006-ui-design-skill-split
+  path: docs/specs/006-ui-design-skill-split/spec.md
+  requirements: [R10, R13]
+  acceptance: [AC9, AC12]
 
 **목표:** Forge의 deprecated `ui-design` source와 활성 runtime 참조를 제거하고, Codex·Claude Code 개발 설치에서 `web-app-design`과 `website-design`만 재현 가능하게 설치한다.
 
@@ -72,7 +78,7 @@ flowchart LR
 | 006-AC9 | 1, 2, 5 |
 | 006-AC12 | 3, 4, 5 |
 
-### Task 1: `ui-design` 부재 contract를 RED로 고정 (007:R1–R3, R7 · 007:AC1–AC2, AC6 · 006:R10 · 006:AC9)
+### Task 1: `ui-design` 부재 contract를 RED로 고정 (007 R1–R3, R7, AC1–AC2, AC6 · 006 R10, AC9)
 
 **파일:**
 - 수정: `scripts/tests/test-ui-design-skill-routing.sh`
@@ -85,6 +91,7 @@ flowchart LR
 - 출력: legacy directory와 catalog 노출은 금지하고 두 active skill·Viewer routing은 요구하는 executable contract
 
 **실행 메타데이터:**
+- Route: route-1
 - 의존성: none
 - 쓰기 소유권: `scripts/tests/test-ui-design-skill-routing.sh`, `scripts/tests/test-forge-artifact-contract.sh`
 - 병렬 안전성: sequential — Task 2가 구현할 RED 기준이다.
@@ -173,7 +180,7 @@ bash scripts/tests/test-forge-artifact-contract.sh
 
 예상: 첫 명령은 exit 1과 `FAIL: removed skill still exists:`를 출력하고, 두 번째 명령은 non-zero로 종료한다.
 
-### Task 2: compatibility source와 활성 catalog 제거 (007:R2–R3 · 007:AC1–AC2 · 006:R10 · 006:AC9)
+### Task 2: compatibility source와 활성 catalog 제거 (007 R2–R3, AC1–AC2 · 006 R10, AC9)
 
 **파일:**
 - 삭제: `plugins/forge/skills/ui-design/SKILL.md`
@@ -191,6 +198,7 @@ bash scripts/tests/test-forge-artifact-contract.sh
 - 출력: active catalog가 `web-app-design`, `website-design`만 노출하는 Forge source tree
 
 **실행 메타데이터:**
+- Route: route-2
 - 의존성: Task 1
 - 쓰기 소유권: `plugins/forge/skills/ui-design/`, `README.md`, `.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md`, `.agent-extensions/maintaining-forge/adapters/*/state.json`, `plugins/forge/.claude-plugin/plugin.json`
 - 병렬 안전성: sequential — 같은 catalog를 두 test가 함께 읽는다.
@@ -271,7 +279,7 @@ python3 plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.
 
 예상: render가 codex·claude-code·antigravity adapter update를 기록하고 validate가 `"status": "PASS"`를 출력한다.
 
-### Task 3: 반복 설치와 stale-path 처리 regression 구현 (007:R4–R7 · 007:AC3–AC4, AC6 · 006:R13 · 006:AC12)
+### Task 3: 반복 설치와 stale-path 처리 regression 구현 (007 R4–R7, AC3–AC4, AC6 · 006 R13, AC12)
 
 **파일:**
 - 생성: `scripts/tests/test-forge-ui-skill-install.sh`
@@ -283,6 +291,7 @@ python3 plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.
 - 출력: 임시 HOME에서 Codex stale copy 복구 이동, non-Forge 보존, 두 target 반복 설치를 증명하는 regression
 
 **실행 메타데이터:**
+- Route: route-3
 - 의존성: Task 2
 - 쓰기 소유권: `scripts/tests/test-forge-ui-skill-install.sh`, `.github/workflows/validate.yml`
 - 병렬 안전성: sequential — source 제거 후의 installer 결과를 검증한다.
@@ -369,7 +378,7 @@ echo "forge-ui-skill-install: all checks passed"
 
 예상: `forge-ui-skill-install: all checks passed`.
 
-### Task 4: 실제 Codex·Claude 개발 설치 갱신 (007:R4–R6 · 007:AC3–AC4 · 006:R13 · 006:AC12)
+### Task 4: 실제 Codex·Claude 개발 설치 갱신 (007 R4–R6, AC3–AC4 · 006 R13, AC12)
 
 **파일:**
 - 이동: `~/.agents/skills/ui-design` → `~/.Trash/forge-ui-design-stale-20260731`
@@ -383,6 +392,7 @@ echo "forge-ui-skill-install: all checks passed"
 - 출력: 실제 machine에서 신규 두 skill을 발견하고 deprecated skill은 발견하지 않는 Codex·Claude 개발 설치 상태
 
 **실행 메타데이터:**
+- Route: route-4
 - 의존성: Task 3
 - 쓰기 소유권: 정확히 확인된 Forge stale copy와 Forge 개발 설치 경로
 - 병렬 안전성: sequential — exact target 확인, 복구 이동, install, discovery 순서가 필요하다.
@@ -464,7 +474,7 @@ test -d /Users/han-byeol/.claude/plugins/cache/hope1026/forge/0.1.3
 
 예상: 모든 명령이 exit 0.
 
-### Task 5: 전체 검증, version 갱신과 release 경계 (007:R1, R5, R7–R8 · 007:AC1–AC2, AC5–AC7 · 006:R10, R13 · 006:AC9, AC12)
+### Task 5: 전체 검증, version 갱신과 release 경계 (007 R1, R5, R7–R8, AC1–AC2, AC5–AC7 · 006 R10, R13, AC9, AC12)
 
 **파일:**
 - 수정: `plugins/forge/.claude-plugin/plugin.json`
@@ -477,6 +487,7 @@ test -d /Users/han-byeol/.claude/plugins/cache/hope1026/forge/0.1.3
 - 출력: 동일 base version의 release candidate와 사용자 승인 후 commit·push·Marketplace update evidence
 
 **실행 메타데이터:**
+- Route: route-5
 - 의존성: Task 4
 - 쓰기 소유권: 두 Forge manifest, 이 plan의 checkbox와 progress, 승인 후 Git branch와 공식 plugin manager 상태
 - 병렬 안전성: sequential — version freshness와 외부 update는 release 순서에 의존한다.

@@ -1,54 +1,90 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT="${FORGE_ARTIFACT_TEST_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+ROOT="$(cd "$ROOT" && pwd -P)"
+fail() { echo "FAIL: $1" >&2; exit 1; }
 
-grep -q 'docs/plans/PPP-<slug>/plan.md' "$ROOT/plugins/forge/skills/using-forge/SKILL.md"
-grep -q 'NO PRODUCT-BEHAVIOR IMPLEMENTATION WITHOUT AN APPROVED SPEC' "$ROOT/plugins/forge/skills/using-forge/SKILL.md"
-grep -q 'docs/specs/NNN-<slug>/view.html' "$ROOT/plugins/forge/skills/using-forge/SKILL.md"
-grep -q 'docs/plans/PPP-<slug>/view.html' "$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
-! grep -q '| Plans | `.forge/plans/' "$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
+assert_migration_artifact() {
+  local promoted="$ROOT/docs/research/2026-07-04-forge-plugin-design.md"
+  local legacy="$ROOT/docs/specs/2026-07-04-forge-plugin-design.md"
+  local expected_sha="fde1f774ce36fcb29e6daa6956526cc0eeb6f47a5b09c0bbd1d8876d91c92f2e"
+  local actual_sha
+  [[ -f "$promoted" ]] || fail "promoted Forge design record is missing"
+  [[ ! -e "$legacy" ]] || fail "legacy Forge design record remains under docs/specs"
+  actual_sha="$(shasum -a 256 "$promoted" | awk '{print $1}')"
+  [[ "$actual_sha" == "$expected_sha" ]] || fail "promoted Forge design bytes differ from the immutable baseline"
+  grep -Fq '> Artifact paths and Viewer lifecycle in this dated design are superseded by docs/specs/002-lifecycle-review-viewer/spec.md.' \
+    "$promoted" || fail "promoted Forge design provenance is missing"
+}
+
+if [[ "${FORGE_ARTIFACT_MIGRATION_ASSERT_ONLY:-0}" == "1" ]]; then
+  assert_migration_artifact
+  printf 'test-forge-artifact-contract: migration assertion passed\n'
+  exit 0
+fi
+
+USING_FORGE="$ROOT/plugins/forge/skills/using-forge/SKILL.md"
+PORTABILITY="$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
+WRITING_PLANS="$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
+EXECUTING_PLANS="$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
+REVIEW_VIEWER="$ROOT/plugins/forge/skills/review-viewer/SKILL.md"
+
+grep -q 'docs/plans/PPP-<slug>/plan.md' "$USING_FORGE"
+grep -q 'NO PRODUCT-BEHAVIOR IMPLEMENTATION WITHOUT AN APPROVED SPEC' "$USING_FORGE"
+grep -q 'docs/specs/NNN-<slug>/index.html' "$USING_FORGE" || fail "Spec Pages path missing"
+grep -q '.forge/reviews/<review-id>/view.html' "$USING_FORGE" || fail "Review Viewer path missing"
+grep -q 'Spec Pages.*yes' "$PORTABILITY" || fail "portability table does not track Spec Pages"
+grep -q 'Review Viewer.*no' "$PORTABILITY" || fail "portability table does not untrack Review Viewer"
 grep -q 'docs/research/' "$ROOT/README.md"
 grep -q 'docs/debug/' "$ROOT/README.md"
-grep -q 'Related Specs' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
-grep -q 'docs/plans/PPP-<slug>/plan.md' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
-grep -q '0 or more' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
-! grep -q 'same `NNN` as the spec' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
-! grep -q 'combined review path' "$ROOT/plugins/forge/skills/writing-plans/references/plan-visual-structure.md"
-grep -q 'docs/plans/PPP-<slug>/plan.md' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
-grep -q 'Progress History' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
-! grep -q 'progress-NNN' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
-! grep -q 'combined Viewer' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
+grep -q 'Related Specs' "$WRITING_PLANS"
+grep -q 'docs/plans/PPP-<slug>/plan.md' "$WRITING_PLANS"
+grep -q '0 or more' "$WRITING_PLANS"
+grep -q 'requirements: \[R1' "$WRITING_PLANS" || fail "canonical requirements array missing"
+grep -q 'acceptance: \[AC1' "$WRITING_PLANS" || fail "canonical acceptance array missing"
+grep -q 'source-qualified' "$WRITING_PLANS" || fail "source-qualified task trace missing"
+grep -q 'docs/plans/PPP-<slug>/plan.md' "$EXECUTING_PLANS"
+grep -q 'Progress History' "$EXECUTING_PLANS"
 grep -q '`fast` defaults to `root`' "$ROOT/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
 grep -q '`balanced` defaults to `subagent`' "$ROOT/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
 grep -q '`frontier` defaults to `root`' "$ROOT/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
-grep -q 'User execution preferences override these defaults' "$ROOT/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
-grep -q 'Do not ask the user to choose an execution mode' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
-grep -q 'creating-agent-extensions' "$ROOT/plugins/forge/skills/using-forge/SKILL.md"
+grep -q 'creating-agent-extensions' "$USING_FORGE"
 grep -q '14 active user-execution skills listed above' "$ROOT/README.md"
 grep -q '| `creating-agent-extensions` |' "$ROOT/README.md"
 [[ ! -e "$ROOT/plugins/forge/skills/ui-design" ]]
 grep -q 'Codex, Claude Code, and Antigravity' "$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md"
-grep -q '.agent-extensions/' "$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
+grep -q '.agent-extensions/' "$PORTABILITY"
 grep -q 'python3 "$MANAGER" --help' "$ROOT/scripts/validate.sh"
 grep -q 'docs/debug/' "$ROOT/plugins/forge/skills/systematic-debugging/SKILL.md"
-grep -q 'docs/specs/NNN-<slug>/view.html' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'docs/plans/PPP-<slug>/view.html' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-! grep -q '| `combined`' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q '`unverified`' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'SUCCESSFUL BUILD ENDS GENERATION. NO POST-BUILD VIEWER QA.' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'Do not run `--check`' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'do not manually validate it' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'Do not add a post-build viewport or scroll verification step' "$ROOT/plugins/forge/skills/spec-viewer/references/content-patterns.md"
-! grep -q 'Combined mode' "$ROOT/plugins/forge/skills/spec-viewer/references/content-patterns.md"
-grep -q 'Building a browser application UI' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'Building a public website' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'Changing the Viewer shell' "$ROOT/plugins/forge/skills/spec-viewer/SKILL.md"
-grep -q 'The successful build command is sufficient evidence' "$ROOT/plugins/forge/skills/verifying-work/SKILL.md"
-grep -q 'do not add source-count, hash, browser, or layout validation after generation' "$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
-grep -q 'needs no hash, browser, or layout check' "$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
+
+[[ -f "$REVIEW_VIEWER" ]] || fail "review-viewer is missing"
+[[ ! -e "$ROOT/plugins/forge/skills/spec-viewer" ]] || fail "legacy spec-viewer remains"
+grep -q 'explicit request' "$REVIEW_VIEWER" || fail "review-viewer request gate missing"
+grep -q '.forge/reviews/<review-id>/view.html' "$REVIEW_VIEWER" || fail "review-viewer output path missing"
+grep -q 'Run one build command' "$REVIEW_VIEWER" || fail "review-viewer build-once contract missing"
+grep -q 'successful single build ends generation' "$REVIEW_VIEWER" || fail "fixed generation boundary missing"
+grep -q 'Review Viewer tooling' "$ROOT/plugins/forge/skills/verifying-work/SKILL.md" || fail "tooling verification boundary missing"
 grep -q 'test-forge-artifact-contract.sh' "$ROOT/.github/workflows/validate.yml"
-grep -q 'docs/plans/' "$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md"
-grep -q 'superseded by docs/specs/002-lifecycle-review-viewer/spec.md' "$ROOT/docs/specs/2026-07-04-forge-plugin-design.md"
+grep -q 'test-forge-spec-docs-policy.sh' "$ROOT/.github/workflows/validate.yml" || fail "CI misses spec docs policy"
+
+# Durable Spec Pages tooling must never create, refresh, or remove Review Viewer snapshots.
+TEMP_ROOT="$(mktemp -d)"
+trap 'rm -rf "$TEMP_ROOT"' EXIT
+cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/pages-repository/." "$TEMP_ROOT/"
+mkdir -p "$TEMP_ROOT/.forge/reviews/sentinel"
+printf 'review-sentinel\n' > "$TEMP_ROOT/.forge/reviews/sentinel/view.html"
+SENTINEL_BEFORE="$(shasum -a 256 "$TEMP_ROOT/.forge/reviews/sentinel/view.html" | awk '{print $1}')"
+REVIEW_COUNT_BEFORE="$(find "$TEMP_ROOT/.forge/reviews" -type f | wc -l | tr -d ' ')"
+bash "$ROOT/plugins/forge/skills/writing-specs/scripts/spec-docs.sh" \
+  --repo-root "$TEMP_ROOT" build --root docs/specs --offline >/dev/null
+bash "$ROOT/plugins/forge/skills/writing-specs/scripts/spec-docs.sh" \
+  --repo-root "$TEMP_ROOT" check --root docs/specs >/dev/null
+SENTINEL_AFTER="$(shasum -a 256 "$TEMP_ROOT/.forge/reviews/sentinel/view.html" | awk '{print $1}')"
+REVIEW_COUNT_AFTER="$(find "$TEMP_ROOT/.forge/reviews" -type f | wc -l | tr -d ' ')"
+[[ "$SENTINEL_BEFORE" == "$SENTINEL_AFTER" ]] || fail "Spec Pages changed Review Viewer bytes"
+[[ "$REVIEW_COUNT_BEFORE" == "$REVIEW_COUNT_AFTER" ]] || fail "Spec Pages changed Review Viewer file count"
+
+assert_migration_artifact
 
 printf 'test-forge-artifact-contract: all checks passed\n'

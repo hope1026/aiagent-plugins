@@ -5,7 +5,10 @@
 Status: complete
 
 **Related Specs:**
-- `docs/specs/003-repository-maintenance-runbook/spec.md`: R4, R9 · AC7, AC9
+- id: 003-repository-maintenance-runbook
+  path: docs/specs/003-repository-maintenance-runbook/spec.md
+  requirements: [R4, R9]
+  acceptance: [AC7, AC9]
 
 **목표:** distributed Forge skill이 push 대상에 포함될 때 Claude와 Codex plugin version 상승을 강제하는 repository-only 유지보수 규칙을 배포한다.
 
@@ -29,7 +32,7 @@ Status: complete
 | AC7 | 1 |
 | AC9 | 1 |
 
-### Task 1: maintaining-forge version gate 추가 및 검증 (R4, R9 · AC7, AC9)
+### Task 1: maintaining-forge version gate 추가 및 검증 (003 R4, R9, AC7, AC9)
 
 **파일:**
 - 수정: `.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md`
@@ -45,6 +48,7 @@ Status: complete
 - 출력: `plugins/forge/skills/` 변경 시 두 plugin manifest의 version 상승을 요구하고 위반 시 push를 중단하는 canonical instruction
 
 **실행 메타데이터:**
+- Route: route-1
 - 의존성: none
 - 쓰기 소유권: `.agent-extensions/maintaining-forge/`, manager가 소유한 `.agents/skills/maintaining-forge/` 및 `.claude/skills/maintaining-forge/`
 - 병렬 안전성: sequential — canonical hash 변경 뒤 adapter render와 validation이 이어져야 한다.

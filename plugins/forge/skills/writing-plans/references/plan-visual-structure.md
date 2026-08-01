@@ -22,8 +22,10 @@ This order lets a reviewer move from scope to flow to implementation detail to e
 | Route | Tasks | Deliverable | Checkpoint type |
 |---|---:|---|---|
 | Route 1 — Source | 1–3 | Parser and manifest | notify after count fixture |
-| Route 2 — Review | 4–6 | Viewer shell | approval only before release |
+| Route 2 — Review | 4–6 | Review tooling shell | approval only before release |
 ```
+
+When a plan has any Related Spec, label every coverage and provenance reference with the explicit spec id or unique three-digit prefix, including single-spec plans. Do not merge same-numbered R/AC IDs across sources, infer cross-source links, or encode an unqualified range. The canonical Related Specs block owns exact `id`, `path`, `requirements`, and `acceptance` arrays; diagrams only visualize those declared mappings.
 
 Use 6–10 Routes for a large plan. Every Task has one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
 

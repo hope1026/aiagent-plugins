@@ -28,6 +28,7 @@ If you cannot state the root cause in one sentence AND show a reproduction that 
 - Test failures, crashes, wrong output
 - Unexpected behavior, flaky runs, performance cliffs
 - Build failures, integration failures
+- Spec Pages check failures and Review Viewer tooling failures; first reproduce whether source, generator, asset, or runtime state diverged
 
 **Use ESPECIALLY when:**
 

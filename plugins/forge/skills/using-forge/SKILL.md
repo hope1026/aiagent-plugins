@@ -58,10 +58,10 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 | Public website — landing pages, homepages, marketing or product sites, editorial, portfolios, public documentation | the forge website-design skill |
 | UI request with no evidence of application state/workflow or public content/acquisition | ask one classification question: "Is this a stateful browser application or a public content website?" Then route to exactly one UI skill |
 | Native mobile or desktop app while its specialist skill is not available | state that the specialist skill is not available; do not force-route it to a web UI skill |
-| Viewer shell, template, style, or interaction tooling changes | the forge web-app-design skill; fixed Viewer generation remains the forge spec-viewer skill alone |
+| Review Viewer or Spec Pages shell, template, style, runtime, or interaction tooling changes | the forge web-app-design skill with full verification |
 | Writing prose humans will read — docs, PRs, commits, messages | the forge writing-tone skill |
 | Cross-agent skill, MCP, or bundle authoring for Codex, Claude Code, and Antigravity | the forge creating-agent-extensions skill |
-| "Show me the spec" / render or present a spec for review | the forge spec-viewer skill |
+| Explicit request to create, update, visualize, present, print, share, or freshness-check a spec/plan Review Viewer | the forge review-viewer skill |
 | Approved spec exists, no plan yet | the forge writing-plans skill |
 | Operational, research, or ceremony-floor work needs an execution plan | the forge writing-plans skill |
 | A plan exists in `docs/plans/` with open tasks | the forge executing-plans skill |
@@ -74,15 +74,16 @@ Forge keeps its artifacts in fixed locations inside the target project:
 | Artifact | Path | Committed |
 |---|---|---|
 | Specs — permanent source of truth | `docs/specs/NNN-<slug>/spec.md` | yes |
-| Spec Viewer — when explicitly generated | `docs/specs/NNN-<slug>/view.html` | yes |
+| Per-spec Spec Pages — regenerated with source/status/tooling | `docs/specs/NNN-<slug>/index.html` | yes |
+| Spec Pages catalog | `docs/specs/index.html` | yes |
 | Work-scoped implementation plans | `docs/plans/PPP-<slug>/plan.md` | yes |
-| Plan Viewer — when explicitly generated | `docs/plans/PPP-<slug>/view.html` | yes |
+| Optional plan progress and task details | `docs/plans/PPP-<slug>/progress.md`, `tasks/*.md` | yes while plan is retained |
+| Review Viewer — explicit request only | `.forge/reviews/<review-id>/view.html` | no |
 | Promoted debug / root-cause notes | `docs/debug/YYYY-MM-DD-<slug>.md` | yes |
 | Promoted research notes | `docs/research/YYYY-MM-DD-<slug>.md` | yes |
-| Scratch — local progress and briefs | `.forge/scratch/` | no |
-| Viewer build intermediates | `.forge/viewer-build/` | no |
+| Scratch, research, ledgers, reviews, build intermediates | `.forge/` | no |
 
-`.forge/scratch/` and `.forge/viewer-build/` contain local, regenerable files and remain uncommitted. Spec directories use independent `NNN-<slug>` identifiers and persist for the project lifetime. Plan directories use independent `PPP-<slug>` identifiers and may be deleted when their work ends after permanent decisions are promoted to a spec, ADR, or another durable document.
+`.forge/` is local-only. Promote durable research to `docs/research/` and durable root-cause records to `docs/debug/`. Spec directories use independent `NNN-<slug>` identifiers and persist for the project lifetime. Plan directories use independent `PPP-<slug>` identifiers. Before deleting a finished plan, promote permanent decisions to a spec, ADR, research record, or other durable document; `progress.md` and `tasks/*.md` never outlive their owning plan.
 
 ## Red Flags
 
