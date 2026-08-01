@@ -2,3 +2,5 @@
 plugins/forge/skills/writing-specs/assets/mermaid.min.js -whitespace
 plugins/forge/skills/writing-specs/assets/mermaid-validator.bundle.mjs -whitespace
 plugins/forge/skills/writing-specs/assets/mermaid-validator-THIRD-PARTY.txt -whitespace
+plugins/forge/skills/review-viewer/tests/fixtures/mermaid-mustache-stub.js -whitespace
+plugins/forge/skills/review-viewer/tests/fixtures/mermaid-stub.js -whitespace
