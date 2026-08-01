@@ -47,6 +47,9 @@ test -x "$SKILL/tests/test-build-review-viewer.sh" || fail "test entrypoint is n
 test ! -e "$SKILL/scripts/build-viewer.sh" || fail "old shell entrypoint still exists"
 test ! -e "$SKILL/scripts/build_viewer.py" || fail "old Python entrypoint still exists"
 test ! -e "$SKILL/tests/test-build-viewer.sh" || fail "old test entrypoint still exists"
+test ! -e "$SKILL/references/content-patterns.md" || fail "manual content-pattern contract still exists"
+test ! -e "$SKILL/tests/fixtures/basic-fragment.html" || fail "manual fragment fixture still exists"
+test ! -e "$SKILL/tests/fixtures/invalid-fragment.html" || fail "invalid manual fragment fixture still exists"
 
 cp -R "$FIXTURES/repository" "$TMP/repository"
 REPO="$TMP/repository"
@@ -142,10 +145,39 @@ assert "--dry-run" not in payload["rebuild_command"]
 assert "--format" not in payload["rebuild_command"]
 PY
 
-before="$(tree_digest "$REPO")"
-expect_exit 2 run_builder --mode spec --spec docs/specs/008-alpha/spec.md --review-id no-renderer
-test "$before" = "$(tree_digest "$REPO")" || fail "fail-closed build wrote repository files"
-test ! -e "$REPO/.forge/reviews/no-renderer/view.html" || fail "Task 5 generated final HTML"
+before_pages="$(find "$REPO/docs/specs" -type f -name index.html -print0 | LC_ALL=C sort -z | xargs -0 shasum -a 256 2>/dev/null || true)"
+run_builder --mode spec --spec docs/specs/008-alpha/spec.md \
+  --comparison docs/specs/002-beta/spec.md --review-id spec-final \
+  --generated-at 2026-08-01T00:00:00Z --offline
+test -f "$REPO/.forge/reviews/spec-final/view.html" || fail "spec final viewer was not generated"
+after_pages="$(find "$REPO/docs/specs" -type f -name index.html -print0 | LC_ALL=C sort -z | xargs -0 shasum -a 256 2>/dev/null || true)"
+test "$before_pages" = "$after_pages" || fail "Review Viewer changed Spec Pages"
+"$BUILDER" --check "$REPO/.forge/reviews/spec-final/view.html" \
+  --repo-root "$REPO" --format json >"$TMP/spec-final-current.json"
+python3 - "$TMP/spec-final-current.json" <<'PY'
+import json, pathlib, sys
+value = json.loads(pathlib.Path(sys.argv[1]).read_text())
+assert value["overall"] == "current"
+assert value["aggregates"] == {
+    "primary": "current", "comparison": "current", "context": "unverified"
+}
+PY
+
+run_builder --mode plan --plan docs/plans/001-demo/plan.md \
+  --review-id plan-final --locale ko --checkpoint source-model-ready \
+  --generated-at 2026-08-01T00:00:00Z --offline
+test -f "$REPO/.forge/reviews/plan-final/view.html" || fail "plan final viewer was not generated"
+python3 "$SKILL/tests/fixtures/verify-mermaid-equality.py" \
+  "$REPO/docs/plans/001-demo/plan.md" "$REPO/.forge/reviews/plan-final/view.html"
+python3 "$SKILL/tests/fixtures/verify-mermaid-equality.py" \
+  "$REPO/docs/specs/008-alpha/spec.md" "$REPO/.forge/reviews/plan-final/view.html"
+
+mkdir -p "$TMP/outside-output"
+ln -s "$TMP/outside-output" "$REPO/.forge/reviews/escape-output"
+expect_exit 2 run_builder --mode spec --spec docs/specs/008-alpha/spec.md \
+  --review-id escape-output --generated-at 2026-08-01T00:00:00Z
+test "$(find "$TMP/outside-output" -type f | wc -l | tr -d ' ')" -eq 0 \
+  || fail "escaped output parent wrote outside the repository"
 
 expect_exit 2 run_builder --mode combined --spec docs/specs/008-alpha/spec.md --review-id bad --dry-run --format json
 expect_exit 2 run_builder --mode spec --spec docs/specs/008-alpha/spec.md -c fragment.html --review-id bad --dry-run --format json
@@ -174,7 +206,7 @@ assert "--progress docs/plans/001-demo/progress.md" in value["rebuild_command"]
 assert "--tasks-dir docs/plans/001-demo/tasks" in value["rebuild_command"]
 PY
 
-# Build a tiny checker fixture directly; the Task 5 builder itself must never render HTML.
+# Build a malformed/current matrix fixture directly; --check must stay read-only and never regenerate it.
 mkdir -p "$REPO/.forge/reviews/checker"
 python3 - "$REPO" <<'PY'
 import hashlib
@@ -250,7 +282,11 @@ expect_exit 1 "$BUILDER" --check "$REPO/.forge/reviews/checker/bad.html" --repo-
 cp "$TMP/command.stdout" "$TMP/malformed.json"
 python3 - "$TMP/malformed.json" <<'PY'
 import json, pathlib, sys
-assert json.loads(pathlib.Path(sys.argv[1]).read_text())["overall"] == "malformed"
+value = json.loads(pathlib.Path(sys.argv[1]).read_text())
+assert value["overall"] == "malformed"
+assert value["aggregates"] == {
+    "primary": "unverified", "comparison": "unverified", "context": "unverified"
+}
 PY
 
 before="$(tree_digest "$REPO")"

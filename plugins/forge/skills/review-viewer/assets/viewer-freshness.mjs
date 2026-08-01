@@ -4,6 +4,25 @@ export function aggregateFreshness(states) {
   return 'unverified';
 }
 
+export function sourceGroup(role) {
+  if (role === 'comparison_spec') return 'comparison';
+  if (role === 'related_spec_context') return 'context';
+  return ['primary_spec', 'primary_plan', 'plan_progress', 'plan_task'].includes(role)
+    ? 'primary'
+    : null;
+}
+
+export function aggregateByGroup(sources, states) {
+  const grouped = { primary: [], comparison: [], context: [] };
+  sources.forEach((source, index) => {
+    const group = sourceGroup(source.role);
+    if (group) grouped[group].push(states[index] ?? 'unverified');
+  });
+  return Object.fromEntries(
+    Object.entries(grouped).map(([group, values]) => [group, aggregateFreshness(values)]),
+  );
+}
+
 export async function sha256Hex(bytes) {
   const buffer = bytes instanceof ArrayBuffer
     ? bytes
@@ -16,8 +35,16 @@ export function sourceMatchKey(path) {
   return String(path).replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');
 }
 
+export function sourceKey(source) {
+  return `${String(source.namespace)}:${sourceMatchKey(source.path)}`;
+}
+
 export function shouldAutoFetch(protocol) {
   return protocol === 'http:' || protocol === 'https:';
+}
+
+export function sourceUrl(source, sourceBase, locationHref) {
+  return new URL(source.path, new URL(sourceBase, locationHref));
 }
 
 export async function verifyLocalSource(source, file) {
@@ -31,11 +58,11 @@ export async function verifyLocalSource(source, file) {
   }
 }
 
-export async function verifyFetchedSource(source, baseUrl) {
+export async function verifyFetchedSource(source, sourceBase, locationHref) {
   try {
-    const url = new URL(source.path, baseUrl);
-    const base = new URL(baseUrl);
-    if (!['http:', 'https:'].includes(base.protocol) || url.origin !== base.origin) {
+    const locationUrl = new URL(locationHref);
+    const url = sourceUrl(source, sourceBase, locationHref);
+    if (!['http:', 'https:'].includes(locationUrl.protocol) || url.origin !== locationUrl.origin) {
       return { state: 'unverified', error: 'same-origin HTTP source access unavailable' };
     }
     const response = await fetch(url, { cache: 'no-store' });
@@ -57,61 +84,51 @@ function readManifest() {
   return JSON.parse(element.textContent);
 }
 
-function sourceRow(path) {
-  return document.querySelector(`[data-source-path="${CSS.escape(path)}"]`);
+function sourceRow(key) {
+  return document.querySelector(`[data-source-key="${CSS.escape(key)}"]`);
 }
 
-function renderSource(path, result) {
-  const row = sourceRow(path);
+function setState(target, state) {
+  target.textContent = state;
+  target.className = `freshness-state freshness-${state}`;
+}
+
+function renderSource(source, result) {
+  const row = sourceRow(sourceKey(source));
   if (!row) return;
   const state = row.querySelector('[data-source-state]');
   const error = row.querySelector('[data-source-error]');
-  state.textContent = result.state;
-  state.className = `freshness-state freshness-${result.state}`;
-  error.textContent = result.error || '';
+  if (state) setState(state, result.state);
+  if (error) error.textContent = result.error || '';
 }
 
-function renderOverall(results) {
-  const overall = aggregateFreshness(results.map((result) => result.state));
-  const target = document.querySelector('[data-freshness-overall]');
-  if (target) {
-    target.textContent = overall;
-    target.className = `freshness-state freshness-${overall}`;
-  }
-}
-
-function matchFile(source, sources, files) {
-  const key = sourceMatchKey(source.path);
-  const exact = files.filter((file) => {
-    const candidate = sourceMatchKey(file.webkitRelativePath || file.name);
-    return candidate === key || candidate.endsWith(`/${key}`);
+function renderAggregates(manifest, results) {
+  const states = results.map((result) => result.state);
+  const groups = aggregateByGroup(manifest.sources, states);
+  Object.entries(groups).forEach(([group, state]) => {
+    const container = document.querySelector(`[data-freshness-group="${group}"]`);
+    const target = container && container.querySelector('.freshness-state');
+    if (target) setState(target, state);
   });
-  if (exact.length === 1) return exact[0];
-  const basename = key.split('/').pop();
-  const basenameIsUnique = sources.filter(
-    (item) => sourceMatchKey(item.path).split('/').pop() === basename,
-  ).length === 1;
-  if (!basenameIsUnique) return null;
-  const byName = files.filter((file) => file.name === basename);
-  return byName.length === 1 ? byName[0] : null;
+  const overallTarget = document.querySelector('[data-freshness-overall]');
+  if (overallTarget) setState(overallTarget, aggregateFreshness(states));
 }
 
-async function verifySelectedFiles(manifest, fileList) {
-  const files = Array.from(fileList);
-  const results = [];
-  for (const source of manifest.sources) {
-    const file = matchFile(source, manifest.sources, files);
-    if (!file) {
-      const result = { state: 'unverified', error: 'matching local file not selected' };
-      renderSource(source.path, result);
-      results.push(result);
-      continue;
-    }
-    const result = await verifyLocalSource(source, file);
-    renderSource(source.path, result);
-    results.push(result);
-  }
-  renderOverall(results);
+function installLocalPickers(manifest, results) {
+  document.querySelectorAll('[data-source-picker]').forEach((picker) => {
+    const key = picker.getAttribute('data-source-key');
+    const index = manifest.sources.findIndex((source) => sourceKey(source) === key);
+    if (index < 0) return;
+    picker.addEventListener('change', async () => {
+      const file = picker.files && picker.files[0];
+      const result = file
+        ? await verifyLocalSource(manifest.sources[index], file)
+        : { state: 'unverified', error: 'matching local file not selected' };
+      results[index] = result;
+      renderSource(manifest.sources[index], result);
+      renderAggregates(manifest, results);
+    });
+  });
 }
 
 async function initFreshness() {
@@ -119,22 +136,26 @@ async function initFreshness() {
   try {
     manifest = readManifest();
   } catch (error) {
-    renderOverall([{ state: 'unverified', error: String(error) }]);
+    const target = document.querySelector('[data-freshness-overall]');
+    if (target) setState(target, 'unverified');
     return;
   }
-  const initial = manifest.sources.map(() => ({ state: 'unverified' }));
-  renderOverall(initial);
-  if (shouldAutoFetch(location.protocol)) {
-    const results = await Promise.all(
-      manifest.sources.map((source) => verifyFetchedSource(source, location.href)),
-    );
-    manifest.sources.forEach((source, index) => renderSource(source.path, results[index]));
-    renderOverall(results);
-  }
-  const picker = document.getElementById('forge-source-picker');
-  if (picker) {
-    picker.addEventListener('change', () => verifySelectedFiles(manifest, picker.files));
-  }
+  const results = manifest.sources.map(() => ({ state: 'unverified' }));
+  renderAggregates(manifest, results);
+  installLocalPickers(manifest, results);
+  if (!shouldAutoFetch(location.protocol)) return;
+  const fetched = await Promise.all(
+    manifest.sources.map((source) => verifyFetchedSource(
+      source,
+      manifest.source_base,
+      location.href,
+    )),
+  );
+  fetched.forEach((result, index) => {
+    results[index] = result;
+    renderSource(manifest.sources[index], result);
+  });
+  renderAggregates(manifest, results);
 }
 
 if (typeof document !== 'undefined') {

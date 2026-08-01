@@ -6,13 +6,16 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import shlex
 import subprocess
 import sys
+import tempfile
 from typing import Mapping
 
 from review_freshness import CheckResult, check_review, find_repository_root
+from review_renderer import render_review
 from review_sources import (
     ReviewBundle,
     ReviewSource,
@@ -224,6 +227,44 @@ def _check_payload(result: CheckResult) -> dict[str, object]:
     }
 
 
+def _atomic_write_text(output: Path, contents: str) -> None:
+    """Replace one requested Viewer only after every output byte is available."""
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            prefix=f".{output.name}.",
+            suffix=".tmp",
+            dir=output.parent,
+            delete=False,
+        ) as stream:
+            temporary = Path(stream.name)
+            stream.write(contents)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, output)
+        temporary = None
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def _review_output(
+    parser: argparse.ArgumentParser, repo_root: Path, review_id: str
+) -> tuple[Path, Path]:
+    relative = Path(".forge/reviews") / review_id / "view.html"
+    output = repo_root / relative
+    try:
+        output.parent.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        _error(parser, f"Review Viewer output parent escapes repository: {relative.parent.as_posix()}")
+    return relative, output
+
+
 def _run_check(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int:
     if any(
         (
@@ -314,12 +355,38 @@ def main(argv: list[str] | None = None) -> int:
         _error(parser, "--repo-root is only valid with --check")
     repo_root = _repository_root(parser, None)
     bundle = _collect_build_bundle(parser, args, repo_root)
-    if not args.dry_run:
-        _error(parser, "final Review Viewer rendering is enabled by Task 6")
-    if args.format != "json":
-        _error(parser, "--dry-run requires --format json")
-    payload = _dry_run_payload(parser, args, bundle, repo_root)
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    if args.dry_run:
+        if args.format != "json":
+            _error(parser, "--dry-run requires --format json")
+        payload = _dry_run_payload(parser, args, bundle, repo_root)
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
+    if args.format is not None:
+        _error(parser, "--format is only valid with --dry-run or --check")
+
+    output_relative, output = _review_output(parser, repo_root, args.review_id)
+    generated_at = _normalize_generated_at(parser, args.generated_at)
+    commit = _git_commit(parser, repo_root)
+    rebuild_command = _normalized_rebuild_command(args, bundle, generated_at, repo_root)
+    try:
+        document = render_review(
+            bundle,
+            review_id=args.review_id,
+            locale=args.locale or "en",
+            generated_at=generated_at,
+            checkpoint=args.checkpoint or "working-tree",
+            commit=commit,
+            rebuild_command=rebuild_command,
+            source_base="../../../",
+            offline=args.offline,
+        )
+    except (OSError, UnicodeError, ValueError, RuntimeError) as error:
+        _error(parser, f"Review Viewer rendering failed: {error}")
+    try:
+        _atomic_write_text(output, document)
+    except OSError as error:
+        _error(parser, f"Review Viewer write failed: {error}")
+    print(output_relative.as_posix())
     return 0
 
 

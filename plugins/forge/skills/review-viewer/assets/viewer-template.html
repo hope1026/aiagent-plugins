@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{TITLE}}</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e6e5c'/%3E%3Cpath d='M17 18h30v7H25v8h18v7H25v12h-8z' fill='white'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%232557a7'/%3E%3Cpath d='M17 18h30v7H25v8h18v7H25v12h-8z' fill='white'/%3E%3C/svg%3E">
 <style>
   :root {
-    --bg: #f6f5f2;
-    --surface: #ffffff;
+    --bg: #f7f3eb;
+    --surface: #fffdfa;
     --text: #20262b;
     --text-muted: #626d76;
-    --accent: #0e6e5c;
-    --accent-soft: rgba(14, 110, 92, 0.12);
-    --border: #dcd8d0;
+    --accent: #2557a7;
+    --accent-soft: rgba(37, 87, 167, 0.12);
+    --border: #d8d1c4;
     --error: #b3382e;
   }
   @media (prefers-color-scheme: dark) {
@@ -22,8 +22,8 @@
       --surface: #1e2428;
       --text: #e8e5de;
       --text-muted: #98a2aa;
-      --accent: #43bfa3;
-      --accent-soft: rgba(67, 191, 163, 0.14);
+      --accent: #8bb4ff;
+      --accent-soft: rgba(139, 180, 255, 0.16);
       --border: #343d43;
       --error: #e07a70;
     }
@@ -64,6 +64,9 @@
   }
   .tab-bar button:hover { color: var(--text); }
   .tab-bar button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  :where(button, a, input, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 2px;
+  }
 
   main { padding-top: 1.5rem; padding-bottom: 4rem; }
   .tab-panel > :first-child { margin-top: 0; }
@@ -99,8 +102,13 @@
   .source-summary summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-variant-numeric: tabular-nums; }
   .source-summary ul { padding-left: 1.25rem; }
   .source-summary li { max-width: none; overflow-wrap: anywhere; }
+  .freshness-aggregates { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 0.5rem 0; }
+  .source-row { display: grid; grid-template-columns: auto minmax(8rem, auto) minmax(12rem, 1fr) auto; gap: 0.35rem 0.75rem; align-items: center; padding: 0.55rem 0; border-bottom: 1px solid var(--border); }
+  .source-role { font-weight: 650; }
+  .source-error { grid-column: 2 / -1; min-height: 1.25rem; }
   .source-picker-label { display: block; font-weight: 600; color: var(--text); margin-top: 0.75rem; }
-  #forge-source-picker { display: block; min-height: 44px; max-width: 100%; margin: 0.25rem 0 0.75rem; }
+  .source-picker-label { grid-column: 2 / -1; margin: 0; font-size: 0.85rem; }
+  [data-source-picker] { display: block; min-height: 44px; max-width: 100%; margin-top: 0.25rem; }
   .freshness-state { font-weight: 700; font-variant-numeric: tabular-nums; }
   .freshness-current { color: var(--accent); }
   .freshness-stale { color: var(--error); }
@@ -108,15 +116,25 @@
   .source-error { color: var(--error); }
 
   .ac-item {
-    display: flex; gap: 0.6rem; align-items: baseline; padding: 0.5rem 0;
+    display: flex; gap: 0.6rem; align-items: center; padding: 0.5rem 0; min-height: 44px;
     border-bottom: 1px solid var(--border); max-width: 65ch;
   }
-  .ac-item input { accent-color: var(--accent); flex: none; transform: translateY(2px); }
+  .ac-item input { accent-color: var(--accent); flex: none; width: 1rem; height: 1rem; }
+  .provenance { max-width: none; color: var(--text-muted); font-size: 0.85rem; overflow-wrap: anywhere; }
+  .provenance span { color: var(--text); font-weight: 650; }
+  .source-block, .task-card, .signature-view, .diagram-card {
+    margin: 1rem 0; padding: 1rem; border: 1px solid var(--border); background: var(--surface);
+  }
+  .source-block > :first-child, .task-card > :first-child, .signature-view > :first-child, .diagram-card > :first-child { margin-top: 0; }
+  .count-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
 
   @media (max-width: 43.75rem) {
     .doc-header-inner, .tab-bar, main { padding-left: 1rem; padding-right: 1rem; }
     .diagram-scroll.is-wide svg { min-width: 48rem; max-width: none; }
     .table-scroll table { min-width: 42rem; }
+    .source-row { grid-template-columns: 1fr auto; }
+    .source-row > code { grid-column: 1 / -1; }
+    .source-error, .source-picker-label { grid-column: 1 / -1; }
   }
 
   @media print {
@@ -141,13 +159,13 @@
     {{SOURCE_SUMMARY}}
   </div>
 </header>
-<nav class="tab-bar" aria-label="{{NAV_LABEL}}">
-  <button type="button" data-tab="overview" aria-selected="false">{{TAB_OVERVIEW}}</button>
-  <button type="button" data-tab="requirements" aria-selected="false">{{TAB_REQUIREMENTS}}</button>
-  <button type="button" data-tab="flows" aria-selected="false">{{TAB_FLOWS}}</button>
-  <button type="button" data-tab="data" aria-selected="false">{{TAB_DATA}}</button>
-  <button type="button" data-tab="acceptance" aria-selected="false">{{TAB_ACCEPTANCE}}</button>
-  <button type="button" data-tab="history" aria-selected="false">{{TAB_HISTORY}}</button>
+<nav class="tab-bar" aria-label="{{NAV_LABEL}}" role="tablist">
+  <button id="tab-overview" type="button" role="tab" data-tab="overview" aria-controls="overview" aria-selected="false" tabindex="-1">{{TAB_OVERVIEW}}</button>
+  <button id="tab-requirements" type="button" role="tab" data-tab="requirements" aria-controls="requirements" aria-selected="false" tabindex="-1">{{TAB_REQUIREMENTS}}</button>
+  <button id="tab-flows" type="button" role="tab" data-tab="flows" aria-controls="flows" aria-selected="false" tabindex="-1">{{TAB_FLOWS}}</button>
+  <button id="tab-data" type="button" role="tab" data-tab="data" aria-controls="data" aria-selected="false" tabindex="-1">{{TAB_DATA}}</button>
+  <button id="tab-acceptance" type="button" role="tab" data-tab="acceptance" aria-controls="acceptance" aria-selected="false" tabindex="-1">{{TAB_ACCEPTANCE}}</button>
+  <button id="tab-history" type="button" role="tab" data-tab="history" aria-controls="history" aria-selected="false" tabindex="-1">{{TAB_HISTORY}}</button>
 </nav>
 <main>
 {{CONTENT}}
@@ -172,7 +190,7 @@
     for (var i = 0; i < blocks.length; i++) {
       var el = blocks[i];
       el.setAttribute('data-forge-rendered', '1');
-      var src = el.textContent.trim();
+      var src = el.textContent;
       var wrapper = ensureDiagramWrapper(el, src, i);
       var valid = false;
       var parseError = null;
@@ -249,6 +267,7 @@
       if (btn) {
         btn.classList.toggle('active', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        btn.setAttribute('tabindex', on ? '0' : '-1');
       }
     });
     var active = document.getElementById(id);
@@ -270,33 +289,32 @@
       var t = btn.getAttribute('data-tab');
       if (location.hash === '#' + t) { activate(t); } else { location.hash = t; }
     });
+    btn.addEventListener('keydown', function (event) {
+      var current = TABS.indexOf(btn.getAttribute('data-tab'));
+      var target = null;
+      if (event.key === 'ArrowRight') { target = (current + 1) % TABS.length; }
+      if (event.key === 'ArrowLeft') { target = (current - 1 + TABS.length) % TABS.length; }
+      if (event.key === 'Home') { target = 0; }
+      if (event.key === 'End') { target = TABS.length - 1; }
+      if (target === null) { return; }
+      event.preventDefault();
+      document.querySelector('.tab-bar button[data-tab="' + TABS[target] + '"]').focus();
+    });
   });
   window.addEventListener('hashchange', fromHash);
 
-  var storeKey = 'forge-viewer:' + document.title;
-  var checkboxState = { ac: {}, step: {} };
-  function checkboxKind(box) { return box.hasAttribute('data-step') ? 'step' : 'ac'; }
-  function checkboxId(box, kind) { return box.getAttribute(kind === 'step' ? 'data-step' : 'data-ac'); }
-  function saveChecks() {
-    checkboxState = { ac: {}, step: {} };
-    document.querySelectorAll('input[type="checkbox"][data-ac], input[type="checkbox"][data-step]').forEach(function (box) {
-      var kind = checkboxKind(box);
-      checkboxState[kind][checkboxId(box, kind)] = box.checked;
-    });
-    try { localStorage.setItem(storeKey, JSON.stringify(checkboxState)); } catch (e) {}
-  }
   (function restoreChecks() {
-    try { checkboxState = JSON.parse(localStorage.getItem(storeKey) || '{}') || checkboxState; } catch (e) {}
-    checkboxState.ac = checkboxState.ac || {};
-    checkboxState.step = checkboxState.step || {};
-    document.querySelectorAll('input[type="checkbox"][data-ac], input[type="checkbox"][data-step]').forEach(function (box) {
-      var kind = checkboxKind(box);
-      box.checked = !!checkboxState[kind][checkboxId(box, kind)];
-      box.addEventListener('change', saveChecks);
+    document.querySelectorAll('input[type="checkbox"][data-review-check]').forEach(function (box) {
+      var key = 'forge-review:' + box.getAttribute('data-storage-key');
+      try { box.checked = localStorage.getItem(key) === '1'; } catch (e) {}
+      box.addEventListener('change', function () {
+        try { localStorage.setItem(key, box.checked ? '1' : '0'); } catch (e) {}
+      });
     });
   })();
 
   fromHash();
+  document.documentElement.setAttribute('data-review-viewer-ready', 'true');
 })();
 </script>
 </body>

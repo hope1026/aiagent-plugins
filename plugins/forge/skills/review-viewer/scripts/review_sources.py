@@ -29,6 +29,7 @@ from spec_validate import PlanSpecRef, parse_plan_related_specs  # noqa: E402
 _REVIEW_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 _H1_RE = re.compile(r"^# (\S.*)$")
 _H2_RE = re.compile(r"^## (\S.*)$")
+_GOAL_RE = re.compile(r"^\*\*(?:Goal|목표):\*\*[ \t]+(\S.*)$")
 _TASK_RE = re.compile(r"^### Task ([0-9]+): (.+?)(?: \(([^()]*)\))?$")
 _STEP_RE = re.compile(r"^- \[([ xX])\] \*\*Step ([0-9]+): (.+)\*\*$")
 _ROUTE_RE = re.compile(r"^- Route: ([a-z0-9][a-z0-9-]{0,63})$")
@@ -96,6 +97,7 @@ class PlanDocument:
     plan_id: str
     title: str
     status: str
+    goal: str
     sections: Mapping[str, str]
     related_specs: tuple[PlanSpecRef, ...]
     routes: tuple[PlanRoute, ...]
@@ -263,6 +265,17 @@ def _sections(lines: list[str]) -> Mapping[str, str]:
         end = headings[offset + 1][0] if offset + 1 < len(headings) else len(lines)
         result[heading] = "\n".join(lines[index + 1 : end]).strip("\n")
     return MappingProxyType(result)
+
+
+def _plan_goal(lines: list[str]) -> str:
+    goals = [
+        match.group(1)
+        for _, line in _outside_fences(lines)
+        if (match := _GOAL_RE.fullmatch(line))
+    ]
+    if len(goals) > 1:
+        raise ValueError("plan must contain at most one canonical Goal")
+    return goals[0] if goals else ""
 
 
 _FENCE_OPEN_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})([^\r\n]*)$")
@@ -649,6 +662,7 @@ def _plan_document(
         plan_id=plan_relative.parent.name,
         title=title_match.group(1),
         status=status,
+        goal=_plan_goal(plan_lines),
         sections=MappingProxyType(section_map),
         related_specs=related,
         routes=routes,

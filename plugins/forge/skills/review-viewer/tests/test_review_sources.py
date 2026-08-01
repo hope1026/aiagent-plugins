@@ -78,6 +78,33 @@ def write_viewer(path: Path, manifest: dict[str, object]) -> None:
 
 
 class ReviewSourcesTest(unittest.TestCase):
+    def test_plan_document_preserves_canonical_goal_in_both_locales(self) -> None:
+        english = collect_plan_sources(
+            REPO / "docs/plans/001-demo/plan.md",
+            REPO,
+        ).primary[0].document
+        assert english is not None
+        self.assertEqual(
+            english.goal,
+            "Build a deterministic review source bundle.",
+        )
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(REPO, root, dirs_exist_ok=True)
+            plan = root / "docs/plans/001-demo/plan.md"
+            plan.write_text(
+                plan.read_text(encoding="utf-8").replace(
+                    "**Goal:** Build a deterministic review source bundle.",
+                    "**목표:** 정본 목표 문장을 보존한다.",
+                )
+                + "\n```markdown\n**Goal:** 코드 예시는 목표가 아니다.\n```\n",
+                encoding="utf-8",
+            )
+            korean = collect_plan_sources(plan, root).primary[0].document
+            assert korean is not None
+            self.assertEqual(korean.goal, "정본 목표 문장을 보존한다.")
+
     def test_auxiliary_documents_preserve_source_specific_mermaid_provenance(self) -> None:
         with TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -21,6 +21,7 @@ _REVIEW_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 _REQUIREMENT_RE = re.compile(r"^R[0-9]+$")
 _ACCEPTANCE_RE = re.compile(r"^AC[0-9]+$")
 _STATE_RANK = {"current": 0, "stale": 1, "missing": 2, "malformed": 3}
+_GROUPS = ("primary", "comparison", "context")
 
 
 @dataclass(frozen=True)
@@ -63,6 +64,14 @@ def _digest(path: Path) -> str:
 
 
 def _aggregate(states: list[str]) -> str:
+    if "stale" in states:
+        return "stale"
+    if states and all(state == "current" for state in states):
+        return "current"
+    return "unverified"
+
+
+def _diagnostic_overall(states: list[str]) -> str:
     return max(states, key=_STATE_RANK.__getitem__) if states else "malformed"
 
 
@@ -80,7 +89,7 @@ def _malformed(viewer: str, diagnostic: str) -> CheckResult:
     return CheckResult(
         viewer,
         (),
-        MappingProxyType({}),
+        MappingProxyType({group: "unverified" for group in _GROUPS}),
         "malformed",
         (diagnostic,),
     )
@@ -313,8 +322,11 @@ def check_review(viewer: Path, repo_root: Path) -> CheckResult:
         sources.append((namespace, path_value, state))
         grouped.setdefault(group, []).append(state)
 
-    aggregates = {group: _aggregate(states) for group, states in grouped.items()}
-    overall = _aggregate([state for _, _, state in sources])
+    aggregates = {
+        group: _aggregate(grouped.get(group, []))
+        for group in _GROUPS
+    }
+    overall = _diagnostic_overall([state for _, _, state in sources])
     return CheckResult(
         viewer_label,
         tuple(sources),
