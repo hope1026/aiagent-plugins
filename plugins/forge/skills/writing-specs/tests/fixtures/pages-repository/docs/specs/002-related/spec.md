@@ -5,7 +5,7 @@ status: approved
 language: en
 kind: system
 areas: []
-components: ["parser", "deterministic-renderer-with-an-intentionally-long-component-label"]
+components: ["parser", "developer tools", "deterministic-renderer-with-an-intentionally-long-component-label"]
 relatedSpecs: [{"id": "001-basic", "relation": "relatedTo"}]
 ---
 # Related Rendering Contract
