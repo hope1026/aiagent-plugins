@@ -1,0 +1,4 @@
+# Preserve exact vendored/generated Mermaid bytes, including upstream license whitespace.
+plugins/forge/skills/writing-specs/assets/mermaid.min.js -whitespace
+plugins/forge/skills/writing-specs/assets/mermaid-validator.bundle.mjs -whitespace
+plugins/forge/skills/writing-specs/assets/mermaid-validator-THIRD-PARTY.txt -whitespace

@@ -1,0 +1,16 @@
+{
+  "name": "forge-mermaid-validator-build",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "linkedom": "0.18.12",
+    "mermaid": "11.16.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.9"
+  }
+}
