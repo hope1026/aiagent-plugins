@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@1
 id: 008-structured-spec-pages
-status: approved
+status: implemented
 language: ko
 kind: system
 areas: ["forge", "specs"]
@@ -256,3 +256,4 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐음을 보여주는 관찰 �
 - 2026-08-01 [APPROVED] 사용자가 구조화 Spec 계약, 상시 Spec Pages, 일괄 Forge migration과 요청형 Review Viewer 경계를 승인하고 구현 진행을 요청했다.
 - 2026-08-02 [CHANGE] R9 MODIFIED 및 R35–R39, AC13–AC15 ADDED: 같은 identity의 history append-only를 유지하면서도, exact baseline binding과 replay 방지를 가진 one-to-one transition으로 현재 사실만 담는 replacement를 안전하게 supersede할 수 있도록 한다.
 - 2026-08-02 [APPROVED] 사용자가 current-state spec supersession delta를 검토하고 구현 진행을 승인했다.
+- 2026-08-02 [IMPLEMENTED] AC1–AC15의 fresh parser, validator, renderer, install, pressure, browser와 repository evidence가 모두 PASS하여 current-state supersession 계약을 구현 완료했다.

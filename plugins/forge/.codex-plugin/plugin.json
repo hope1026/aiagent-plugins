@@ -1,6 +1,6 @@
 {
   "name": "forge",
-  "version": "0.1.6+codex.20260801164150",
+  "version": "0.1.7+codex.20260802062451",
   "description": "Spec-first development skills with structured spec authoring, validation, maintained Spec Pages, request-only Review Viewer output, cross-agent authoring, verification, debugging, and interface design. Produces adapters for Codex, Claude Code, and Antigravity.",
   "author": {
     "name": "Onestar Lee"
