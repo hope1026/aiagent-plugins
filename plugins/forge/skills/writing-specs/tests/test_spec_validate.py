@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -266,6 +268,208 @@ class BaselineValidationTest(unittest.TestCase):
             check=True,
         )
         return temporary, repo, source
+
+    def _write_replacement(
+        self, repo: Path, *, spec_id: str = "001-current", status: str = "approved"
+    ) -> Path:
+        replacement = repo / f"docs/specs/{spec_id}/spec.md"
+        replacement.parent.mkdir(parents=True, exist_ok=True)
+        source = (FIXTURES / "baseline-template/spec.md").read_text()
+        replacement.write_text(
+            source.replace("001-history", spec_id).replace(
+                "status: approved", f"status: {status}"
+            )
+        )
+        return replacement
+
+    def _transition_record(
+        self,
+        source: Path,
+        replacement: Path,
+        **overrides: object,
+    ) -> dict[str, object]:
+        record: dict[str, object] = {
+            "fromId": "001-history",
+            "fromPath": "docs/specs/001-history/spec.md",
+            "fromSourceSha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "disposition": "superseded",
+            "toId": replacement.parent.name,
+            "toPath": replacement.relative_to(source.parents[3]).as_posix(),
+            "evidencePath": "docs/plans/001-history/evidence.md",
+            "reason": "Keep active specs limited to current facts.",
+        }
+        record.update(overrides)
+        return record
+
+    def _write_manifest(self, repo: Path, records: list[dict[str, object]]) -> Path:
+        evidence = repo / "docs/plans/001-history/evidence.md"
+        evidence.parent.mkdir(parents=True, exist_ok=True)
+        evidence.write_text("# Historical evidence\n")
+        manifest = repo / "docs/specs/.transitions.json"
+        manifest.write_text(
+            json.dumps(
+                {"schema": "forge/spec-transitions@1", "transitions": records},
+                separators=(",", ":"),
+            )
+        )
+        return manifest
+
+    def test_baseline_accepts_one_new_exact_supersession(self) -> None:
+        temporary, repo, source = self._git_repository("implemented")
+        with temporary:
+            replacement = self._write_replacement(repo)
+            self._write_manifest(repo, [self._transition_record(source, replacement)])
+            source.unlink()
+
+            result = validate_repository(repo, baseline_ref="HEAD")
+
+            self.assertTrue(result.ok, result.diagnostics)
+
+    def test_baseline_rejects_from_and_target_binding_mismatches(self) -> None:
+        cases = (
+            ({"fromId": "001-other"}, "SPEC_TRANSITION_FROM_BINDING"),
+            ({"fromSourceSha256": "b" * 64}, "SPEC_TRANSITION_FROM_BINDING"),
+            ({"toId": "001-other"}, "SPEC_TRANSITION_TO_BINDING"),
+        )
+        for overrides, code in cases:
+            with self.subTest(overrides=overrides):
+                temporary, repo, source = self._git_repository("implemented")
+                with temporary:
+                    replacement = self._write_replacement(repo)
+                    record = self._transition_record(source, replacement, **overrides)
+                    self._write_manifest(repo, [record])
+                    source.unlink()
+                    result = validate_repository(repo, baseline_ref="HEAD")
+                    self.assertIn(code, {item.code for item in result.diagnostics})
+                    self.assertIn(
+                        "SPEC_HISTORY_NOT_APPEND_ONLY",
+                        {item.code for item in result.diagnostics},
+                    )
+
+    def test_baseline_rejects_missing_draft_and_baseline_existing_target(self) -> None:
+        for target_state, code in (
+            ("missing", "SPEC_TRANSITION_TO_BINDING"),
+            ("draft", "SPEC_TRANSITION_TO_BINDING"),
+            ("baseline", "SPEC_TRANSITION_TARGET_BASELINE"),
+        ):
+            with self.subTest(target_state=target_state):
+                temporary, repo, source = self._git_repository("implemented")
+                with temporary:
+                    replacement = self._write_replacement(
+                        repo, status="draft" if target_state == "draft" else "approved"
+                    )
+                    record = self._transition_record(source, replacement)
+                    if target_state == "missing":
+                        replacement.unlink()
+                    elif target_state == "baseline":
+                        subprocess.run(["git", "add", "."], cwd=repo, check=True)
+                        subprocess.run(
+                            [
+                                "git",
+                                "-c",
+                                "user.name=Forge Test",
+                                "-c",
+                                "user.email=forge@example.invalid",
+                                "commit",
+                                "-qm",
+                                "baseline target",
+                            ],
+                            cwd=repo,
+                            check=True,
+                        )
+                    self._write_manifest(repo, [record])
+                    source.unlink()
+                    result = validate_repository(repo, baseline_ref="HEAD")
+                    self.assertIn(code, {item.code for item in result.diagnostics})
+
+    def test_baseline_rejects_transition_replay_and_prefix_mutation(self) -> None:
+        temporary, repo, source = self._git_repository("implemented")
+        with temporary:
+            replacement = self._write_replacement(repo)
+            record = self._transition_record(source, replacement)
+            manifest = self._write_manifest(repo, [record])
+            subprocess.run(["git", "add", "."], cwd=repo, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Forge Test",
+                    "-c",
+                    "user.email=forge@example.invalid",
+                    "commit",
+                    "-qm",
+                    "premature transition",
+                ],
+                cwd=repo,
+                check=True,
+            )
+            source.unlink()
+            replay = validate_repository(repo, baseline_ref="HEAD")
+            self.assertIn(
+                "SPEC_TRANSITION_REPLAY", {item.code for item in replay.diagnostics}
+            )
+
+            record["reason"] = "mutated"
+            self._write_manifest(repo, [record])
+            mutation = validate_repository(repo, baseline_ref="HEAD")
+            self.assertIn(
+                "SPEC_TRANSITION_BASELINE_PREFIX",
+                {item.code for item in mutation.diagnostics},
+            )
+
+    def test_baseline_rejects_duplicate_and_same_diff_chain_records(self) -> None:
+        temporary, repo, source = self._git_repository("implemented")
+        with temporary:
+            replacement = self._write_replacement(repo)
+            first = self._transition_record(source, replacement)
+            duplicate = dict(first)
+            duplicate["toId"] = "002-current"
+            duplicate["toPath"] = "docs/specs/002-current/spec.md"
+            self._write_manifest(repo, [first, duplicate])
+            duplicate_result = validate_repository(repo, baseline_ref="HEAD")
+            self.assertIn(
+                "SPEC_TRANSITION_DUPLICATE_SOURCE",
+                {item.code for item in duplicate_result.diagnostics},
+            )
+
+            second = dict(first)
+            second.update(
+                {
+                    "fromId": first["toId"],
+                    "fromPath": first["toPath"],
+                    "toId": "002-current",
+                    "toPath": "docs/specs/002-current/spec.md",
+                }
+            )
+            self._write_manifest(repo, [first, second])
+            chain_result = validate_repository(repo, baseline_ref="HEAD")
+            self.assertIn(
+                "SPEC_TRANSITION_CHAIN", {item.code for item in chain_result.diagnostics}
+            )
+
+    def test_baseline_rejects_active_old_identity_references(self) -> None:
+        temporary, repo, source = self._git_repository("implemented")
+        with temporary:
+            replacement = self._write_replacement(repo)
+            self._write_manifest(repo, [self._transition_record(source, replacement)])
+            reference = self._write_replacement(repo, spec_id="002-consumer")
+            reference.write_text(
+                reference.read_text().replace(
+                    "relatedSpecs: []",
+                    'relatedSpecs: [{"id": "001-history", "relation": "dependsOn"}]',
+                ).replace(
+                    "Repository validator fixture.",
+                    "Repository validator fixture. [Old](../001-history/spec.md)",
+                )
+            )
+            source.unlink()
+
+            result = validate_repository(repo, baseline_ref="HEAD")
+
+            self.assertIn(
+                "SPEC_TRANSITION_OLD_REFERENCE",
+                {item.code for item in result.diagnostics},
+            )
 
     def test_history_accepts_exact_prefix_append(self) -> None:
         temporary, repo, source = self._git_repository("approved")

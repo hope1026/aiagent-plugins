@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import json
 from pathlib import Path
 import re
 import subprocess
 
 from spec_model import Diagnostic, SpecDocument, load_spec, parse_frontmatter
+from spec_transitions import SpecTransition, TransitionManifest, load_transition_manifest
 
 
 MERMAID_VALIDATOR_BUNDLE = (
@@ -289,12 +291,19 @@ def _git_output(repo_root: Path, arguments: list[str]) -> subprocess.CompletedPr
         return None
 
 
-def _baseline_metadata(text: str, path: Path) -> tuple[str | None, str | None]:
+def _baseline_metadata(
+    text: str, path: Path
+) -> tuple[str | None, str | None, str | None]:
     values, _, errors = parse_frontmatter(text, path)
     if errors or values.get("schema") != "forge/spec@1":
-        return None, None
+        return None, None, None
+    spec_id = values.get("id")
     status = values.get("status")
-    return "forge/spec@1", status if isinstance(status, str) else None
+    return (
+        "forge/spec@1",
+        spec_id if isinstance(spec_id, str) else None,
+        status if isinstance(status, str) else None,
+    )
 
 
 def _history_lines(text: str) -> tuple[str, ...] | None:
@@ -306,10 +315,92 @@ def _history_lines(text: str) -> tuple[str, ...] | None:
     return tuple(lines[start:])
 
 
+def _git_blob(repo_root: Path, baseline_ref: str, path: Path) -> bytes | None:
+    result = _git_output(repo_root, ["show", f"{baseline_ref}:{path.as_posix()}"])
+    if result is None or result.returncode != 0:
+        return None
+    return result.stdout
+
+
+def _transition_structure_diagnostics(
+    manifest: TransitionManifest,
+    manifest_path: Path,
+    errors: list[Diagnostic],
+) -> None:
+    source_ids: set[str] = set()
+    source_paths: set[Path] = set()
+    target_ids: set[str] = set()
+    target_paths: set[Path] = set()
+    for transition in manifest.transitions:
+        if transition.from_id in source_ids or transition.from_path in source_paths:
+            errors.append(
+                _diagnostic(
+                    manifest_path,
+                    1,
+                    "SPEC_TRANSITION_DUPLICATE_SOURCE",
+                    "Transition source identities and paths must be unique.",
+                )
+            )
+        if transition.to_id in target_ids or transition.to_path in target_paths:
+            errors.append(
+                _diagnostic(
+                    manifest_path,
+                    1,
+                    "SPEC_TRANSITION_DUPLICATE_TARGET",
+                    "Transition target identities and paths must be unique.",
+                )
+            )
+        source_ids.add(transition.from_id)
+        source_paths.add(transition.from_path)
+        target_ids.add(transition.to_id)
+        target_paths.add(transition.to_path)
+
+    for transition in manifest.transitions:
+        if transition.to_id in source_ids or transition.to_path in source_paths:
+            errors.append(
+                _diagnostic(
+                    manifest_path,
+                    1,
+                    "SPEC_TRANSITION_CHAIN",
+                    "A transition target cannot also be a transition source in the same manifest.",
+                )
+            )
+
+
+def _old_identity_references(
+    repo_root: Path,
+    documents: tuple[SpecDocument, ...],
+    transition: SpecTransition,
+) -> tuple[Path, ...]:
+    references: set[Path] = set()
+    old_directory = transition.from_path.parent.as_posix()
+    for document in documents:
+        if document.metadata.status not in {"approved", "implemented"}:
+            continue
+        if any(
+            relation.id == transition.from_id
+            for relation in document.metadata.related_specs
+        ):
+            references.add(document.path)
+        try:
+            source = (repo_root / document.path).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for match in _MARKDOWN_LINK_RE.finditer(source):
+            raw_target = match.group(1).strip().strip("<>")
+            target = raw_target.split("#", 1)[0].split("?", 1)[0]
+            if transition.from_id in target or old_directory in target:
+                references.add(document.path)
+                break
+    return tuple(sorted(references))
+
+
 def _validate_baseline(
     repo_root: Path,
     spec_root: Path,
     baseline_ref: str,
+    documents: tuple[SpecDocument, ...],
+    current_manifest: TransitionManifest | None,
     errors: list[Diagnostic],
 ) -> None:
     if not (repo_root / ".git").exists():
@@ -342,19 +433,179 @@ def _validate_baseline(
         for item in listing.stdout.splitlines()
         if item.decode("utf-8").endswith("/spec.md")
     )
+    manifest_path = spec_root / ".transitions.json"
+    baseline_manifest_source = _git_blob(repo_root, baseline_ref, manifest_path)
+    if baseline_manifest_source is None:
+        baseline_manifest = TransitionManifest(())
+        baseline_manifest_ok = True
+    else:
+        baseline_manifest, manifest_diagnostics = load_transition_manifest(
+            repo_root,
+            spec_root,
+            source=baseline_manifest_source,
+        )
+        errors.extend(manifest_diagnostics)
+        baseline_manifest_ok = baseline_manifest is not None
+        if baseline_manifest is None:
+            baseline_manifest = TransitionManifest(())
+
+    if current_manifest is None:
+        current_transitions: tuple[SpecTransition, ...] = ()
+    else:
+        current_transitions = current_manifest.transitions
+
+    prefix_ok = (
+        baseline_manifest_ok
+        and current_transitions[: len(baseline_manifest.transitions)]
+        == baseline_manifest.transitions
+    )
+    if not prefix_ok:
+        errors.append(
+            _diagnostic(
+                manifest_path,
+                1,
+                "SPEC_TRANSITION_BASELINE_PREFIX",
+                "Current transitions must preserve the canonical baseline sequence as an exact prefix.",
+            )
+        )
+        appended: tuple[SpecTransition, ...] = ()
+    else:
+        appended = current_transitions[len(baseline_manifest.transitions) :]
+    if len(appended) > 1:
+        errors.append(
+            _diagnostic(
+                manifest_path,
+                1,
+                "SPEC_TRANSITION_APPEND",
+                "A change may append at most one spec transition record.",
+            )
+        )
+
+    baseline_path_set = set(baseline_paths)
+    documents_by_path = {document.path: document for document in documents}
+    newly_authorized = appended if len(appended) == 1 else ()
+    valid_authorizations: set[Path] = set()
+
+    for transition in newly_authorized:
+        transition_valid = True
+        from_source = _git_blob(repo_root, baseline_ref, transition.from_path)
+        if from_source is None:
+            transition_valid = False
+            errors.append(
+                _diagnostic(
+                    manifest_path,
+                    1,
+                    "SPEC_TRANSITION_FROM_BINDING",
+                    "Transition fromPath must identify an exact baseline spec source.",
+                )
+            )
+        else:
+            try:
+                from_text = from_source.decode("utf-8")
+            except UnicodeDecodeError:
+                from_text = ""
+            from_schema, from_id, from_status = _baseline_metadata(
+                from_text, transition.from_path
+            )
+            if (
+                from_schema != "forge/spec@1"
+                or from_status not in {"approved", "implemented"}
+                or from_id != transition.from_id
+                or transition.from_path.parent.name != transition.from_id
+                or hashlib.sha256(from_source).hexdigest()
+                != transition.from_source_sha256
+            ):
+                transition_valid = False
+                errors.append(
+                    _diagnostic(
+                        manifest_path,
+                        1,
+                        "SPEC_TRANSITION_FROM_BINDING",
+                        "Transition source ID, path, status, and SHA-256 must match the exact baseline bytes.",
+                    )
+                )
+
+        if (repo_root / transition.from_path).is_file():
+            transition_valid = False
+            errors.append(
+                _diagnostic(
+                    manifest_path,
+                    1,
+                    "SPEC_TRANSITION_FROM_BINDING",
+                    "A superseded source must be absent from the current tree.",
+                )
+            )
+
+        if transition.to_path in baseline_path_set:
+            transition_valid = False
+            errors.append(
+                _diagnostic(
+                    manifest_path,
+                    1,
+                    "SPEC_TRANSITION_TARGET_BASELINE",
+                    "A supersession target must not already exist in the baseline.",
+                )
+            )
+
+        target = documents_by_path.get(transition.to_path)
+        if (
+            target is None
+            or target.metadata.id != transition.to_id
+            or transition.to_path.parent.name != transition.to_id
+            or target.metadata.status not in {"approved", "implemented"}
+        ):
+            transition_valid = False
+            errors.append(
+                _diagnostic(
+                    manifest_path,
+                    1,
+                    "SPEC_TRANSITION_TO_BINDING",
+                    "Transition target ID, path, directory, and active status must match the current source.",
+                )
+            )
+
+        old_references = _old_identity_references(repo_root, documents, transition)
+        for reference in old_references:
+            transition_valid = False
+            errors.append(
+                _diagnostic(
+                    reference,
+                    1,
+                    "SPEC_TRANSITION_OLD_REFERENCE",
+                    f"Active spec references superseded identity '{transition.from_id}'.",
+                )
+            )
+
+        if transition_valid:
+            valid_authorizations.add(transition.from_path)
+
     for path in baseline_paths:
-        shown = _git_output(repo_root, ["show", f"{baseline_ref}:{path.as_posix()}"])
-        if shown is None or shown.returncode != 0:
+        baseline_source = _git_blob(repo_root, baseline_ref, path)
+        if baseline_source is None:
             continue
         try:
-            baseline_text = shown.stdout.decode("utf-8")
+            baseline_text = baseline_source.decode("utf-8")
         except UnicodeDecodeError:
             continue
-        schema, status = _baseline_metadata(baseline_text, path)
+        schema, baseline_id, status = _baseline_metadata(baseline_text, path)
         if schema != "forge/spec@1" or status not in {"approved", "implemented"}:
             continue
         current_path = repo_root / path
         if not current_path.is_file():
+            if path in valid_authorizations:
+                continue
+            if any(
+                transition.from_path == path
+                for transition in baseline_manifest.transitions
+            ):
+                errors.append(
+                    _diagnostic(
+                        manifest_path,
+                        1,
+                        "SPEC_TRANSITION_REPLAY",
+                        "A baseline transition record cannot be reused to authorize a new deletion.",
+                    )
+                )
             errors.append(
                 _diagnostic(
                     path,
@@ -437,6 +688,16 @@ def validate_repository(
                     )
 
     ordered_documents = tuple(sorted(documents, key=lambda item: item.path.as_posix()))
+    current_manifest, transition_diagnostics = load_transition_manifest(
+        repository, relative_root
+    )
+    errors.extend(transition_diagnostics)
+    if current_manifest is not None:
+        _transition_structure_diagnostics(
+            current_manifest,
+            relative_root / ".transitions.json",
+            errors,
+        )
     _validate_relations(ordered_documents, errors)
     for document in ordered_documents:
         _validate_coverage(document, errors)
@@ -444,7 +705,14 @@ def validate_repository(
         _validate_mermaid(document, errors)
 
     if baseline_ref is not None:
-        _validate_baseline(repository, relative_root, baseline_ref, errors)
+        _validate_baseline(
+            repository,
+            relative_root,
+            baseline_ref,
+            ordered_documents,
+            current_manifest,
+            errors,
+        )
 
     return ValidationResult(ordered_documents, tuple(sorted(errors)))
 
