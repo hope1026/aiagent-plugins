@@ -653,7 +653,11 @@ Expected: this fenced example is ignored
                 review_scripts.mkdir(parents=True)
                 sibling_scripts.mkdir(parents=True)
                 shutil.copy2(SCRIPTS / "review_sources.py", review_scripts)
-                for name in ("spec_model.py", "spec_validate.py"):
+                for name in (
+                    "spec_model.py",
+                    "spec_transitions.py",
+                    "spec_validate.py",
+                ):
                     shutil.copy2(writing_scripts / name, sibling_scripts)
                 command = (
                     "import pathlib, review_sources, spec_model; "
