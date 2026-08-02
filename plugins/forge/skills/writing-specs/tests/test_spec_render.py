@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -273,6 +274,99 @@ class SpecRenderTest(unittest.TestCase):
         self._build()
         self.assertFalse(orphan.exists())
         self.assertEqual(self._codes(), set())
+
+    def test_full_build_completes_supersession_page_cutover_deterministically(self) -> None:
+        old_source = self.spec_root / "001-basic/spec.md"
+        old_source.write_text(
+            old_source.read_text(encoding="utf-8").replace(
+                "status: draft", "status: implemented", 1
+            ),
+            encoding="utf-8",
+        )
+        self._build()
+        subprocess.run(["git", "init", "-q"], cwd=self.repo_root, check=True)
+        subprocess.run(["git", "add", "."], cwd=self.repo_root, check=True)
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "user.name=Forge Test",
+                "-c",
+                "user.email=forge@example.invalid",
+                "commit",
+                "-qm",
+                "baseline pages",
+            ],
+            cwd=self.repo_root,
+            check=True,
+        )
+
+        old_sha256 = hashlib.sha256(old_source.read_bytes()).hexdigest()
+        replacement = self.spec_root / "001-current/spec.md"
+        replacement.parent.mkdir()
+        replacement.write_text(
+            old_source.read_text(encoding="utf-8")
+            .replace("001-basic", "001-current")
+            .replace("status: implemented", "status: approved", 1),
+            encoding="utf-8",
+        )
+        related = self.spec_root / "002-related/spec.md"
+        related.write_text(
+            related.read_text(encoding="utf-8").replace(
+                "001-basic", "001-current"
+            ),
+            encoding="utf-8",
+        )
+        evidence = self.repo_root / "docs/plans/001-basic/evidence.md"
+        evidence.parent.mkdir(parents=True)
+        evidence.write_text("# Historical evidence\n", encoding="utf-8")
+        (self.spec_root / ".transitions.json").write_text(
+            json.dumps(
+                {
+                    "schema": "forge/spec-transitions@1",
+                    "transitions": [
+                        {
+                            "fromId": "001-basic",
+                            "fromPath": "docs/specs/001-basic/spec.md",
+                            "fromSourceSha256": old_sha256,
+                            "disposition": "superseded",
+                            "toId": "001-current",
+                            "toPath": "docs/specs/001-current/spec.md",
+                            "evidencePath": "docs/plans/001-basic/evidence.md",
+                            "reason": "Keep the active specification limited to current facts.",
+                        }
+                    ],
+                },
+                separators=(",", ":"),
+            ),
+            encoding="utf-8",
+        )
+        old_page = self.spec_root / "001-basic/index.html"
+        old_source.unlink()
+
+        validation = validate_repository(
+            self.repo_root, Path("docs/specs"), baseline_ref="HEAD"
+        )
+        self.assertTrue(validation.ok, validation.diagnostics)
+        prebuild_codes = self._codes()
+        self.assertIn("SPEC_PAGE_ORPHAN", prebuild_codes)
+        self.assertIn("SPEC_PAGE_MISSING", prebuild_codes)
+        self.assertIn("SPEC_PAGE_STALE", prebuild_codes)
+
+        replacement_page = self.spec_root / "001-current/index.html"
+        catalog = self.spec_root / "index.html"
+        self._build()
+        self.assertFalse(old_page.exists())
+        self.assertTrue(replacement_page.is_file())
+        self.assertTrue(catalog.is_file())
+        self.assertNotIn("001-basic", replacement_page.read_text(encoding="utf-8"))
+        self.assertNotIn("001-basic", catalog.read_text(encoding="utf-8"))
+        self.assertIn("001-current", catalog.read_text(encoding="utf-8"))
+        self.assertEqual(self._codes(), set())
+
+        first_build = snapshot_tree(self.spec_root)
+        self._build()
+        self.assertEqual(snapshot_tree(self.spec_root), first_build)
 
     def test_user_index_and_outside_symlink_directory_are_not_orphans_or_touched(self) -> None:
         self._build()
