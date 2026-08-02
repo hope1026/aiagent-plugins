@@ -355,18 +355,6 @@ def _transition_structure_diagnostics(
         target_ids.add(transition.to_id)
         target_paths.add(transition.to_path)
 
-    for transition in manifest.transitions:
-        if transition.to_id in source_ids or transition.to_path in source_paths:
-            errors.append(
-                _diagnostic(
-                    manifest_path,
-                    1,
-                    "SPEC_TRANSITION_CHAIN",
-                    "A transition target cannot also be a transition source in the same manifest.",
-                )
-            )
-
-
 def _old_identity_references(
     repo_root: Path,
     documents: tuple[SpecDocument, ...],
@@ -481,10 +469,46 @@ def _validate_baseline(
             )
         )
 
+    appended_source_ids = {transition.from_id for transition in appended}
+    appended_source_paths = {transition.from_path for transition in appended}
+    if any(
+        transition.to_id in appended_source_ids
+        or transition.to_path in appended_source_paths
+        for transition in appended
+    ):
+        errors.append(
+            _diagnostic(
+                manifest_path,
+                1,
+                "SPEC_TRANSITION_CHAIN",
+                "Transition records appended in the same change cannot form a multi-hop chain.",
+            )
+        )
+
     baseline_path_set = set(baseline_paths)
     documents_by_path = {document.path: document for document in documents}
     newly_authorized = appended if len(appended) == 1 else ()
     valid_authorizations: set[Path] = set()
+
+    for transition in baseline_manifest.transitions:
+        if (repo_root / transition.from_path).is_file():
+            errors.append(
+                _diagnostic(
+                    transition.from_path,
+                    1,
+                    "SPEC_TRANSITION_OLD_SOURCE",
+                    f"Superseded source '{transition.from_id}' cannot reappear in the current tree.",
+                )
+            )
+        for reference in _old_identity_references(repo_root, documents, transition):
+            errors.append(
+                _diagnostic(
+                    reference,
+                    1,
+                    "SPEC_TRANSITION_OLD_REFERENCE",
+                    f"Active spec references superseded identity '{transition.from_id}'.",
+                )
+            )
 
     for transition in newly_authorized:
         transition_valid = True

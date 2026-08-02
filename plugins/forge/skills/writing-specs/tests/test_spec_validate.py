@@ -471,6 +471,91 @@ class BaselineValidationTest(unittest.TestCase):
                 {item.code for item in result.diagnostics},
             )
 
+    def test_historical_transition_blocks_old_source_and_reference_reintroduction(self) -> None:
+        temporary, repo, source = self._git_repository("implemented")
+        with temporary:
+            old_bytes = source.read_bytes()
+            replacement = self._write_replacement(repo)
+            record = self._transition_record(source, replacement)
+            self._write_manifest(repo, [record])
+            source.unlink()
+            self.assertTrue(validate_repository(repo, baseline_ref="HEAD").ok)
+            subprocess.run(["git", "add", "."], cwd=repo, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Forge Test",
+                    "-c",
+                    "user.email=forge@example.invalid",
+                    "commit",
+                    "-qm",
+                    "valid transition",
+                ],
+                cwd=repo,
+                check=True,
+            )
+
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_bytes(old_bytes)
+            resurrected = validate_repository(repo, baseline_ref="HEAD")
+            self.assertIn(
+                "SPEC_TRANSITION_OLD_SOURCE",
+                {item.code for item in resurrected.diagnostics},
+            )
+
+            source.unlink()
+            consumer = self._write_replacement(repo, spec_id="002-consumer")
+            consumer.write_text(
+                consumer.read_text().replace(
+                    "relatedSpecs: []",
+                    'relatedSpecs: [{"id": "001-history", "relation": "dependsOn"}]',
+                )
+            )
+            referenced = validate_repository(repo, baseline_ref="HEAD")
+            self.assertIn(
+                "SPEC_TRANSITION_OLD_REFERENCE",
+                {item.code for item in referenced.diagnostics},
+            )
+
+    def test_later_diff_may_supersede_the_previous_transition_target(self) -> None:
+        temporary, repo, source = self._git_repository("implemented")
+        with temporary:
+            replacement = self._write_replacement(repo)
+            first = self._transition_record(source, replacement)
+            self._write_manifest(repo, [first])
+            source.unlink()
+            self.assertTrue(validate_repository(repo, baseline_ref="HEAD").ok)
+            subprocess.run(["git", "add", "."], cwd=repo, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Forge Test",
+                    "-c",
+                    "user.email=forge@example.invalid",
+                    "commit",
+                    "-qm",
+                    "first transition",
+                ],
+                cwd=repo,
+                check=True,
+            )
+
+            latest = self._write_replacement(repo, spec_id="003-latest")
+            second = self._transition_record(
+                replacement,
+                latest,
+                fromId="001-current",
+                fromPath="docs/specs/001-current/spec.md",
+            )
+            self._write_manifest(repo, [first, second])
+            replacement.unlink()
+
+            result = validate_repository(repo, baseline_ref="HEAD")
+
+            self.assertTrue(result.ok, result.diagnostics)
+
     def test_history_accepts_exact_prefix_append(self) -> None:
         temporary, repo, source = self._git_repository("approved")
         with temporary:
