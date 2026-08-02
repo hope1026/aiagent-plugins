@@ -49,6 +49,15 @@ PY
 for command in 'validate --root docs/specs --baseline-ref HEAD' 'build --root docs/specs --changed' 'check --root docs/specs'; do
   grep -q "$command" "$WRITING_SPECS" || fail "writing-specs misses spec-docs transaction: $command"
 done
+grep -q 'docs/specs/.transitions.json' "$WRITING_SPECS" || fail 'writing-specs misses transition manifest'
+grep -q 'replacement.*draft.*before.*old source' "$WRITING_SPECS" || fail 'writing-specs misses approval-first replacement gate'
+grep -q 'explicit approval' "$WRITING_SPECS" || fail 'writing-specs misses explicit supersession approval'
+grep -q 'registered isolated Git worktree' "$WRITING_SPECS" || fail 'writing-specs misses isolation gate'
+grep -q 'expected clean HEAD' "$WRITING_SPECS" || fail 'writing-specs misses exact root precondition'
+grep -q 'candidate commit' "$WRITING_SPECS" || fail 'writing-specs misses candidate commit gate'
+grep -q 'HEAD.*index.*tracked.*untracked bytes' "$WRITING_SPECS" || fail 'writing-specs misses root byte fingerprint'
+grep -q 'Review Viewer output count.*exactly zero' "$WRITING_SPECS" || fail 'writing-specs misses request-only zero gate'
+grep -q 'one-to-one.*superseded.*docs/specs/.transitions.json' "$SPEC_TEMPLATE" || fail 'template misses identity supersession exception'
 grep -q 'schema.*status.*diagnostics' "$WRITING_PLANS" || fail "writing-plans does not inspect typed lifecycle fields"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$WRITING_PLANS" || fail "writing-plans misses inspect CLI"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$EXECUTING_PLANS" || fail "executing-plans misses inspect CLI"

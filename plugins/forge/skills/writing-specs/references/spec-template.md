@@ -81,6 +81,7 @@ relatedSpecs: []
 - Removed requirements remain as `REMOVED — <reason>` tombstones.
 - Every active R is covered by at least one AC. Every AC cites existing active R IDs.
 - `approved` and `implemented` history is append-only when compared with the explicit Git baseline.
+- Replacing an active identity is the narrow exception: use one-to-one `superseded` in `docs/specs/.transitions.json` only after replacement-draft approval and the isolated candidate workflow; never rewrite or silently delete baseline history.
 - `[NEEDS CLARIFICATION: ...]` is allowed only while `status` is `draft`.
 
 ## History tags

@@ -69,6 +69,10 @@ ANTIGRAVITY_SKILLS="$INSTALL_CANONICAL_ROOT/antigravity/agent-skills"
 for skills in "$CODEX_SKILLS" "$CLAUDE_SKILLS" "$ANTIGRAVITY_SKILLS"; do
   test -x "$skills/writing-specs/scripts/spec-docs.sh" ||
     fail "missing installed spec-docs.sh: $skills"
+  test -f "$skills/writing-specs/scripts/spec_transitions.py" ||
+    fail "missing installed transition parser: $skills"
+  test -f "$skills/writing-specs/references/spec-template.md" ||
+    fail "missing installed structured spec template: $skills"
   test -x "$skills/review-viewer/scripts/build-review-viewer.sh" ||
     fail "missing installed Review Viewer builder: $skills"
   test -f "$skills/writing-specs/assets/mermaid.min.js" ||
@@ -101,6 +105,7 @@ git -C "$TEST_ROOT/review-source" commit -qm fixture
 declare -a INSPECT_HASHES=()
 declare -a PAGE_HASHES=()
 declare -a REVIEW_HASHES=()
+declare -a TRANSITION_HASHES=()
 index=0
 for agent in codex claude antigravity; do
   case "$agent" in
@@ -112,6 +117,58 @@ for agent in codex claude antigravity; do
   review_repo="$TEST_ROOT/review-$agent"
   cp -R "$TEST_ROOT/pages-source" "$pages_repo"
   cp -R "$TEST_ROOT/review-source" "$review_repo"
+  mkdir -p "$pages_repo/docs/plans/install-proof"
+  printf '# Install transition evidence\n' >"$pages_repo/docs/plans/install-proof/evidence.md"
+
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$skills/writing-specs/scripts" \
+    python3 - "$pages_repo" >"$TEST_ROOT/$agent.transition.json" <<'PY'
+from __future__ import annotations
+import json
+from pathlib import Path
+import sys
+from spec_transitions import load_transition_manifest
+
+repo = Path(sys.argv[1])
+source = json.dumps(
+    {
+        "schema": "forge/spec-transitions@1",
+        "transitions": [
+            {
+                "fromId": "001-old",
+                "fromPath": "docs/specs/001-old/spec.md",
+                "fromSourceSha256": "a" * 64,
+                "disposition": "superseded",
+                "toId": "001-current",
+                "toPath": "docs/specs/001-current/spec.md",
+                "evidencePath": "docs/plans/install-proof/evidence.md",
+                "reason": "Installed parser parity.",
+            }
+        ],
+    },
+    separators=(",", ":"),
+).encode()
+manifest, diagnostics = load_transition_manifest(
+    repo, Path("docs/specs"), source=source
+)
+assert diagnostics == (), diagnostics
+assert manifest is not None
+transition = manifest.transitions[0]
+print(
+    json.dumps(
+        {
+            "fromId": transition.from_id,
+            "fromPath": transition.from_path.as_posix(),
+            "fromSourceSha256": transition.from_source_sha256,
+            "disposition": transition.disposition,
+            "toId": transition.to_id,
+            "toPath": transition.to_path.as_posix(),
+            "evidencePath": transition.evidence_path.as_posix(),
+            "reason": transition.reason,
+        },
+        separators=(",", ":"),
+    )
+)
+PY
 
   "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$pages_repo" \
     validate --root docs/specs
@@ -133,10 +190,13 @@ for agent in codex claude antigravity; do
   INSPECT_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.inspect.json")"
   PAGE_HASHES[index]="$(sha256 "$pages_repo/docs/specs/001-basic/index.html")"
   REVIEW_HASHES[index]="$(sha256 "$review_repo/.forge/reviews/install-proof/view.html")"
+  TRANSITION_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.transition.json")"
+  test ! -e "$pages_repo/.forge/reviews" ||
+    fail "Spec Pages workflow created a Review Viewer: $agent"
   index=$((index + 1))
 done
 
-for hashes_name in INSPECT_HASHES PAGE_HASHES REVIEW_HASHES; do
+for hashes_name in INSPECT_HASHES PAGE_HASHES REVIEW_HASHES TRANSITION_HASHES; do
   eval 'hashes=("${'"$hashes_name"'[@]}")'
   [[ "${hashes[0]}" == "${hashes[1]}" && "${hashes[1]}" == "${hashes[2]}" ]] ||
     fail "$hashes_name differs across installed exports"

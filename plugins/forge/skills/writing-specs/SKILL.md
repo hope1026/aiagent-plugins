@@ -68,6 +68,21 @@ Resolve every marker one question at a time, rewrite the affected requirement, a
 
 Compare actual behavior with every requirement. Append each mismatch as `[DRIFT]`, let the user choose spec change or code repair, apply the approved result, and run the writer transaction. Code repairs continue through `writing-plans`; spec changes return through the approval gate.
 
+## Current-state supersession
+
+Use this subflow only when an `approved` or `implemented` spec must be replaced by one new identity so active specs contain current facts rather than completed migration history. It does not authorize retirement, merge, a target already present in the baseline, or a same-diff transition chain.
+
+1. Write and present the current-state replacement as `draft` before touching the old source or page. Keep this approval copy outside the final `toPath`, such as under `.forge/scratch/spec-supersession/`, so it cannot become a baseline-existing target. Preserve completed execution details in a plan, ADR, or evidence file.
+2. Obtain explicit approval of the replacement Markdown. Then use `writing-plans` to record the exact source and target identities, the SHA-256 of the old source bytes from the expected Git baseline, the evidence path, all reference updates, and the release boundary.
+3. Commit the approved plan and durable evidence first. Record the expected clean HEAD and a fingerprint of its HEAD, index, tracked, and untracked bytes. A dirty root blocks candidate creation; do not clean, stash, or overwrite user work.
+4. Create a registered isolated Git worktree detached at the expected HEAD. Perform all supersession mutations there, never in the production root.
+5. In that worktree, append exactly one one-to-one `superseded` record to `docs/specs/.transitions.json`; promote the approved replacement at its new `docs/specs/NNN-<slug>/spec.md` identity; remove the old source and generated page; update active relations and Markdown links; and preserve evidence. Use the old SHA-256 from Git object bytes, not current filesystem bytes.
+6. Run baseline validation against the expected HEAD, then run a full Spec Pages build without `--changed`, repository check, and exact expected-byte checks. Create one candidate commit only after every gate passes.
+7. On any validation, build, check, expected-byte, or commit failure, discard the candidate worktree and prove that the production fingerprint is unchanged. When the user did not explicitly request a Review Viewer, the Review Viewer output count stays exactly zero.
+8. Immediately before promotion, require the production root to remain at the expected clean HEAD with the exact recorded fingerprint. Apply only the verified candidate commit with a fast-forward operation. Any HEAD or byte drift refuses promotion without modifying the root.
+
+The transition manifest is durable audit data, but the replacement spec remains the active source of truth. Existing transition records stay in canonical order as an exact prefix; a prior record never authorizes another deletion.
+
 ## Writer transaction
 
 Every body, metadata, or frontmatter status change uses the same sequence from the repository root. Existing sources include the explicit Git baseline:
@@ -107,6 +122,7 @@ Markdown is the default review path. Review Viewer is a separate untracked snaps
 | Per-spec Spec Page | `docs/specs/NNN-<slug>/index.html` | tracked generated |
 | Spec catalog | `docs/specs/index.html` | tracked generated |
 | Review Viewer | `.forge/reviews/<review-id>/view.html` | untracked, explicit request only |
+| Supersession approval draft | `.forge/scratch/spec-supersession/<id>/spec.md` | local only until approved candidate |
 | Investigation notes | `.forge/research/` | local only; promote durable findings to `docs/research/` |
 
 ## Red Flags

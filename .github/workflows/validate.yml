@@ -27,6 +27,7 @@ jobs:
           bash scripts/tests/test-maintaining-forge-layout.sh
           bash scripts/tests/test-validator-skill-roots.sh
           bash scripts/tests/test-forge-spec-docs-policy.sh
+          bash scripts/tests/test-forge-spec-supersession.sh
           bash scripts/tests/test-forge-artifact-contract.sh
           bash scripts/tests/test-forge-lifecycle-policy.sh
           bash scripts/tests/test-ui-design-skill-routing.sh
