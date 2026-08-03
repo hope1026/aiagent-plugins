@@ -818,7 +818,7 @@ def _outline_markup(document: SpecDocument, section: str) -> str:
 - 병렬 안전성: 순차 — Task 4와 같은 파일을 수정한다
 - 승인 gate: 없음
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 ```python
 class DerivedRelationDiagramTest(unittest.TestCase):
@@ -855,12 +855,12 @@ class DerivedRelationDiagramTest(unittest.TestCase):
         self.assertEqual(spec_render._flows(empty), "")
 ```
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render.DerivedRelationDiagramTest -v`
 예상: FAIL — `AttributeError: module 'spec_render' has no attribute 'related_specs_diagram'`
 
-- [ ] **Step 3: 파생 도식 source를 구현한다**
+- [x] **Step 3: 파생 도식 source를 구현한다**
 
 `spec_render.py`의 `_outline_markup` 뒤에 추가한다.
 
@@ -879,7 +879,7 @@ def related_specs_diagram(document: SpecDocument) -> str:
     return "\n".join(lines)
 ```
 
-- [ ] **Step 4: flows section 렌더러를 만든다**
+- [x] **Step 4: flows section 렌더러를 만든다**
 
 `spec_render.py`의 `related_specs_diagram` 뒤에 추가한다.
 
@@ -913,7 +913,7 @@ def _flows(document: SpecDocument) -> str:
         "derived_relations": "Relations derived from frontmatter relatedSpecs",
 ```
 
-- [ ] **Step 5: 조건부 embed 판정과 template 값을 갱신한다**
+- [x] **Step 5: 조건부 embed 판정과 template 값을 갱신한다**
 
 `spec_render.py`의 `page_needs_mermaid`를 다음으로 바꾼다.
 
@@ -935,7 +935,7 @@ def page_needs_mermaid(document: SpecDocument) -> bool:
                 "FLOWS": _flows(document),
 ```
 
-- [ ] **Step 6: 빈 section을 숨기고 파생 도식 스타일을 추가한다**
+- [x] **Step 6: 빈 section을 숨기고 파생 도식 스타일을 추가한다**
 
 `assets/spec-page-template.html`의 아래 줄을
 
@@ -984,12 +984,12 @@ def page_needs_mermaid(document: SpecDocument) -> bool:
 
 `"FLOWS_LABEL"` 항목은 template에서 제거됐으므로 값 매핑에서도 삭제한다.
 
-- [ ] **Step 7: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 7: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render -v`
 예상: PASS
 
-- [ ] **Step 8: 변경을 commit한다**
+- [x] **Step 8: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/writing-specs/scripts/spec_render.py plugins/forge/skills/writing-specs/assets/spec-page-template.html plugins/forge/skills/writing-specs/tests/test_spec_render.py && git commit -m "feat(forge): derive relation diagrams for diagram-free Spec Pages"`
 
@@ -1863,3 +1863,5 @@ EOF
 - Task 3: complete (commit 66a44f1; verification="python3 -m unittest tests.test_spec_render -v — 28 passed")
 - Task 4: routed (impact=medium, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="markdown_render.py는 review-viewer와 공유되는 렌더러라 root가 교차 회귀를 직접 검증")
 - Task 4: complete (commit 136f75d; verification="python3 -m unittest tests.test_spec_render -v — 32 passed; review-viewer tests.test_review_renderer -v — 20 passed (교차 회귀 없음)"). 계획 결함 수정: 기존 `test_supported_blocks_are_semantic_and_escape_first`가 heading에 `id`가 없다고 가정한 assertion을 갖고 있어, 새 anchor id를 반영하도록 `<h3 id="heading-unsafe">...`로 갱신함.
+- Task 5: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="Task 4와 같은 파일을 잇는 순차 체인")
+- Task 5: complete (commit 0ebc6dd; verification="python3 -m unittest tests.test_spec_render -v — 36 passed")
