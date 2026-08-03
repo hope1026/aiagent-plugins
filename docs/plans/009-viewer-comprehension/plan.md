@@ -1210,7 +1210,7 @@ def _render_catalog(
 - 병렬 안전성: Task 1과 병렬 실행 가능(서로 다른 skill 디렉터리)
 - 승인 gate: 없음
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 `plugins/forge/skills/review-viewer/tests/test_review_renderer.py`에 추가한다.
 
@@ -1283,12 +1283,12 @@ def build_plan_bundle_without_routes_or_mermaid():
     return replace(bundle, primary=primary)
 ```
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/review-viewer && python3 -m unittest tests.test_review_renderer.ConditionalMermaidLoaderTest -v`
 예상: FAIL — `AttributeError: module 'review_renderer' has no attribute 'bundle_needs_mermaid'`
 
-- [ ] **Step 3: 판정 헬퍼를 추가한다**
+- [x] **Step 3: 판정 헬퍼를 추가한다**
 
 `plugins/forge/skills/review-viewer/scripts/review_renderer.py`의 `_offline_mermaid` 정의 바로 앞에 추가한다. `plan` mode는 `document.routes`가 있을 때만 `_route_map`이 Mermaid를 그리므로(비어 있으면 `route_empty` 안내문만 출력) 그 조건도 함께 확인한다.
 
@@ -1304,7 +1304,7 @@ def bundle_needs_mermaid(bundle: ReviewBundle) -> bool:
     return bool(document.routes)
 ```
 
-- [ ] **Step 4: loader를 조건부로 만든다**
+- [x] **Step 4: loader를 조건부로 만든다**
 
 `review_renderer.py`의 `_mermaid_loader`를 다음으로 바꾼다.
 
@@ -1320,7 +1320,7 @@ def _mermaid_loader(offline: bool, bundle: ReviewBundle) -> str:
     )
 ```
 
-- [ ] **Step 5: 호출부를 갱신한다**
+- [x] **Step 5: 호출부를 갱신한다**
 
 `review_renderer.py`의 `"MERMAID": _mermaid_loader(offline),`를 다음으로 바꾼다.
 
@@ -1328,12 +1328,12 @@ def _mermaid_loader(offline: bool, bundle: ReviewBundle) -> str:
         "MERMAID": _mermaid_loader(offline, bundle),
 ```
 
-- [ ] **Step 6: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 6: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/review-viewer && python3 -m unittest tests.test_review_renderer -v`
 예상: PASS
 
-- [ ] **Step 7: 변경을 commit한다**
+- [x] **Step 7: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/review-viewer/scripts/review_renderer.py plugins/forge/skills/review-viewer/tests/test_review_renderer.py && git commit -m "feat(forge): load Review Viewer Mermaid only with diagrams"`
 
@@ -1868,3 +1868,5 @@ EOF
 - Task 6: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="Task 5와 같은 파일을 잇는 순차 체인")
 - Task 6: complete (commit 3ddc686; verification="python3 -m unittest tests.test_spec_render -v — 39 passed")
 - Route D(파생 관계 도식) 완료. Route A–D 종료, weppy-roblox-mcp-private 변경 0건. 다음은 Route E(Task 7) — review-viewer 스킬로 전환.
+- Task 7: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="review-viewer skill로 전환하는 첫 Task, Route E 단독")
+- Task 7: complete (commit c11802f; verification="python3 -m unittest tests.test_review_renderer -v — 25 passed; writing-specs tests.test_spec_render -v — 39 passed (교차 회귀 없음)"). 계획 결함 수정: `build_plan_bundle_without_routes_or_mermaid` 헬퍼가 plan_source의 mermaid만 비웠는데, `ReviewBundle.mermaid`는 context spec(008-alpha)의 다이어그램도 포함해 여전히 True가 나옴 — 모든 primary/comparison/context source의 mermaid를 비우도록 고침.
