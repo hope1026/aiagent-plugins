@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import html
 import hashlib
 import json
@@ -723,6 +724,42 @@ class ConditionalMermaidTest(unittest.TestCase):
             first = snapshot_tree(spec_root)
             build_pages(repository, spec_root, changed=None, offline=True)
             self.assertEqual(first, snapshot_tree(spec_root))
+
+
+def load_fixture_document(spec_id: str):
+    from spec_model import load_spec
+
+    root = FIXTURE_ROOT
+    path = root / "docs" / "specs" / spec_id / "spec.md"
+    document, errors = load_spec(path, root)
+    assert not errors, errors
+    assert document is not None
+    return document
+
+
+class CoverageIndexTest(unittest.TestCase):
+    def test_index_maps_active_requirements_to_citing_criteria(self) -> None:
+        document = load_fixture_document("001-basic")
+        index = spec_render.coverage_index(document)
+        self.assertIn("R1", index)
+        self.assertTrue(all(value.startswith("AC") for value in index["R1"]))
+
+    def test_index_excludes_removed_requirements(self) -> None:
+        document = load_fixture_document("001-basic")
+        index = spec_render.coverage_index(document)
+        removed = {item.id for item in document.requirements if item.removed}
+        self.assertEqual(removed & set(index), set())
+
+    def test_requirement_row_links_to_citing_criteria(self) -> None:
+        document = load_fixture_document("001-basic")
+        markup = spec_render._requirements(document)
+        self.assertIn('href="#AC1"', markup)
+
+    def test_uncovered_requirement_is_marked(self) -> None:
+        document = load_fixture_document("001-basic")
+        stripped = replace(document, acceptance=())
+        markup = spec_render._requirements(stripped)
+        self.assertIn('data-uncovered="true"', markup)
 
 
 if __name__ == "__main__":

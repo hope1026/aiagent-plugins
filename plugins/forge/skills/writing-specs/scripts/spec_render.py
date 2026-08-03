@@ -139,6 +139,8 @@ def _labels(locale: str) -> dict[str, str]:
             "component": "컴포넌트",
             "all": "전체",
             "related": "관련 Spec",
+            "covered_by": "검증 AC",
+            "uncovered": "미커버",
         }
     return {
         "summary": "Summary",
@@ -158,6 +160,8 @@ def _labels(locale: str) -> dict[str, str]:
         "component": "Component",
         "all": "All",
         "related": "Related specs",
+        "covered_by": "Covered by",
+        "uncovered": "Uncovered",
     }
 
 
@@ -195,16 +199,36 @@ def _metadata(document: SpecDocument) -> str:
 
 
 def _requirements(document: SpecDocument) -> str:
+    index = coverage_index(document)
+    labels = _labels(document.metadata.language)
     rows = []
     for requirement in document.requirements:
-        removed = ' data-removed="true"' if requirement.removed else ""
+        if requirement.removed:
+            covered = '<span class="empty-value">—</span>'
+            flags = ' data-removed="true"'
+        else:
+            criteria = index.get(requirement.id, ())
+            if criteria:
+                covered = ", ".join(
+                    f'<a href="#{criterion}">{criterion}</a>' for criterion in criteria
+                )
+                flags = ""
+            else:
+                covered = f'<span class="uncovered">{html.escape(labels["uncovered"])}</span>'
+                flags = ' data-uncovered="true"'
         rows.append(
-            f'<tr id="{requirement.id}"{removed}><th scope="row"><a href="#{requirement.id}">{requirement.id}</a></th>'
-            f'<td>{render_markdown(requirement.text)}</td></tr>'
+            f'<tr id="{requirement.id}"{flags}>'
+            f'<th scope="row"><a href="#{requirement.id}">{requirement.id}</a></th>'
+            f'<td>{render_markdown(requirement.text)}</td>'
+            f'<td>{covered}</td></tr>'
         )
     return (
         '<div class="table-scroll" role="region" aria-label="Requirements" tabindex="0">'
-        '<table><thead><tr><th scope="col">ID</th><th scope="col">Requirement</th></tr></thead>'
+        '<table><thead><tr>'
+        '<th scope="col">ID</th>'
+        f'<th scope="col">{html.escape(labels["requirements"])}</th>'
+        f'<th scope="col">{html.escape(labels["covered_by"])}</th>'
+        '</tr></thead>'
         f'<tbody>{"".join(rows)}</tbody></table></div>'
     )
 
@@ -231,6 +255,21 @@ def page_needs_mermaid(document: SpecDocument) -> bool:
     """Return whether the rendered page contains at least one diagram."""
 
     return bool(document.mermaid)
+
+
+def coverage_index(document: SpecDocument) -> dict[str, tuple[str, ...]]:
+    """Map each active requirement ID to the criteria that cite it."""
+
+    citations: dict[str, list[str]] = {
+        requirement.id: []
+        for requirement in document.requirements
+        if not requirement.removed
+    }
+    for criterion in document.acceptance:
+        for requirement_id in criterion.requirements:
+            if requirement_id in citations:
+                citations[requirement_id].append(criterion.id)
+    return {key: tuple(value) for key, value in citations.items()}
 
 
 def render_spec_page(
