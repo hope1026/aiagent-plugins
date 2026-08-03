@@ -834,5 +834,39 @@ class SectionOutlineTest(unittest.TestCase):
         self.assertEqual(len(anchors), len(set(anchors)))
 
 
+class DerivedRelationDiagramTest(unittest.TestCase):
+    def test_diagram_uses_only_declared_relations(self) -> None:
+        document = load_fixture_document("002-related")
+        source = spec_render.related_specs_diagram(document)
+        self.assertIn("flowchart LR", source)
+        for relation in document.metadata.related_specs:
+            self.assertIn(relation.id, source)
+            self.assertIn(relation.relation, source)
+        self.assertNotIn("003-", source)
+
+    def test_diagram_is_empty_without_relations(self) -> None:
+        document = load_fixture_document("001-basic")
+        stripped = replace(
+            document,
+            metadata=replace(document.metadata, related_specs=()),
+        )
+        self.assertEqual(spec_render.related_specs_diagram(stripped), "")
+
+    def test_flows_section_prefers_source_mermaid(self) -> None:
+        document = load_fixture_document("001-basic")
+        markup = spec_render._flows(document)
+        self.assertNotIn("Derived view", markup)
+
+    def test_flows_section_is_hidden_without_any_content(self) -> None:
+        document = load_fixture_document("001-basic")
+        empty = replace(
+            document,
+            mermaid=(),
+            sections={**document.sections, "Behavior & Flows": ""},
+            metadata=replace(document.metadata, related_specs=()),
+        )
+        self.assertEqual(spec_render._flows(empty), "")
+
+
 if __name__ == "__main__":
     unittest.main()

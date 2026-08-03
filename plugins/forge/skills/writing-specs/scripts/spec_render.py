@@ -147,6 +147,7 @@ def _labels(locale: str) -> dict[str, str]:
             "metric_tombstones": "폐기 요구사항",
             "metric_diagrams": "다이어그램",
             "outline": "이 절의 목차",
+            "derived_relations": "frontmatter relatedSpecs에서 파생한 관계",
         }
     return {
         "summary": "Summary",
@@ -174,6 +175,7 @@ def _labels(locale: str) -> dict[str, str]:
         "metric_tombstones": "Removed requirements",
         "metric_diagrams": "Diagrams",
         "outline": "In this section",
+        "derived_relations": "Relations derived from frontmatter relatedSpecs",
     }
 
 
@@ -266,7 +268,12 @@ def _acceptance(document: SpecDocument) -> str:
 def page_needs_mermaid(document: SpecDocument) -> bool:
     """Return whether the rendered page contains at least one diagram."""
 
-    return bool(document.mermaid)
+    if document.mermaid:
+        return True
+    return bool(
+        not document.sections["Behavior & Flows"].strip()
+        and related_specs_diagram(document)
+    )
 
 
 def coverage_index(document: SpecDocument) -> dict[str, tuple[str, ...]]:
@@ -360,6 +367,37 @@ def _outline_markup(document: SpecDocument, section: str) -> str:
     )
 
 
+def related_specs_diagram(document: SpecDocument) -> str:
+    """Build a Mermaid source from the declared relatedSpecs entries only."""
+
+    relations = document.metadata.related_specs
+    if not relations:
+        return ""
+    lines = ["flowchart LR", f'    current["{document.metadata.id}"]']
+    for index, relation in enumerate(relations, start=1):
+        node = f"related{index}"
+        lines.append(f'    {node}["{relation.id}"]')
+        lines.append(f"    current -->|{relation.relation}| {node}")
+    return "\n".join(lines)
+
+
+def _flows(document: SpecDocument) -> str:
+    body = document.sections["Behavior & Flows"]
+    if body.strip():
+        return render_markdown(body)
+    derived = related_specs_diagram(document)
+    if not derived:
+        return ""
+    labels = _labels(document.metadata.language)
+    return (
+        '<div class="derived-view">'
+        f'<p class="derived-label">Derived view · {html.escape(labels["derived_relations"])}</p>'
+        '<div class="diagram-scroll">'
+        f'<pre class="mermaid">{html.escape(derived)}</pre>'
+        "</div></div>"
+    )
+
+
 def render_spec_page(
     document: SpecDocument,
     template: str,
@@ -380,13 +418,17 @@ def render_spec_page(
         locale=document.metadata.language,
         asset_fingerprint=asset_fingerprint,
     )
-    nav_items = (
-        ("overview", labels["summary"]),
-        ("flows", labels["flows"]),
-        ("requirements", labels["requirements"]),
-        ("data", labels["data"]),
-        ("acceptance", labels["acceptance"]),
-        ("history", labels["history"]),
+    nav_items = tuple(
+        item
+        for item in (
+            ("overview", labels["summary"]),
+            ("flows", labels["flows"]),
+            ("requirements", labels["requirements"]),
+            ("data", labels["data"]),
+            ("acceptance", labels["acceptance"]),
+            ("history", labels["history"]),
+        )
+        if item[0] != "flows" or _flows(document)
     )
     navigation = "".join(
         f'<a href="#{target}">{html.escape(label)}</a>' for target, label in nav_items
@@ -405,8 +447,11 @@ def render_spec_page(
                 "OVERVIEW_LABEL": labels["summary"],
                 "OVERVIEW": _outline_markup(document, "Overview")
                 + render_markdown(document.sections["Overview"]),
-                "FLOWS_LABEL": labels["flows"],
-                "FLOWS": render_markdown(document.sections["Behavior & Flows"]),
+                "FLOWS_SECTION": (
+                    f'<section id="flows"><h2>{html.escape(labels["flows"])}</h2>{flows}</section>'
+                    if (flows := _flows(document))
+                    else ""
+                ),
                 "REQUIREMENTS_LABEL": labels["requirements"],
                 "REQUIREMENTS": _requirements(document),
                 "DATA_LABEL": labels["data"],
