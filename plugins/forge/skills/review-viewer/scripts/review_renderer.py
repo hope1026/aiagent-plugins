@@ -347,7 +347,22 @@ def _panel(panel_id: str, title: str, body: str) -> str:
     )
 
 
-def _provenance(source: ReviewSource) -> str:
+class ProvenanceTracker:
+    """Emit provenance once per consecutive run of the same source."""
+
+    def __init__(self) -> None:
+        self._previous: str | None = None
+
+    def should_render(self, namespace: str) -> bool:
+        if namespace == self._previous:
+            return False
+        self._previous = namespace
+        return True
+
+
+def _provenance(source: ReviewSource, tracker: "ProvenanceTracker | None" = None) -> str:
+    if tracker is not None and not tracker.should_render(source.namespace):
+        return ""
     return (
         '<p class="provenance">'
         f'<span>{html.escape(ORIGINS[source.role])}</span> · '
@@ -638,7 +653,9 @@ def _user_experience(source: ReviewSource, document: PlanDocument) -> str:
     return "".join(rendered)
 
 
-def _governance_sections(source: ReviewSource, document: PlanDocument) -> str:
+def _governance_sections(
+    source: ReviewSource, document: PlanDocument, tracker: "ProvenanceTracker | None" = None
+) -> str:
     tokens = ("constraint", "policy", "제약", "정책")
     rendered: list[str] = []
     for name, value in document.sections.items():
@@ -652,7 +669,7 @@ def _governance_sections(source: ReviewSource, document: PlanDocument) -> str:
         rendered.append(
             '<article class="source-block" data-origin="Plan source" '
             f'data-plan-governance-section="{html.escape(name, quote=True)}">'
-            f'<h3>{html.escape(name)}</h3>{_provenance(source)}{body}</article>'
+            f'<h3>{html.escape(name)}</h3>{_provenance(source, tracker)}{body}</article>'
         )
     return "".join(rendered)
 
@@ -741,6 +758,7 @@ def _route_scope(
     source: ReviewSource,
     document: PlanDocument,
     labels: Mapping[str, object],
+    tracker: "ProvenanceTracker | None" = None,
 ) -> str:
     if not document.routes:
         return ""
@@ -763,7 +781,7 @@ def _route_scope(
         )
     return (
         '<article class="source-block" data-origin="Plan source" data-route-scope-table>'
-        f'<h3>{html.escape(str(labels["route_scope_heading"]))}</h3>{_provenance(source)}'
+        f'<h3>{html.escape(str(labels["route_scope_heading"]))}</h3>{_provenance(source, tracker)}'
         '<div class="table-scroll" role="region" tabindex="0" '
         f'aria-label="{html.escape(str(labels["route_scope_heading"]), quote=True)}">'
         f'<table><thead><tr><th>{html.escape(str(labels["route_id"]))}</th>'
@@ -1042,13 +1060,14 @@ def _plan_panels(bundle: ReviewBundle, review_id: str, labels: Mapping[str, obje
         f'{_metric_strip(bundle)}{_count_table(bundle, labels)}'
         + _user_experience(plan_source, document)
     )
-    constraint_sections = _governance_sections(plan_source, document)
+    requirements_tracker = ProvenanceTracker()
+    constraint_sections = _governance_sections(plan_source, document, requirements_tracker)
     context_blocks = "".join(_spec_requirements(source, labels) for source in bundle.context)
     requirements = (
         f'<h2>{html.escape(str(tabs[1]))}</h2>'
         f'<p class="panel-orientation">{html.escape(str(labels["plan_requirements"]))}</p>'
-        f'{_provenance(plan_source)}{constraint_sections}'
-        + _route_scope(plan_source, document, labels)
+        f'{_provenance(plan_source, requirements_tracker)}{constraint_sections}'
+        + _route_scope(plan_source, document, labels, requirements_tracker)
         + context_blocks
     )
     flows = (

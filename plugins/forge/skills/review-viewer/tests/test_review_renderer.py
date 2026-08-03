@@ -261,8 +261,11 @@ class ReviewRendererTest(unittest.TestCase):
         for heading, text in (("제약", "한국어 제약 원문."), ("정책", "한국어 정책 원문.")):
             self.assertIn(f'data-plan-governance-section="{heading}"', body)
             self.assertIn(text, body)
-        self.assertGreaterEqual(body.count("Plan source"), 2)
-        self.assertGreaterEqual(body.count("docs/plans/001-demo/plan.md"), 2)
+        # R89: repeated *visible* provenance for the same consecutive source
+        # collapses to one occurrence; structural data-origin attributes on
+        # each governance article are unaffected.
+        self.assertEqual(body.count("<span>Plan source</span>"), 1)
+        self.assertEqual(body.count("<code>docs/plans/001-demo/plan.md</code>"), 1)
 
     def test_r25_runtime_atlas_includes_all_bilingual_canonical_sections(self) -> None:
         sections = (
@@ -667,6 +670,37 @@ class PanelHeadingTest(unittest.TestCase):
         labels = review_renderer.LABELS["ko"]
         panels = review_renderer._spec_panels(bundle, "inspect", labels)
         self.assertIn("<h2>개요</h2>", panels["overview"])
+
+
+class ProvenanceTrackerTest(unittest.TestCase):
+    def test_repeated_namespace_renders_once(self) -> None:
+        tracker = review_renderer.ProvenanceTracker()
+        self.assertTrue(tracker.should_render("plan--001-demo"))
+        self.assertFalse(tracker.should_render("plan--001-demo"))
+
+    def test_namespace_change_renders_again(self) -> None:
+        tracker = review_renderer.ProvenanceTracker()
+        self.assertTrue(tracker.should_render("plan--001-demo"))
+        self.assertTrue(tracker.should_render("context--008-alpha"))
+        self.assertTrue(tracker.should_render("plan--001-demo"))
+
+    def test_plan_requirements_panel_shows_plan_source_provenance_once(self) -> None:
+        bundle = build_plan_bundle_with_governance_and_routes()
+        labels = review_renderer.LABELS["en"]
+        panels = review_renderer._plan_panels(bundle, "inspect", labels)
+        plan_source = bundle.primary[0]
+        self.assertEqual(
+            panels["requirements"].count(html.escape(plan_source.path)), 1
+        )
+
+    def test_plan_history_panel_keeps_full_provenance(self) -> None:
+        bundle = build_plan_bundle_with_governance_and_routes()
+        labels = review_renderer.LABELS["en"]
+        panels = review_renderer._plan_panels(bundle, "inspect", labels)
+        plan_source = bundle.primary[0]
+        self.assertGreaterEqual(
+            panels["history"].count(html.escape(plan_source.path)), 1
+        )
 
 
 if __name__ == "__main__":
