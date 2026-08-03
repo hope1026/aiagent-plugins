@@ -398,6 +398,27 @@ def _flows(document: SpecDocument) -> str:
     )
 
 
+def catalog_relations_diagram(documents: Sequence[SpecDocument]) -> str:
+    """Build the repository relation graph from declared relatedSpecs only."""
+
+    known = {document.metadata.id for document in documents}
+    edges: list[tuple[str, str, str]] = []
+    for document in documents:
+        for relation in document.metadata.related_specs:
+            if relation.id in known:
+                edges.append((document.metadata.id, relation.relation, relation.id))
+    if not edges:
+        return ""
+    nodes = sorted({node for source, _, target in edges for node in (source, target)})
+    aliases = {node: f"spec{index}" for index, node in enumerate(nodes, start=1)}
+    lines = ["flowchart LR"]
+    for node in nodes:
+        lines.append(f'    {aliases[node]}["{node}"]')
+    for source, relation, target in edges:
+        lines.append(f"    {aliases[source]} -->|{relation}| {aliases[target]}")
+    return "\n".join(lines)
+
+
 def render_spec_page(
     document: SpecDocument,
     template: str,
@@ -494,6 +515,7 @@ def _render_catalog(
     asset_fingerprint: str,
     spec_root: Path,
     runtime: str,
+    mermaid: str,
 ) -> bytes:
     locale = "ko" if any(document.metadata.language == "ko" for document in documents) else "en"
     labels = _labels(locale)
@@ -532,6 +554,19 @@ def _render_catalog(
             f'<a href="{html.escape(metadata.id, quote=True)}/index.html">{html.escape(labels["page"])}</a>'
             "</p></article>"
         )
+    relations = catalog_relations_diagram(documents)
+    if relations:
+        relations_markup = (
+            '<section class="shell relations" aria-label="Spec relations">'
+            f'<p class="derived-label">Derived view · {html.escape(labels["derived_relations"])}</p>'
+            '<div class="diagram-scroll">'
+            f'<pre class="mermaid">{html.escape(relations)}</pre>'
+            "</div></section>"
+        )
+        mermaid_markup = f"<script>{mermaid}</script>"
+    else:
+        relations_markup = ""
+        mermaid_markup = ""
     values = {
         "LANG": locale,
         "TITLE": html.escape(labels["catalog_title"]),
@@ -551,6 +586,8 @@ def _render_catalog(
             [value for item in documents for value in item.metadata.components], labels["all"]
         ),
         "ENTRIES": "\n".join(entries),
+        "RELATIONS": relations_markup,
+        "MERMAID_RUNTIME": mermaid_markup,
         "SPEC_PAGES_RUNTIME": runtime,
     }
     return _finish_bytes(_fill_template(template, values))
@@ -605,6 +642,7 @@ def expected_outputs(
         fingerprint,
         spec_root,
         runtime,
+        mermaid,
     )
     return {path: outputs[path] for path in sorted(outputs)}
 

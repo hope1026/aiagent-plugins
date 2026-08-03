@@ -868,5 +868,34 @@ class DerivedRelationDiagramTest(unittest.TestCase):
         self.assertEqual(spec_render._flows(empty), "")
 
 
+class CatalogRelationsTest(unittest.TestCase):
+    def test_catalog_diagram_contains_declared_edges_only(self) -> None:
+        documents = [load_fixture_document("001-basic"), load_fixture_document("002-related")]
+        source = spec_render.catalog_relations_diagram(documents)
+        self.assertIn("flowchart LR", source)
+        self.assertIn("002-related", source)
+        self.assertIn("001-basic", source)
+        self.assertNotIn("999-missing", source)
+
+    def test_catalog_diagram_is_empty_without_relations(self) -> None:
+        document = load_fixture_document("001-basic")
+        stripped = replace(
+            document,
+            metadata=replace(document.metadata, related_specs=()),
+        )
+        self.assertEqual(spec_render.catalog_relations_diagram([stripped]), "")
+
+    def test_catalog_page_embeds_runtime_with_diagram(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(FIXTURE_ROOT, root / "repo")
+            repository = root / "repo"
+            spec_root = repository / "docs" / "specs"
+            build_pages(repository, spec_root, changed=None, offline=True)
+            catalog = (spec_root / "index.html").read_text(encoding="utf-8")
+            self.assertIn("Derived view", catalog)
+            self.assertIn("flowchart LR", catalog)
+
+
 if __name__ == "__main__":
     unittest.main()
