@@ -1562,7 +1562,7 @@ class PanelHeadingTest(unittest.TestCase):
 - 병렬 안전성: 순차 — Task 9와 같은 파일을 수정한다
 - 승인 gate: 없음
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 ```python
 class ProvenanceTrackerTest(unittest.TestCase):
@@ -1598,12 +1598,12 @@ class ProvenanceTrackerTest(unittest.TestCase):
 
 `build_plan_bundle_with_governance_and_routes`는 Task 7에서 이미 추가했으므로 다시 정의하지 않고 그대로 재사용한다. 기존 plan fixture(`FIXTURE_ROOT / "docs" / "plans" / "001-demo"`)는 `Global Constraints`와 Route(`source-model`, `cli`)를 이미 포함한다.
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/review-viewer && python3 -m unittest tests.test_review_renderer.ProvenanceTrackerTest -v`
 예상: `test_repeated_namespace_renders_once`는 `AttributeError: module 'review_renderer' has no attribute 'ProvenanceTracker'`로 FAIL, `test_plan_requirements_panel_shows_plan_source_provenance_once`는 현재 provenance가 2회 이상 나타나 FAIL
 
-- [ ] **Step 3: tracker를 구현한다**
+- [x] **Step 3: tracker를 구현한다**
 
 `review_renderer.py`의 `_provenance` 정의 바로 앞에 추가한다.
 
@@ -1621,7 +1621,7 @@ class ProvenanceTracker:
         return True
 ```
 
-- [ ] **Step 4: `_provenance`가 선택적 tracker를 받게 한다**
+- [x] **Step 4: `_provenance`가 선택적 tracker를 받게 한다**
 
 `_provenance`를
 
@@ -1649,7 +1649,7 @@ def _provenance(source: ReviewSource, tracker: "ProvenanceTracker | None" = None
     )
 ```
 
-- [ ] **Step 5: `_governance_sections`와 `_route_scope`에 tracker를 전달한다**
+- [x] **Step 5: `_governance_sections`와 `_route_scope`에 tracker를 전달한다**
 
 `_governance_sections` 시그니처를
 
@@ -1686,7 +1686,7 @@ def _route_scope(
 ) -> str:
 ```
 
-- [ ] **Step 6: `_plan_panels`의 requirements 조립에 tracker를 만들어 전달한다**
+- [x] **Step 6: `_plan_panels`의 requirements 조립에 tracker를 만들어 전달한다**
 
 `_plan_panels`에서
 
@@ -1718,12 +1718,12 @@ def _route_scope(
 
 (Task 9에서 이미 `<h2>` 줄을 `tabs[1]`과 orientation 문장으로 바꿨다면 그 결과 위에 tracker 인자만 추가한다.)
 
-- [ ] **Step 7: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 7: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/review-viewer && python3 -m unittest tests.test_review_renderer -v`
 예상: PASS
 
-- [ ] **Step 8: 변경을 commit한다**
+- [x] **Step 8: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/review-viewer/scripts/review_renderer.py plugins/forge/skills/review-viewer/tests/test_review_renderer.py && git commit -m "feat(forge): collapse repeated plan-source provenance in Requirements"`
 
@@ -1874,3 +1874,5 @@ EOF
 - Task 8: complete (commit 0152a43; verification="python3 -m unittest tests.test_review_renderer -v — 28 passed"). 계획 결함 수정: `.metric-strip` CSS가 writing-specs 템플릿의 `--line`/`--muted` 토큰명을 그대로 가져와 썼는데, review-viewer 템플릿의 실제 변수명은 `--border`/`--text-muted`라 스타일이 적용되지 않았음 — 실제 토큰명으로 교체.
 - Task 9: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="Task 8과 같은 파일을 잇는 순차 체인, Task 10이 같은 h2 블록을 다시 수정하므로 root가 문맥 유지")
 - Task 9: complete (commit a82c08d; verification="python3 -m unittest tests.test_review_renderer -v — 31 passed; writing-specs tests.test_spec_render -v — 39 passed (교차 회귀 없음)"). 계획 결함 수정 2건: ① `.panel-orientation` CSS가 다시 `--muted`를 썼어 `--text-muted`로 교체. ② 자체 테스트가 `<h2>Data & Interfaces</h2>`를 escape 없이 비교해 실패 — renderer가 `html.escape`로 `&`를 `&amp;`로 만드는 것과 불일치, 테스트에 `html.escape`와 `import html`을 추가해 맞춤.
+- Task 10: routed (impact=medium, uncertainty=medium, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="기존 R23 테스트와 충돌 가능성이 있어 root가 직접 spec 정합성 판단")
+- Task 10: complete (commit 3a52e23; verification="python3 -m unittest tests.test_review_renderer -v — 35 passed; writing-specs tests.test_spec_render -v — 39 passed (교차 회귀 없음)"). 실행 중 spec 상충 발견과 해소: 기존 `test_r23_requirements_preserves_korean_constraint_and_policy_sections`가 governance section마다 provenance가 반복 출력되는 old 동작(`count >= 2`)을 assert하고 있었음. R89는 바로 이 반복을 축약하도록 승인된 변경이라 spec 위반이 아니라 R89 구현의 당연한 결과로 판단해 assertion을 `count == 1`로 갱신함(silent 우회가 아니라 승인된 002 delta를 반영). 갱신 직후 재확인에서 `data-origin="Plan source"` 같은 구조적 속성까지 세고 있었다는 계획 결함을 추가로 발견해, 실제 사람이 보는 `<span>Plan source</span>` provenance 문구만 세도록 재수정.
