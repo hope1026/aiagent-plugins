@@ -1012,7 +1012,7 @@ def page_needs_mermaid(document: SpecDocument) -> bool:
 - 병렬 안전성: 순차 — Task 5와 같은 파일을 수정한다
 - 승인 gate: 없음
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 ```python
 class CatalogRelationsTest(unittest.TestCase):
@@ -1044,12 +1044,12 @@ class CatalogRelationsTest(unittest.TestCase):
             self.assertIn("flowchart LR", catalog)
 ```
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render.CatalogRelationsTest -v`
 예상: FAIL — `AttributeError: module 'spec_render' has no attribute 'catalog_relations_diagram'`
 
-- [ ] **Step 3: catalog 도식을 구현한다**
+- [x] **Step 3: catalog 도식을 구현한다**
 
 `spec_render.py`의 `_flows` 뒤에 추가한다.
 
@@ -1075,7 +1075,7 @@ def catalog_relations_diagram(documents: Sequence[SpecDocument]) -> str:
     return "\n".join(lines)
 ```
 
-- [ ] **Step 4: catalog template에 slot을 추가한다**
+- [x] **Step 4: catalog template에 slot을 추가한다**
 
 `assets/spec-catalog-template.html`에서 아래 줄을
 
@@ -1102,7 +1102,7 @@ def catalog_relations_diagram(documents: Sequence[SpecDocument]) -> str:
 .relations{padding-block:20px;border-bottom:1px solid var(--line)}.derived-label{margin:0 0 6px;color:var(--muted);font-size:.78rem;font-weight:650;text-transform:uppercase}.diagram-scroll{max-width:100%;overflow-x:auto;padding:12px;border:1px solid var(--line);background:var(--surface)}
 ```
 
-- [ ] **Step 5: `_render_catalog`가 mermaid asset을 받게 한다**
+- [x] **Step 5: `_render_catalog`가 mermaid asset을 받게 한다**
 
 `_render_catalog`는 현재 `mermaid` 원본 텍스트를 받지 않는다. 시그니처와 `expected_outputs`의 호출부를 함께 바꾼다.
 
@@ -1156,7 +1156,7 @@ def _render_catalog(
     )
 ```
 
-- [ ] **Step 6: catalog renderer가 slot을 채우게 한다**
+- [x] **Step 6: catalog renderer가 slot을 채우게 한다**
 
 `_render_catalog` 본문에서 template 값 매핑에 추가한다.
 
@@ -1183,12 +1183,12 @@ def _render_catalog(
                 "MERMAID_RUNTIME": mermaid_markup,
 ```
 
-- [ ] **Step 7: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 7: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render -v`
 예상: PASS
 
-- [ ] **Step 8: 변경을 commit한다**
+- [x] **Step 8: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/writing-specs/scripts/spec_render.py plugins/forge/skills/writing-specs/assets/spec-catalog-template.html plugins/forge/skills/writing-specs/tests/test_spec_render.py && git commit -m "feat(forge): add derived relation graph to the spec catalog"`
 
@@ -1865,3 +1865,6 @@ EOF
 - Task 4: complete (commit 136f75d; verification="python3 -m unittest tests.test_spec_render -v — 32 passed; review-viewer tests.test_review_renderer -v — 20 passed (교차 회귀 없음)"). 계획 결함 수정: 기존 `test_supported_blocks_are_semantic_and_escape_first`가 heading에 `id`가 없다고 가정한 assertion을 갖고 있어, 새 anchor id를 반영하도록 `<h3 id="heading-unsafe">...`로 갱신함.
 - Task 5: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="Task 4와 같은 파일을 잇는 순차 체인")
 - Task 5: complete (commit 0ebc6dd; verification="python3 -m unittest tests.test_spec_render -v — 36 passed")
+- Task 6: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="Task 5와 같은 파일을 잇는 순차 체인")
+- Task 6: complete (commit 3ddc686; verification="python3 -m unittest tests.test_spec_render -v — 39 passed")
+- Route D(파생 관계 도식) 완료. Route A–D 종료, weppy-roblox-mcp-private 변경 0건. 다음은 Route E(Task 7) — review-viewer 스킬로 전환.
