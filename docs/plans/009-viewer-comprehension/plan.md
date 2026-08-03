@@ -432,7 +432,7 @@ def _requirements(document: SpecDocument) -> str:
 - 병렬 안전성: 순차 — Task 2와 같은 파일을 수정한다
 - 승인 gate: 없음
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 ```python
 class PageMetricsTest(unittest.TestCase):
@@ -464,12 +464,12 @@ class PageMetricsTest(unittest.TestCase):
             self.assertIn('data-metric="active_requirements"', page)
 ```
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render.PageMetricsTest -v`
 예상: FAIL — `AttributeError: module 'spec_render' has no attribute 'page_metrics'`
 
-- [ ] **Step 3: 지표 계산을 구현한다**
+- [x] **Step 3: 지표 계산을 구현한다**
 
 `spec_render.py`의 `coverage_index` 뒤에 추가한다.
 
@@ -487,7 +487,7 @@ def page_metrics(document: SpecDocument) -> dict[str, int]:
     }
 ```
 
-- [ ] **Step 4: 지표 markup을 생성한다**
+- [x] **Step 4: 지표 markup을 생성한다**
 
 `spec_render.py`의 `page_metrics` 뒤에 추가한다.
 
@@ -515,7 +515,7 @@ def _metrics_markup(document: SpecDocument) -> str:
     return f'<dl class="metrics">{"".join(cells)}</dl>'
 ```
 
-- [ ] **Step 5: label을 추가한다**
+- [x] **Step 5: label을 추가한다**
 
 `_labels`의 한국어 사전에 `"uncovered": "미커버",` 뒤로 추가한다.
 
@@ -537,7 +537,7 @@ def _metrics_markup(document: SpecDocument) -> str:
         "metric_diagrams": "Diagrams",
 ```
 
-- [ ] **Step 6: template에 slot을 추가한다**
+- [x] **Step 6: template에 slot을 추가한다**
 
 `assets/spec-page-template.html`에서 `<dl class="metadata">{{METADATA}}</dl>` 바로 뒤에 추가한다.
 
@@ -551,7 +551,7 @@ def _metrics_markup(document: SpecDocument) -> str:
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1px;margin:20px 0 0;padding:0;background:var(--line);border:1px solid var(--line)}.metric{margin:0;padding:12px 16px;background:var(--surface)}.metric dt{color:var(--muted);font-size:.76rem;font-weight:650;text-transform:uppercase}.metric dd{margin:2px 0 0;font-size:1.5rem;font-variant-numeric:tabular-nums}.metric[data-alert="true"] dd{color:var(--error)}
 ```
 
-- [ ] **Step 7: renderer가 slot을 채우게 한다**
+- [x] **Step 7: renderer가 slot을 채우게 한다**
 
 `spec_render.py`의 `render_spec_page` 안에서 `"METADATA": _metadata(document),` 뒤에 추가한다.
 
@@ -559,12 +559,12 @@ def _metrics_markup(document: SpecDocument) -> str:
                 "METRICS": _metrics_markup(document),
 ```
 
-- [ ] **Step 8: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 8: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render -v`
 예상: PASS
 
-- [ ] **Step 9: 변경을 commit한다**
+- [x] **Step 9: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/writing-specs/scripts/spec_render.py plugins/forge/skills/writing-specs/assets/spec-page-template.html plugins/forge/skills/writing-specs/tests/test_spec_render.py && git commit -m "feat(forge): show Spec Page summary metrics"`
 
@@ -1859,3 +1859,5 @@ EOF
 - Task 1: complete (commit 810ca00; verification="python3 -m unittest tests.test_spec_render -v — 21 passed"). 계획 결함 수정: `assertNotIn(b"mermaid", ...)`이 항상 포함되는 `spec-pages-runtime.mjs`의 문자열 "mermaid"까지 잡아 오탐되어, 실제 vendored 라이브러리 고유 마커(`__esbuild_esm_mermaid_nm`) 검사로 테스트를 교체함.
 - Task 2: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="Task 1과 같은 파일을 잇는 순차 체인")
 - Task 2: complete (commit 8074ec2; verification="python3 -m unittest tests.test_spec_render -v — 25 passed")
+- Task 3: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="Task 2와 같은 파일을 잇는 순차 체인")
+- Task 3: complete (commit 66a44f1; verification="python3 -m unittest tests.test_spec_render -v — 28 passed")
