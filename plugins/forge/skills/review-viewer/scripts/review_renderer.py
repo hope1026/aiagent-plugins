@@ -693,27 +693,37 @@ def _count_table(bundle: ReviewBundle, labels: Mapping[str, object]) -> str:
 
 def _spec_panels(bundle: ReviewBundle, review_id: str, labels: Mapping[str, object]) -> dict[str, str]:
     sources = (*bundle.primary, *bundle.comparison)
+    tabs = labels["tabs"]
     overview = (
-        f'<h2>{html.escape(str(labels["spec_overview"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[0]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["spec_overview"]))}</p>'
         f'<p>{html.escape(str(labels["read_order"]))}</p>'
         f'{_metric_strip(bundle)}{_count_table(bundle, labels)}'
         + "".join(_section(source, "Overview") for source in sources)
     )
     requirements = (
-        f'<h2>{html.escape(str(labels["spec_requirements"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[1]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["spec_requirements"]))}</p>'
         + "".join(_spec_requirements(source, labels) for source in sources)
     )
-    flows = f'<h2>{html.escape(str(labels["spec_flows"]))}</h2>' + _source_diagrams(bundle, labels)
+    flows = (
+        f'<h2>{html.escape(str(tabs[2]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["spec_flows"]))}</p>'
+        + _source_diagrams(bundle, labels)
+    )
     data = (
-        f'<h2>{html.escape(str(labels["spec_data"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[3]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["spec_data"]))}</p>'
         + "".join(_section(source, "Data & Interfaces") for source in sources)
     )
     acceptance = (
-        f'<h2>{html.escape(str(labels["spec_acceptance"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[4]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["spec_acceptance"]))}</p>'
         + "".join(_spec_acceptance(source, review_id, labels) for source in sources)
     )
     history = (
-        f'<h2>{html.escape(str(labels["spec_history"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[5]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["spec_history"]))}</p>'
         + _history_table(bundle, labels)
         + "".join(_section(source, "Decisions & History") for source in sources)
     )
@@ -1016,10 +1026,12 @@ def _source_state_summary(
 
 def _plan_panels(bundle: ReviewBundle, review_id: str, labels: Mapping[str, object]) -> dict[str, str]:
     plan_source, document = _primary_plan(bundle)
+    tabs = labels["tabs"]
     completed = sum(step.checked for task in document.tasks for step in task.steps)
     total = sum(len(task.steps) for task in document.tasks)
     overview = (
-        f'<h2>{html.escape(str(labels["plan_overview"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[0]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["plan_overview"]))}</p>'
         f'<p><strong>{html.escape(str(labels["plan_title_label"]))}:</strong> {html.escape(document.title)}</p>'
         f'<p><strong>{html.escape(str(labels["goal"]))}:</strong> '
         f'{html.escape(document.goal or str(labels["goal_missing"]))}</p>'
@@ -1033,25 +1045,29 @@ def _plan_panels(bundle: ReviewBundle, review_id: str, labels: Mapping[str, obje
     constraint_sections = _governance_sections(plan_source, document)
     context_blocks = "".join(_spec_requirements(source, labels) for source in bundle.context)
     requirements = (
-        f'<h2>{html.escape(str(labels["plan_requirements"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[1]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["plan_requirements"]))}</p>'
         f'{_provenance(plan_source)}{constraint_sections}'
         + _route_scope(plan_source, document, labels)
         + context_blocks
     )
     flows = (
-        f'<h2>{html.escape(str(labels["plan_flows"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[2]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["plan_flows"]))}</p>'
         + _route_map(document, plan_source.path, labels)
         + _source_diagrams(bundle, labels)
     )
     data = (
-        f'<h2>{html.escape(str(labels["plan_data"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[3]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["plan_data"]))}</p>'
         + _runtime_atlas(bundle, document, labels)
         + _main_task_detail(plan_source, document)
         + f'<h3>{html.escape(str(labels["task_detail"]))}</h3>'
         + _task_index(bundle, plan_source, document, review_id, labels)
     )
     acceptance = (
-        f'<h2>{html.escape(str(labels["plan_acceptance"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[4]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["plan_acceptance"]))}</p>'
         + _coverage_table(bundle, plan_source, document, labels)
         + "".join(_spec_acceptance(source, review_id, labels) for source in bundle.context)
     )
@@ -1060,7 +1076,8 @@ def _plan_panels(bundle: ReviewBundle, review_id: str, labels: Mapping[str, obje
         _auxiliary_detail(source, document, labels) for source in bundle.primary[1:]
     )
     history = (
-        f'<h2>{html.escape(str(labels["plan_history"]))}</h2>'
+        f'<h2>{html.escape(str(tabs[5]))}</h2>'
+        f'<p class="panel-orientation">{html.escape(str(labels["plan_history"]))}</p>'
         + _source_state_summary(plan_source, document, labels)
         + _history_table(bundle, labels)
         + progress

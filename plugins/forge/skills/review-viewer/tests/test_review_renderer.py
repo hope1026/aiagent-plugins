@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from html.parser import HTMLParser
 import hashlib
+import html
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -642,6 +643,30 @@ class OverviewMetricStripTest(unittest.TestCase):
         labels = review_renderer.LABELS["en"]
         panels = review_renderer._spec_panels(bundle, "inspect", labels)
         self.assertIn('class="count-table"', panels["overview"])
+
+
+class PanelHeadingTest(unittest.TestCase):
+    def test_spec_panel_headings_use_noun_tab_labels(self) -> None:
+        bundle = build_spec_bundle_with_mermaid()
+        labels = review_renderer.LABELS["en"]
+        panels = review_renderer._spec_panels(bundle, "inspect", labels)
+        tabs = labels["tabs"]
+        for index, panel_id in enumerate(review_renderer.PANELS):
+            heading = f"<h2>{html.escape(str(tabs[index]))}</h2>"
+            self.assertIn(heading, panels[panel_id])
+
+    def test_orientation_sentence_is_retained(self) -> None:
+        bundle = build_spec_bundle_with_mermaid()
+        labels = review_renderer.LABELS["en"]
+        panels = review_renderer._spec_panels(bundle, "inspect", labels)
+        self.assertIn('class="panel-orientation"', panels["overview"])
+        self.assertIn(str(labels["spec_overview"]), panels["overview"])
+
+    def test_korean_panel_headings_use_noun_tab_labels(self) -> None:
+        bundle = build_spec_bundle_with_mermaid()
+        labels = review_renderer.LABELS["ko"]
+        panels = review_renderer._spec_panels(bundle, "inspect", labels)
+        self.assertIn("<h2>개요</h2>", panels["overview"])
 
 
 if __name__ == "__main__":
