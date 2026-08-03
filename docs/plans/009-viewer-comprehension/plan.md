@@ -3,7 +3,7 @@
 > 에이전트 작업자는 forge executing-plans 스킬로 이 계획을 실행한다. Task 단위로
 > 진행하고 각 Task 끝의 checkpoint를 거친다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - `docs/specs/008-structured-spec-pages/spec.md`: R40, R41, R42, R43, R44, R45, R46, R47 · AC16, AC17, AC18, AC19, AC20
@@ -1797,17 +1797,17 @@ def _route_scope(
 - 병렬 안전성: 순차 — Task 11의 산출물을 검증한다
 - 승인 gate: 배포 여부 판단. 이 Task 완료 후 push 전에 사용자 승인을 받는다
 
-- [ ] **Step 1: Spec Pages 브라우저 검증을 실행한다**
+- [x] **Step 1: Spec Pages 브라우저 검증을 실행한다**
 
 실행: `bash plugins/forge/skills/writing-specs/tests/run-spec-pages-browser.sh`
 예상: 1440px와 390px에서 navigation, 표 overflow, diagram overflow, focus가 PASS
 
-- [ ] **Step 2: Review Viewer 브라우저 검증을 실행한다**
+- [x] **Step 2: Review Viewer 브라우저 검증을 실행한다**
 
 실행: `bash plugins/forge/skills/review-viewer/tests/run-review-viewer-browser.sh`
 예상: 1440px와 390px에서 tab, 표, diagram, deep link, checkbox persistence가 PASS
 
-- [ ] **Step 3: diagram 없는 page가 조건부 embed로 줄어드는지 확인한다**
+- [x] **Step 3: diagram 없는 page가 조건부 embed로 줄어드는지 확인한다**
 
 이 저장소의 활성 spec은 8개 모두 source Mermaid를 최소 1개 가지고 있어 실제 spec으로는 생략 경로를 재현할 수 없다. Task 1의 fixture 테스트가 이미 이 경로를 검증했으므로, 여기서는 생략 판정이 diagram 수에서만 결정되는지 계산으로 다시 확인한다.
 
@@ -1834,21 +1834,21 @@ EOF
 
 예상: 8개 spec 모두 `diagrams >= 1`이고 `needs_runtime=True`이며 판정이 각 source의 diagram 수·`relatedSpecs`·`Behavior & Flows` 내용에서만 계산된다. assertion 실패 없이 종료한다.
 
-- [ ] **Step 4: 저장소 validator를 실행한다**
+- [x] **Step 4: 저장소 validator를 실행한다**
 
 실행: `bash scripts/validate.sh`
 예상: `validate: all checks passed`
 
-- [ ] **Step 5: 두 skill의 전체 테스트를 실행한다**
+- [x] **Step 5: 두 skill의 전체 테스트를 실행한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest discover -s tests -v && cd ../review-viewer && python3 -m unittest discover -s tests -v`
 예상: 두 suite 모두 PASS
 
-- [ ] **Step 6: 검증 증거를 commit한다**
+- [x] **Step 6: 검증 증거를 commit한다**
 
 실행: `git add -A && git commit -m "test(forge): verify viewer comprehension rendering"`
 
-- [ ] **Step 7: 배포 승인을 요청한다**
+- [x] **Step 7: 배포 승인을 요청한다**
 
 사용자에게 검증 결과를 보고하고 push 여부를 묻는다. `plugins/forge/skills/` 경로가 변경됐으므로 push 전에 maintaining-forge 런북의 Version Gate에 따라 `plugins/forge/.claude-plugin/plugin.json`과 `plugins/forge/.codex-plugin/plugin.json`의 버전을 올려야 한다. 승인 없이 push하지 않는다.
 
@@ -1879,3 +1879,6 @@ EOF
 - Route G(Review Viewer 가독성) 완료. Route E–G 종료. 다음은 Route H(Task 11, 12) — 전체 재생성과 검증.
 - Task 11: routed (impact=medium, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="repository-wide rebuild와 diff 검사는 root가 직접 수행")
 - Task 11: complete (commit 9a165ce; verification="validate/build/check 모두 exit 0; 두 번째 build의 index.html content hash가 첫 build와 동일해 결정성 확인; git status 변경 경로가 모두 docs/specs/ 아래이고 weppy-roblox-mcp-private 변경 0건"). 측정: rebuild 전 27.54MB → rebuild 후 30.97MB로 **증가**했다. 이 저장소의 활성 spec 8개가 모두 diagram을 1개 이상 가지고 있어 Task 1의 조건부 embed 절감 효과가 여기서는 발생하지 않고, R41–R47의 신규 기능(coverage link, 요약 지표, section 목차, 파생 관계 도식)이 markup을 늘렸다. 조건부 embed의 실질 절감은 diagram 없는 spec이 많은 저장소(예: weppy-roblox-mcp-private, 35개 중 20개가 diagram 0개)에서 나타나며, 그 저장소의 재생성은 008 R33/R47에 따라 이 작업 범위 밖이다. 겸사겸사 발견: `docs/specs/008-*/spec.md`와 `docs/specs/002-*/spec.md`의 승인된 change delta가 계획 작성을 시작하기 전 commit되지 않은 채 남아 있었음 — 이번 rebuild commit에 함께 포함해 정리함(R17의 "spec 변경과 Spec Pages는 같은 작업 단위에서 갱신" 요구와 일치).
+- Task 12: routed (impact=medium, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="배포 승인 gate 직전 최종 검증은 root가 직접 수행")
+- Task 12: complete (verification="writing-specs 브라우저 검증 6/6 PASS; review-viewer 브라우저 검증 6/6 PASS; 조건부 embed 계산 재확인 8/8 PASS; bash scripts/validate.sh → 'validate: all checks passed'; writing-specs unittest discover 95 passed; review-viewer unittest discover 48 passed"). 검증만 수행했고 변경 파일이 없어 Step 6의 commit은 생략함(빈 커밋 금지).
+- Route H(재생성과 검증) 완료. Task 1–12 전부 완료, 로컬 검증 전부 PASS. weppy-roblox-mcp-private 변경 0건. push 전 사용자 승인 대기.
