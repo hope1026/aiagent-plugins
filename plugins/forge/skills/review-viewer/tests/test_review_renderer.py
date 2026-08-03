@@ -26,8 +26,10 @@ from review_sources import collect_plan_sources, collect_spec_sources  # noqa: E
 from review_freshness import _aggregate  # noqa: E402
 
 try:
-    from review_renderer import render_review  # type: ignore[import-not-found]  # noqa: E402
+    import review_renderer  # type: ignore[import-not-found]  # noqa: E402
+    from review_renderer import render_review  # noqa: E402
 except ModuleNotFoundError:
+    review_renderer = None
     render_review = None
 
 
@@ -543,6 +545,81 @@ class ReviewRendererTest(unittest.TestCase):
             self.assertNotIn(english_heading, korean)
         self.assertIn("어떤 목표와 실행 규모를 검토할까?", korean)
         self.assertIn("명시된 Route와 dependency, source flow는 어떻게 연결될까?", korean)
+
+
+def build_spec_bundle_with_mermaid():
+    return collect_spec_sources(
+        primary=FIXTURE_ROOT / "docs" / "specs" / "008-alpha" / "spec.md",
+        comparisons=(),
+        repo_root=FIXTURE_ROOT,
+    )
+
+
+def build_spec_bundle_without_mermaid():
+    bundle = build_spec_bundle_with_mermaid()
+    primary = tuple(
+        replace(source, document=replace(source.document, mermaid=()))
+        if source.document is not None
+        else source
+        for source in bundle.primary
+    )
+    return replace(bundle, primary=primary)
+
+
+def build_plan_bundle_with_governance_and_routes():
+    return collect_plan_sources(
+        plan=FIXTURE_ROOT / "docs" / "plans" / "001-demo" / "plan.md",
+        repo_root=FIXTURE_ROOT,
+    )
+
+
+def _without_mermaid(source):
+    if source.document is None:
+        return source
+    return replace(source, document=replace(source.document, mermaid=()))
+
+
+def build_plan_bundle_without_routes_or_mermaid():
+    bundle = build_plan_bundle_with_governance_and_routes()
+    plan_source = bundle.primary[0]
+    document = plan_source.document
+    stripped_document = replace(document, routes=(), dependencies=(), mermaid=())
+    primary = tuple(
+        _without_mermaid(replace(source, document=stripped_document))
+        if source is plan_source
+        else _without_mermaid(source)
+        for source in bundle.primary
+    )
+    context = tuple(_without_mermaid(source) for source in bundle.context)
+    comparison = tuple(_without_mermaid(source) for source in bundle.comparison)
+    return replace(bundle, primary=primary, comparison=comparison, context=context)
+
+
+class ConditionalMermaidLoaderTest(unittest.TestCase):
+    def test_offline_bundle_without_diagram_omits_runtime(self) -> None:
+        bundle = build_spec_bundle_without_mermaid()
+        self.assertFalse(review_renderer.bundle_needs_mermaid(bundle))
+        self.assertEqual(review_renderer._mermaid_loader(True, bundle), "")
+
+    def test_offline_bundle_with_diagram_embeds_runtime(self) -> None:
+        bundle = build_spec_bundle_with_mermaid()
+        self.assertTrue(review_renderer.bundle_needs_mermaid(bundle))
+        self.assertIn(
+            'data-mermaid-delivery="offline"',
+            review_renderer._mermaid_loader(True, bundle),
+        )
+
+    def test_cdn_bundle_without_diagram_omits_loader(self) -> None:
+        bundle = build_spec_bundle_without_mermaid()
+        self.assertEqual(review_renderer._mermaid_loader(False, bundle), "")
+
+    def test_plan_bundle_without_routes_or_mermaid_omits_runtime(self) -> None:
+        bundle = build_plan_bundle_without_routes_or_mermaid()
+        self.assertFalse(review_renderer.bundle_needs_mermaid(bundle))
+
+    def test_plan_bundle_with_routes_needs_runtime_for_route_map(self) -> None:
+        bundle = build_plan_bundle_with_governance_and_routes()
+        self.assertTrue(review_renderer.bundle_needs_mermaid(bundle))
 
 
 if __name__ == "__main__":

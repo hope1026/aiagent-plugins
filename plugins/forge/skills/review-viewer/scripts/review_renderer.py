@@ -1107,6 +1107,17 @@ def _review_metadata(
     )
 
 
+def bundle_needs_mermaid(bundle: ReviewBundle) -> bool:
+    """Return whether the snapshot renders at least one diagram."""
+
+    if bundle.mermaid:
+        return True
+    if bundle.mode != "plan":
+        return False
+    _, document = _primary_plan(bundle)
+    return bool(document.routes)
+
+
 def _offline_mermaid() -> str:
     source = MERMAID_PATH.read_bytes()
     expected = None
@@ -1124,7 +1135,9 @@ def _offline_mermaid() -> str:
     return f'<script data-mermaid-delivery="offline">\n{text}\n</script>'
 
 
-def _mermaid_loader(offline: bool) -> str:
+def _mermaid_loader(offline: bool, bundle: ReviewBundle) -> str:
+    if not bundle_needs_mermaid(bundle):
+        return ""
     if offline:
         return _offline_mermaid()
     return (
@@ -1222,7 +1235,7 @@ def render_review(
         "CONTENT": content,
         "SOURCE_MANIFEST": _json_for_html(manifest),
         "FRESHNESS_RUNTIME": FRESHNESS_RUNTIME_PATH.read_text(encoding="utf-8"),
-        "MERMAID": _mermaid_loader(offline),
+        "MERMAID": _mermaid_loader(offline, bundle),
         "DIAGRAM_LABEL": html.escape(str(labels["diagram"]), quote=True),
         "MERMAID_ERROR": html.escape(str(labels["mermaid_error"]), quote=True),
     }
