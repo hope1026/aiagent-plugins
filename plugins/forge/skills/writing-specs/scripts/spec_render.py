@@ -141,6 +141,11 @@ def _labels(locale: str) -> dict[str, str]:
             "related": "관련 Spec",
             "covered_by": "검증 AC",
             "uncovered": "미커버",
+            "metric_active_requirements": "활성 요구사항",
+            "metric_criteria": "승인 기준",
+            "metric_uncovered": "미커버 요구사항",
+            "metric_tombstones": "폐기 요구사항",
+            "metric_diagrams": "다이어그램",
         }
     return {
         "summary": "Summary",
@@ -162,6 +167,11 @@ def _labels(locale: str) -> dict[str, str]:
         "related": "Related specs",
         "covered_by": "Covered by",
         "uncovered": "Uncovered",
+        "metric_active_requirements": "Active requirements",
+        "metric_criteria": "Acceptance criteria",
+        "metric_uncovered": "Uncovered requirements",
+        "metric_tombstones": "Removed requirements",
+        "metric_diagrams": "Diagrams",
     }
 
 
@@ -272,6 +282,42 @@ def coverage_index(document: SpecDocument) -> dict[str, tuple[str, ...]]:
     return {key: tuple(value) for key, value in citations.items()}
 
 
+def page_metrics(document: SpecDocument) -> dict[str, int]:
+    """Return the scannable counts shown in the page header."""
+
+    index = coverage_index(document)
+    return {
+        "active_requirements": len(index),
+        "criteria": len(document.acceptance),
+        "tombstones": sum(1 for item in document.requirements if item.removed),
+        "diagrams": len(document.mermaid),
+        "uncovered": sum(1 for criteria in index.values() if not criteria),
+    }
+
+
+_METRIC_ORDER = (
+    "active_requirements",
+    "criteria",
+    "uncovered",
+    "tombstones",
+    "diagrams",
+)
+
+
+def _metrics_markup(document: SpecDocument) -> str:
+    labels = _labels(document.metadata.language)
+    metrics = page_metrics(document)
+    cells = []
+    for key in _METRIC_ORDER:
+        alert = ' data-alert="true"' if key == "uncovered" and metrics[key] else ""
+        cells.append(
+            f'<div class="metric" data-metric="{key}"{alert}>'
+            f'<dt>{html.escape(labels[f"metric_{key}"])}</dt>'
+            f"<dd>{metrics[key]}</dd></div>"
+        )
+    return f'<dl class="metrics">{"".join(cells)}</dl>'
+
+
 def render_spec_page(
     document: SpecDocument,
     template: str,
@@ -311,6 +357,7 @@ def render_spec_page(
                 "TITLE": html.escape(document.title, quote=True),
                 "MANIFEST": _json_for_html(asdict(manifest)),
                 "METADATA": _metadata(document),
+                "METRICS": _metrics_markup(document),
                 "NAVIGATION": navigation,
                 "SOURCE_LABEL": labels["source"],
                 "OVERVIEW_LABEL": labels["summary"],

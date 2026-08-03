@@ -762,5 +762,34 @@ class CoverageIndexTest(unittest.TestCase):
         self.assertIn('data-uncovered="true"', markup)
 
 
+class PageMetricsTest(unittest.TestCase):
+    def test_metrics_count_source_elements(self) -> None:
+        document = load_fixture_document("001-basic")
+        metrics = spec_render.page_metrics(document)
+        active = [item for item in document.requirements if not item.removed]
+        tombstones = [item for item in document.requirements if item.removed]
+        self.assertEqual(metrics["active_requirements"], len(active))
+        self.assertEqual(metrics["criteria"], len(document.acceptance))
+        self.assertEqual(metrics["tombstones"], len(tombstones))
+        self.assertEqual(metrics["diagrams"], len(document.mermaid))
+
+    def test_metrics_count_uncovered_requirements(self) -> None:
+        document = load_fixture_document("001-basic")
+        stripped = replace(document, acceptance=())
+        metrics = spec_render.page_metrics(stripped)
+        self.assertEqual(metrics["uncovered"], metrics["active_requirements"])
+
+    def test_page_renders_metric_values(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(FIXTURE_ROOT, root / "repo")
+            repository = root / "repo"
+            spec_root = repository / "docs" / "specs"
+            build_pages(repository, spec_root, changed=None, offline=True)
+            page = (spec_root / "001-basic" / "index.html").read_text(encoding="utf-8")
+            self.assertIn('class="metrics"', page)
+            self.assertIn('data-metric="active_requirements"', page)
+
+
 if __name__ == "__main__":
     unittest.main()
