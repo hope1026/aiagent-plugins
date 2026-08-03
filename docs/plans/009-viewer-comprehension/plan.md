@@ -1745,37 +1745,37 @@ def _route_scope(
 - 병렬 안전성: 순차 — 모든 renderer 변경이 끝난 뒤 한 번만 실행한다
 - 승인 gate: 없음
 
-- [ ] **Step 1: 저장소 validation을 실행한다**
+- [x] **Step 1: 저장소 validation을 실행한다**
 
 실행: `bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh --repo-root . validate --root docs/specs --baseline-ref HEAD`
 예상: exit 0, 출력 없음
 
-- [ ] **Step 2: 전체 Spec Pages를 재생성한다**
+- [x] **Step 2: 전체 Spec Pages를 재생성한다**
 
 실행: `bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh --repo-root . build --root docs/specs --offline`
 예상: 8개 spec의 `index.html`과 `docs/specs/index.html` 경로가 출력되고 exit 0
 
-- [ ] **Step 3: 생성 계약을 검사한다**
+- [x] **Step 3: 생성 계약을 검사한다**
 
 실행: `bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh --repo-root . check --root docs/specs`
 예상: exit 0, 출력 없음
 
-- [ ] **Step 4: 재실행 diff가 0인지 확인한다**
+- [x] **Step 4: 재실행 diff가 0인지 확인한다**
 
 실행: `bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh --repo-root . build --root docs/specs --offline && git diff --stat docs/specs`
 예상: 두 번째 build 뒤 `git diff --stat docs/specs`가 아무 변경도 출력하지 않는다
 
-- [ ] **Step 5: 다른 저장소가 변경되지 않았는지 확인한다**
+- [x] **Step 5: 다른 저장소가 변경되지 않았는지 확인한다**
 
 실행: `git status --short && git diff --stat`
 예상: 변경 경로가 모두 `docs/specs/` 또는 `plugins/forge/skills/` 아래이며 `weppy-roblox-mcp-private` 경로가 0건
 
-- [ ] **Step 6: 크기 감소를 기록한다**
+- [x] **Step 6: 크기 감소를 기록한다**
 
 실행: `find docs/specs -name index.html -exec wc -c {} \; | awk '{s+=$1} END {printf "total HTML = %d MB\n", s/1048576}'`
 예상: 재생성 전 대비 총 바이트가 감소한 값이 출력된다. 이 값을 Progress History에 기록한다.
 
-- [ ] **Step 7: 변경을 commit한다**
+- [x] **Step 7: 변경을 commit한다**
 
 실행: `git add docs/specs && git commit -m "chore(forge): rebuild Spec Pages for conditional assets"`
 
@@ -1876,3 +1876,6 @@ EOF
 - Task 9: complete (commit a82c08d; verification="python3 -m unittest tests.test_review_renderer -v — 31 passed; writing-specs tests.test_spec_render -v — 39 passed (교차 회귀 없음)"). 계획 결함 수정 2건: ① `.panel-orientation` CSS가 다시 `--muted`를 썼어 `--text-muted`로 교체. ② 자체 테스트가 `<h2>Data & Interfaces</h2>`를 escape 없이 비교해 실패 — renderer가 `html.escape`로 `&`를 `&amp;`로 만드는 것과 불일치, 테스트에 `html.escape`와 `import html`을 추가해 맞춤.
 - Task 10: routed (impact=medium, uncertainty=medium, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="기존 R23 테스트와 충돌 가능성이 있어 root가 직접 spec 정합성 판단")
 - Task 10: complete (commit 3a52e23; verification="python3 -m unittest tests.test_review_renderer -v — 35 passed; writing-specs tests.test_spec_render -v — 39 passed (교차 회귀 없음)"). 실행 중 spec 상충 발견과 해소: 기존 `test_r23_requirements_preserves_korean_constraint_and_policy_sections`가 governance section마다 provenance가 반복 출력되는 old 동작(`count >= 2`)을 assert하고 있었음. R89는 바로 이 반복을 축약하도록 승인된 변경이라 spec 위반이 아니라 R89 구현의 당연한 결과로 판단해 assertion을 `count == 1`로 갱신함(silent 우회가 아니라 승인된 002 delta를 반영). 갱신 직후 재확인에서 `data-origin="Plan source"` 같은 구조적 속성까지 세고 있었다는 계획 결함을 추가로 발견해, 실제 사람이 보는 `<span>Plan source</span>` provenance 문구만 세도록 재수정.
+- Route G(Review Viewer 가독성) 완료. Route E–G 종료. 다음은 Route H(Task 11, 12) — 전체 재생성과 검증.
+- Task 11: routed (impact=medium, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="repository-wide rebuild와 diff 검사는 root가 직접 수행")
+- Task 11: complete (commit 9a165ce; verification="validate/build/check 모두 exit 0; 두 번째 build의 index.html content hash가 첫 build와 동일해 결정성 확인; git status 변경 경로가 모두 docs/specs/ 아래이고 weppy-roblox-mcp-private 변경 0건"). 측정: rebuild 전 27.54MB → rebuild 후 30.97MB로 **증가**했다. 이 저장소의 활성 spec 8개가 모두 diagram을 1개 이상 가지고 있어 Task 1의 조건부 embed 절감 효과가 여기서는 발생하지 않고, R41–R47의 신규 기능(coverage link, 요약 지표, section 목차, 파생 관계 도식)이 markup을 늘렸다. 조건부 embed의 실질 절감은 diagram 없는 spec이 많은 저장소(예: weppy-roblox-mcp-private, 35개 중 20개가 diagram 0개)에서 나타나며, 그 저장소의 재생성은 008 R33/R47에 따라 이 작업 범위 밖이다. 겸사겸사 발견: `docs/specs/008-*/spec.md`와 `docs/specs/002-*/spec.md`의 승인된 change delta가 계획 작성을 시작하기 전 commit되지 않은 채 남아 있었음 — 이번 rebuild commit에 함께 포함해 정리함(R17의 "spec 변경과 Spec Pages는 같은 작업 단위에서 갱신" 요구와 일치).
