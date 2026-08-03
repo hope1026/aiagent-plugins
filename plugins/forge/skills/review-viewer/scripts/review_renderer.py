@@ -666,6 +666,18 @@ def _count_rows(counts: Mapping[str, object], prefix: tuple[str, ...] = ()) -> I
             yield (" / ".join(path), value)
 
 
+def _metric_strip(bundle: ReviewBundle) -> str:
+    """Render the scannable counts that precede the detailed count table."""
+
+    cells = "".join(
+        f'<div class="metric"><dt>{html.escape(label)}</dt><dd>{value}</dd></div>'
+        for label, value in _count_rows(bundle.counts)
+    )
+    if not cells:
+        return ""
+    return f'<dl class="metric-strip">{cells}</dl>'
+
+
 def _count_table(bundle: ReviewBundle, labels: Mapping[str, object]) -> str:
     rows = "".join(
         f'<tr><td>{html.escape(label)}</td><td>{value}</td></tr>'
@@ -683,7 +695,8 @@ def _spec_panels(bundle: ReviewBundle, review_id: str, labels: Mapping[str, obje
     sources = (*bundle.primary, *bundle.comparison)
     overview = (
         f'<h2>{html.escape(str(labels["spec_overview"]))}</h2>'
-        f'<p>{html.escape(str(labels["read_order"]))}</p>{_count_table(bundle, labels)}'
+        f'<p>{html.escape(str(labels["read_order"]))}</p>'
+        f'{_metric_strip(bundle)}{_count_table(bundle, labels)}'
         + "".join(_section(source, "Overview") for source in sources)
     )
     requirements = (
@@ -1013,7 +1026,8 @@ def _plan_panels(bundle: ReviewBundle, review_id: str, labels: Mapping[str, obje
         f'<p><strong>{html.escape(str(labels["status_label"]))}:</strong> {html.escape(document.status or "unrecorded")} · '
         f'<strong>{html.escape(str(labels["source_completion"]))}:</strong> {completed}/{total} '
         f'{html.escape(str(labels["steps_checked"]))}.</p>'
-        f'<p>{html.escape(str(labels["read_order"]))}</p>{_count_table(bundle, labels)}'
+        f'<p>{html.escape(str(labels["read_order"]))}</p>'
+        f'{_metric_strip(bundle)}{_count_table(bundle, labels)}'
         + _user_experience(plan_source, document)
     )
     constraint_sections = _governance_sections(plan_source, document)

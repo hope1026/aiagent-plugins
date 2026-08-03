@@ -622,5 +622,27 @@ class ConditionalMermaidLoaderTest(unittest.TestCase):
         self.assertTrue(review_renderer.bundle_needs_mermaid(bundle))
 
 
+class OverviewMetricStripTest(unittest.TestCase):
+    def test_strip_precedes_detail_table(self) -> None:
+        bundle = build_spec_bundle_with_mermaid()
+        labels = review_renderer.LABELS["en"]
+        panels = review_renderer._spec_panels(bundle, "inspect", labels)
+        strip_index = panels["overview"].index('class="metric-strip"')
+        table_index = panels["overview"].index('class="count-table"')
+        self.assertLess(strip_index, table_index)
+
+    def test_strip_values_match_flattened_counts(self) -> None:
+        bundle = build_spec_bundle_with_mermaid()
+        markup = review_renderer._metric_strip(bundle)
+        for _, value in review_renderer._count_rows(bundle.counts):
+            self.assertIn(f">{value}<", markup)
+
+    def test_detail_table_is_retained(self) -> None:
+        bundle = build_spec_bundle_with_mermaid()
+        labels = review_renderer.LABELS["en"]
+        panels = review_renderer._spec_panels(bundle, "inspect", labels)
+        self.assertIn('class="count-table"', panels["overview"])
+
+
 if __name__ == "__main__":
     unittest.main()
