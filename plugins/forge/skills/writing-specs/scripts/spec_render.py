@@ -227,6 +227,12 @@ def _acceptance(document: SpecDocument) -> str:
     )
 
 
+def page_needs_mermaid(document: SpecDocument) -> bool:
+    """Return whether the rendered page contains at least one diagram."""
+
+    return bool(document.mermaid)
+
+
 def render_spec_page(
     document: SpecDocument,
     template: str,
@@ -280,7 +286,9 @@ def render_spec_page(
                 "ACCEPTANCE": _acceptance(document),
                 "HISTORY_LABEL": labels["history"],
                 "HISTORY": render_markdown(document.sections["Decisions & History"]),
-                "MERMAID_RUNTIME": mermaid,
+                "MERMAID_RUNTIME": (
+                    f"<script>{mermaid}</script>" if page_needs_mermaid(document) else ""
+                ),
                 "SPEC_PAGES_RUNTIME": runtime,
             },
         )

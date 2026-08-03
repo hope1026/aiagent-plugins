@@ -650,5 +650,80 @@ class SpecRenderTest(unittest.TestCase):
         self.assertEqual(before, snapshot_tree(self.spec_root))
 
 
+NO_DIAGRAM_SPEC = """---
+schema: forge/spec@1
+id: 003-no-diagram
+status: approved
+language: en
+kind: system
+areas: []
+components: []
+relatedSpecs: []
+---
+# No Diagram Contract
+
+## Overview
+
+This specification has no source Mermaid and no related specs.
+
+## Requirements
+
+- R1. The page must omit the Mermaid runtime when no diagram exists.
+
+## Behavior & Flows
+
+The behavior is described in prose only.
+
+## Data & Interfaces
+
+No interface contract is declared.
+
+## Acceptance Criteria
+
+- AC1 (R1): Building the page produces bytes without a Mermaid runtime.
+
+## Decisions & History
+
+- 2026-08-03 [DECISION] Keep this fixture free of diagrams.
+"""
+
+
+class ConditionalMermaidTest(unittest.TestCase):
+    def test_page_without_diagram_omits_mermaid_runtime(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(FIXTURE_ROOT, root / "repo")
+            repository = root / "repo"
+            spec_root = repository / "docs" / "specs"
+            source = spec_root / "003-no-diagram" / "spec.md"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text(NO_DIAGRAM_SPEC, encoding="utf-8")
+            build_pages(repository, spec_root, changed=None, offline=True)
+            page = (spec_root / "003-no-diagram" / "index.html").read_bytes()
+            self.assertNotIn(b"__esbuild_esm_mermaid_nm", page)
+            self.assertLess(len(page), 200_000)
+
+    def test_page_with_diagram_embeds_mermaid_runtime(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(FIXTURE_ROOT, root / "repo")
+            repository = root / "repo"
+            spec_root = repository / "docs" / "specs"
+            build_pages(repository, spec_root, changed=None, offline=True)
+            page = (spec_root / "001-basic" / "index.html").read_bytes()
+            self.assertIn(b"__esbuild_esm_mermaid_nm", page)
+
+    def test_conditional_embed_is_deterministic(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(FIXTURE_ROOT, root / "repo")
+            repository = root / "repo"
+            spec_root = repository / "docs" / "specs"
+            build_pages(repository, spec_root, changed=None, offline=True)
+            first = snapshot_tree(spec_root)
+            build_pages(repository, spec_root, changed=None, offline=True)
+            self.assertEqual(first, snapshot_tree(spec_root))
+
+
 if __name__ == "__main__":
     unittest.main()
