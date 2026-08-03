@@ -588,7 +588,7 @@ def _metrics_markup(document: SpecDocument) -> str:
 - 병렬 안전성: 순차 — Task 3과 같은 파일을 수정한다
 - 승인 gate: 없음
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 ```python
 OUTLINE_BODY = """### First heading
@@ -634,12 +634,12 @@ class SectionOutlineTest(unittest.TestCase):
         self.assertEqual(len(anchors), len(set(anchors)))
 ```
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render.SectionOutlineTest -v`
 예상: FAIL — `AttributeError: module 'spec_render' has no attribute 'section_outline'`
 
-- [ ] **Step 3: 공유 slug 함수와 heading 추출을 구현한다**
+- [x] **Step 3: 공유 slug 함수와 heading 추출을 구현한다**
 
 `spec_render`와 `markdown_render`가 같은 anchor 규칙을 쓰도록 `markdown_render.py`에 정규화 함수를 먼저 추가하고, `spec_render.py`가 그것을 import해서 `section_outline`에 쓴다.
 
@@ -693,7 +693,7 @@ def section_outline(body: str) -> tuple[tuple[str, str], ...]:
     return tuple(headings)
 ```
 
-- [ ] **Step 4: markdown_render의 heading 렌더링에 같은 anchor id를 부여한다**
+- [x] **Step 4: markdown_render의 heading 렌더링에 같은 anchor id를 부여한다**
 
 `render_markdown`의 시작부에서
 
@@ -736,7 +736,7 @@ def section_outline(body: str) -> tuple[tuple[str, str], ...]:
             continue
 ```
 
-- [ ] **Step 5: 목차 markup을 만들고 각 section에 붙인다**
+- [x] **Step 5: 목차 markup을 만들고 각 section에 붙인다**
 
 `spec_render.py`의 `section_outline` 뒤에 추가한다.
 
@@ -782,7 +782,7 @@ def _outline_markup(document: SpecDocument, section: str) -> str:
                 + render_markdown(document.sections["Overview"]),
 ```
 
-- [ ] **Step 6: 목차 스타일을 추가한다**
+- [x] **Step 6: 목차 스타일을 추가한다**
 
 `assets/spec-page-template.html`의 `<style>` 안에서 `.metrics{...}` 규칙 뒤에 추가한다.
 
@@ -790,12 +790,12 @@ def _outline_markup(document: SpecDocument, section: str) -> str:
 .section-outline{margin:0 0 20px;padding:12px 16px;border:1px solid var(--line);background:var(--surface)}.outline-label{margin:0 0 6px;color:var(--muted);font-size:.78rem;font-weight:650;text-transform:uppercase}.section-outline ol{margin:0;padding-left:1.4em}.section-outline li{margin:2px 0}
 ```
 
-- [ ] **Step 7: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 7: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render -v`
 예상: PASS
 
-- [ ] **Step 8: 변경을 commit한다**
+- [x] **Step 8: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/writing-specs/scripts/markdown_render.py plugins/forge/skills/writing-specs/scripts/spec_render.py plugins/forge/skills/writing-specs/assets/spec-page-template.html plugins/forge/skills/writing-specs/tests/test_spec_render.py && git commit -m "feat(forge): add section-local outlines to Spec Pages"`
 
@@ -1861,3 +1861,5 @@ EOF
 - Task 2: complete (commit 8074ec2; verification="python3 -m unittest tests.test_spec_render -v — 25 passed")
 - Task 3: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="Task 2와 같은 파일을 잇는 순차 체인")
 - Task 3: complete (commit 66a44f1; verification="python3 -m unittest tests.test_spec_render -v — 28 passed")
+- Task 4: routed (impact=medium, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="markdown_render.py는 review-viewer와 공유되는 렌더러라 root가 교차 회귀를 직접 검증")
+- Task 4: complete (commit 136f75d; verification="python3 -m unittest tests.test_spec_render -v — 32 passed; review-viewer tests.test_review_renderer -v — 20 passed (교차 회귀 없음)"). 계획 결함 수정: 기존 `test_supported_blocks_are_semantic_and_escape_first`가 heading에 `id`가 없다고 가정한 assertion을 갖고 있어, 새 anchor id를 반영하도록 `<h3 id="heading-unsafe">...`로 갱신함.
