@@ -1356,7 +1356,7 @@ def _mermaid_loader(offline: bool, bundle: ReviewBundle) -> str:
 - 병렬 안전성: 순차 — Task 7과 같은 파일을 수정한다
 - 승인 gate: 없음
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 ```python
 class OverviewMetricStripTest(unittest.TestCase):
@@ -1383,12 +1383,12 @@ class OverviewMetricStripTest(unittest.TestCase):
 
 `review_renderer.LABELS`가 module 전역이 아니면 실제 상수 이름으로 맞춘다(예: locale별 dict를 반환하는 함수). `build_spec_bundle_with_mermaid`는 Task 7에서 추가한 헬퍼를 재사용한다.
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/review-viewer && python3 -m unittest tests.test_review_renderer.OverviewMetricStripTest -v`
 예상: FAIL — `AttributeError: module 'review_renderer' has no attribute '_metric_strip'`
 
-- [ ] **Step 3: 지표 strip을 구현한다**
+- [x] **Step 3: 지표 strip을 구현한다**
 
 `review_renderer.py`의 `_count_table` 정의 바로 앞에 추가한다. 기존 `_count_rows`를 그대로 재사용해 `bundle.counts`의 중첩 구조를 평면화한다.
 
@@ -1405,7 +1405,7 @@ def _metric_strip(bundle: ReviewBundle) -> str:
     return f'<dl class="metric-strip">{cells}</dl>'
 ```
 
-- [ ] **Step 4: Overview 조립부에 strip을 넣는다**
+- [x] **Step 4: Overview 조립부에 strip을 넣는다**
 
 `_spec_panels`에서 `overview` 조립식의
 
@@ -1428,7 +1428,7 @@ def _metric_strip(bundle: ReviewBundle) -> str:
 
 을 같은 방식으로 바꾼다.
 
-- [ ] **Step 5: 스타일을 추가한다**
+- [x] **Step 5: 스타일을 추가한다**
 
 `plugins/forge/skills/review-viewer/assets/viewer-template.html`의 `<style>` 안 마지막 규칙 뒤에 추가한다.
 
@@ -1436,12 +1436,12 @@ def _metric_strip(bundle: ReviewBundle) -> str:
 .metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:1px;margin:16px 0;padding:0;background:var(--line);border:1px solid var(--line)}.metric-strip .metric{margin:0;padding:12px 16px;background:var(--surface)}.metric-strip dt{color:var(--muted);font-size:.76rem;font-weight:650}.metric-strip dd{margin:2px 0 0;font-size:1.4rem;font-variant-numeric:tabular-nums}
 ```
 
-- [ ] **Step 6: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 6: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/review-viewer && python3 -m unittest tests.test_review_renderer -v`
 예상: PASS
 
-- [ ] **Step 7: 변경을 commit한다**
+- [x] **Step 7: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/review-viewer/scripts/review_renderer.py plugins/forge/skills/review-viewer/assets/viewer-template.html plugins/forge/skills/review-viewer/tests/test_review_renderer.py && git commit -m "feat(forge): lead Review Viewer overview with scannable metrics"`
 
@@ -1870,3 +1870,5 @@ EOF
 - Route D(파생 관계 도식) 완료. Route A–D 종료, weppy-roblox-mcp-private 변경 0건. 다음은 Route E(Task 7) — review-viewer 스킬로 전환.
 - Task 7: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="review-viewer skill로 전환하는 첫 Task, Route E 단독")
 - Task 7: complete (commit c11802f; verification="python3 -m unittest tests.test_review_renderer -v — 25 passed; writing-specs tests.test_spec_render -v — 39 passed (교차 회귀 없음)"). 계획 결함 수정: `build_plan_bundle_without_routes_or_mermaid` 헬퍼가 plan_source의 mermaid만 비웠는데, `ReviewBundle.mermaid`는 context spec(008-alpha)의 다이어그램도 포함해 여전히 True가 나옴 — 모든 primary/comparison/context source의 mermaid를 비우도록 고침.
+- Task 8: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="Task 7과 같은 파일을 잇는 순차 체인")
+- Task 8: complete (commit 0152a43; verification="python3 -m unittest tests.test_review_renderer -v — 28 passed"). 계획 결함 수정: `.metric-strip` CSS가 writing-specs 템플릿의 `--line`/`--muted` 토큰명을 그대로 가져와 썼는데, review-viewer 템플릿의 실제 변수명은 `--border`/`--text-muted`라 스타일이 적용되지 않았음 — 실제 토큰명으로 교체.
