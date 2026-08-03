@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@1
 id: 008-structured-spec-pages
-status: implemented
+status: approved
 language: ko
 kind: system
 areas: ["forge", "specs"]
@@ -93,6 +93,17 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R38. validator는 `fromPath`의 baseline bytes를 parse한 ID·status·SHA-256이 record와 정확히 일치하고 `toPath`의 current source가 record의 `toId`, directory와 일치하며 status가 `approved` 또는 `implemented`인지 확인해야 한다. `toPath`는 baseline에 존재하지 않아야 하고 current tree에 terminal active source로 존재해야 한다. Current transition 배열은 baseline 배열의 canonical record sequence를 exact prefix로 보존해야 하며, missing baseline source를 승인할 수 있는 record는 이번 diff에 새로 append된 하나뿐이어야 한다. 기존 record 재사용, record 수정·삭제·reorder, duplicate source·target, 같은 diff의 chain, 존재하지 않는 evidence, active `relatedSpecs`와 Markdown link의 old identity 참조를 실패로 처리해야 한다. 유효한 transition도 replacement source validation, old page 제거, replacement page와 catalog freshness를 면제하지 않아야 한다.
 - R39. `writing-specs`에서 사용자가 현재 사실만 남기기 위해 기존 spec identity를 교체하거나 완료 기록을 분리하면, 기존 source를 건드리기 전에 current-state replacement를 `draft`로 작성하고 사용자 승인을 받아야 한다. 승인 후 plan은 expected clean baseline에서 등록된 isolated Git worktree를 만들고 transition append, old source·page 제거, reference 갱신, replacement Spec Page와 catalog build, baseline validation, expected bytes check를 한 candidate commit으로 수행해야 한다. Candidate gate가 실패하면 production root의 HEAD·index·tracked·untracked bytes를 유지하고, 성공한 commit도 production root가 expected clean HEAD일 때만 반영해야 한다. Review Viewer는 별도 명시 요청이 없으면 생성하지 않아야 한다.
 
+### 사람 중심 렌더링
+
+- R40. ADDED — builder는 해당 page가 렌더링할 Mermaid diagram을 하나 이상 포함할 때만 Mermaid runtime asset을 embed해야 한다. Diagram이 없는 page는 runtime을 생략해야 하며, 생략 여부는 selected source bytes에서만 결정적으로 계산하고 machine 환경이나 build 시점에 의존하지 않아야 한다. Runtime을 생략한 page도 외부 network 없이 열려야 한다.
+- R41. ADDED — per-spec page는 R과 AC의 coverage를 양방향으로 보여줘야 한다. 각 활성 R 행은 그 R을 인용하는 AC ID를 page 안의 이동 가능한 link로 표시하고, 인용 AC가 없는 활성 R은 시각적으로 구분해야 한다. Coverage는 현재 source의 명시적 AC reference에서만 계산하고 `REMOVED` tombstone은 대상에서 제외해야 한다.
+- R42. ADDED — per-spec page는 활성 R 수, AC 수, `REMOVED` tombstone 수, source Mermaid diagram 수, 인용 AC가 없는 활성 R 수를 요약 지표로 표시해야 하며 모든 값을 현재 source에서 계산해야 한다.
+- R43. ADDED — canonical `##` section 하나가 `###` 이하 heading을 3개 이상 포함하면 page는 해당 section 안에 그 heading으로 이동하는 section-local 목차를 제공해야 한다. Heading이 3개 미만인 section에는 목차를 표시하지 않아야 한다.
+- R44. ADDED — `Behavior & Flows`에 source Mermaid가 없고 frontmatter `relatedSpecs`가 비어 있지 않으면 page는 그 관계에서 파생한 도식을 `Derived view`로 명시해 표시해야 한다. source Mermaid와 `relatedSpecs`가 모두 없으면 빈 section을 노출하지 않아야 한다.
+- R45. ADDED — catalog page는 모든 활성 spec의 `relatedSpecs`에서 파생한 repository 전체 관계 도식을 `Derived view`로 명시해 제공해야 한다.
+- R46. ADDED — R44와 R45의 파생 도식은 frontmatter `relatedSpecs`가 선언한 spec ID와 관계 종류만 node·edge로 사용해야 하며, source에 없는 관계, 방향, 그룹 또는 설명을 추가하지 않아야 한다. 파생 도식은 R8이 정의한 source-owned Mermaid를 대체하거나 수정하지 않아야 한다.
+- R47. ADDED — R40–R46은 generator 렌더링 동작 변경이므로 R17에 따라 repository 전체 Spec Pages 재생성과 `check` 통과를 같은 작업 단위에서 요구해야 한다. R33에 따라 이 변경의 구현 범위는 `weppy-roblox-mcp-private`를 수정하지 않으며, 해당 repository의 재생성은 그 repository가 소유하는 별도 작업으로 남겨야 한다.
+
 ## Behavior & Flows
 
 spec 변경과 상시 page 동기화:
@@ -130,6 +141,22 @@ flowchart TD
     E -->|실패| D
     E -->|성공| F["instruction과 lifecycle consumer 동시 전환"]
     F --> G["legacy active format 제거"]
+```
+
+page별 렌더링 결정:
+
+```mermaid
+flowchart TD
+    A["selected source bytes"] --> B{"source Mermaid가 있는가?"}
+    B -->|있음| C["source diagram 렌더링"]
+    B -->|없음| D{"relatedSpecs가 비어 있는가?"}
+    D -->|비어 있지 않음| E["Derived view 관계 도식 표시"]
+    D -->|비어 있음| F["flows section 미노출"]
+    C --> G["Mermaid runtime embed"]
+    E --> G
+    F --> H["Mermaid runtime 생략"]
+    G --> I["coverage·요약 지표와 section 목차 계산"]
+    H --> I
 ```
 
 활성 spec supersession transaction:
@@ -219,6 +246,18 @@ spec transition manifest:
 }
 ```
 
+page 요약 지표와 파생 도식 입력:
+
+| 지표 또는 도식 | 계산 입력 | 제외 대상 |
+|---|---|---|
+| 활성 R 수 | `REMOVED`가 아닌 `R<number>` | tombstone |
+| AC 수 | unique `AC<number>` | 없음 |
+| tombstone 수 | `- R<number>. REMOVED — <reason>` | 없음 |
+| diagram 수 | `Behavior & Flows`의 source Mermaid fence | 파생 도식 |
+| 미커버 활성 R 수 | 인용 AC가 0개인 활성 R | tombstone |
+| per-spec 관계 도식 | 해당 spec의 `relatedSpecs` entry | source Mermaid가 있으면 미표시 |
+| catalog 관계 도식 | 모든 활성 spec의 `relatedSpecs` entry | 해석 불가 ID |
+
 동일한 baseline transition은 한 번만 적용한다. 이후 baseline에 `fromPath`가 없으면 해당 record는 historical evidence로 남지만 새 삭제 권한을 만들지 않는다. 나중에 현재 replacement를 다시 교체할 때는 그 시점의 baseline source를 `fromPath`로 사용하는 새 record를 별도 diff에 append한다.
 
 ## Acceptance Criteria
@@ -241,6 +280,12 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐음을 보여주는 관찰 �
 - AC14 (R38): baseline/current ID·path·status·SHA binding 불일치, baseline에 이미 존재하는 target, draft target, missing target, transition record 수정·삭제·reorder·replay, duplicate source·target, same-diff multi-hop, old identity를 가리키는 active relation·Markdown link, old orphan page와 stale replacement page fixture를 각각 검사하면 validation 또는 check가 실패한다. 새 record 한 개만 append하고 모든 reference를 새 identity로 갱신하며 old page를 제거한 뒤 replacement page와 catalog를 build하면 통과하고 second build diff는 0이다.
 - AC15 (R35, R39): `writing-specs` change fixture에서 사용자가 완료된 작업 기록을 활성 spec에서 분리해 달라고 요청하면 agent는 current-state replacement draft와 별도 evidence를 먼저 제시하고 승인 전 production source·page를 변경하지 않는다. 승인 뒤 isolated candidate에 source deletion, transition, reference, page build 또는 check failure를 각각 주입하면 production HEAD·index·tracked·untracked fingerprint가 유지된다. 성공한 candidate commit만 expected clean root에 반영한 결과에는 현재 계약과 별도 evidence가 남고 Review Viewer 생성 count는 0이다.
 
+- AC16 (R40): source Mermaid가 0개인 fixture와 1개 이상인 fixture를 build하면 전자의 generated bytes에는 Mermaid runtime이 없고 후자에는 있으며, 두 fixture 모두 network를 차단한 브라우저에서 오류 없이 열린다. 같은 source로 다시 build한 diff는 0이다.
+- AC17 (R41–R42): 활성 R, tombstone, 인용 AC가 없는 활성 R을 함께 가진 fixture page를 열면 요약 지표가 source에서 계산한 수치와 일치하고, 각 활성 R 행에서 그 R을 인용하는 AC로 이동할 수 있으며, 인용 AC가 없는 활성 R이 나머지와 구분되어 표시되고 tombstone은 coverage 대상에서 제외된다.
+- AC18 (R43): `###` heading이 3개 이상인 canonical section을 가진 fixture page에는 section-local 목차가 나타나고 각 항목이 해당 heading으로 이동한다. Heading이 2개 이하인 section에는 목차가 없다.
+- AC19 (R44–R46): source Mermaid가 없고 `relatedSpecs`가 있는 fixture page는 `Derived view`로 표시된 관계 도식을 보여주고, 둘 다 없는 fixture page는 flows section을 노출하지 않으며, catalog page는 전체 관계 도식을 `Derived view`로 보여준다. 세 도식 모두 frontmatter `relatedSpecs`에 없는 node와 edge를 포함하지 않고, source Mermaid를 가진 spec의 flows section은 source diagram만 표시한다.
+- AC20 (R47): R40–R46 구현 diff에서 `--changed` 없이 전체 Spec Pages를 재생성한 뒤 `check`가 성공하고 재실행 diff가 0이며, 같은 diff에 `weppy-roblox-mcp-private` 변경이 0건이다.
+
 ## Decisions & History
 
 - 2026-08-01 [DECISION] 구조화 spec authoring과 validation은 기존 `writing-specs`가 소유하고 별도 spec authoring skill을 추가하지 않는다.
@@ -257,3 +302,8 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐음을 보여주는 관찰 �
 - 2026-08-02 [CHANGE] R9 MODIFIED 및 R35–R39, AC13–AC15 ADDED: 같은 identity의 history append-only를 유지하면서도, exact baseline binding과 replay 방지를 가진 one-to-one transition으로 현재 사실만 담는 replacement를 안전하게 supersede할 수 있도록 한다.
 - 2026-08-02 [APPROVED] 사용자가 current-state spec supersession delta를 검토하고 구현 진행을 승인했다.
 - 2026-08-02 [IMPLEMENTED] AC1–AC15의 fresh parser, validator, renderer, install, pressure, browser와 repository evidence가 모두 PASS하여 current-state supersession 계약을 구현 완료했다.
+- 2026-08-03 [DECISION] Mermaid runtime은 page에 렌더링할 diagram이 있을 때만 embed한다. 측정 결과 diagram이 없는 spec의 page도 runtime 3.48MB를 무조건 포함해 3KB source가 3.58MB page가 됐고, 실제 프로젝트에서 35개 중 20개가 diagram 0개였다.
+- 2026-08-03 [DECISION] R·AC coverage는 AC→R 단방향 link만으로는 사람이 미검증 요구사항을 찾을 수 없으므로 R→AC 역방향 link와 미커버 표시를 per-spec page에 추가한다.
+- 2026-08-03 [DECISION] 빈 `Behavior & Flows` section을 그대로 노출하는 대신 frontmatter `relatedSpecs`에서 파생한 관계 도식을 `Derived view`로 표시한다. 파생 입력을 frontmatter 명시 관계로 제한해 "source에 없는 관계를 추가하지 않는다"는 비목표를 유지한다.
+- 2026-08-03 [CHANGE] R40–R47과 AC16–AC20 ADDED: 조건부 Mermaid runtime embed, 양방향 R·AC coverage, page 요약 지표, section-local 목차, `relatedSpecs` 파생 관계 도식과 전체 재생성 범위를 추가한다.
+- 2026-08-03 [APPROVED] 사용자가 조건부 Mermaid runtime, 양방향 R·AC coverage, page 요약 지표, section-local 목차와 `relatedSpecs` 파생 관계 도식 delta를 승인하고 계획 작성을 요청했다.
