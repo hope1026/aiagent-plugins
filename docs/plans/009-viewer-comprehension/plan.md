@@ -1466,7 +1466,7 @@ def _metric_strip(bundle: ReviewBundle) -> str:
 
 `LABELS[locale]["tabs"]`는 이미 명사형 label 튜플이다(`("Overview", "Requirements", "Flows", "Data & Interfaces", "Acceptance", "History")`, 한국어는 `("개요", "요구사항", "흐름", "데이터와 인터페이스", "승인 기준", "변경 이력")`)이고 `PANELS = ("overview", "requirements", "flows", "data", "acceptance", "history")`와 순서가 일치한다. 기존 `spec_overview`·`plan_overview` 등 질문형 key는 새로 만들 필요 없이 orientation 문장으로 그대로 쓴다.
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 ```python
 class PanelHeadingTest(unittest.TestCase):
@@ -1493,12 +1493,12 @@ class PanelHeadingTest(unittest.TestCase):
         self.assertIn("<h2>개요</h2>", panels["overview"])
 ```
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/review-viewer && python3 -m unittest tests.test_review_renderer.PanelHeadingTest -v`
 예상: FAIL — 현재 `<h2>`는 `labels["spec_overview"]`(질문 문장)를 담고 있어 `<h2>Overview</h2>`가 없다
 
-- [ ] **Step 3: `_spec_panels`의 여섯 `<h2>`를 명사형으로 바꾼다**
+- [x] **Step 3: `_spec_panels`의 여섯 `<h2>`를 명사형으로 바꾼다**
 
 `_spec_panels` 시작부에 `tabs = labels["tabs"]`를 추가한다. 각 panel 조립식의 첫 줄을 다음처럼 바꾼다(`overview` 예시).
 
@@ -1514,7 +1514,7 @@ class PanelHeadingTest(unittest.TestCase):
 
 나머지 다섯 panel도 같은 패턴으로 바꾼다. `requirements`는 `tabs[1]`과 `labels["spec_requirements"]`, `flows`는 `tabs[2]`와 `labels["spec_flows"]`, `data`는 `tabs[3]`과 `labels["spec_data"]`, `acceptance`는 `tabs[4]`와 `labels["spec_acceptance"]`, `history`는 `tabs[5]`와 `labels["spec_history"]`를 쓴다. 기존 `f'<h2>{html.escape(str(labels["spec_<name>"]))}</h2>'` 줄을 `<h2>{tabs[N]}</h2>` + `<p class="panel-orientation">{spec_<name> 문장}</p>` 두 줄로 교체하는 것이 전부이고, 그 뒤에 이어지는 나머지 조립 코드는 그대로 둔다.
 
-- [ ] **Step 4: `_plan_panels`의 여섯 `<h2>`도 같은 패턴으로 바꾼다**
+- [x] **Step 4: `_plan_panels`의 여섯 `<h2>`도 같은 패턴으로 바꾼다**
 
 `_plan_panels` 시작부에도 `tabs = labels["tabs"]`를 추가한다. `plan_overview`는 `<p><strong>{labels["plan_title_label"]}</strong>...` 앞에 있던 `<h2>{labels["plan_overview"]}</h2>` 줄을 다음으로 바꾼다.
 
@@ -1525,7 +1525,7 @@ class PanelHeadingTest(unittest.TestCase):
 
 나머지 `requirements`(`tabs[1]`, `plan_requirements`), `flows`(`tabs[2]`, `plan_flows`), `data`(`tabs[3]`, `plan_data`), `acceptance`(`tabs[4]`, `plan_acceptance`), `history`(`tabs[5]`, `plan_history`)도 동일하게 바꾼다.
 
-- [ ] **Step 5: 스타일을 추가한다**
+- [x] **Step 5: 스타일을 추가한다**
 
 `assets/viewer-template.html`의 `<style>` 안 `.metric-strip{...}` 뒤에 추가한다.
 
@@ -1533,12 +1533,12 @@ class PanelHeadingTest(unittest.TestCase):
 .panel-orientation{margin:2px 0 16px;max-width:76ch;color:var(--muted)}
 ```
 
-- [ ] **Step 6: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 6: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/review-viewer && python3 -m unittest tests.test_review_renderer -v`
 예상: PASS
 
-- [ ] **Step 7: 변경을 commit한다**
+- [x] **Step 7: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/review-viewer/scripts/review_renderer.py plugins/forge/skills/review-viewer/assets/viewer-template.html plugins/forge/skills/review-viewer/tests/test_review_renderer.py && git commit -m "feat(forge): use noun panel headings with orientation lines"`
 
@@ -1872,3 +1872,5 @@ EOF
 - Task 7: complete (commit c11802f; verification="python3 -m unittest tests.test_review_renderer -v — 25 passed; writing-specs tests.test_spec_render -v — 39 passed (교차 회귀 없음)"). 계획 결함 수정: `build_plan_bundle_without_routes_or_mermaid` 헬퍼가 plan_source의 mermaid만 비웠는데, `ReviewBundle.mermaid`는 context spec(008-alpha)의 다이어그램도 포함해 여전히 True가 나옴 — 모든 primary/comparison/context source의 mermaid를 비우도록 고침.
 - Task 8: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="Task 7과 같은 파일을 잇는 순차 체인")
 - Task 8: complete (commit 0152a43; verification="python3 -m unittest tests.test_review_renderer -v — 28 passed"). 계획 결함 수정: `.metric-strip` CSS가 writing-specs 템플릿의 `--line`/`--muted` 토큰명을 그대로 가져와 썼는데, review-viewer 템플릿의 실제 변수명은 `--border`/`--text-muted`라 스타일이 적용되지 않았음 — 실제 토큰명으로 교체.
+- Task 9: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="Task 8과 같은 파일을 잇는 순차 체인, Task 10이 같은 h2 블록을 다시 수정하므로 root가 문맥 유지")
+- Task 9: complete (commit a82c08d; verification="python3 -m unittest tests.test_review_renderer -v — 31 passed; writing-specs tests.test_spec_render -v — 39 passed (교차 회귀 없음)"). 계획 결함 수정 2건: ① `.panel-orientation` CSS가 다시 `--muted`를 썼어 `--text-muted`로 교체. ② 자체 테스트가 `<h2>Data & Interfaces</h2>`를 escape 없이 비교해 실패 — renderer가 `html.escape`로 `&`를 `&amp;`로 만드는 것과 불일치, 테스트에 `html.escape`와 `import html`을 추가해 맞춤.
