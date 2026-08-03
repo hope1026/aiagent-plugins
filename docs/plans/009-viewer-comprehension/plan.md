@@ -261,7 +261,7 @@ def page_needs_mermaid(document: SpecDocument) -> bool:
 - 병렬 안전성: 순차 — Task 1과 같은 파일을 수정한다
 - 승인 gate: 없음
 
-- [ ] **Step 1: 실패하는 테스트를 작성한다**
+- [x] **Step 1: 실패하는 테스트를 작성한다**
 
 `tests/test_spec_render.py`에 추가한다.
 
@@ -315,12 +315,12 @@ FIXTURE_ROOT = TEST_DIR / "fixtures" / "pages-repository"
 
 `from dataclasses import replace`를 파일 상단 import에 추가한다.
 
-- [ ] **Step 2: 테스트를 실행하고 실패를 확인한다**
+- [x] **Step 2: 테스트를 실행하고 실패를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render.CoverageIndexTest -v`
 예상: FAIL — `AttributeError: module 'spec_render' has no attribute 'coverage_index'`
 
-- [ ] **Step 3: coverage index를 구현한다**
+- [x] **Step 3: coverage index를 구현한다**
 
 `spec_render.py`의 `page_needs_mermaid` 정의 뒤에 추가한다.
 
@@ -340,7 +340,7 @@ def coverage_index(document: SpecDocument) -> dict[str, tuple[str, ...]]:
     return {key: tuple(value) for key, value in citations.items()}
 ```
 
-- [ ] **Step 4: requirement 표에 AC 열을 추가한다**
+- [x] **Step 4: requirement 표에 AC 열을 추가한다**
 
 `spec_render.py`의 `_requirements` 전체를 다음으로 교체한다.
 
@@ -380,7 +380,7 @@ def _requirements(document: SpecDocument) -> str:
     )
 ```
 
-- [ ] **Step 5: label을 추가한다**
+- [x] **Step 5: label을 추가한다**
 
 `spec_render.py`의 `_labels`에서 한국어 사전의 `"related": "관련 Spec",` 뒤에 추가한다.
 
@@ -396,7 +396,7 @@ def _requirements(document: SpecDocument) -> str:
         "uncovered": "Uncovered",
 ```
 
-- [ ] **Step 6: 미커버 표시 스타일을 추가한다**
+- [x] **Step 6: 미커버 표시 스타일을 추가한다**
 
 `plugins/forge/skills/writing-specs/assets/spec-page-template.html`의 `<style>` 안에서 `.empty-value{color:var(--muted)}` 바로 뒤에 추가한다.
 
@@ -404,12 +404,12 @@ def _requirements(document: SpecDocument) -> str:
 .uncovered{color:var(--error);font-weight:700}tr[data-uncovered="true"] th[scope="row"]{border-left:3px solid var(--error)}
 ```
 
-- [ ] **Step 7: 테스트를 실행하고 통과를 확인한다**
+- [x] **Step 7: 테스트를 실행하고 통과를 확인한다**
 
 실행: `cd plugins/forge/skills/writing-specs && python3 -m unittest tests.test_spec_render -v`
 예상: PASS
 
-- [ ] **Step 8: 변경을 commit한다**
+- [x] **Step 8: 변경을 commit한다**
 
 실행: `git add plugins/forge/skills/writing-specs/scripts/spec_render.py plugins/forge/skills/writing-specs/assets/spec-page-template.html plugins/forge/skills/writing-specs/tests/test_spec_render.py && git commit -m "feat(forge): link Spec Page requirements to citing criteria"`
 
@@ -1857,3 +1857,5 @@ EOF
 - 2026-08-03 계획 작성. Task 1–12 미착수.
 - Task 1: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="Task 2–6이 같은 파일을 순차로 이어받는 체인이라 root 직접 실행이 위임+검토 비용보다 저렴함")
 - Task 1: complete (commit 810ca00; verification="python3 -m unittest tests.test_spec_render -v — 21 passed"). 계획 결함 수정: `assertNotIn(b"mermaid", ...)`이 항상 포함되는 `spec-pages-runtime.mjs`의 문자열 "mermaid"까지 잡아 오탐되어, 실제 vendored 라이브러리 고유 마커(`__esbuild_esm_mermaid_nm`) 검사로 테스트를 교체함.
+- Task 2: routed (impact=low, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=fast, mode=root, parallel_group=none, reason="Task 1과 같은 파일을 잇는 순차 체인")
+- Task 2: complete (commit 8074ec2; verification="python3 -m unittest tests.test_spec_render -v — 25 passed")
