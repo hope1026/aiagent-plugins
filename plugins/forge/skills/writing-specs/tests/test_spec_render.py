@@ -89,7 +89,7 @@ print(\"<unsafe>\")
 """
         rendered = render_markdown(source)
 
-        self.assertIn("<h3>Heading &lt;unsafe&gt;</h3>", rendered)
+        self.assertIn('<h3 id="heading-unsafe">Heading &lt;unsafe&gt;</h3>', rendered)
         self.assertIn("<ul>", rendered)
         self.assertIn("<ol>", rendered)
         self.assertIn('class="table-scroll"', rendered)
@@ -789,6 +789,49 @@ class PageMetricsTest(unittest.TestCase):
             page = (spec_root / "001-basic" / "index.html").read_text(encoding="utf-8")
             self.assertIn('class="metrics"', page)
             self.assertIn('data-metric="active_requirements"', page)
+
+
+OUTLINE_BODY = """### First heading
+
+Body one.
+
+### Second heading
+
+Body two.
+
+### Third heading
+
+Body three.
+"""
+
+SHORT_BODY = """### Only heading
+
+Body one.
+
+### Second heading
+
+Body two.
+"""
+
+
+class SectionOutlineTest(unittest.TestCase):
+    def test_outline_lists_headings_at_threshold(self) -> None:
+        outline = spec_render.section_outline(OUTLINE_BODY)
+        self.assertEqual(len(outline), 3)
+        self.assertEqual(outline[0][1], "First heading")
+
+    def test_outline_is_empty_below_threshold(self) -> None:
+        self.assertEqual(spec_render.section_outline(SHORT_BODY), ())
+
+    def test_outline_ignores_headings_inside_fences(self) -> None:
+        body = "```\n### Fenced heading\n```\n\n" + SHORT_BODY
+        self.assertEqual(spec_render.section_outline(body), ())
+
+    def test_outline_anchors_are_unique(self) -> None:
+        body = OUTLINE_BODY.replace("Second heading", "First heading")
+        outline = spec_render.section_outline(body)
+        anchors = [anchor for anchor, _ in outline]
+        self.assertEqual(len(anchors), len(set(anchors)))
 
 
 if __name__ == "__main__":

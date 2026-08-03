@@ -12,7 +12,7 @@ import re
 import tempfile
 from typing import Mapping, Sequence
 
-from markdown_render import render_markdown
+from markdown_render import anchor_slug, render_markdown
 from spec_model import Diagnostic, SpecDocument
 from spec_validate import validate_repository
 
@@ -146,6 +146,7 @@ def _labels(locale: str) -> dict[str, str]:
             "metric_uncovered": "미커버 요구사항",
             "metric_tombstones": "폐기 요구사항",
             "metric_diagrams": "다이어그램",
+            "outline": "이 절의 목차",
         }
     return {
         "summary": "Summary",
@@ -172,6 +173,7 @@ def _labels(locale: str) -> dict[str, str]:
         "metric_uncovered": "Uncovered requirements",
         "metric_tombstones": "Removed requirements",
         "metric_diagrams": "Diagrams",
+        "outline": "In this section",
     }
 
 
@@ -318,6 +320,46 @@ def _metrics_markup(document: SpecDocument) -> str:
     return f'<dl class="metrics">{"".join(cells)}</dl>'
 
 
+_SUBHEADING_RE = re.compile(r"^(#{3,6}) (\S.*)$")
+_OUTLINE_THRESHOLD = 3
+
+
+def section_outline(body: str) -> tuple[tuple[str, str], ...]:
+    """Return (anchor, text) pairs when a section has enough subheadings."""
+
+    headings: list[tuple[str, str]] = []
+    used: dict[str, int] = {}
+    in_fence = False
+    for line in body.splitlines():
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        match = _SUBHEADING_RE.match(line)
+        if match:
+            text = match.group(2).strip()
+            headings.append((anchor_slug(text, used), text))
+    if len(headings) < _OUTLINE_THRESHOLD:
+        return ()
+    return tuple(headings)
+
+
+def _outline_markup(document: SpecDocument, section: str) -> str:
+    outline = section_outline(document.sections[section])
+    if not outline:
+        return ""
+    labels = _labels(document.metadata.language)
+    items = "".join(
+        f'<li><a href="#{anchor}">{html.escape(text)}</a></li>' for anchor, text in outline
+    )
+    return (
+        f'<nav class="section-outline" aria-label="{html.escape(labels["outline"], quote=True)}">'
+        f'<p class="outline-label">{html.escape(labels["outline"])}</p>'
+        f"<ol>{items}</ol></nav>"
+    )
+
+
 def render_spec_page(
     document: SpecDocument,
     template: str,
@@ -361,13 +403,15 @@ def render_spec_page(
                 "NAVIGATION": navigation,
                 "SOURCE_LABEL": labels["source"],
                 "OVERVIEW_LABEL": labels["summary"],
-                "OVERVIEW": render_markdown(document.sections["Overview"]),
+                "OVERVIEW": _outline_markup(document, "Overview")
+                + render_markdown(document.sections["Overview"]),
                 "FLOWS_LABEL": labels["flows"],
                 "FLOWS": render_markdown(document.sections["Behavior & Flows"]),
                 "REQUIREMENTS_LABEL": labels["requirements"],
                 "REQUIREMENTS": _requirements(document),
                 "DATA_LABEL": labels["data"],
-                "DATA": render_markdown(document.sections["Data & Interfaces"]),
+                "DATA": _outline_markup(document, "Data & Interfaces")
+                + render_markdown(document.sections["Data & Interfaces"]),
                 "ACCEPTANCE_LABEL": labels["acceptance"],
                 "ACCEPTANCE": _acceptance(document),
                 "HISTORY_LABEL": labels["history"],

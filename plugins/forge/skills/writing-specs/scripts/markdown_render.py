@@ -50,6 +50,13 @@ def _inline(text: str) -> str:
     return "".join(rendered)
 
 
+def anchor_slug(text: str, used: dict[str, int]) -> str:
+    base = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "section"
+    count = used.get(base, 0)
+    used[base] = count + 1
+    return base if count == 0 else f"{base}-{count + 1}"
+
+
 def _cells(line: str) -> list[str]:
     stripped = line.strip()
     if stripped.startswith("|"):
@@ -78,6 +85,7 @@ def render_markdown(text: str) -> str:
     lines = text.splitlines()
     output: list[str] = []
     index = 0
+    heading_ids: dict[str, int] = {}
     while index < len(lines):
         line = lines[index]
         if not line.strip():
@@ -115,7 +123,9 @@ def render_markdown(text: str) -> str:
         heading = _HEADING_RE.fullmatch(line)
         if heading is not None:
             level = len(heading.group(1))
-            output.append(f"<h{level}>{_inline(heading.group(2))}</h{level}>")
+            text_value = heading.group(2).strip()
+            anchor = anchor_slug(text_value, heading_ids)
+            output.append(f'<h{level} id="{anchor}">{_inline(heading.group(2))}</h{level}>')
             index += 1
             continue
 
