@@ -85,7 +85,7 @@ write_old_spec() {
   mkdir -p "$(dirname "$path")"
   command cat >"$path" <<'EOF'
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 001-history
 status: implemented
 language: en
@@ -127,7 +127,7 @@ write_replacement_spec() {
   mkdir -p "$(dirname "$path")"
   command cat >"$path" <<'EOF'
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 001-current
 status: approved
 language: en
@@ -171,7 +171,7 @@ write_consumer() {
   mkdir -p "$(dirname "$path")"
   command cat >"$path" <<EOF
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 002-consumer
 status: approved
 language: en
@@ -221,7 +221,6 @@ apply_cutover() {
     '{"schema":"forge/spec-transitions@1","transitions":[{"fromId":"001-history","fromPath":"docs/specs/001-history/spec.md","fromSourceSha256":"'"$old_sha"'","disposition":"superseded","toId":"001-current","toPath":"docs/specs/001-current/spec.md","evidencePath":"docs/plans/001-history/evidence.md","reason":"Keep active specs limited to current facts."}]}' \
     >"$candidate/docs/specs/.transitions.json"
   rm "$candidate/docs/specs/001-history/spec.md"
-  rm "$candidate/docs/specs/001-history/index.html"
 }
 
 new_candidate() {
@@ -250,7 +249,6 @@ write_consumer "$REPO/docs/specs/002-consumer/spec.md" "001-history" "001-histor
 git -C "$REPO" init -q
 git -C "$REPO" config user.name fixture
 git -C "$REPO" config user.email fixture@example.invalid
-bash "$SPEC_DOCS" --repo-root "$REPO" build --root docs/specs --offline >/dev/null
 git -C "$REPO" add .
 git -C "$REPO" commit -qm baseline
 BASELINE_HEAD="$(git -C "$REPO" rev-parse HEAD)"
@@ -290,23 +288,13 @@ import sys
 path = Path(sys.argv[1])
 path.write_text(path.read_text().replace('status: approved', 'status: broken'))
 PY
-expect_failure invalid-replacement bash "$SPEC_DOCS" --repo-root "$candidate" build --root docs/specs --offline
+expect_failure invalid-replacement bash "$SPEC_DOCS" --repo-root "$candidate" validate --root docs/specs --baseline-ref HEAD
 drop_candidate "$candidate"
 assert_root_unchanged "$ROOT_FINGERPRINT" invalid-replacement
-
-candidate="$(new_candidate stale-page)"
-apply_cutover "$candidate"
-bash "$SPEC_DOCS" --repo-root "$candidate" build --root docs/specs --offline >/dev/null
-printf '\ncorrupt\n' >>"$candidate/docs/specs/001-current/index.html"
-expect_failure stale-page bash "$SPEC_DOCS" --repo-root "$candidate" check --root docs/specs
-drop_candidate "$candidate"
-assert_root_unchanged "$ROOT_FINGERPRINT" stale-page
 
 candidate="$(new_candidate late-drift)"
 apply_cutover "$candidate"
 bash "$SPEC_DOCS" --repo-root "$candidate" validate --root docs/specs --baseline-ref HEAD
-bash "$SPEC_DOCS" --repo-root "$candidate" build --root docs/specs --offline >/dev/null
-bash "$SPEC_DOCS" --repo-root "$candidate" check --root docs/specs
 git -C "$candidate" add .
 git -C "$candidate" -c user.name=fixture -c user.email=fixture@example.invalid commit -qm candidate
 CANDIDATE_COMMIT="$(git -C "$candidate" rev-parse HEAD)"
@@ -333,8 +321,6 @@ git -C "$REPO" diff --cached --quiet || fail "dirty fixture cleanup left index c
 candidate="$(new_candidate success)"
 apply_cutover "$candidate"
 bash "$SPEC_DOCS" --repo-root "$candidate" validate --root docs/specs --baseline-ref HEAD
-bash "$SPEC_DOCS" --repo-root "$candidate" build --root docs/specs --offline >/dev/null
-bash "$SPEC_DOCS" --repo-root "$candidate" check --root docs/specs
 git -C "$candidate" add .
 git -C "$candidate" -c user.name=fixture -c user.email=fixture@example.invalid commit -qm candidate
 CANDIDATE_COMMIT="$(git -C "$candidate" rev-parse HEAD)"
@@ -346,17 +332,14 @@ git -C "$REPO" merge --ff-only "$CANDIDATE_COMMIT" >/dev/null
 drop_candidate "$candidate"
 
 test ! -e "$REPO/docs/specs/001-history/spec.md" || fail "old source survived promotion"
-test ! -e "$REPO/docs/specs/001-history/index.html" || fail "old page survived promotion"
 for path in \
   docs/specs/.transitions.json \
   docs/specs/001-current/spec.md \
-  docs/specs/001-current/index.html \
-  docs/specs/index.html \
   docs/plans/001-history/evidence.md; do
   test -f "$REPO/$path" || fail "successful promotion misses $path"
 done
 bash "$SPEC_DOCS" --repo-root "$REPO" validate --root docs/specs --baseline-ref "$BASELINE_HEAD"
-bash "$SPEC_DOCS" --repo-root "$REPO" check --root docs/specs
+test "$(find "$REPO/docs/specs" -type f -name '*.html' -print -quit)" = "" || fail "promotion created HTML"
 [[ "$(viewer_count "$REPO")" -eq 0 ]] || fail "successful promotion created a Review Viewer"
 
 echo "forge-spec-supersession: all checks passed"

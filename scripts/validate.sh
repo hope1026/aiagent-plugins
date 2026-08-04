@@ -107,14 +107,11 @@ else
   err "creating-agent-extensions: missing manager script"
 fi
 
-# 6. Structured spec sources and tracked Spec Pages are checked, never repaired.
+# 6. Structured Markdown spec sources are validated, never repaired or rendered.
 SPEC_DOCS="$ROOT_DIR/plugins/forge/skills/writing-specs/scripts/spec-docs.sh"
 if [[ -x "$SPEC_DOCS" ]]; then
-  if ! spec_validate_output="$(bash "$SPEC_DOCS" --repo-root "$ROOT_DIR" validate --root docs/specs --baseline-ref HEAD 2>&1)"; then
+  if ! spec_validate_output="$(bash "$SPEC_DOCS" --repo-root "$ROOT_DIR" validate --root docs/specs 2>&1)"; then
     err "structured spec validation failed: $spec_validate_output"
-  fi
-  if ! spec_check_output="$(bash "$SPEC_DOCS" --repo-root "$ROOT_DIR" check --root docs/specs 2>&1)"; then
-    err "Spec Pages check failed: $spec_check_output"
   fi
 else
   err "writing-specs: missing executable spec-docs.sh"

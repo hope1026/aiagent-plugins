@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 008-structured-spec-pages
 status: approved
 language: ko
@@ -8,28 +8,29 @@ areas: ["forge", "specs"]
 components: ["writing-specs", "spec-docs"]
 relatedSpecs: [{"id":"002-lifecycle-review-viewer","relation":"relatedTo"}]
 ---
-# 구조화 Spec 계약과 상시 Spec Pages
+# 유연한 Markdown Spec 계약과 요청형 HTML 경계
 
 ## Overview
 
-Forge의 spec은 Markdown source of truth를 유지하면서도 모든 프로젝트에서 같은 구조로 작성·검증되어야 한다. 이 기능은 `forge/spec@1` metadata와 canonical body contract를 정의하고, `writing-specs`가 source 변경과 같은 작업 단위에서 사람이 읽기 좋은 Spec Pages를 항상 갱신하도록 만든다.
+Forge의 spec과 plan은 Markdown을 유일한 기본 산출물과 source of truth로 유지해야 한다. Spec의 metadata, Requirement·Acceptance Criterion traceability와 lifecycle gate는 기계적으로 검증하되, 서로 다른 feature·workflow·API·architecture·policy·migration 문서를 하나의 화면 순서에 맞추기 위해 동일한 여섯 본문 구획으로 강제하지 않는다.
 
-Spec Pages는 장기 탐색과 일반 열람을 위한 committed 파생 문서다. 특정 spec이나 plan의 맥락을 질문에 맞춰 재구성하는 요청형 Review Viewer와는 생성 trigger, 저장 위치, freshness 정책을 분리한다.
+HTML은 일반적인 spec 작성, plan 작성, 승인, handoff, 실행 checkpoint 또는 lifecycle status 변경에서 생성하지 않는다. 사람이 보기 좋은 별도 화면이 필요할 때 사용자가 `review-viewer`를 명시적으로 요청해야만 `docs/specs/002-lifecycle-review-viewer/spec.md`의 계약에 따라 로컬 Review Viewer를 생성한다.
 
 비목표:
 - HTML을 spec의 편집 가능한 source of truth로 만들지 않는다.
 - source에 없는 요구사항, 책임, 관계, 결정을 generated page에 추가하지 않는다.
-- 기존 프로젝트를 조금씩 변환하는 장기 migration skill을 배포하지 않는다.
-- Spec Pages 생성만으로 spec 승인 또는 구현 완료를 선언하지 않는다.
-- plan, progress 또는 Task source의 상시 HTML page를 생성하지 않는다.
+- Markdown의 서술 순서를 Viewer layout에 맞추도록 강제하지 않는다.
+- spec이나 plan 변경을 HTML 생성 요청으로 추론하지 않는다.
+- source 옆 `index.html`, `view.html` 또는 repository catalog HTML을 상시 관리하지 않는다.
+- Review Viewer 생성만으로 spec 승인 또는 구현 완료를 선언하지 않는다.
 
 검토한 접근안:
 
 | 접근안 | 장점 | 단점 | 결정 |
 |---|---|---|---|
-| 구조화 Markdown과 committed Spec Pages | Git review와 agent source를 유지하면서 사람이 항상 최신 HTML을 읽을 수 있다 | source 변경마다 generated diff가 생긴다 | 채택 |
-| repository-wide Portal skill | 도입과 migration을 하나의 workflow로 묶을 수 있다 | 일회성 migration 이후에도 불필요한 영구 skill이 남는다 | 제외 |
-| 요청형 Viewer만 사용 | generated file 수가 적다 | 평상시 spec 탐색과 최신 가독성 화면을 보장하지 못한다 | 제외 |
+| Markdown-only lifecycle과 요청형 Review Viewer | 기본 작업은 source만 변경하고 필요한 검토에서만 HTML을 만든다 | 평상시에는 Markdown reader의 가독성에 의존한다 | 채택 |
+| committed Spec Pages 상시 동기화 | 항상 HTML 탐색 화면이 존재한다 | source 변경마다 대형 generated diff와 runtime 중복이 생긴다 | 제외 |
+| 문서마다 맞춤 HTML을 직접 작성 | 문서별 표현 자유도가 가장 높다 | 일관성·검증·유지보수 비용과 source drift가 커진다 | 제외 |
 | 외부 문서 서비스로 동기화 | 검색과 공유 기능이 풍부하다 | 권한, 배포, 양방향 drift가 새 운영 의존성이 된다 | 제외 |
 
 ## Requirements
@@ -39,93 +40,88 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 ### 구조화 source 계약
 
 - R1. Forge는 `docs/specs/NNN-<slug>/spec.md`를 요구사항, 승인 상태, 관계와 변경 이력의 유일한 source of truth로 유지해야 한다.
-- R2. 모든 활성 spec은 YAML frontmatter에서 `schema: forge/spec@1`, directory와 일치하는 `id`, `status`, `language`, `kind`, `areas`, `components`, `relatedSpecs`를 선언해야 한다.
+- R2. MODIFIED — 모든 활성 spec은 YAML frontmatter에서 `schema: forge/spec@2`, directory와 일치하는 `id`, `status`, `language`, `kind`, 선택적인 `subtype`, `areas`, `components`, `relatedSpecs`를 선언해야 한다. `kind`와 `subtype`은 문서의 의미 분류이며 HTML layout 자체를 선언하지 않아야 한다.
 - R3. `status`는 `draft`, `approved`, `implemented` 중 하나여야 하며 frontmatter의 값만 lifecycle gate token으로 사용하고 별도의 `Status:` body line을 중복 정본으로 유지하지 않아야 한다.
-- R4. v1의 `language`는 page shell과 lifecycle tooling이 지원하는 BCP 47 tag `en`, `ko` 중 하나여야 한다. `kind`는 `feature`, `system`, `interface`, `policy` 중 하나여야 하며, `areas`, `components`, `relatedSpecs`는 빈 목록을 허용하되 항상 명시되어야 한다. Frontmatter는 dependency-free parser가 읽을 수 있도록 top-level `key: value`와 JSON-compatible 한 줄 collection만 허용하고 YAML anchor, tag, block scalar, multiline collection과 implicit type conversion을 허용하지 않아야 한다.
-- R5. spec body의 H1은 title의 유일한 source여야 하므로 frontmatter에 `title`을 중복 선언하지 않아야 한다. Body는 H1을 정확히 하나 포함하고 `Overview`, `Requirements`, `Behavior & Flows`, `Data & Interfaces`, `Acceptance Criteria`, `Decisions & History`의 canonical `##` heading을 정확한 순서로 한 번씩 포함해야 한다. 다른 `##` heading은 허용하지 않고 추가 구획은 해당 canonical section 아래의 `###` 이하 heading으로 작성해야 한다.
+- R4. MODIFIED — v2의 `language`는 lifecycle tooling이 지원하는 BCP 47 tag `en`, `ko` 중 하나여야 한다. `kind`는 `feature`, `system`, `interface`, `policy` 중 하나여야 하고, `subtype`은 생략하거나 lowercase kebab-case 의미 분류를 사용해야 한다. `areas`, `components`, `relatedSpecs`는 빈 목록을 허용하되 항상 명시해야 한다. Frontmatter는 dependency-free parser가 읽을 수 있도록 top-level `key: value`와 JSON-compatible 한 줄 collection만 허용해야 한다.
+- R5. MODIFIED — spec body는 title의 유일한 source인 H1을 정확히 하나 포함해야 한다. `Requirements`, `Acceptance Criteria`, `Decisions & History`는 traceability와 append-only history를 위해 각각 한 번 존재해야 하지만, 나머지 `##`·하위 heading의 이름, 수, 순서와 중첩은 spec의 feature·workflow·API·architecture·policy·migration 특성에 맞게 자유롭게 작성할 수 있어야 한다.
 - R6. 모든 Requirement와 Acceptance Criterion은 spec 안에서 각각 unique한 `R<number>`, `AC<number>` ID를 사용해야 한다. 각 AC는 쉼표로 구분한 R-ID 또는 오름차순 R-ID range를 하나 이상 참조해야 하며, validator는 range를 개별 ID로 확장한 뒤 존재하는 `REMOVED`가 아닌 R만 참조하는지 검사해야 한다. Tombstone의 canonical 문법은 `- R<number>. REMOVED — <reason>`이고 coverage 대상에서 제외하며, 나머지 모든 R은 하나 이상의 AC로 coverage되어야 한다.
 - R7. `relatedSpecs`의 각 항목은 repository 안의 유효한 spec ID와 관계 종류 `dependsOn`, `refines`, `supersedes`, `relatedTo` 중 하나를 선언해야 하며 self-reference와 해석할 수 없는 ID를 허용하지 않아야 한다.
-- R8. canonical Mermaid fence는 Behavior & Flows가 소유하고, 표와 interface 계약은 Data & Interfaces가 소유하며 generated page는 이 source text를 의미 변경 없이 사용해야 한다.
+- R8. MODIFIED — Mermaid fence, 표, code와 interface 계약은 고정 canonical section에 소속될 필요가 없으며 어느 서술 section에도 둘 수 있어야 한다. Parser는 원문 위치와 bytes를 보존하고 요청형 Review Viewer가 이를 의미 변경 없이 사용하도록 해야 한다.
 - R9. 사용자 언어, EARS 의미 규칙과 AC의 선행조건·행동·관찰 결과는 기존 `writing-specs` 계약을 유지해야 한다. 같은 identity로 계속 활성 상태인 `approved` 또는 `implemented` spec의 Decisions & History는 append-only여야 하며, 명시적인 supersession transition으로 교체되는 spec은 R35–R39의 검증된 별도 기록을 따라야 한다.
 
 ### 작성과 검증 gate
 
-- R10. `writing-specs`는 new, change, clarify, sync 모든 mode에서 `forge/spec@1` source를 작성하고 approval request 전에 repository 전체 spec validation을 실행해야 한다.
-- R11. validator는 metadata schema, path와 ID 일치, status·language·kind 값, canonical heading 순서, R·AC uniqueness·reference·coverage, clarification gate, related spec resolution, internal Markdown link, Mermaid fence ownership과 syntax를 검사해야 한다.
+- R10. MODIFIED — `writing-specs`는 new, change, clarify, sync 모든 mode에서 `forge/spec@2` Markdown source를 작성하고 approval request 전에 repository 전체 spec validation을 실행해야 한다.
+- R11. MODIFIED — validator는 metadata schema, path와 ID 일치, status·language·kind·subtype 값, 단일 H1, 필수 semantic section 존재, R·AC uniqueness·reference·coverage, clarification gate, related spec resolution, internal Markdown link와 Mermaid syntax를 검사해야 한다. 임의 서술 section의 이름이나 순서는 오류로 처리하지 않아야 한다.
 - R12. `approved` 또는 `implemented` spec에 `[NEEDS CLARIFICATION]`가 하나라도 있거나 R·AC coverage가 불완전하면 validation은 실패해야 한다.
-- R13. validation 실패는 spec 작성·변경 완료, approval request, plan handoff와 Spec Pages build를 모두 차단하고 source path와 사람이 수정할 수 있는 오류 원인을 반환해야 한다.
+- R13. MODIFIED — validation 실패는 spec 작성·변경 완료, approval request와 plan handoff를 차단하고 source path와 사람이 수정할 수 있는 오류 원인을 반환해야 한다. Validation 성공 또는 실패는 HTML 생성 trigger가 아니어야 한다.
 - R14. `writing-plans`, `executing-plans`, `verifying-work`와 다른 Forge lifecycle skill은 literal `Status:` 검색 대신 공통 spec parser가 반환한 schema와 status를 사용해야 한다.
 - R15. validator와 parser는 같은 input bytes에서 같은 결과를 반환하고 진단을 `(path, line, code)` 순서로 정렬하며 외부 network, machine locale 또는 agent 추론에 의존하지 않아야 한다.
 
-### 상시 Spec Pages
+### Markdown-only lifecycle
 
-- R16. 각 spec은 source와 같은 directory의 `index.html`을 사람이 읽기 좋은 상시 Spec Page로 가져야 하며, `docs/specs/index.html`은 repository 전체 spec catalog를 제공해야 한다.
-- R17. `writing-specs`, `verifying-work`와 다른 Forge writer가 spec body, metadata 또는 lifecycle status를 변경하면 validator 성공 뒤 해당 spec `index.html`과 repository catalog `docs/specs/index.html`을 같은 작업 단위에서 갱신해야 한다. Generator version, template 또는 bundled asset이 변경되면 repository 전체 Spec Pages를 재생성해야 하며, builder는 완성된 bytes를 temporary file에 쓴 뒤 atomic replace해야 한다.
-- R18. spec source가 변경됐는데 두 Spec Pages 중 하나라도 누락되거나 source hash·expected bytes가 일치하지 않거나 수동 편집·orphan page가 발견되면 spec 변경은 완료로 보고하거나 commit 대상으로 handoff하지 않아야 한다.
-- R19. per-spec page는 title, status, kind, areas, components, related spec, source hash, Overview, R, source Mermaid, Data & Interfaces, AC, Decisions & History를 요약→시각 흐름→source detail→acceptance evidence 순서로 보여줘야 한다.
-- R20. catalog page는 spec ID와 title 검색, status·kind·area·component filter, related spec 탐색, source와 per-spec page link를 제공하고 모든 항목을 현재 spec metadata에서 계산해야 한다.
-- R21. generated page는 source를 직접 수정하지 않는 read-only artifact여야 하며 generated HTML을 수동 편집하거나 별도 의미 정본으로 참조하지 않아야 한다.
-- R22. builder는 같은 source bytes, generator version과 locale에서 byte-for-byte 같은 HTML을 만들고 volatile timestamp, absolute path와 machine-specific 값을 출력에 포함하지 않아야 한다.
-- R23. generated page는 source SHA-256, schema version과 generator version을 포함해야 한다. `check`는 현재 source와 generator로 expected bytes를 다시 생성해 committed HTML과 byte-for-byte 비교하고, embedded manifest만 신뢰하지 않으며 누락, stale source, 수동 편집과 source 없는 orphan page를 실패로 처리해야 한다.
-- R24. 한국어 source에는 한국어 navigation과 설명을 사용하고, API, protocol, service, schema, code identifier는 원문을 유지해야 한다.
-- R25. page shell은 desktop working width와 390px narrow width에서 primary reading path, keyboard navigation, focus, wide table·diagram overflow, empty·long content, invalid Mermaid error 상태를 명확히 보여줘야 한다.
-- R26. per-spec page와 catalog는 외부 network 없이 열 수 있는 offline artifact여야 하며 build 뒤 project validator가 source hash, regenerated expected bytes와 generated contract를 검사해야 한다.
+- R16. MODIFIED — `writing-specs`, `writing-plans`, `executing-plans`, `verifying-work`와 다른 Forge lifecycle skill은 일반적인 작성·변경·승인·handoff·checkpoint·status 전환에서 Markdown source만 생성하거나 변경해야 한다.
+- R17. MODIFIED — spec 또는 plan source 변경, lifecycle status 변경, 문서 복잡도, Mermaid·표 존재, approval 요청, handoff와 기존 HTML 존재를 HTML 생성 또는 갱신 권한으로 해석하지 않아야 한다.
+- R18. MODIFIED — HTML은 사용자가 현재 source set에 대해 `review-viewer` skill 사용, 시각화, Viewer 생성 또는 Viewer 갱신 의도를 명시한 경우에만 생성할 수 있어야 한다.
+- R19. MODIFIED — Forge는 source 옆 `index.html`·`view.html`, repository-wide spec catalog HTML과 plan별 상시 HTML을 생성하거나 Git 추적 산출물로 요구하지 않아야 한다.
+- R20. MODIFIED — spec과 plan의 일반 탐색·검토 경로는 repository의 Markdown file과 link여야 하며 HTML catalog의 존재 또는 freshness가 lifecycle gate가 되지 않아야 한다.
+- R21. MODIFIED — 명시적으로 생성된 Review Viewer는 읽기 전용 파생 artifact이고 Markdown source를 직접 수정하거나 별도 의미 정본이 되지 않아야 한다.
+- R22. MODIFIED — source 변경은 기존 Review Viewer를 자동 갱신하지 않아야 하며, stale 사실은 보고할 수 있지만 재생성에는 별도의 명시적 사용자 요청이 필요해야 한다.
+- R23. MODIFIED — 요청형 Review Viewer의 경로, Git 정책, source manifest, freshness와 adaptive rendering은 `docs/specs/002-lifecycle-review-viewer/spec.md`가 단독으로 소유해야 한다.
+- R24. MODIFIED — 한국어 source를 요청형 Review Viewer로 생성하면 UI 설명은 한국어를 사용하고 API, protocol, service, schema와 code identifier는 원문을 유지해야 한다.
+- R25. REMOVED — 상시 Spec Page shell은 Markdown-only lifecycle 결정으로 제거한다.
+- R26. REMOVED — 상시 per-spec page와 catalog offline artifact는 Markdown-only lifecycle 결정으로 제거한다.
 
 ### 요청형 Review Viewer와의 경계
 
-- R27. 상시 Spec Pages 생성이나 갱신은 Review Viewer 생성 요청으로 간주하지 않아야 한다.
-- R28. Review Viewer는 사용자가 현재 spec 또는 plan의 Viewer 생성·갱신을 명시적으로 요청한 경우에만 별도 lifecycle viewer 계약에 따라 생성해야 한다.
-- R29. source 변경은 기존 Review Viewer를 자동 갱신하지 않으며, Spec Pages의 freshness와 Review Viewer의 freshness를 하나의 상태로 합치지 않아야 한다. Review Viewer의 현재 source 옆 committed `view.html` 정책을 `.forge/reviews/<review-id>/view.html` 비커밋 snapshot으로 바꾸는 결정은 governing `docs/specs/002-lifecycle-review-viewer/spec.md`의 별도 승인 delta가 소유하며, 그 delta와 관련 contract test가 승인·갱신되기 전에 이 spec 구현이 기존 Viewer 경로와 Git 정책을 암묵적으로 변경하지 않아야 한다.
+- R27. MODIFIED — Markdown source 작성이나 validation은 Review Viewer 생성 요청으로 간주하지 않아야 한다.
+- R28. MODIFIED — Review Viewer는 사용자가 현재 spec 또는 plan source set의 Viewer 생성·갱신을 명시적으로 요청한 경우에만 별도 lifecycle viewer 계약에 따라 생성해야 한다.
+- R29. MODIFIED — source 변경은 기존 Review Viewer를 자동 갱신하지 않으며 Markdown과 Review Viewer freshness를 하나의 lifecycle 상태로 합치지 않아야 한다.
 
 ### 일괄 migration과 배포
 
-- R30. Forge repository의 활성 spec, lifecycle skill, validator, fixture, plan status reader와 artifact 문서는 한 migration release에서 `forge/spec@1`로 전환되어야 하며 cutover 뒤 legacy `Status:` body gate와 schema 없는 활성 spec을 허용하지 않아야 한다.
-- R31. 기존 프로젝트 migration은 repository별 승인된 일회성 plan으로 전체 spec, 링크, instruction file과 generated page를 atomic하게 전환해야 한다. Plan은 repository-local 임시 converter 또는 명시된 수동 transformation step을 사용할 수 있지만 이를 distributed Forge plugin에 포함하지 않고 cutover 완료 전에 제거해야 하며, production parser, validator, skill과 command에 legacy schema 분기나 compatibility flag를 남기지 않아야 한다.
-- R32. migration은 `oldPath → newSpecIds[]`, 기존 normative section별 새 spec·section provenance, split·merge·discard disposition, legacy status resolution과 근거, non-spec 문서 처리, link rewrite 결과, source backup 또는 Git rollback point를 기록해야 한다. 누락된 legacy status를 자동으로 `implemented`로 추론하지 않아야 하며 broken-link·duplicate-ID·missing-coverage failure gate와 page build가 모두 성공하기 전 기존 구조를 제거하지 않아야 한다.
+- R30. MODIFIED — Forge repository의 활성 spec, lifecycle skill, validator, fixture와 plan status reader는 한 migration release에서 `forge/spec@2`와 Markdown-only artifact contract로 전환되어야 하며 cutover 뒤 legacy body status gate와 자동 Spec Pages build 경로를 허용하지 않아야 한다.
+- R31. MODIFIED — 기존 프로젝트 migration은 repository별 승인된 일회성 plan으로 spec source, link, instruction과 tracked Spec Pages 제거를 atomic하게 전환해야 한다. 임시 converter는 cutover 완료 전에 제거하고 production workflow에 자동 HTML compatibility branch를 남기지 않아야 한다.
+- R32. MODIFIED — migration은 기존 normative section별 새 section provenance, schema·status resolution, link rewrite, 제거할 generated HTML inventory와 rollback point를 기록해야 한다. Broken link, duplicate ID, missing coverage 또는 tracked HTML 제거 실패가 있으면 기존 구조를 제거하지 않아야 한다.
 - R33. 이 Forge 변경의 구현·완료 범위는 `weppy-roblox-mcp-private`를 수정하지 않아야 한다. 해당 repository의 기존 spec migration은 Forge tooling 구현과 검증 뒤 그 repository가 소유하는 별도 governing spec과 일회성 cutover plan에서 수행해야 한다.
-- R34. Marketplace 사용자 workflow이므로 parser, validator, builder와 필요한 asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 동일한 source contract를 사용해야 한다.
+- R34. MODIFIED — Marketplace 사용자 workflow이므로 spec parser와 validator, Review Viewer parser·renderer·component asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 동일한 Markdown-only source와 explicit Viewer request contract를 사용해야 한다.
 
 ### 현재 사실과 spec supersession
 
 - R35. 활성 spec은 현재 유효한 제품·시스템 동작과 제약을 source of truth로 제공해야 한다. 완료된 일회성 작업의 실행 과정, 변환 수치와 rollback evidence는 plan, ADR 또는 별도 evidence 문서에 보존하고 활성 spec의 Overview·Requirements·Behavior & Flows·Data & Interfaces·Acceptance Criteria에 현재 동작처럼 남기지 않아야 한다.
 - R36. baseline의 `approved` 또는 `implemented` spec을 새 identity의 한 spec으로 교체할 때는 `docs/specs/.transitions.json`에 exact baseline identity와 source SHA-256을 가진 one-to-one `superseded` transition을 선언해야 한다. 선언이 없거나 baseline bytes와 일치하지 않으면 validator는 기존 `SPEC_HISTORY_NOT_APPEND_ONLY` 진단으로 삭제·rename을 거부해야 한다. Replacement 없는 retirement, 여러 source의 merge, baseline에 이미 존재하는 target으로의 이동과 같은 diff 안의 multi-hop transition은 v1 범위에서 허용하지 않아야 한다.
 - R37. `docs/specs/.transitions.json` 자체는 repository 안의 regular non-symlink file이어야 한다. 이 파일은 top-level key `schema`, `transitions`만 가진 JSON object이고 `schema`는 `forge/spec-transitions@1`, `transitions`는 object 배열이어야 한다. 각 record는 string field `fromId`, `fromPath`, `fromSourceSha256`, `disposition`, `toId`, `toPath`, `evidencePath`, `reason`만 가지며 `disposition`은 `superseded`, SHA-256은 lowercase hex 64자, 나머지 string은 비어 있지 않아야 한다. Parser는 duplicate·unknown key와 잘못된 type을 거부해야 한다. Path는 POSIX `/` separator를 쓰는 repository-relative normalized path여야 하며 absolute·drive·UNC·backslash·empty·`.`·`..` segment와 intermediate·terminal symlink를 거부해야 한다. `fromPath`와 `toPath`는 `docs/specs/` 아래의 `spec.md`, `evidencePath`는 `docs/plans/`, `docs/adr/` 또는 `docs/evidence/` 아래의 regular file이어야 한다.
-- R38. validator는 `fromPath`의 baseline bytes를 parse한 ID·status·SHA-256이 record와 정확히 일치하고 `toPath`의 current source가 record의 `toId`, directory와 일치하며 status가 `approved` 또는 `implemented`인지 확인해야 한다. `toPath`는 baseline에 존재하지 않아야 하고 current tree에 terminal active source로 존재해야 한다. Current transition 배열은 baseline 배열의 canonical record sequence를 exact prefix로 보존해야 하며, missing baseline source를 승인할 수 있는 record는 이번 diff에 새로 append된 하나뿐이어야 한다. 기존 record 재사용, record 수정·삭제·reorder, duplicate source·target, 같은 diff의 chain, 존재하지 않는 evidence, active `relatedSpecs`와 Markdown link의 old identity 참조를 실패로 처리해야 한다. 유효한 transition도 replacement source validation, old page 제거, replacement page와 catalog freshness를 면제하지 않아야 한다.
-- R39. `writing-specs`에서 사용자가 현재 사실만 남기기 위해 기존 spec identity를 교체하거나 완료 기록을 분리하면, 기존 source를 건드리기 전에 current-state replacement를 `draft`로 작성하고 사용자 승인을 받아야 한다. 승인 후 plan은 expected clean baseline에서 등록된 isolated Git worktree를 만들고 transition append, old source·page 제거, reference 갱신, replacement Spec Page와 catalog build, baseline validation, expected bytes check를 한 candidate commit으로 수행해야 한다. Candidate gate가 실패하면 production root의 HEAD·index·tracked·untracked bytes를 유지하고, 성공한 commit도 production root가 expected clean HEAD일 때만 반영해야 한다. Review Viewer는 별도 명시 요청이 없으면 생성하지 않아야 한다.
+- R38. MODIFIED — validator는 `fromPath`의 baseline bytes를 parse한 ID·status·SHA-256이 record와 정확히 일치하고 `toPath`의 current source가 record의 `toId`, directory와 일치하며 status가 `approved` 또는 `implemented`인지 확인해야 한다. Current transition 배열은 baseline sequence를 exact prefix로 보존해야 하며 record replay, duplicate source·target, same-diff chain, missing evidence와 old identity reference를 실패로 처리해야 한다. 유효한 transition도 replacement Markdown validation을 면제하지 않아야 한다.
+- R39. MODIFIED — current-state replacement는 승인 뒤 isolated candidate에서 transition append, old source 제거, reference 갱신과 replacement Markdown validation을 한 commit으로 수행해야 한다. Candidate gate가 실패하면 production root fingerprint를 유지하고 Review Viewer는 별도 명시 요청이 없으면 생성하지 않아야 한다.
 
-### 사람 중심 렌더링
-
-- R40. ADDED — builder는 해당 page가 렌더링할 Mermaid diagram을 하나 이상 포함할 때만 Mermaid runtime asset을 embed해야 한다. Diagram이 없는 page는 runtime을 생략해야 하며, 생략 여부는 selected source bytes에서만 결정적으로 계산하고 machine 환경이나 build 시점에 의존하지 않아야 한다. Runtime을 생략한 page도 외부 network 없이 열려야 한다.
-- R41. ADDED — per-spec page는 R과 AC의 coverage를 양방향으로 보여줘야 한다. 각 활성 R 행은 그 R을 인용하는 AC ID를 page 안의 이동 가능한 link로 표시하고, 인용 AC가 없는 활성 R은 시각적으로 구분해야 한다. Coverage는 현재 source의 명시적 AC reference에서만 계산하고 `REMOVED` tombstone은 대상에서 제외해야 한다.
-- R42. ADDED — per-spec page는 활성 R 수, AC 수, `REMOVED` tombstone 수, source Mermaid diagram 수, 인용 AC가 없는 활성 R 수를 요약 지표로 표시해야 하며 모든 값을 현재 source에서 계산해야 한다.
-- R43. ADDED — canonical `##` section 하나가 `###` 이하 heading을 3개 이상 포함하면 page는 해당 section 안에 그 heading으로 이동하는 section-local 목차를 제공해야 한다. Heading이 3개 미만인 section에는 목차를 표시하지 않아야 한다.
-- R44. ADDED — `Behavior & Flows`에 source Mermaid가 없고 frontmatter `relatedSpecs`가 비어 있지 않으면 page는 그 관계에서 파생한 도식을 `Derived view`로 명시해 표시해야 한다. source Mermaid와 `relatedSpecs`가 모두 없으면 빈 section을 노출하지 않아야 한다.
-- R45. ADDED — catalog page는 모든 활성 spec의 `relatedSpecs`에서 파생한 repository 전체 관계 도식을 `Derived view`로 명시해 제공해야 한다.
-- R46. ADDED — R44와 R45의 파생 도식은 frontmatter `relatedSpecs`가 선언한 spec ID와 관계 종류만 node·edge로 사용해야 하며, source에 없는 관계, 방향, 그룹 또는 설명을 추가하지 않아야 한다. 파생 도식은 R8이 정의한 source-owned Mermaid를 대체하거나 수정하지 않아야 한다.
-- R47. ADDED — R40–R46은 generator 렌더링 동작 변경이므로 R17에 따라 repository 전체 Spec Pages 재생성과 `check` 통과를 같은 작업 단위에서 요구해야 한다. R33에 따라 이 변경의 구현 범위는 `weppy-roblox-mcp-private`를 수정하지 않으며, 해당 repository의 재생성은 그 repository가 소유하는 별도 작업으로 남겨야 한다.
+- R40. REMOVED — 상시 page의 조건부 Mermaid runtime 계약은 Review Viewer로 이전한다.
+- R41. REMOVED — 상시 page의 R·AC coverage UI 계약은 Review Viewer로 이전한다.
+- R42. REMOVED — 상시 page의 요약 지표 계약은 Review Viewer로 이전한다.
+- R43. REMOVED — 상시 page의 section-local 목차 계약은 Review Viewer component로 이전한다.
+- R44. REMOVED — 상시 page의 관계 derived view 계약은 Review Viewer로 이전한다.
+- R45. REMOVED — HTML catalog 관계 도식은 Markdown-only lifecycle 결정으로 제거한다.
+- R46. REMOVED — 상시 page derived diagram 제한은 Review Viewer Presentation Plan 계약으로 이전한다.
+- R47. REMOVED — Spec Pages 전체 재생성과 check gate는 Markdown-only lifecycle 결정으로 제거한다.
 
 ## Behavior & Flows
 
-spec 변경과 상시 page 동기화:
+일반적인 spec·plan 작성과 요청형 Viewer 경계:
 
 ```mermaid
 flowchart TD
-    A["writing-specs가 spec.md 작성 또는 변경"] --> B["forge/spec@1 전체 validation"]
+    A["spec.md 또는 plan.md 작성·변경"] --> B["Markdown source validation·자체 검토"]
     B -->|실패| C["source 오류 보고와 lifecycle 중단"]
-    B -->|성공| D["해당 spec index.html 생성"]
-    D --> E["docs/specs/index.html catalog 갱신"]
-    E --> F["source hash와 generated contract check"]
-    F -->|실패| C
-    F -->|성공| G["Markdown과 Spec Pages를 함께 검토·commit"]
+    B -->|성공| D["Markdown으로 승인 또는 handoff"]
+    D --> E{"사용자가 review-viewer를 명시적으로 요청했는가?"}
+    E -->|아니오| F["HTML 0개"]
+    E -->|예| G["요청형 Review Viewer 생성"]
 ```
 
-상시 Spec Pages와 요청형 Review Viewer의 lifecycle:
+Markdown source와 요청형 Review Viewer의 lifecycle:
 
 ```mermaid
 flowchart LR
-    S["spec.md source of truth"] --> P["항상 동기화되는 Spec Page"]
-    S --> C["repository spec catalog"]
-    S -. 사용자 명시 요청 .-> R["Review Viewer spec mode"]
+    S["spec.md source of truth"] -. 사용자 명시 요청 .-> R["Review Viewer spec mode"]
     L["plan source 집합"] -. 사용자 명시 요청 .-> V["Review Viewer plan mode"]
     S -. Related Specs context .-> V
 ```
@@ -137,26 +133,10 @@ flowchart TD
     A["legacy spec inventory와 mapping 고정"] --> B["새 구조를 staging에서 일괄 생성"]
     B --> C["전체 schema·R/AC·link validation"]
     C -->|실패| D["기존 구조 유지와 rollback"]
-    C -->|성공| E["전체 Spec Pages build"]
+    C -->|성공| E["tracked generated HTML inventory 제거"]
     E -->|실패| D
     E -->|성공| F["instruction과 lifecycle consumer 동시 전환"]
     F --> G["legacy active format 제거"]
-```
-
-page별 렌더링 결정:
-
-```mermaid
-flowchart TD
-    A["selected source bytes"] --> B{"source Mermaid가 있는가?"}
-    B -->|있음| C["source diagram 렌더링"]
-    B -->|없음| D{"relatedSpecs가 비어 있는가?"}
-    D -->|비어 있지 않음| E["Derived view 관계 도식 표시"]
-    D -->|비어 있음| F["flows section 미노출"]
-    C --> G["Mermaid runtime embed"]
-    E --> G
-    F --> H["Mermaid runtime 생략"]
-    G --> I["coverage·요약 지표와 section 목차 계산"]
-    H --> I
 ```
 
 활성 spec supersession transaction:
@@ -165,23 +145,24 @@ flowchart TD
 flowchart TD
     A["current-state replacement를 draft로 작성"] --> B["사용자 승인"]
     B --> C["baseline identity·SHA와 evidence를 transition에 기록"]
-    C --> D["old source·page 제거와 replacement page·catalog build"]
-    D --> E["repository validation과 expected bytes check"]
-    E -->|실패| F["기존 identity와 page 유지"]
+    C --> D["old source 제거와 replacement Markdown·reference 갱신"]
+    D --> E["repository validation"]
+    E -->|실패| F["기존 identity 유지"]
     E -->|성공| G["현재 spec과 별도 historical evidence를 함께 commit"]
 ```
 
 ## Data & Interfaces
 
-`forge/spec@1` metadata:
+`forge/spec@2` metadata:
 
 | Field | Type | 필수 | 제약 |
 |---|---|---:|---|
-| `schema` | string | 예 | 정확히 `forge/spec@1` |
+| `schema` | string | 예 | 정확히 `forge/spec@2` |
 | `id` | string | 예 | `NNN-<slug>` directory와 일치, repository unique |
 | `status` | enum | 예 | `draft`, `approved`, `implemented` |
 | `language` | enum | 예 | v1은 BCP 47 tag `en`, `ko` |
 | `kind` | enum | 예 | `feature`, `system`, `interface`, `policy` |
+| `subtype` | string | 아니오 | lowercase kebab-case 의미 분류 |
 | `areas` | string[] | 예 | 빈 목록 허용 |
 | `components` | string[] | 예 | 빈 목록 허용 |
 | `relatedSpecs` | relation[] | 예 | 빈 목록 허용, typed valid ID |
@@ -190,11 +171,12 @@ Title은 body의 단일 H1에서 파생하며 metadata field로 중복하지 않
 
 ```yaml
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 008-structured-spec-pages
 status: draft
 language: ko
 kind: system
+subtype: document-lifecycle
 areas: ["forge"]
 components: ["writing-specs", "spec-docs"]
 relatedSpecs: [{"id": "002-lifecycle-review-viewer", "relation": "relatedTo"}]
@@ -203,28 +185,23 @@ relatedSpecs: [{"id": "002-lifecycle-review-viewer", "relation": "relatedTo"}]
 
 Scalar는 parser가 문자열로 취급하고 collection은 JSON array 또는 object 문법을 사용한다. 다른 YAML 기능은 v1 input이 아니다.
 
-spec tooling command contract:
+spec validation command contract:
 
 ```text
 spec-docs validate --root docs/specs
-spec-docs build --root docs/specs --changed docs/specs/NNN-<slug>/spec.md --offline
-spec-docs check --root docs/specs
 ```
 
 | Command | 입력 | 출력 | 실패 조건 |
 |---|---|---|---|
 | `validate` | 모든 `spec.md` | 정렬된 진단과 exit code | schema, R·AC, relation, link 위반 |
-| `build` | validated spec root와 선택적 changed path | per-spec `index.html`, catalog `index.html` | source invalid, template 또는 Mermaid packaging 실패 |
-| `check` | source와 committed Spec Pages | regenerated expected bytes와 contract 결과 | 누락, stale hash, manual edit, orphan, manifest·generator mismatch |
 
-Spec Page 역할과 저장 정책:
+문서 역할과 저장 정책:
 
 | Artifact | 역할 | Git | 갱신 trigger |
 |---|---|---:|---|
 | `docs/specs/NNN-<slug>/spec.md` | 영구 source of truth | 예 | 요구사항·상태 변경 |
-| `docs/specs/NNN-<slug>/index.html` | spec별 상시 가독성 page | 예 | 해당 spec 변경 |
-| `docs/specs/index.html` | 전체 spec catalog | 예 | 어떤 spec metadata·title·관계 변경 |
-| Review Viewer output | 요청형 맥락 snapshot | `002`의 승인 delta가 결정 | 사용자 명시 요청; 목표 경로는 `.forge/reviews/<review-id>/view.html` |
+| `docs/plans/PPP-<slug>/plan.md` | 작업 단위 실행 source | 예 | 계획·진행 변경 |
+| `.forge/reviews/<review-id>/view.html` | 요청형 맥락 snapshot | 아니오 | 사용자 명시 요청 |
 
 spec transition manifest:
 
@@ -246,45 +223,27 @@ spec transition manifest:
 }
 ```
 
-page 요약 지표와 파생 도식 입력:
-
-| 지표 또는 도식 | 계산 입력 | 제외 대상 |
-|---|---|---|
-| 활성 R 수 | `REMOVED`가 아닌 `R<number>` | tombstone |
-| AC 수 | unique `AC<number>` | 없음 |
-| tombstone 수 | `- R<number>. REMOVED — <reason>` | 없음 |
-| diagram 수 | `Behavior & Flows`의 source Mermaid fence | 파생 도식 |
-| 미커버 활성 R 수 | 인용 AC가 0개인 활성 R | tombstone |
-| per-spec 관계 도식 | 해당 spec의 `relatedSpecs` entry | source Mermaid가 있으면 미표시 |
-| catalog 관계 도식 | 모든 활성 spec의 `relatedSpecs` entry | 해석 불가 ID |
-
 동일한 baseline transition은 한 번만 적용한다. 이후 baseline에 `fromPath`가 없으면 해당 record는 historical evidence로 남지만 새 삭제 권한을 만들지 않는다. 나중에 현재 replacement를 다시 교체할 때는 그 시점의 baseline source를 `fromPath`로 사용하는 새 record를 별도 diff에 append한다.
 
 ## Acceptance Criteria
 
 AC(Acceptance Criterion)는 연결된 R이 충족됐음을 보여주는 관찰 가능한 근거를 뜻한다.
 
-- AC1 (R1–R9): 새 spec을 `forge/spec@1`로 작성하면 제한된 frontmatter에 `language`를 포함한 필수 metadata와 6개 canonical section이 존재하고, title은 H1에서만 파생되며, unique R·AC, `REMOVED`를 제외한 full R coverage, 유효한 AC reference와 typed related spec이 validator에 의해 확인되고 body에는 별도 `Status:` gate가 존재하지 않는다.
-- AC2 (R10–R15): 잘못된 schema, 지원하지 않는 YAML 기능과 language, path와 다른 ID, 추가 `##`, 잘못된 tombstone, duplicate R, 존재하지 않거나 `REMOVED`인 AC reference, uncovered active R, broken relation·link, 잘못된 Mermaid syntax, approved clarification fixture를 함께 validate하면 `(path, line, code)`로 정렬된 deterministic 진단과 non-zero exit가 나오고 approval·plan handoff·page build가 중단된다.
+- AC1 (R1–R9): MODIFIED — 새 spec을 `forge/spec@2`로 작성하면 필수 metadata, 선택적인 subtype, 단일 H1, Requirements·Acceptance Criteria·Decisions & History와 unique R·AC coverage가 검증되고, API·workflow·architecture fixture가 서로 다른 추가 `##`와 Mermaid·표 위치를 사용해도 validation이 통과한다.
+- AC2 (R10–R15): MODIFIED — 잘못된 schema·subtype·ID·tombstone·R·AC reference·coverage·relation·link·Mermaid와 approved clarification fixture를 함께 validate하면 정렬된 deterministic 진단과 non-zero exit가 나오고 approval과 plan handoff가 중단되지만 HTML은 생성되지 않는다.
 - AC3 (R14): approved spec을 읽는 `writing-plans`와 implemented status를 기록하는 `verifying-work` fixture가 공통 parser의 frontmatter status를 사용하고 literal body `Status:` 검색 없이 lifecycle gate를 적용한다.
-- AC4 (R16–R24): draft body 수정, `approved` 전환, `verifying-work`의 `implemented` 전환에서는 temporary output의 완성 뒤 atomic replace로 해당 directory의 `index.html`과 `docs/specs/index.html`이 같은 작업에서 갱신된다. Generator version, template 또는 bundled asset 변경에서는 전체 page가 재생성되며, 각 page는 H1 title, metadata, R·AC, Mermaid, relation, source hash를 현재 source와 일치하게 표시한다.
-- AC5 (R17–R18, R22–R23): source 한 바이트 변경, generated HTML 수동 편집, page 누락과 orphan page fixture에 `spec-docs check`를 실행하면 regenerated expected bytes 비교로 각각 실패하며, build 뒤 다시 실행하면 성공하고 동일 input 재build의 Git diff는 0이다.
-- AC6 (R19–R21, R24): 한국어 spec page를 열면 한국어 navigation으로 요약→시각 흐름→source detail→acceptance evidence를 읽을 수 있고 API·schema identifier와 source Mermaid는 원문을 유지하며 HTML에서 source를 편집할 수 없다.
-- AC7 (R20): 여러 status, kind, area, component와 relatedSpecs를 가진 fixture catalog에서 검색·filter·relation link 결과가 source metadata와 일치하고 각 항목이 source와 per-spec page로 이동한다.
-- AC8 (R25–R26): Spec Pages tooling 구현 검증에서 desktop working width와 390px narrow width의 keyboard focus, typical·empty·long data, wide table·diagram overflow가 정의된 state geometry 안에서 동작하고 offline artifact가 외부 request 없이 열린다. Valid source를 사용한 runtime render failure fixture에서는 Mermaid 오류가 다른 content를 가리지 않고 원문과 복구 안내를 표시한다.
-- AC9 (R27–R29): spec 변경과 Spec Pages build를 수행해도 Review Viewer가 생성되거나 기존 Viewer가 갱신되지 않으며, 사용자가 명시적으로 요청한 뒤에만 별도 Review Viewer가 생성된다. Viewer의 `.forge/reviews/` 비커밋 전환은 `002`의 승인 delta와 contract test가 적용된 경우에만 일어나고, 그 전에는 현재 source 옆 committed `view.html` 정책이 유지된다.
-- AC10 (R30): Forge repository migration commit 범위에서 모든 활성 spec이 `forge/spec@1`이고 모든 lifecycle consumer와 fixture가 공통 parser를 사용하며 schema 없는 활성 spec, legacy body status gate, production compatibility flag와 legacy parser branch가 0개다.
-- AC11 (R31–R33): split·merge·discard와 status 누락을 포함한 repository migration fixture를 section provenance, `oldPath → newSpecIds[]`, link rewrite 결과와 rollback point를 가진 한 cutover로 실행하면 누락 status를 `implemented`로 자동 승격하지 않고 validation 또는 page build 실패 시 기존 구조를 유지하며 성공한 경우에만 모든 instruction과 link를 새 ID로 전환한 뒤 임시 converter를 제거한다. Forge 구현 diff에는 `weppy-roblox-mcp-private` 변경이 없고, 해당 repository migration은 별도 governing spec과 plan의 후속 작업으로 남는다.
-- AC12 (R34): plugin 설치와 repository validator를 Claude Code·Codex·Antigravity 지원 경로에서 검사하면 spec parser, validator, builder, template와 offline asset이 누락 없이 발견되고 동일 fixture 결과를 낸다.
+- AC4 (R16–R24): MODIFIED — spec 작성·승인·implemented 전환과 plan 작성·checkpoint fixture를 실행하면 변경된 tracked artifact는 Markdown뿐이고 HTML 생성 count는 0이다. 이어 사용자가 `review-viewer`를 명시적으로 요청하면 `.forge/reviews/<review-id>/view.html` 한 개만 비추적 상태로 생성된다.
+- AC5 (R17–R23): MODIFIED — 복잡한 source, Mermaid·표 포함 source, approval, handoff, stale Viewer와 기존 source-adjacent HTML fixture가 있어도 명시 요청 전에는 HTML을 생성·갱신하지 않고 lifecycle gate는 Markdown validation만으로 판정된다.
+- AC6 (R24): MODIFIED — 한국어 source의 요청형 Review Viewer는 한국어 UI 설명과 원문의 API·schema identifier를 함께 표시한다.
+- AC7 (R20): MODIFIED — 여러 spec과 plan을 탐색하는 기본 workflow가 Markdown path와 relation link만 사용하고 HTML catalog의 누락을 오류로 처리하지 않는다.
+- AC8 (R21–R24): MODIFIED — 명시적으로 생성한 Review Viewer는 source를 편집하지 않고 manifest·freshness·adaptive rendering 계약을 `002`에 위임하며 Git 비추적 상태를 유지한다.
+- AC9 (R27–R29): MODIFIED — spec 또는 plan source를 변경·validate해도 Review Viewer가 생성·갱신되지 않고, 사용자가 현재 source set의 Viewer를 명시적으로 요청한 뒤에만 생성된다.
+- AC10 (R30): MODIFIED — Forge migration commit에서 활성 spec과 lifecycle consumer가 `forge/spec@2`와 Markdown-only artifact contract를 사용하고 자동 Spec Pages build·check 경로와 tracked generated HTML이 0개다.
+- AC11 (R31–R33): MODIFIED — migration fixture가 flexible section provenance, schema·status resolution, link rewrite, generated HTML inventory와 rollback point를 기록하고 validation 또는 HTML 제거 실패 시 기존 구조를 유지하며 성공 시에만 한 cutover로 전환한다. Forge diff에는 `weppy-roblox-mcp-private` 변경이 없다.
+- AC12 (R34): MODIFIED — plugin 설치와 repository validator를 Claude Code·Codex·Antigravity 지원 경로에서 검사하면 spec parser·validator와 요청형 Review Viewer parser·renderer·asset이 발견되고 동일 fixture 결과를 내며 자동 Spec Pages builder는 설치되지 않는다.
 - AC13 (R9, R35–R37): baseline의 implemented spec을 새 approved current-state spec으로 교체하는 fixture에서 exact `fromId`·`fromPath`·SHA-256, 새 target과 evidence를 가진 append-only transition을 함께 적용하면 repository validation이 통과한다. Invalid JSON, duplicate·unknown key, wrong type, uppercase·short hash, empty string, manifest-file symlink, absolute·drive·UNC·backslash·dot-segment·record-path symlink, 잘못된 schema·disposition·target·evidence를 각각 주입하면 정렬된 deterministic 진단과 non-zero exit가 발생한다.
-- AC14 (R38): baseline/current ID·path·status·SHA binding 불일치, baseline에 이미 존재하는 target, draft target, missing target, transition record 수정·삭제·reorder·replay, duplicate source·target, same-diff multi-hop, old identity를 가리키는 active relation·Markdown link, old orphan page와 stale replacement page fixture를 각각 검사하면 validation 또는 check가 실패한다. 새 record 한 개만 append하고 모든 reference를 새 identity로 갱신하며 old page를 제거한 뒤 replacement page와 catalog를 build하면 통과하고 second build diff는 0이다.
-- AC15 (R35, R39): `writing-specs` change fixture에서 사용자가 완료된 작업 기록을 활성 spec에서 분리해 달라고 요청하면 agent는 current-state replacement draft와 별도 evidence를 먼저 제시하고 승인 전 production source·page를 변경하지 않는다. 승인 뒤 isolated candidate에 source deletion, transition, reference, page build 또는 check failure를 각각 주입하면 production HEAD·index·tracked·untracked fingerprint가 유지된다. 성공한 candidate commit만 expected clean root에 반영한 결과에는 현재 계약과 별도 evidence가 남고 Review Viewer 생성 count는 0이다.
-
-- AC16 (R40): source Mermaid가 0개인 fixture와 1개 이상인 fixture를 build하면 전자의 generated bytes에는 Mermaid runtime이 없고 후자에는 있으며, 두 fixture 모두 network를 차단한 브라우저에서 오류 없이 열린다. 같은 source로 다시 build한 diff는 0이다.
-- AC17 (R41–R42): 활성 R, tombstone, 인용 AC가 없는 활성 R을 함께 가진 fixture page를 열면 요약 지표가 source에서 계산한 수치와 일치하고, 각 활성 R 행에서 그 R을 인용하는 AC로 이동할 수 있으며, 인용 AC가 없는 활성 R이 나머지와 구분되어 표시되고 tombstone은 coverage 대상에서 제외된다.
-- AC18 (R43): `###` heading이 3개 이상인 canonical section을 가진 fixture page에는 section-local 목차가 나타나고 각 항목이 해당 heading으로 이동한다. Heading이 2개 이하인 section에는 목차가 없다.
-- AC19 (R44–R46): source Mermaid가 없고 `relatedSpecs`가 있는 fixture page는 `Derived view`로 표시된 관계 도식을 보여주고, 둘 다 없는 fixture page는 flows section을 노출하지 않으며, catalog page는 전체 관계 도식을 `Derived view`로 보여준다. 세 도식 모두 frontmatter `relatedSpecs`에 없는 node와 edge를 포함하지 않고, source Mermaid를 가진 spec의 flows section은 source diagram만 표시한다.
-- AC20 (R47): R40–R46 구현 diff에서 `--changed` 없이 전체 Spec Pages를 재생성한 뒤 `check`가 성공하고 재실행 diff가 0이며, 같은 diff에 `weppy-roblox-mcp-private` 변경이 0건이다.
+- AC14 (R38): MODIFIED — transition binding·replay·duplicate·chain·missing evidence·old reference fixture는 validation에 실패하고, 유효한 replacement Markdown과 reference만 남긴 candidate는 HTML build 없이 통과한다.
+- AC15 (R35, R39): MODIFIED — current-state replacement 승인 전에는 production source를 변경하지 않고, 승인 뒤 isolated candidate의 Markdown validation 실패는 production fingerprint를 보존한다. 성공한 candidate에는 현재 계약과 evidence만 남고 Review Viewer 생성 count는 0이다.
 
 ## Decisions & History
 
@@ -307,3 +266,5 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐음을 보여주는 관찰 �
 - 2026-08-03 [DECISION] 빈 `Behavior & Flows` section을 그대로 노출하는 대신 frontmatter `relatedSpecs`에서 파생한 관계 도식을 `Derived view`로 표시한다. 파생 입력을 frontmatter 명시 관계로 제한해 "source에 없는 관계를 추가하지 않는다"는 비목표를 유지한다.
 - 2026-08-03 [CHANGE] R40–R47과 AC16–AC20 ADDED: 조건부 Mermaid runtime embed, 양방향 R·AC coverage, page 요약 지표, section-local 목차, `relatedSpecs` 파생 관계 도식과 전체 재생성 범위를 추가한다.
 - 2026-08-03 [APPROVED] 사용자가 조건부 Mermaid runtime, 양방향 R·AC coverage, page 요약 지표, section-local 목차와 `relatedSpecs` 파생 관계 도식 delta를 승인하고 계획 작성을 요청했다.
+- 2026-08-04 [CHANGE] R2, R4–R5, R8, R10–R13, R16–R24, R27–R34, R38–R47과 AC1–AC15 MODIFIED 또는 REMOVED: fixed six-section `forge/spec@1`과 committed Spec Pages를 `forge/spec@2` flexible Markdown source와 explicit-request-only Review Viewer 경계로 교체한다.
+- 2026-08-04 [APPROVED] 사용자가 flexible Markdown source, Markdown-only lifecycle과 명시적 `review-viewer` 요청에 한정된 HTML 생성을 승인하고 구현 진행을 요청했다.

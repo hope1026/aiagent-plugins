@@ -19,7 +19,6 @@ jobs:
             python3 -m unittest discover \
               -s plugins/forge/skills/writing-specs/tests -p 'test_*.py' -v
           node plugins/forge/skills/writing-specs/tests/test_mermaid_validate.mjs
-          node plugins/forge/skills/writing-specs/tests/test_spec_pages_runtime.mjs
           python3 plugins/forge/skills/review-viewer/tests/test_review_sources.py
           python3 plugins/forge/skills/review-viewer/tests/test_review_renderer.py
           node plugins/forge/skills/review-viewer/tests/test-viewer-freshness.mjs
@@ -37,8 +36,6 @@ jobs:
             validate --root docs/specs --baseline-ref HEAD
           bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
             inspect --spec docs/specs/008-structured-spec-pages/spec.md --format json
-          bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
-            check --root docs/specs
           bash scripts/validate.sh
 
   browser:
@@ -46,7 +43,6 @@ jobs:
     container: mcr.microsoft.com/playwright:v1.55.0-noble
     steps:
       - uses: actions/checkout@v4
-      - name: Run pinned browser harnesses
+      - name: Run pinned browser harness
         run: |
-          bash plugins/forge/skills/writing-specs/tests/run-spec-pages-browser.sh
           bash plugins/forge/skills/review-viewer/tests/run-review-viewer-browser.sh

@@ -31,11 +31,11 @@ assert_has 'restrained motion' "$SITE"
 
 assert_has 'Browser application UI.*web-app-design' "$ROUTER"
 assert_has 'Public website.*website-design' "$ROUTER"
-assert_has 'Review Viewer.*web-app-design|Spec Pages.*web-app-design' "$ROUTER"
+assert_has 'Review Viewer.*web-app-design' "$ROUTER"
 assert_has 'review-viewer' "$ROUTER"
 assert_not_has 'spec-viewer' "$ROUTER"
 assert_has 'Review Viewer tooling.*web-app-design|review-viewer tooling.*web-app-design' "$APP"
-assert_has 'Spec Pages tooling.*web-app-design' "$APP"
+assert_not_has 'Spec Pages tooling' "$APP"
 assert_has 'fixed Review Viewer generation' "$APP"
 assert_has 'fixed Review Viewer generation' "$SITE"
 

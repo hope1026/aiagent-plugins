@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 004-adaptive-execution-routing
 status: approved
 language: ko

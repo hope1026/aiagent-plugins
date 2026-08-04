@@ -11,7 +11,7 @@ Use the `forge/spec@2` semantic contract for `docs/specs/NNN-<slug>/spec.md`. Th
 
 ## Lifecycle
 
-The frontmatter `status` field moves `draft → approved → implemented`. Only explicit user approval sets `approved`; only `verifying-work` sets `implemented` after every AC passes. Any body, metadata, or status edit is incomplete until repository validation and the matching Spec Pages build/check transaction pass.
+The frontmatter `status` field moves `draft → approved → implemented`. Only explicit user approval sets `approved`; only `verifying-work` sets `implemented` after every AC passes. Any body, metadata, or status edit is incomplete until repository Markdown validation passes. It never implies HTML generation.
 
 ## Template
 

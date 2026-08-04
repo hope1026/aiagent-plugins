@@ -41,7 +41,7 @@ Above all: **lead with the point** — decision, result, or ask first; backgroun
 
 ## Review Surface Copy
 
-For durable Spec Pages and requested Review Viewers:
+For requested Review Viewers:
 
 - Frame the page and diagram title as the question the reviewer wants answered, not as an internal system name.
 - State what to confirm before background or source detail.

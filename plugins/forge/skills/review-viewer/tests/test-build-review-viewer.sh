@@ -151,7 +151,7 @@ run_builder --mode spec --spec docs/specs/008-alpha/spec.md \
   --generated-at 2026-08-01T00:00:00Z --offline
 test -f "$REPO/.forge/reviews/spec-final/view.html" || fail "spec final viewer was not generated"
 after_pages="$(find "$REPO/docs/specs" -type f -name index.html -print0 | LC_ALL=C sort -z | xargs -0 shasum -a 256 2>/dev/null || true)"
-test "$before_pages" = "$after_pages" || fail "Review Viewer changed Spec Pages"
+test "$before_pages" = "$after_pages" || fail "Review Viewer changed tracked lifecycle HTML"
 "$BUILDER" --check "$REPO/.forge/reviews/spec-final/view.html" \
   --repo-root "$REPO" --format json >"$TMP/spec-final-current.json"
 python3 - "$TMP/spec-final-current.json" <<'PY'

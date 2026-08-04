@@ -101,7 +101,7 @@ Forge skill.
    then use the corresponding boundary table above.
 3. Write the smallest complete change. For repository-only workflows, edit only
    the owned canonical skill and render its native adapters through the manager.
-4. When a Spec Pages generator, template, runtime, or bundled asset changes, run `spec-docs.sh --repo-root . build --root docs/specs --offline` with no `--changed`, then `spec-docs.sh --repo-root . check --root docs/specs`. Complete this full rebuild before validation or commit.
+4. Keep the normal spec and plan lifecycle Markdown-only. Review Viewer tooling may create HTML only through an explicit user request; maintainer tests use isolated temporary fixtures and never create a repository Review Viewer as a side effect.
 5. Run `bash scripts/validate.sh` from the repository root. It must print
    `validate: all checks passed` before commit.
 6. Search changed skill files for banned tokens and re-read every gate under
@@ -174,7 +174,7 @@ The distributed Forge plugin contains user-execution skills only:
 | Skill | Responsibility |
 |---|---|
 | `using-forge` | Route user project work into the spec-first lifecycle |
-| `writing-specs` | Create and approve structured source, then keep tracked Spec Pages synchronized |
+| `writing-specs` | Create, approve, inspect, and validate Markdown structured source |
 | `writing-plans` | Create independently identified plans with optional Related Specs |
 | `executing-plans` | Execute tasks with plan-local progress and checkpoints |
 | `test-driven-development` | Enforce red, green, refactor |
@@ -206,7 +206,6 @@ distributed catalog.
 | Dev install script | `scripts/install.sh` |
 | Pressure-test notes | `.forge/scratch/` |
 | Repository specs | `docs/specs/NNN-<slug>/spec.md` |
-| Tracked Spec Pages | `docs/specs/NNN-<slug>/index.html`, `docs/specs/index.html` |
 | Repository plans | `docs/plans/PPP-<slug>/plan.md` |
 | Requested Review Viewer | `.forge/reviews/<review-id>/view.html` |
 | Shared research and debug records | `docs/research/`, `docs/debug/` |

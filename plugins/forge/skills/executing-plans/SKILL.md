@@ -38,7 +38,7 @@ The startup checklist and every plan task become todos — create one todo per i
 
 ### Phase 1: Startup
 
-1. **Read the plan** in `docs/plans/` end to end. For every canonical Related Specs entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json`. Require `schema` = `forge/spec@1`, `status` in `approved|implemented`, and empty `diagnostics`; historical execution may continue from either approved lifecycle state. Review unclear instructions, contradictions, and missing preconditions before execution.
+1. **Read the plan** in `docs/plans/` end to end. For every canonical Related Specs entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json`. Require `schema` = `forge/spec@2`, `status` in `approved|implemented`, and empty `diagnostics`; historical execution may continue from either approved lifecycle state. Review unclear instructions, contradictions, and missing preconditions before execution.
 2. **Open progress state.** The default source is Task checkboxes plus `Progress History` in `plan.md`. When `progress.md` exists beside the plan, use it for detailed routing and checkpoint evidence. When `tasks/*.md` exists, confirm each Task ID appears once in the plan index and once in its owned Task file.
 3. **Skip completed work.** Tasks the plan-local progress state marks complete are DONE — do not redo them. Resume at the first task not marked complete. After any compaction or resume, trust plan-local progress and commit history over recollection.
 4. **Create one todo per remaining task.**

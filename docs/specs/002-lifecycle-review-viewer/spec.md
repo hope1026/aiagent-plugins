@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 002-lifecycle-review-viewer
 status: approved
 language: ko
@@ -14,7 +14,7 @@ relatedSpecs: [{"id":"008-structured-spec-pages","relation":"relatedTo"}]
 
 Forge의 spec과 plan이 커질수록 원본 Markdown만으로 전체 흐름, 책임 경계, Task 의존성, R·AC coverage를 검토하기 어렵다. Review Viewer는 영구 관리되는 spec과 작업 단위로 생성·삭제되는 plan의 source ownership을 보존하면서, 사용자가 명시적으로 요청한 시점에 사람이 내용을 단계적으로 이해할 수 있는 읽기 전용 HTML snapshot을 `spec` 또는 `plan` mode로 제공한다.
 
-Review Viewer의 목적은 텍스트를 그림으로 치환하는 것이 아니다. 같은 정보를 `요약표 → 시각 흐름 → 상세 source → acceptance evidence` 순서로 읽게 하고, primary source와 comparison·context source의 provenance를 구분해 검토 화면을 제공하는 것이다.
+Review Viewer의 목적은 텍스트를 그림으로 치환하는 것이 아니다. Selected Markdown을 Semantic IR로 보존하고 문서 종류, subtype, 사용자의 검토 목적과 독자에 맞는 Presentation Plan을 선택해 사람이 현재 질문의 답을 빠르게 찾도록 하는 것이다. 일관성은 모든 문서에 동일한 panel 구조를 적용하는 대신 공통 visual system, component grammar, provenance와 interaction contract에서 제공한다.
 
 비목표:
 - Review Viewer를 spec이나 plan을 대신하는 편집 가능한 source of truth로 만들지 않는다.
@@ -24,7 +24,7 @@ Review Viewer의 목적은 텍스트를 그림으로 치환하는 것이 아니�
 - 생성된 개별 Review Viewer를 구현 산출물처럼 별도 렌더링·레이아웃 검증하지 않는다.
 - 사용자의 명시적 요청 없이 spec·plan·checkpoint의 Review Viewer를 생성하거나 갱신하지 않는다.
 - spec과 plan이 항상 1:1로 대응한다고 가정하거나 두 문서의 내용을 하나의 combined Viewer에 병합하지 않는다.
-- spec 갱신과 함께 상시 생성되는 Spec Pages의 lifecycle·경로·검증 계약을 이 기능에 포함하지 않는다. Spec Pages는 `docs/specs/008-structured-spec-pages/spec.md`가 소유하는 별도 artifact다.
+- spec·plan의 일반적인 작성·변경·승인·handoff에서 HTML을 자동 생성하지 않는다. Markdown-only lifecycle 경계는 `docs/specs/008-structured-spec-pages/spec.md`가 소유한다.
 
 검토한 접근안:
 
@@ -34,6 +34,8 @@ Review Viewer의 목적은 텍스트를 그림으로 치환하는 것이 아니�
 | 별도 `plan-viewer` 추가 | 역할 이름이 명확함 | shell, locale, mobile, 검증 로직이 중복됨 | 제외 |
 | spec과 plan의 combined Viewer 유지 | 하나의 화면에서 traceability를 볼 수 있음 | 독립 수명 주기와 `0..N` 관계를 1:1 lifecycle처럼 오해하게 만듦 | 제외 |
 | 외부 문서 사이트 또는 협업 문서 사용 | 공유와 댓글 기능이 강함 | 배포·권한·동기화 비용과 source drift 위험이 큼 | 제외 |
+| 고정 6-panel template | 구현과 탐색 위치가 단순함 | API·workflow·architecture·policy·migration과 plan의 핵심 질문을 같은 정보 순서에 강제함 | 제외 |
+| Semantic IR + Presentation Plan + component grammar | source fidelity를 유지하면서 문서 종류와 검토 목적에 맞는 구성을 재사용할 수 있음 | planner·profile·coverage validator가 필요함 | 채택 |
 
 ## Requirements
 
@@ -59,7 +61,7 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R18. MODIFIED — `spec`과 `plan` mode 출력은 모두 `.forge/reviews/<review-id>/view.html`을 사용하고, 동일한 `review-id`의 갱신은 사용자의 명시적 요청이 있을 때만 허용해야 한다.
 - R19. MODIFIED — build command는 기존 `--offline`과 함께 `--mode spec|plan`, `--locale en|ko`, `--review-id`를 지원해야 한다. spec mode는 current spec과 선택적인 comparison source를 받고, plan mode는 primary source set과 plan이 선언한 Related Specs context를 결정적으로 해석하며, 기본 locale은 `en`으로 유지해야 한다.
 - R20. `--locale ko`에서는 tab을 `개요`, `요구사항`, `흐름`, `데이터와 인터페이스`, `승인 기준`, `변경 이력`으로 표시해야 한다.
-- R21. MODIFIED — 모든 Review Viewer mode는 `overview`, `requirements`, `flows`, `data`, `acceptance`, `history`의 6개 고정 panel ID를 유지해야 한다.
+- R21. MODIFIED — Review Viewer는 title·source·freshness·navigation의 stable shell landmark를 유지하되 content panel의 수, ID, 순서와 layout을 6개 고정 panel로 제한하지 않아야 한다. Presentation Plan이 선택한 component composition은 동일 source라도 문서 종류와 검토 목적에 따라 달라질 수 있어야 한다.
 - R22. MODIFIED — plan mode의 Overview는 목표, primary plan의 Task·Step 집계, context spec별 R·AC 집계, 읽기 순서, 사용자 경험, 완료 상태를 분리해 보여줘야 한다.
 - R23. MODIFIED — plan mode의 Requirements는 Global Constraints, 핵심 정책, Route별 적용 범위와 Related Specs context를 source별 provenance와 함께 보여줘야 한다.
 - R24. plan mode의 Flows는 Route map, Task dependency, runtime 또는 확장 흐름을 보여줘야 한다.
@@ -95,13 +97,13 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R54. 복잡한 plan은 Task dependency 또는 Route map, runtime responsibility 또는 transaction flow, 확장 구조 또는 multi-Place flow의 세 diagram 관점을 포함해야 한다.
 - R55. `writing-plans`는 Task 22개를 한 diagram에 평면적으로 연결하지 않고 먼저 6~10개의 Route로 묶도록 요구해야 한다.
 - R56. MODIFIED — plan의 diagram과 책임 표는 plan에서 선택한 언어로 작성하되 Related Specs context에서 인용한 값과 API, service, schema, code identifier는 원문을 유지하고 source provenance를 표시해야 한다.
-- R57. MODIFIED — 고정 Review Viewer shell로 spec 또는 plan `view.html`을 생성하는 작업은 `web-app-design`, `website-design`, deprecated `ui-design`을 적용하지 않아야 하며, Review Viewer shell·template·style 자체를 변경할 때만 `web-app-design`을 적용해야 한다.
-- R58. MODIFIED — agent가 수동으로 작성한 HTML content fragment를 Review Viewer 입력으로 사용하지 않아야 한다.
-- R59. MODIFIED — Review Viewer의 Signature는 장식이 아니라 `Route Map`, `Runtime Atlas`, `AC Coverage`의 콘텐츠 구조에서 만들어야 한다.
+- R57. MODIFIED — 승인된 component grammar와 profile로 개별 Review Viewer를 생성하는 작업은 UI 디자인 skill을 적용하지 않아야 하며, Review Viewer shell·component·profile·style·planner·interaction tooling을 변경할 때만 `web-app-design`을 적용해야 한다.
+- R58. MODIFIED — agent는 수동 HTML content fragment, 문서별 HTML template, CSS 또는 script를 Review Viewer 입력으로 작성하지 않아야 한다. 문서별 판단이 필요하면 제한된 Presentation Plan만 선택하거나 생성해야 한다.
+- R59. MODIFIED — Review Viewer의 Signature는 장식이나 고정 component 이름이 아니라 selected source와 intent에 맞는 state map, interface contract, dependency route, exception matrix, AC coverage 같은 primary reading structure에서 만들어야 한다.
 - R60. diagram 추가는 제목, 읽는 법, mobile 대체 요약표와 한 묶음으로 검토해야 한다.
-- R61. MODIFIED — Review Viewer의 각 panel 제목은 스캔 가능한 짧은 명사형 label을 사용하고, 사용자가 그 화면에서 답을 찾을 질문은 제목을 대체하지 않고 제목 바로 아래의 종속 orientation 문장으로 표시해야 한다. `writing-tone`은 그 orientation 문장이 시스템 이름이 아니라 사용자의 질문에 맞춰지도록 요구해야 한다.
+- R61. MODIFIED — Review Viewer의 각 content component 제목은 스캔 가능한 짧은 명사형 label을 사용하고, 사용자가 그 component에서 답을 찾을 질문은 제목 바로 아래의 종속 orientation 문장으로 표시해야 한다. 같은 component도 Presentation Plan의 intent에 맞는 orientation을 사용해야 한다.
 - R62. MODIFIED — Review Viewer copy는 이 화면에서 확인할 것을 먼저 말하고, 번역해도 의미가 유지되는 label은 사용자 언어로 쓰며 고유 API·service·schema 이름만 원문으로 유지해야 한다.
-- R63. MODIFIED — Review Viewer copy는 요약→시각 흐름→원문 상세 순서로 구성하고 각 diagram 앞에 한 문장의 읽는 법을 제공해야 한다.
+- R63. MODIFIED — Review Viewer copy의 순서는 Presentation Plan이 primary review question에 맞춰 결정하되 첫 화면에서 핵심 판단 자료를 제시하고, source detail과 provenance로 추적 가능한 읽기 경로를 제공하며 각 diagram 앞에 한 문장의 읽는 법을 표시해야 한다.
 - R64. MODIFIED — 고정 Review Viewer tooling으로 개별 spec 또는 plan `view.html`을 생성하는 작업은 `verifying-work`를 적용하지 않고, build command 성공을 생성 완료의 충분한 근거로 사용해야 한다.
 - R65. MODIFIED — 생성된 개별 Review Viewer에는 별도 `--check`, source count·hash·Mermaid 일치 확인, unresolved placeholder·shell markup 검사 같은 post-build 검증을 수행하지 않아야 한다.
 - R66. MODIFIED — 생성된 개별 Review Viewer에는 desktop·390px mobile render, screenshot, layout, print, tab, deep link, checkbox persistence, Mermaid, offline, freshness 상태의 브라우저 검증을 수행하지 않아야 한다.
@@ -123,12 +125,28 @@ R(Requirement)는 시스템이 반드시 제공해야 하는 동작이나 제약
 - R82. ADDED — source fetch 실패, 누락, 파일명 충돌 또는 hash 계산 실패를 `current`로 간주하지 말고 source별 실패 원인과 다시 검증할 방법을 표시해야 한다.
 - R83. MODIFIED — command-line freshness check는 로컬 Review Viewer manifest의 source hash와 현재 Markdown source를 비교해 모두 일치하면 성공하고, stale·누락·manifest 오류가 있으면 실패해야 한다. 이 checker는 사용자가 요청한 Review Viewer를 자동 갱신하는 trigger로 사용하지 않아야 한다.
 - R84. ADDED — 조사·debug 기록은 로컬 작업 중 `.forge/`에 둘 수 있지만 팀이 공유하거나 장기 보존할 기록은 `docs/research/`, `docs/debug/` 또는 해당 프로젝트의 영구 문서 경로로 승격해야 한다.
-- R85. ADDED — Review Viewer builder는 selected Markdown source를 deterministic structured parser로 해석해 6개 panel content와 manifest를 생성하고, agent가 작성한 HTML content fragment나 source 밖의 보충 문장을 입력으로 요구하지 않아야 한다.
-- R86. ADDED — `docs/specs/NNN-<slug>/index.html`과 `docs/specs/index.html`로 상시 관리되는 Spec Pages는 Review Viewer가 아니며, 이 spec의 명시적 요청 gate, `.forge/reviews/` 출력, build-success 예외를 적용하지 않아야 한다. Spec Pages의 생성·갱신·검증 계약은 `docs/specs/008-structured-spec-pages/spec.md`가 소유해야 한다.
+- R85. MODIFIED — Review Viewer builder는 selected Markdown source를 Semantic IR로 해석하고, View Context로 Presentation Plan을 선택한 뒤 공통 component grammar로 HTML과 manifest를 생성해야 한다. Agent가 작성한 HTML content fragment나 source 밖의 보충 문장을 입력으로 요구하지 않아야 한다.
+- R86. MODIFIED — Forge의 일반적인 spec·plan lifecycle은 Markdown만 생성해야 하며 source-adjacent Spec Pages, plan pages 또는 HTML catalog를 상시 생성하지 않아야 한다. 이 spec의 HTML output은 사용자가 `review-viewer`를 명시적으로 요청한 `.forge/reviews/<review-id>/view.html`에 한정해야 한다.
 - R87. ADDED — builder는 해당 Review Viewer가 렌더링할 source Mermaid와 derived diagram을 합쳐 하나 이상 포함할 때만 Mermaid runtime asset을 embed하거나 CDN loader를 출력해야 한다. Diagram이 없는 snapshot은 runtime을 생략해야 하며, 생략 여부는 selected source bytes와 build option에서만 결정적으로 계산해야 한다. `--offline` snapshot은 runtime을 생략한 경우에도 외부 network 없이 열려야 한다.
 - R88. ADDED — Review Viewer의 Overview panel은 R29가 정의한 source별 집계를 스캔 가능한 요약 지표로 먼저 제시하고, 상세 집계 표를 그 아래에 유지해야 한다. 요약 지표는 R30이 고정한 집계 기준에서만 계산해야 한다.
 - R89. ADDED — 같은 source의 provenance를 같은 panel 안에서 연속 block마다 반복 표시하지 않아야 한다. Provenance는 한 panel 안에서 같은 source가 연속되는 block 묶음마다 그 묶음의 첫 block에 한 번만 표시하고, 인용 source가 바뀌는 첫 block에서 다시 표시해야 한다. 축약은 R15·R16의 source role 구분과 R35의 namespace 구분을 약화시키지 않아야 하며, manifest와 History panel의 전체 provenance 기록은 축약하지 않아야 한다.
 - R90. ADDED — R87–R89의 렌더링 변경은 Review Viewer shell·template·style·runtime 변경이므로 R51과 R67에 따라 desktop 1440px와 mobile 390px 검증, 관련 AC 검증을 수행해야 한다. 이 변경은 개별 `view.html` 생성 작업에 post-build 검증을 다시 도입하지 않아야 한다.
+- R91. ADDED — Semantic IR은 metadata, source별 outline, 원문 순서의 prose·table·code·Mermaid block, Requirement·Acceptance Criterion·Task·Step·decision·interface entity, explicit relation과 provenance를 표현해야 한다.
+- R92. ADDED — Parser는 selected source의 모든 block을 Semantic IR에 정확히 한 번 보존하고 각 entity와 relation을 source path·namespace·line anchor에 연결해야 하며, 인식하지 못한 Markdown도 generic block으로 보존해야 한다.
+- R93. ADDED — View Context는 mode, document kind와 subtype, user intent, audience, locale, comparison·context source role과 export mode를 가져야 한다. `intent`는 `review`, `approval`, `implementation`, `comparison`, `execution`, `status` 중 하나여야 한다.
+- R94. ADDED — 사용자의 Viewer 요청에 intent나 audience가 명시되면 그대로 사용하고, 생략되면 spec은 `review`, plan은 `execution`, audience는 `mixed`를 사용해야 한다. Default 선택은 HTML 생성 권한을 만들지 않아야 한다.
+- R95. ADDED — Presentation Plan은 profile ID, primary question, ordered component instance, source entity·block reference, orientation과 disclosure policy만 가진 제한된 data contract여야 하며 HTML, CSS, JavaScript와 source 밖 본문을 포함하지 않아야 한다.
+- R96. ADDED — Renderer는 최소한 `generic`, `spec.workflow`, `spec.api`, `spec.architecture`, `spec.policy`, `spec.migration`, `plan.execution`, `plan.status`, `comparison` profile을 제공해야 한다. 새 profile은 공통 component를 조합하고 문서별 template를 복사하지 않아야 한다.
+- R97. ADDED — 공통 component grammar는 summary, outline, prose detail, metadata, state map, sequence, interface·schema table, decision·exception matrix, relation graph, route·dependency map, progress, Requirement·AC coverage, provenance와 source detail을 제공해야 한다.
+- R98. ADDED — 문서 종류와 intent에 따라 primary component, reading order, navigation, summary density와 diagram·table 비중은 달라질 수 있지만 typography role, palette, spacing, focus, freshness, provenance, deep link, overflow와 responsive interaction은 공통 visual system을 따라야 한다.
+- R99. ADDED — Profile이 source block이나 entity를 사용하지 않으면 renderer는 이를 source detail 또는 generic detail component에 포함해야 하며, Presentation Plan은 selected source content coverage 100%를 만족해야 한다.
+- R100. ADDED — 알려진 profile과 rule로 충분하지 않은 source에서는 agent가 Presentation Plan을 제안할 수 있지만 HTML을 직접 생성하지 않아야 한다. 제안 plan은 schema, allowed component, source reference, coverage와 no-new-meaning validation을 통과한 뒤에만 renderer 입력이 될 수 있어야 한다.
+- R101. ADDED — 같은 selected source bytes, View Context, accepted Presentation Plan, renderer version, locale와 fixed generated timestamp는 byte-for-byte 같은 HTML을 만들어야 한다.
+- R102. ADDED — Presentation Plan validator는 unknown profile·component, dangling source reference, duplicate exclusive block, uncovered source block, source 밖 prose, unsupported intent와 component contract 위반을 사람이 수정할 수 있는 진단으로 거부해야 한다.
+- R103. ADDED — 같은 source는 intent만 바꿔 approval·implementation 또는 execution·status Review Viewer를 각각 생성할 수 있어야 하며 두 View는 source manifest와 provenance를 공유하면서 다른 primary composition을 가질 수 있어야 한다.
+- R104. ADDED — `generic` fallback은 unknown kind·subtype, sparse source, profile selection 실패에서도 metadata, outline, 모든 source block, provenance와 freshness를 읽을 수 있게 표시하고 HTML 생성 자체를 실패시키지 않아야 한다.
+- R105. ADDED — Presentation Plan 선택·제안·fallback과 profile complexity는 explicit request gate를 우회하지 않아야 하며, 사용자가 Viewer 생성을 명시하기 전에는 Semantic IR, Presentation Plan 또는 HTML artifact를 생성하지 않아야 한다.
+- R106. ADDED — shell·component·profile·planner 변경의 UI 검증은 desktop 1440px와 mobile 390px에서 각 profile의 typical·empty·long·invalid diagram 상태, keyboard focus, navigation, disclosure, table·diagram overflow와 stable shell geometry를 포함해야 한다.
 
 ## Behavior & Flows
 
@@ -141,9 +159,11 @@ flowchart TD
     C -- 예 --> D[사용자에게 효용을 알리고 생성 여부 질문]
     C -- 아니오 --> E[Markdown으로 승인 또는 handoff 요청]
     D --> F{사용자가 명시적으로 요청했는가?}
-    F -- 예 --> G[deterministic parser로 요청한 mode 생성 또는 갱신]
+    F -- 예 --> G[Semantic IR과 View Context 생성]
     F -- 아니오 --> E
-    G --> H[Review Viewer와 함께 승인 또는 handoff 요청]
+    G --> GP[Presentation Plan 선택·검증]
+    GP --> GR[공통 component grammar로 HTML 생성]
+    GR --> H[Review Viewer와 함께 승인 또는 handoff 요청]
     E --> I[다음 lifecycle 단계]
     H --> I
     I --> J[Task 실행과 checkpoint]
@@ -212,16 +232,39 @@ plan `Related Specs` canonical entry:
 
 각 entry의 `id`와 `path`는 필수이고 `requirements`, `acceptance`는 빈 목록을 허용하되 항상 명시한다. 관련 spec이 없는 plan은 `**Related Specs:** None — <ceremony-floor 또는 non-product 이유>`를 사용한다. Parser는 이 제한된 문법만 받아 source-qualified mapping을 만들며 path escape, 중복 ID, invalid 또는 non-approved product spec을 거부한다.
 
-6개 panel의 plan mode mapping:
+Profile과 intent별 primary composition 예시:
 
-| Panel ID | 한국어 label | Plan mode 내용 |
-|---|---|---|
-| `overview` | 개요 | 목표, 완료 상태, primary Task·Step 수량, context spec별 R·AC 수량, 읽기 순서 |
-| `requirements` | 요구사항 | Global Constraints, 핵심 정책, Route 적용 범위, Related Specs provenance |
-| `flows` | 흐름 | Expedition Route, Task dependency, runtime·확장 흐름 |
-| `data` | 데이터와 인터페이스 | 서버 권위, 파일, Remote, transaction, Interface 계약 |
-| `acceptance` | 승인 기준 | 명시된 namespaced R→AC→Task→Step·검증 mapping, 검토 checkbox |
-| `history` | 변경 이력 | source role·namespace·path·hash, checkpoint, commit, 재생성 command |
+| Profile | Intent | Primary component | Supporting component |
+|---|---|---|---|
+| `spec.workflow` | `approval` | actor flow·state map | exception matrix, Requirement·AC coverage |
+| `spec.api` | `implementation` | endpoint·schema contract | sequence, error matrix, examples |
+| `spec.architecture` | `review` | context·component relation | runtime boundary, decision, risk |
+| `spec.policy` | `approval` | rule·exception matrix | scope, enforcement, AC coverage |
+| `spec.migration` | `implementation` | before·after와 migration route | rollback, verification, dependency |
+| `plan.execution` | `execution` | Route·Task dependency | runtime responsibility, checkpoint |
+| `plan.status` | `status` | progress·blocker·next action | changed Task, evidence |
+| `comparison` | `comparison` | source-qualified delta matrix | relation, coverage, provenance |
+
+모든 profile은 stable shell과 공통 component grammar를 재사용한다. 표에 없는 subtype은 `generic`으로 fallback하고 모든 source block을 source detail에 보존한다.
+
+Presentation Plan contract:
+
+```yaml
+profile: spec.workflow
+intent: approval
+primaryQuestion: "상태 전이와 예외가 승인 가능한가?"
+components:
+  - type: state-map
+    refs: [current:flow-main]
+  - type: exception-matrix
+    refs: [current:exceptions]
+  - type: acceptance-coverage
+    refs: [current:requirements, current:acceptance]
+  - type: source-detail
+    refs: [current:*]
+```
+
+`refs`는 Semantic IR에 존재하는 source-qualified block 또는 entity만 가리킨다. Presentation Plan은 source 밖 prose나 executable markup을 포함하지 않는다.
 
 Review Viewer 추천을 위한 복잡도 점수:
 
@@ -244,6 +287,8 @@ build-review-viewer.sh \
   --mode spec|plan \
   --locale en|ko \
   --review-id <review-id> \
+  [--intent review|approval|implementation|comparison|execution|status] \
+  [--audience mixed|product|engineering|operations] \
   [--spec docs/specs/NNN-<slug>/spec.md] \
   [--comparison <path>]... \
   [--plan docs/plans/PPP-<slug>/plan.md] \
@@ -264,6 +309,8 @@ source manifest:
 | `generated_at` | 재생성 시각 |
 | `counts` | spec source별 R·AC·Mermaid와 plan primary set의 Task·Step·Mermaid 수 |
 | `freshness` | primary와 comparison·context set별 `current`, `stale`, `unverified`; 초기값은 `unverified` |
+| `view_context` | mode, kind·subtype, intent, audience, locale, source role, export mode |
+| `presentation_plan` | profile, primary question, ordered component와 source-qualified reference |
 | `rebuild_command` | 동일 review-id의 Review Viewer를 명시적으로 재생성하는 command |
 
 문서 저장 구조:
@@ -334,13 +381,13 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - AC11 (R47): 잘못된 Mermaid fixture를 열면 다른 panel은 정상 동작하고 오류 diagram에는 오류 요약, 가능한 line·column, 원문 source가 표시된다.
 - AC12 (R35–R36): MODIFIED — current·comparison·context spec의 같은 R·AC ID와 plan의 Task·Step이 함께 있는 Review Viewer에서 deep link와 검토 checkbox를 변경하고 page를 reload하면 source namespace별 target과 checkbox 상태가 충돌 없이 복원된다.
 - AC13 (R53–R56, R72–R75): MODIFIED — 복잡한 plan을 작성하면 독립 plan ID, 선택적인 `Related Specs`, source-qualified R·AC mapping, 필수 구조, 6~10 Route grouping, plan source로부터 만든 diagram 관점, checkpoint가 존재하고 Task 분리는 독립 소유권·병렬 실행·독립 승인 조건에서만 사용된다.
-- AC14 (R57–R60, R85): MODIFIED — 고정 shell에서 개별 Review Viewer를 생성할 때 UI 디자인 skill을 적용하거나 수동 HTML fragment를 작성하지 않고 deterministic parser가 6개 panel을 생성하며, Review Viewer shell·template·style 자체를 변경할 때만 `web-app-design`을 적용한다.
+- AC14 (R57–R60, R85): MODIFIED — 승인된 profile로 개별 Review Viewer를 생성할 때 UI 디자인 skill, 수동 HTML fragment, 문서별 template·CSS·script를 사용하지 않고 Semantic IR→Presentation Plan→component renderer가 HTML을 생성한다. Shell·component·profile·planner tooling 변경에만 `web-app-design`을 적용한다.
 - AC15 (R64–R67): MODIFIED — 고정 Review Viewer tooling으로 개별 View를 build하면 성공한 build에서 작업을 종료하고 별도 checker나 브라우저 검증을 실행하지 않으며 governing spec의 lifecycle status를 변경하지 않는다. Review Viewer tooling 자체를 변경하면 이 예외 없이 일반 구현 검증을 수행한다.
 - AC16 (R18–R19): MODIFIED — `.forge/reviews/<review-id>/view.html`의 CDN build와 `--offline` build가 모두 열리고 offline 파일에는 외부 Mermaid script 요청이 없으며 diagram이 렌더된다.
-- AC17 (R21–R28): MODIFIED — plan mode에서 6개 panel이 모두 존재하고 각 panel 내용이 mode mapping과 source ownership에 일치하며 요약→시각 흐름→상세 source→acceptance evidence 순서가 유지된다.
+- AC17 (R21–R28): MODIFIED — plan mode의 execution과 status Viewer는 stable shell landmark와 source ownership을 공유하면서 서로 다른 primary component와 reading order를 가지며, 두 View 모두 plan source detail과 acceptance evidence로 이동할 수 있다.
 - AC18 (R5, R27, R77–R82): MODIFIED — History panel에서 source role·namespace·path·생성 당시 hash, mode, locale, source별 counts, 생성 시각, checkpoint, commit, rebuild command를 확인할 수 있고 primary와 comparison·context freshness가 각각 `unverified`, `stale`, `current`로 표시된다.
 - AC19 (R51, R65–R66): MODIFIED — Review Viewer shell·template·style·script·runtime 동작을 변경한 경우에만 desktop 1440px와 mobile 390px browser 검증에서 tab, namespaced deep link, checkbox persistence, diagram, table, print layout이 정상이며 Mermaid error가 0개임을 확인하고, 개별 View 생성에서는 해당 검증을 실행하지 않는다.
-- AC20 (R21, R58, R85): MODIFIED — Review Viewer builder tooling fixture에서 Markdown source만 입력하면 deterministic parser가 정확히 6개 panel과 source manifest를 만들고 unresolved placeholder·수동 content fragment·source 밖 의미가 0개다. 개별 View 생성 뒤에는 이 fixture나 동등한 검사를 반복하지 않는다.
+- AC20 (R21, R58, R85): MODIFIED — Review Viewer tooling fixture에 Markdown source와 View Context를 입력하면 Semantic IR, validated Presentation Plan, source manifest와 profile-specific HTML이 만들어지고 unresolved source reference·수동 content fragment·source 밖 의미가 0개다. 개별 View 생성 뒤에는 이 fixture를 반복하지 않는다.
 - AC21 (R68): MODIFIED — spec 또는 plan의 Markdown source 작성과 자체 검토가 끝나면 Review Viewer가 유용한 경우 승인 또는 handoff 메시지에서 생성 여부를 묻고, 사용자의 명시적 응답 전에는 Review Viewer HTML이 생성되지 않는다.
 - AC22 (R9, R13, R16, R69): MODIFIED — 기존 plan mode Review Viewer가 있는 Task checkpoint에서 primary set이나 Related Specs context가 변경되어도 자동 갱신하지 않고 Markdown으로 보고하며, 사용자가 갱신을 명시적으로 요청한 경우에만 current primary set과 context sources를 포함해 같은 review-id를 재생성한다.
 - AC23 (R1–R2, R6, R18, R70–R71): MODIFIED — 새 spec과 새 plan은 각각 독립된 docs 경로를 유지하고, 명시적 생성 요청을 받은 Review Viewer만 `.forge/reviews/<review-id>/view.html`에 생성되며 Git 추적 파일 목록에는 source 옆 `view.html`이나 Review Viewer가 나타나지 않는다.
@@ -351,11 +398,16 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - AC28 (R81–R82): MODIFIED — primary plan set과 Related Specs context를 가진 Review Viewer에서 primary와 context aggregate 상태가 분리되고, 각 set 안에서 모두 일치하면 `current`, 하나가 다르면 `stale`, stale 없이 하나가 누락되면 `unverified`가 표시되며 각 source 행에 개별 상태와 실패 원인이 나타난다.
 - AC29 (R83): MODIFIED — `--check`를 현재 로컬 Review Viewer에 실행하면 exit code 0을 반환하고, source 변경·누락·manifest 오류 fixture에서는 non-zero를 반환하지만 Review Viewer를 자동 재생성하지 않는다.
 - AC30 (R70, R84): 조사·debug 중간 기록은 `.forge/`에서 Git 비추적 상태로 유지되고, 공유 또는 장기 보존 대상으로 결정한 기록은 `docs/research/` 또는 `docs/debug/`로 이동해 Git 추적된다.
-- AC31 (R86): ADDED — Review Viewer workflow를 실행하면 Spec Pages를 생성·갱신하지 않으며, `docs/specs/NNN-<slug>/index.html`과 `docs/specs/index.html`의 lifecycle·검증은 Review Viewer 요청 유무와 관계없이 `docs/specs/008-structured-spec-pages/spec.md`의 요구사항으로만 판정된다.
+- AC31 (R86): MODIFIED — 일반 spec·plan 작성·변경·승인·handoff fixture에서는 HTML 생성 count가 0이고, 사용자가 `review-viewer`를 명시적으로 요청한 fixture에서만 `.forge/reviews/<review-id>/view.html`이 생성된다. Source-adjacent Spec Pages, plan pages와 HTML catalog는 생성되지 않는다.
 - AC32 (R87): ADDED — source Mermaid와 derived diagram이 모두 0개인 source set과 하나 이상인 source set을 각각 `--offline`으로 build하면 전자의 generated bytes에는 Mermaid runtime이 없고 후자에는 있으며, 두 snapshot 모두 network를 차단한 브라우저에서 오류 없이 열린다. CDN mode에서도 diagram이 0개인 snapshot에는 loader가 출력되지 않고, 같은 입력 재build diff는 0이다.
 - AC33 (R88): ADDED — spec mode와 plan mode Review Viewer의 Overview panel을 열면 source별 요약 지표가 먼저 보이고 상세 집계 표가 그 아래에 남아 있으며, 두 표시의 수치가 R30 집계 기준으로 계산한 값과 서로 일치한다.
 - AC34 (R61, R89): ADDED — 여러 block이 같은 source를 인용하는 fixture에서 각 panel의 provenance 표시 횟수가 source group당 1회로 줄고, source role이 바뀌는 지점에서 다시 나타나며, primary·comparison·context 구분과 namespaced deep link 대상이 축약 전과 동일하다. Manifest와 History panel에는 모든 source의 role·path·hash가 그대로 남는다. 각 panel 제목은 명사형 label이고 질문 문장은 제목 아래 orientation 문장으로 표시된다.
 - AC35 (R90): ADDED — R87–R89 구현에서 desktop 1440px와 mobile 390px의 tab, 표, diagram, deep link, checkbox 검증이 수행되고, 이후 개별 `view.html` 생성 작업에는 post-build checker·browser 검증이 추가되지 않는다.
+- AC36 (R91–R92, R99): ADDED — 자유로운 section 순서를 가진 workflow·API·architecture spec과 plan fixture를 parse하면 metadata, outline, 모든 prose·table·code·Mermaid block과 semantic entity가 source-qualified anchor를 갖고 Semantic IR에 정확히 한 번 존재하며 content coverage가 100%다.
+- AC37 (R93–R98): ADDED — 같은 workflow spec을 `approval`과 `implementation`, 같은 plan을 `execution`과 `status`로 build하면 stable shell·visual system·provenance는 같고 primary component, reading order, navigation과 summary density는 각 profile·intent 계약에 맞게 다르다.
+- AC38 (R95–R102): ADDED — Presentation Plan fixture에 HTML·CSS·script, source 밖 prose, unknown component, dangling reference, duplicate exclusive block과 uncovered block을 각각 주입하면 validator가 실패하고, allowed component와 valid source reference만 가진 plan은 deterministic renderer 입력으로 통과한다.
+- AC39 (R96, R100, R103–R105): ADDED — 알려진 subtype은 해당 reusable profile을 사용하고 unknown subtype은 generic fallback으로 모든 content를 표시한다. Agent가 제안한 unusual source plan도 validation 뒤에만 렌더링되며, 어떤 profile·fallback도 사용자의 명시적 요청 전에 artifact를 생성하지 않는다.
+- AC40 (R101, R106): ADDED — fixed timestamp를 사용한 동일 source·View Context·Presentation Plan 재build diff는 0이고, shell·component·profile·planner 변경은 desktop 1440px와 mobile 390px의 profile별 typical·empty·long·invalid diagram, keyboard, disclosure, overflow와 stable shell geometry 검증을 통과한다.
 
 ## Decisions & History
 
@@ -397,3 +449,5 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - 2026-08-03 [DECISION] provenance는 panel·source group당 1회로 축약하되 manifest와 History panel의 전체 기록은 유지한다. 40줄 fixture에서도 같은 출처 문자열이 6회 반복돼 실제 규모에서는 소음이 된다.
 - 2026-08-03 [CHANGE] R61 MODIFIED 및 R87–R90, AC32–AC35 ADDED: 조건부 Mermaid runtime embed, Overview 요약 지표, provenance 반복 축약, 명사형 panel 제목과 shell 변경 검증 범위를 추가한다.
 - 2026-08-03 [APPROVED] 사용자가 조건부 Mermaid runtime, Overview 요약 지표, provenance 반복 축약과 명사형 panel 제목 delta를 승인하고 계획 작성을 요청했다.
+- 2026-08-04 [CHANGE] R21, R57–R59, R61, R63, R85–R86과 AC14, AC17, AC20, AC31 MODIFIED 및 R91–R106, AC36–AC40 ADDED: fixed 6-panel rendering을 Semantic IR, View Context, validated Presentation Plan과 reusable component grammar 기반의 intent-aware adaptive Review Viewer로 교체한다. 일반 spec·plan lifecycle은 Markdown-only로 유지하고 명시적인 `review-viewer` 요청만 HTML 생성을 허용한다.
+- 2026-08-04 [APPROVED] 사용자가 adaptive Presentation Plan 기반 Review Viewer와 explicit-request-only HTML 생성 경계를 승인하고 구현 진행을 요청했다.

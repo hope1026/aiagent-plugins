@@ -34,7 +34,7 @@ EVERY RELATED ACCEPTANCE CRITERION MAPS TO A TASK.
 Before drafting anything, classify the plan's `Related Specs` as 0 or more canonical references:
 
 1. Decide whether the work changes documented or documentable product behavior.
-2. For behavior-changing work, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json` for every governing spec. Require `schema` = `forge/spec@1`, `status` = `approved`, and an empty `diagnostics` array. Require canonical entry `id` == inspect `id`, a repository-contained relative `path`, no duplicate spec IDs, and every listed `requirements` and `acceptance` ID to exist in the inspect arrays. A new plan never accepts `implemented` as a substitute for new approval.
+2. For behavior-changing work, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json` for every governing spec. Require `schema` = `forge/spec@2`, `status` = `approved`, and an empty `diagnostics` array. Require canonical entry `id` == inspect `id`, a repository-contained relative `path`, no duplicate spec IDs, and every listed `requirements` and `acceptance` ID to exist in the inspect arrays. A new plan never accepts `implemented` as a substitute for new approval.
 3. For work with no related spec, record `None — <reason>` and confirm the work is on the Forge ceremony floor or is non-product operational or research work.
 
 If behavior-changing work has no approved spec, STOP. Do not sketch "a rough plan in the meantime." Use the forge writing-specs skill, then return here.
@@ -256,7 +256,7 @@ Fix issues inline and move on — no re-review loop.
 
 | Excuse | Reality |
 |---|---|
-| "The spec is basically approved, I'll start planning" | The inspect JSON must report `forge/spec@1`, `approved`, and zero diagnostics. |
+| "The spec is basically approved, I'll start planning" | The inspect JSON must report `forge/spec@2`, `approved`, and zero diagnostics. |
 | "The requirements are all in this conversation — effectively a spec" | Chat has no structured lifecycle or stable R/AC IDs. Capture and approve the spec first. |
 | "I'll fill in this step's code during execution" | The executor may be a fresh context with zero knowledge. A step without content is a placeholder, and placeholders are plan failures. |
 | "Similar to Task 2 — no need to repeat" | Implementers read tasks in isolation. Repeat the code. |

@@ -17,12 +17,7 @@ grep -q 'schema: forge/spec@2' "$SPEC_TEMPLATE" || fail "template misses forge/s
 for field in schema id status language kind areas components relatedSpecs; do
   grep -q "^$field:" "$SPEC_TEMPLATE" || fail "template misses $field frontmatter"
 done
-grep -q 'generator.*template.*runtime.*asset' "$MAINTAINER" || fail "maintainer misses shared Spec Pages tooling gate"
-grep -q 'spec-docs.sh.*build --root docs/specs --offline' "$MAINTAINER" || fail "maintainer misses full Spec Pages rebuild"
-grep -q 'spec-docs.sh.*check --root docs/specs' "$MAINTAINER" || fail "maintainer misses Spec Pages check"
-if grep -Fq 'spec-docs.sh --repo-root . build --root docs/specs --changed' "$MAINTAINER"; then
-  fail "maintainer tooling gate incorrectly uses changed-only build"
-fi
+grep -q 'Markdown-only' "$MAINTAINER" || fail "maintainer misses Markdown-only lifecycle"
 for heading in 'Requirements' 'Acceptance Criteria' 'Decisions & History'; do
   grep -q "^## $heading$" "$SPEC_TEMPLATE" || fail "template misses required semantic heading: $heading"
 done
@@ -68,20 +63,22 @@ grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$WRITING_PLANS" || fail 
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$EXECUTING_PLANS" || fail "executing-plans misses inspect CLI"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$VERIFYING_WORK" || fail "verifying-work misses inspect CLI"
 grep -q 'frontmatter.*status' "$VERIFYING_WORK" || fail "verifying-work misses frontmatter status transition"
-grep -q 'build --root docs/specs --changed' "$VERIFYING_WORK" || fail "verifying-work misses page build after implemented"
-grep -q 'check --root docs/specs' "$VERIFYING_WORK" || fail "verifying-work misses page check after implemented"
+grep -q 'validate --root docs/specs --baseline-ref HEAD' "$VERIFYING_WORK" || fail "verifying-work misses validation after implemented"
 if rg -n 'set (the )?spec.*`?Status: implemented|set .*Status: implemented' \
   "$ROOT/plugins/forge/skills" --glob 'SKILL.md' >/dev/null; then
   fail "active lifecycle imperative still writes body Status"
 fi
 
-grep -q 'Spec Pages' "$USING_FORGE" || fail "using-forge misses durable Spec Pages"
 grep -q '.forge/reviews/<review-id>/view.html' "$USING_FORGE" || fail "using-forge misses Review Viewer output"
 grep -q 'review-viewer' "$USING_FORGE" || fail "using-forge misses review-viewer routing"
 grep -qx '/.forge/' "$ROOT/.gitignore" || fail "root .forge ignore rule is not exact"
 
 grep -Fq '"$SPEC_DOCS" --repo-root "$ROOT_DIR" validate' "$VALIDATE" || fail "validator misses explicit repo-root validate"
-grep -Fq '"$SPEC_DOCS" --repo-root "$ROOT_DIR" check' "$VALIDATE" || fail "validator misses explicit repo-root check"
+
+if rg -n 'Spec Pages|build --root docs/specs|check --root docs/specs' \
+  "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS" "$VERIFYING_WORK" "$USING_FORGE" "$MAINTAINER" >/dev/null; then
+  fail "active lifecycle retains automatic HTML generation"
+fi
 
 if rg -n 'forge spec-viewer skill|docs/specs/NNN-<slug>/view\.html|docs/plans/PPP-<slug>/view\.html' \
   "$ROOT/plugins/forge/skills" "$ROOT/README.md" >/dev/null; then

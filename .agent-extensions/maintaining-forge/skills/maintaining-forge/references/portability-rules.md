@@ -47,7 +47,6 @@ commands. Install paths differ across harnesses and install modes.
 | Artifact | Path | Committed |
 |---|---|---|
 | Specs | `docs/specs/NNN-<slug>/spec.md` | yes |
-| Spec Pages | `docs/specs/NNN-<slug>/index.html`, `docs/specs/index.html` | yes |
 | Plans | `docs/plans/PPP-<slug>/plan.md` | yes |
 | Optional plan progress and task detail | `docs/plans/PPP-<slug>/progress.md`, `docs/plans/PPP-<slug>/tasks/*.md` | yes while the plan is retained |
 | Review Viewer, when explicitly requested | `.forge/reviews/<review-id>/view.html` | no |
@@ -55,7 +54,7 @@ commands. Install paths differ across harnesses and install modes.
 | Promoted research notes | `docs/research/` | yes |
 | Local scratch, research, reviews, ledgers, and build intermediates | `.forge/` | no |
 
-Spec Pages are read-only generated artifacts but remain tracked and change in the same transaction as spec body, metadata, status, generator, template, or asset bytes. Review Viewer is a separate request-only snapshot and never becomes a permanent plan page. Promote durable `.forge/research/` findings to `docs/research/`. Before deleting a plan, promote permanent decisions; its `progress.md` and `tasks/*.md` do not remain as independent artifacts.
+The ordinary spec and plan lifecycle is Markdown-only. Review Viewer is a separate request-only snapshot and never becomes a permanent spec or plan page. Promote durable `.forge/research/` findings to `docs/research/`. Before deleting a plan, promote permanent decisions; its `progress.md` and `tasks/*.md` do not remain as independent artifacts.
 
 ## 7. Process-skill Structure
 

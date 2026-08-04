@@ -58,7 +58,7 @@ Everything else gets a spec. Ceremony scales down — a small change may be a 10
 | Public website — landing pages, homepages, marketing or product sites, editorial, portfolios, public documentation | the forge website-design skill |
 | UI request with no evidence of application state/workflow or public content/acquisition | ask one classification question: "Is this a stateful browser application or a public content website?" Then route to exactly one UI skill |
 | Native mobile or desktop app while its specialist skill is not available | state that the specialist skill is not available; do not force-route it to a web UI skill |
-| Review Viewer or Spec Pages shell, template, style, runtime, or interaction tooling changes | the forge web-app-design skill with full verification |
+| Review Viewer shell, component, style, runtime, or interaction tooling changes | the forge web-app-design skill with full verification |
 | Writing prose humans will read — docs, PRs, commits, messages | the forge writing-tone skill |
 | Cross-agent skill, MCP, or bundle authoring for Codex, Claude Code, and Antigravity | the forge creating-agent-extensions skill |
 | Explicit request to create, update, visualize, present, print, share, or freshness-check a spec/plan Review Viewer | the forge review-viewer skill |
@@ -74,8 +74,6 @@ Forge keeps its artifacts in fixed locations inside the target project:
 | Artifact | Path | Committed |
 |---|---|---|
 | Specs — permanent source of truth | `docs/specs/NNN-<slug>/spec.md` | yes |
-| Per-spec Spec Pages — regenerated with source/status/tooling | `docs/specs/NNN-<slug>/index.html` | yes |
-| Spec Pages catalog | `docs/specs/index.html` | yes |
 | Work-scoped implementation plans | `docs/plans/PPP-<slug>/plan.md` | yes |
 | Optional plan progress and task details | `docs/plans/PPP-<slug>/progress.md`, `tasks/*.md` | yes while plan is retained |
 | Review Viewer — explicit request only | `.forge/reviews/<review-id>/view.html` | no |
