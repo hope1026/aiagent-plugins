@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 007-ui-design-removal
 status: implemented
 language: ko

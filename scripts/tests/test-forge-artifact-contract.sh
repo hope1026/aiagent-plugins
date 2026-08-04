@@ -32,9 +32,7 @@ REVIEW_VIEWER="$ROOT/plugins/forge/skills/review-viewer/SKILL.md"
 
 grep -q 'docs/plans/PPP-<slug>/plan.md' "$USING_FORGE"
 grep -q 'NO PRODUCT-BEHAVIOR IMPLEMENTATION WITHOUT AN APPROVED SPEC' "$USING_FORGE"
-grep -q 'docs/specs/NNN-<slug>/index.html' "$USING_FORGE" || fail "Spec Pages path missing"
 grep -q '.forge/reviews/<review-id>/view.html' "$USING_FORGE" || fail "Review Viewer path missing"
-grep -q 'Spec Pages.*yes' "$PORTABILITY" || fail "portability table does not track Spec Pages"
 grep -q 'Review Viewer.*no' "$PORTABILITY" || fail "portability table does not untrack Review Viewer"
 grep -q 'docs/research/' "$ROOT/README.md"
 grep -q 'docs/debug/' "$ROOT/README.md"
@@ -68,22 +66,27 @@ grep -q 'Review Viewer tooling' "$ROOT/plugins/forge/skills/verifying-work/SKILL
 grep -q 'test-forge-artifact-contract.sh' "$ROOT/.github/workflows/validate.yml"
 grep -q 'test-forge-spec-docs-policy.sh' "$ROOT/.github/workflows/validate.yml" || fail "CI misses spec docs policy"
 
-# Durable Spec Pages tooling must never create, refresh, or remove Review Viewer snapshots.
+# Default structured-spec tooling validates Markdown without writing HTML.
 TEMP_ROOT="$(mktemp -d)"
 trap 'rm -rf "$TEMP_ROOT"' EXIT
-cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/pages-repository/." "$TEMP_ROOT/"
+cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/repository/valid-repository/." "$TEMP_ROOT/"
 mkdir -p "$TEMP_ROOT/.forge/reviews/sentinel"
 printf 'review-sentinel\n' > "$TEMP_ROOT/.forge/reviews/sentinel/view.html"
 SENTINEL_BEFORE="$(shasum -a 256 "$TEMP_ROOT/.forge/reviews/sentinel/view.html" | awk '{print $1}')"
 REVIEW_COUNT_BEFORE="$(find "$TEMP_ROOT/.forge/reviews" -type f | wc -l | tr -d ' ')"
 bash "$ROOT/plugins/forge/skills/writing-specs/scripts/spec-docs.sh" \
-  --repo-root "$TEMP_ROOT" build --root docs/specs --offline >/dev/null
-bash "$ROOT/plugins/forge/skills/writing-specs/scripts/spec-docs.sh" \
-  --repo-root "$TEMP_ROOT" check --root docs/specs >/dev/null
+  --repo-root "$TEMP_ROOT" validate --root docs/specs >/dev/null
 SENTINEL_AFTER="$(shasum -a 256 "$TEMP_ROOT/.forge/reviews/sentinel/view.html" | awk '{print $1}')"
 REVIEW_COUNT_AFTER="$(find "$TEMP_ROOT/.forge/reviews" -type f | wc -l | tr -d ' ')"
-[[ "$SENTINEL_BEFORE" == "$SENTINEL_AFTER" ]] || fail "Spec Pages changed Review Viewer bytes"
-[[ "$REVIEW_COUNT_BEFORE" == "$REVIEW_COUNT_AFTER" ]] || fail "Spec Pages changed Review Viewer file count"
+[[ "$SENTINEL_BEFORE" == "$SENTINEL_AFTER" ]] || fail "Markdown validation changed Review Viewer bytes"
+[[ "$REVIEW_COUNT_BEFORE" == "$REVIEW_COUNT_AFTER" ]] || fail "Markdown validation changed Review Viewer file count"
+
+CLI_HELP="$(bash "$ROOT/plugins/forge/skills/writing-specs/scripts/spec-docs.sh" --help)"
+grep -q 'validate' <<<"$CLI_HELP" || fail "structured-spec CLI misses validate"
+grep -q 'inspect' <<<"$CLI_HELP" || fail "structured-spec CLI misses inspect"
+if grep -Eq '(^|[,{[:space:]])(build|check)([]},[:space:]]|$)' <<<"$CLI_HELP"; then
+  fail "structured-spec CLI still exposes HTML page commands"
+fi
 
 assert_migration_artifact
 

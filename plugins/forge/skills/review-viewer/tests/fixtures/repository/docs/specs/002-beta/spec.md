@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 002-beta
 status: implemented
 language: en

@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 005-agent-extension-creation
 status: implemented
 language: ko

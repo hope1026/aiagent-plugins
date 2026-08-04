@@ -1,10 +1,15 @@
 # Review Viewer rendering contract
 
-`review_renderer.render_review()` turns one validated `ReviewBundle` into a read-only HTML snapshot. Markdown and the typed source model own every statement in the snapshot.
+`review_renderer.render_review()` turns one validated source bundle into a read-only HTML snapshot. Markdown and the lossless Semantic IR own every statement in the snapshot.
 
-## Input and output
+## Pipeline and output
 
-The renderer accepts one `spec` or `plan` bundle plus explicit review metadata. It performs no repository reads except fixed Forge assets: the Viewer template, freshness runtime, shared sibling Markdown renderer, and checksum-verified Mermaid bundle.
+The renderer consumes this one-way pipeline:
+
+```text
+Markdown sources → Semantic IR → View Context → validated Presentation Plan
+                 → reusable components → stable HTML shell
+```
 
 The CLI writes one file through a same-directory temporary file and atomic replace:
 
@@ -12,24 +17,33 @@ The CLI writes one file through a same-directory temporary file and atomic repla
 .forge/reviews/<review-id>/view.html
 ```
 
-The resolved output parent must stay inside the repository. The build never writes Spec Pages, selected Markdown, or source-adjacent HTML.
+The build never writes selected Markdown or source-adjacent HTML. Document-specific templates, CSS, JavaScript, and manual content fragments are forbidden.
 
-## Six panels
+## Semantic IR
 
-Every snapshot contains these panel IDs in order:
+Every selected source records its exact UTF-8 source text, repository-relative path, role, namespace, metadata, outline, entities, explicit relations, and ordered blocks. Prose, lists, tables, code, Mermaid, and unrecognized Markdown use distinct block kinds; unknown structures fall back to `generic`. Every source line with content is covered by a block so unusual documents remain readable without inventing a schema-specific renderer.
 
-| Panel | Spec mode | Plan mode |
-|---|---|---|
-| `overview` | source counts and overview | H1 plan title, canonical `**Goal:**`/`**목표:**`, status, source-set counts, completion summary, and a source-owned `## User Experience`/`## 사용자 경험` section only when present |
-| `requirements` | current and comparison requirements | source-owned English/Korean constraint (`Constraints`, `제약`) and policy (`Policy`, `정책`) sections with provenance, explicit typed Route title·Task scope·Route prerequisites, Related Specs context |
-| `flows` | source Mermaid | Route Map, explicit dependencies, source Mermaid |
-| `data` | source Data & Interfaces | Runtime Atlas including bilingual runtime·architecture·data·interface·flow·server authority·files·remotes·transactions sections, collapsed provenance-bearing main `## Tasks` source detail, parsed Task and Step detail |
-| `acceptance` | source AC review items | AC Coverage, verification evidence, context AC review items |
-| `history` | provenance and source history | provenance, read-only source plan status and main/auxiliary Task·Step Markdown checkbox state, Progress History, collapsed `progress.md` and `tasks/*.md` detail |
+## View Context and profiles
 
-The reading order is summary, visual flow, source detail, then acceptance evidence. Main `## Tasks` and auxiliary source detail stay collapsed until the reviewer opens them; their source-owned Files, Remote, transaction, Interface, or localized metadata remains verbatim Markdown-derived content rather than a generated claim.
+`ViewContext` contains mode, source kind and subtype, intent, audience, locale, and source-set shape. Reusable profiles choose a composition appropriate to contexts such as workflow, API, architecture, policy, migration, plan execution, plan status, comparison, and generic review.
 
-## Identity and provenance
+Profiles select only reusable component IDs. They do not own HTML. A stable shell owns typography, palette, spacing, focus, freshness, provenance, deep links, overflow, print behavior, and responsive interaction.
+
+## Presentation Plan validation
+
+Before rendering, the planner must reject a plan when:
+
+- its mapping has unknown fields or invalid enum values;
+- a component ID is not in the component registry;
+- a component references a missing source, block, entity, or relation;
+- selected references omit source content;
+- authored labels or descriptions introduce copy not present in the source or fixed UI vocabulary.
+
+The valid plan may order and group source-backed components. It may derive only explicit Route membership, dependency edges, source-qualified R·AC coverage, Task membership, Steps, and verification evidence.
+
+## Component grammar
+
+The shared registry may render summary, narrative, requirements, traceability, flow, interface, task, status, comparison, provenance, and generic components. Each component receives IR references rather than parsing Markdown itself. Unknown kind or subtype uses the generic profile, which exposes every block in source order.
 
 DOM targets use the selected source namespace:
 
@@ -40,18 +54,7 @@ DOM targets use the selected source namespace:
 <plan-namespace>-Task1-Step1
 ```
 
-Review checkbox storage keys contain `review-id`, source namespace, item kind, and item ID. Equal `R1`, `AC1`, or `spec.md` basenames from different sources remain independent.
-
-Each source diagram records one origin and repository-relative path:
-
-- `Current spec source`
-- `Comparison source`
-- `Plan source`
-- `Related spec context`
-
-Mechanically calculated Route, dependency, and coverage views use `Derived view`. They may use only typed Route membership, dependency edges, source-qualified R·AC references, Task membership, Steps, and verification evidence. AC Coverage exposes each actual namespaced Step ID as a link instead of replacing source identity with a count.
-
-Only selected context items become link targets. If a selected AC names an R that was not selected, or a Task trace names any unselected context item, the relation stays visible as plain text marked `unselected`; the renderer must not emit an `href` whose DOM target is absent.
+Equal local IDs from different sources remain independent. Relations to unselected targets stay visible as plain text marked `unselected`; the renderer never emits a dangling link.
 
 ## Mermaid delivery
 
@@ -67,16 +70,12 @@ Offline mode inlines the sibling `writing-specs/assets/mermaid.min.js` only afte
 
 ## Manifest and freshness
 
-The embedded `forge-source-manifest` matches `review_freshness.check_review()`:
+The embedded `forge-source-manifest` includes review metadata, View Context, validated Presentation Plan, source-set counts, `freshness: unverified`, and ordered source rows with role, namespace, repository-relative path, SHA-256, selected entities, and status.
 
-- required review metadata and source-set counts;
-- initial `freshness: unverified`;
-- ordered source rows with role, namespace, repository-relative path, SHA-256, selected requirements, selected acceptance criteria, and status.
-
-HTTP views resolve source URLs through `source_base` and fetch same-origin bytes with `cache: no-store`. File views keep every source `unverified` until its own row picker hashes a local file with Web Crypto. Selected bytes stay in the browser.
+HTTP views resolve source URLs through `source_base` and fetch same-origin bytes with `cache: no-store`. File views keep each source `unverified` until its row picker hashes a local file with Web Crypto. Selected bytes stay in the browser.
 
 Set aggregation follows one rule: any stale source makes the set stale; otherwise any unverified source makes it unverified; every source must match for current. An empty set is unverified.
 
 ## Determinism
 
-With identical source bytes, review options, generator assets, `generated_at`, checkpoint, and commit, `render_review()` returns identical UTF-8 text. It excludes absolute paths, cwd, hostname, and implicit timestamps.
+With identical source bytes, View Context, Presentation Plan, generator assets, `generated_at`, checkpoint, and commit, `render_review()` returns identical UTF-8 text. It excludes absolute paths, cwd, hostname, and implicit timestamps.

@@ -1,7 +1,7 @@
 {
   "name": "forge",
-  "version": "0.1.8+codex.20260803032617",
-  "description": "Spec-first development skills with structured spec authoring, validation, maintained Spec Pages, request-only Review Viewer output, cross-agent authoring, verification, debugging, and interface design. Produces adapters for Codex, Claude Code, and Antigravity.",
+  "version": "0.1.9+codex.20260804090327",
+  "description": "Spec-first development skills with flexible Markdown spec authoring, validation, request-only adaptive Review Viewer output, cross-agent authoring, verification, debugging, and interface design. Produces adapters for Codex, Claude Code, and Antigravity.",
   "author": {
     "name": "Onestar Lee"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Forge",
     "shortDescription": "Spec-first process skills for real projects.",
-    "longDescription": "Forge packages a complete spec-first workflow - structured spec authoring and validation, maintained Spec Pages, planning, execution, and verified implementation - plus one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design, website design, tone overlays, systematic debugging, and TDD. Specs and plans remain source of truth; Spec Pages stay synchronized with spec changes, while Review Viewer HTML is generated only on explicit request.",
+    "longDescription": "Forge packages a complete spec-first workflow - flexible Markdown spec authoring and validation, planning, execution, and verified implementation - plus one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design, website design, tone overlays, systematic debugging, and TDD. The normal lifecycle creates Markdown only; adaptive Review Viewer HTML is generated only on explicit request.",
     "developerName": "Onestar Lee",
     "category": "Productivity",
     "capabilities": [
@@ -20,7 +20,7 @@
       "Create one skill and MCP bundle for Codex, Claude Code, and Antigravity.",
       "Use web-app-design to improve this dashboard settings workflow.",
       "Use website-design to create this public product landing page.",
-      "Validate this structured spec and update its maintained Spec Page.",
+      "Validate this flexible structured Markdown spec without generating HTML.",
       "Create a Review Viewer for this spec only for this review request."
     ]
   }

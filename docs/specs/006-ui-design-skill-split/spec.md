@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 006-ui-design-skill-split
 status: approved
 language: ko

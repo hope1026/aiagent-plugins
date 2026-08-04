@@ -14,8 +14,8 @@ Keep Markdown authoritative. Treat `.forge/reviews/<review-id>/view.html` as a r
 Follow this order exactly:
 
 1. Confirm that the user explicitly requested creation or refresh. If the user asked only to write a spec, make a plan, continue work, approve a checkpoint, or report stale state, do not build.
-2. Select exactly one mode and its source set.
-3. Run one build command.
+2. Select exactly one mode and its source set, then infer the review intent and audience from the request.
+3. Run one build command through the validated adaptive presentation pipeline.
 4. Hand off the resulting `.forge/reviews/<review-id>/view.html` and stop.
 
 Use `--check` instead of a build only when the user asks to inspect freshness. A check is read-only and never grants permission to rebuild.
@@ -31,6 +31,19 @@ Keep source roles distinct. Comparison specs are non-authoritative. Related Spec
 
 Use explicit `--progress` or `--tasks-dir` only to override the plan sibling convention. Reject `combined` mode, manual HTML fragments, `-c/--content`, `-o/--output`, and source-adjacent `view.html` output.
 
+## View context and composition
+
+Choose the closest source-owned context; do not ask when the request already makes it clear.
+
+| Option | Values | Default |
+|---|---|---|
+| `--intent` | `review`, `approval`, `implementation`, `comparison`, `execution`, `status` | `review` for specs, `execution` for plans, `comparison` when comparisons are selected |
+| `--audience` | `mixed`, `product`, `engineering`, `operations` | `mixed` |
+
+The builder normalizes every selected Markdown source into a lossless Semantic IR, chooses a reusable source profile, and validates a Presentation Plan before rendering. The profile may compose summary, narrative, requirements, traceability, flow, interface, task, status, comparison, provenance, and generic components in different orders. Unknown `kind` or `subtype` uses the generic profile and still exposes every source block.
+
+Never write document-specific HTML, CSS, JavaScript, or content fragments. Never bypass plan validation because a source is unusual. Presentation planning may select and order source-backed components, but it cannot add prose, relationships, responsibilities, states, or decisions absent from Markdown.
+
 ## Build once
 
 Run from anywhere inside the target Git repository. Choose a lowercase `review-id` matching `^[a-z0-9][a-z0-9-]{0,63}$`.
@@ -43,7 +56,9 @@ bash <review-viewer-skill>/scripts/build-review-viewer.sh \
   --spec docs/specs/NNN-<slug>/spec.md \
   --comparison docs/specs/OOO-<slug>/spec.md \
   --review-id <review-id> \
-  --locale en
+  --locale en \
+  --intent comparison \
+  --audience mixed
 ```
 
 Repeat `--comparison` as requested or omit it. Plan mode:
@@ -54,12 +69,14 @@ bash <review-viewer-skill>/scripts/build-review-viewer.sh \
   --plan docs/plans/PPP-<slug>/plan.md \
   --review-id <review-id> \
   --locale en \
+  --intent execution \
+  --audience engineering \
   --checkpoint working-tree
 ```
 
 Use `--locale ko` for Korean viewer labels. Use `--offline` when the snapshot must open without external Mermaid requests. Use `--generated-at <RFC3339>` only for a repeatable fixture or an explicitly fixed timestamp.
 
-The deterministic builder reads selected Markdown directly, preserves source Mermaid, derives only explicit Route, dependency, and coverage relationships, and writes exactly:
+The deterministic builder reads selected Markdown directly, preserves source blocks and Mermaid with provenance, derives only explicit Route, dependency, and coverage relationships, validates component references and content coverage, and writes exactly:
 
 ```text
 .forge/reviews/<review-id>/view.html
@@ -97,5 +114,6 @@ If review feedback changes requirements, return to `writing-specs`. If it change
 - No explicit request means no build or rebuild.
 - Spec and plan modes remain independent; there is no combined fallback.
 - Source Mermaid remains source-owned; derived views add no new meaning.
+- Every rendered component references Semantic IR content; dangling or incomplete Presentation Plans fail the build.
+- Document kinds and review intents may compose differently, but every composition uses the shared component grammar and stable shell.
 - Staleness can be reported but never authorizes regeneration.
-- Spec Pages under `docs/specs/**/index.html` are separate committed artifacts and are never generated or updated by this skill.

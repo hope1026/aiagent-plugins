@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 001-valid-ko
 status: approved
 language: ko
@@ -26,11 +26,11 @@ flowchart TD
     A[입력] --> B[검증]
 ```
 
-### Data & Interfaces
+## Data & Interfaces
 
 입력은 UTF-8 Markdown이다.
 
-## Acceptance Criteria
+### Acceptance Criteria
 
 - AC1 (R1–R2): parser가 요구사항과 승인 기준을 보존한다.
 

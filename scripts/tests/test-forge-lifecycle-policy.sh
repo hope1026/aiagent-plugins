@@ -20,7 +20,6 @@ for file in "$WRITING_SPECS" "$WRITING_PLANS" "$REVIEW_VIEWER" "$EXECUTING_PLANS
 done
 
 grep -q 'Markdown is the default review path' "$WRITING_SPECS" || fail "writing-specs does not default to Markdown"
-grep -q 'Spec Pages' "$WRITING_SPECS" || fail "writing-specs misses durable Spec Pages transaction"
 grep -q 'review-viewer' "$WRITING_SPECS" || fail "writing-specs misses request-only handoff"
 grep -q 'review-viewer' "$WRITING_PLANS" || fail "writing-plans misses request-only handoff"
 grep -q 'review-viewer' "$EXECUTING_PLANS" || fail "executing-plans misses request-only handoff"
@@ -28,8 +27,8 @@ grep -q 'review-viewer' "$EXECUTING_PLANS" || fail "executing-plans misses reque
 # Negative pressure: status/source changes never imply Review Viewer generation.
 grep -qi 'existing Review Viewer.*never.*current\|never assume.*Review Viewer.*current' "$WRITING_SPECS" || \
   fail "negative pressure policy does not forbid assuming Viewer freshness"
-grep -q 'source.*status.*Spec Pages.*same transaction\|Spec Pages.*same transaction.*status' "$WRITING_SPECS" || \
-  fail "negative pressure policy does not keep Spec Pages in the source transaction"
+grep -qi 'source.*status.*Markdown\|Markdown.*source.*status' "$WRITING_SPECS" || \
+  fail "negative pressure policy does not keep Markdown as the lifecycle artifact"
 grep -q 'status.*change.*not.*explicit.*request\|status.*change.*never.*request' "$WRITING_SPECS" || \
   fail "status changes can still trigger Review Viewer generation"
 
@@ -48,6 +47,11 @@ grep -q 'Run one build command' "$REVIEW_VIEWER" || fail "review-viewer does not
 if rg -n 'score 2\+ uses|rebuild an existing Viewer|If a lifecycle Viewer exists, rebuild|rebuild it before the first checkpoint' \
   "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS" >/dev/null; then
   fail "automatic Viewer generation language remains"
+fi
+
+if rg -n 'Spec Pages|build --root docs/specs|check --root docs/specs' \
+  "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS" "$VERIFYING_WORK" >/dev/null; then
+  fail "active lifecycle retains automatic HTML generation"
 fi
 
 for term in fast balanced frontier; do

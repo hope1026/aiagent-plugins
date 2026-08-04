@@ -1,4 +1,4 @@
-"""Repository-wide validation for ``forge/spec@1`` sources and plan references."""
+"""Repository-wide validation for ``forge/spec@2`` sources and plan references."""
 
 from __future__ import annotations
 
@@ -295,12 +295,12 @@ def _baseline_metadata(
     text: str, path: Path
 ) -> tuple[str | None, str | None, str | None]:
     values, _, errors = parse_frontmatter(text, path)
-    if errors or values.get("schema") != "forge/spec@1":
+    if errors or values.get("schema") != "forge/spec@2":
         return None, None, None
     spec_id = values.get("id")
     status = values.get("status")
     return (
-        "forge/spec@1",
+        "forge/spec@2",
         spec_id if isinstance(spec_id, str) else None,
         status if isinstance(status, str) else None,
     )
@@ -532,7 +532,7 @@ def _validate_baseline(
                 from_text, transition.from_path
             )
             if (
-                from_schema != "forge/spec@1"
+                from_schema != "forge/spec@2"
                 or from_status not in {"approved", "implemented"}
                 or from_id != transition.from_id
                 or transition.from_path.parent.name != transition.from_id
@@ -612,7 +612,7 @@ def _validate_baseline(
         except UnicodeDecodeError:
             continue
         schema, baseline_id, status = _baseline_metadata(baseline_text, path)
-        if schema != "forge/spec@1" or status not in {"approved", "implemented"}:
+        if schema != "forge/spec@2" or status not in {"approved", "implemented"}:
             continue
         current_path = repo_root / path
         if not current_path.is_file():

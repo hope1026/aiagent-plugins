@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@2
+schema: forge/spec@1
 id: 001-valid-ko
 status: approved
 language: ko

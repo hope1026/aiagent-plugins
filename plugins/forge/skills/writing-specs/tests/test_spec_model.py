@@ -27,7 +27,8 @@ class SpecModelTest(unittest.TestCase):
         self.assertIsNotNone(doc)
         assert doc is not None
         self.assertEqual(doc.path, Path("001-valid-ko/spec.md"))
-        self.assertEqual(doc.metadata.schema, "forge/spec@1")
+        self.assertEqual(doc.metadata.schema, "forge/spec@2")
+        self.assertIsNone(doc.metadata.subtype)
         self.assertEqual(doc.metadata.id, "001-valid-ko")
         self.assertEqual(doc.metadata.status, "approved")
         self.assertEqual(doc.metadata.language, "ko")
@@ -62,12 +63,55 @@ class SpecModelTest(unittest.TestCase):
             [{"id": "002-example", "relation": "relatedTo"}],
         )
 
+    def test_v2_accepts_flexible_narrative_sections(self) -> None:
+        path = ROOT / "002-flexible-api" / "spec.md"
+        document, diagnostics = load_spec(path, ROOT)
+
+        self.assertEqual(diagnostics, ())
+        self.assertIsNotNone(document)
+        assert document is not None
+        self.assertEqual(document.metadata.schema, "forge/spec@2")
+        self.assertEqual(document.metadata.subtype, "api")
+        self.assertEqual(
+            document.section_order,
+            (
+                "Problem",
+                "Endpoints",
+                "Requirements",
+                "Examples",
+                "Acceptance Criteria",
+                "Decisions & History",
+            ),
+        )
+        self.assertEqual([block.section for block in document.mermaid], ["Endpoints"])
+
+    def test_v2_preserves_workflow_section_order(self) -> None:
+        path = ROOT / "003-flexible-workflow" / "spec.md"
+        document, diagnostics = load_spec(path, ROOT)
+
+        self.assertEqual(diagnostics, ())
+        self.assertIsNotNone(document)
+        assert document is not None
+        self.assertEqual(document.metadata.subtype, "workflow")
+        self.assertEqual(
+            document.section_order,
+            (
+                "Actors",
+                "Requirements",
+                "State Transitions",
+                "Acceptance Criteria",
+                "Decisions & History",
+                "Operational Notes",
+            ),
+        )
+        self.assertEqual([block.section for block in document.mermaid], ["State Transitions"])
+
     def test_invalid_matrix_has_stable_codes(self) -> None:
         expected = {
             "wrong-schema": "SPEC_SCHEMA",
             "id-path": "SPEC_ID_PATH",
-            "extra-h2": "SPEC_HEADING_EXTRA",
-            "missing-heading": "SPEC_HEADING_MISSING",
+            "duplicate-section": "SPEC_SECTION_DUPLICATE",
+            "missing-heading": "SPEC_SECTION_MISSING",
             "implicit-yaml": "SPEC_FRONTMATTER_VALUE",
             "anchor": "SPEC_FRONTMATTER_VALUE",
             "tag": "SPEC_FRONTMATTER_VALUE",
@@ -79,6 +123,7 @@ class SpecModelTest(unittest.TestCase):
             "unsupported-locale": "SPEC_LANGUAGE",
             "unsupported-status": "SPEC_STATUS",
             "unsupported-kind": "SPEC_KIND",
+            "invalid-subtype": "SPEC_SUBTYPE",
             "missing-key": "SPEC_FRONTMATTER_KEY",
             "extra-key": "SPEC_FRONTMATTER_KEY",
             "scalar-type": "SPEC_FRONTMATTER_TYPE",

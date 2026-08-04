@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 003-repository-maintenance-runbook
 status: implemented
 language: ko

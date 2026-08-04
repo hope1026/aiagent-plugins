@@ -49,8 +49,6 @@ assert_inside_target_trace() {
 test -x "$ROOT/scripts/install.sh" || fail "installer is not executable"
 grep -Fq 'test-forge-review-viewer-install.sh' "$ROOT/.github/workflows/validate.yml" ||
   fail "CI does not run the isolated install test"
-grep -Fq 'run-spec-pages-browser.sh' "$ROOT/.github/workflows/validate.yml" ||
-  fail "CI does not run the Spec Pages browser harness"
 grep -Fq 'run-review-viewer-browser.sh' "$ROOT/.github/workflows/validate.yml" ||
   fail "CI does not run the Review Viewer browser harness"
 grep -Fq 'mcr.microsoft.com/playwright:v1.55.0-noble' "$ROOT/.github/workflows/validate.yml" ||
@@ -75,6 +73,10 @@ for skills in "$CODEX_SKILLS" "$CLAUDE_SKILLS" "$ANTIGRAVITY_SKILLS"; do
     fail "missing installed structured spec template: $skills"
   test -x "$skills/review-viewer/scripts/build-review-viewer.sh" ||
     fail "missing installed Review Viewer builder: $skills"
+  for module in review_ir.py review_planner.py review_components.py review_renderer.py; do
+    test -f "$skills/review-viewer/scripts/$module" ||
+      fail "missing installed adaptive Review Viewer module $module: $skills"
+  done
   test -f "$skills/writing-specs/assets/mermaid.min.js" ||
     fail "missing installed offline Mermaid asset: $skills"
   test ! -e "$skills/spec-viewer" ||
@@ -86,13 +88,13 @@ test ! -e "$TEST_HOME/.claude" || fail "--target-root wrote Claude data to HOME"
 assert_inside_target_trace
 
 # One committed source fixture makes provenance stable across all three exports.
-cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/pages-repository" \
-  "$TEST_ROOT/pages-source"
-git -C "$TEST_ROOT/pages-source" init -q
-git -C "$TEST_ROOT/pages-source" config user.name fixture
-git -C "$TEST_ROOT/pages-source" config user.email fixture@example.invalid
-git -C "$TEST_ROOT/pages-source" add .
-git -C "$TEST_ROOT/pages-source" commit -qm fixture
+cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/repository/valid-repository" \
+  "$TEST_ROOT/spec-source"
+git -C "$TEST_ROOT/spec-source" init -q
+git -C "$TEST_ROOT/spec-source" config user.name fixture
+git -C "$TEST_ROOT/spec-source" config user.email fixture@example.invalid
+git -C "$TEST_ROOT/spec-source" add .
+git -C "$TEST_ROOT/spec-source" commit -qm fixture
 
 cp -R "$ROOT/plugins/forge/skills/review-viewer/tests/fixtures/repository" \
   "$TEST_ROOT/review-source"
@@ -103,7 +105,6 @@ git -C "$TEST_ROOT/review-source" add .
 git -C "$TEST_ROOT/review-source" commit -qm fixture
 
 declare -a INSPECT_HASHES=()
-declare -a PAGE_HASHES=()
 declare -a REVIEW_HASHES=()
 declare -a TRANSITION_HASHES=()
 index=0
@@ -113,15 +114,15 @@ for agent in codex claude antigravity; do
     claude) skills="$CLAUDE_SKILLS" ;;
     antigravity) skills="$ANTIGRAVITY_SKILLS" ;;
   esac
-  pages_repo="$TEST_ROOT/pages-$agent"
+  spec_repo="$TEST_ROOT/spec-$agent"
   review_repo="$TEST_ROOT/review-$agent"
-  cp -R "$TEST_ROOT/pages-source" "$pages_repo"
+  cp -R "$TEST_ROOT/spec-source" "$spec_repo"
   cp -R "$TEST_ROOT/review-source" "$review_repo"
-  mkdir -p "$pages_repo/docs/plans/install-proof"
-  printf '# Install transition evidence\n' >"$pages_repo/docs/plans/install-proof/evidence.md"
+  mkdir -p "$spec_repo/docs/plans/install-proof"
+  printf '# Install transition evidence\n' >"$spec_repo/docs/plans/install-proof/evidence.md"
 
   PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$skills/writing-specs/scripts" \
-    python3 - "$pages_repo" >"$TEST_ROOT/$agent.transition.json" <<'PY'
+    python3 - "$spec_repo" >"$TEST_ROOT/$agent.transition.json" <<'PY'
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -170,15 +171,11 @@ print(
 )
 PY
 
-  "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$pages_repo" \
+  "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$spec_repo" \
     validate --root docs/specs
-  "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$pages_repo" \
-    inspect --spec docs/specs/001-basic/spec.md --format json \
+  "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$spec_repo" \
+    inspect --spec docs/specs/001-valid-feature/spec.md --format json \
     >"$TEST_ROOT/$agent.inspect.json"
-  "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$pages_repo" \
-    build --root docs/specs --offline >/dev/null
-  "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$pages_repo" \
-    check --root docs/specs
 
   (
     cd "$review_repo"
@@ -188,15 +185,16 @@ PY
   ) >/dev/null
 
   INSPECT_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.inspect.json")"
-  PAGE_HASHES[index]="$(sha256 "$pages_repo/docs/specs/001-basic/index.html")"
   REVIEW_HASHES[index]="$(sha256 "$review_repo/.forge/reviews/install-proof/view.html")"
   TRANSITION_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.transition.json")"
-  test ! -e "$pages_repo/.forge/reviews" ||
-    fail "Spec Pages workflow created a Review Viewer: $agent"
+  test "$(find "$spec_repo/docs/specs" -type f -name '*.html' -print -quit)" = "" ||
+    fail "Markdown lifecycle created HTML: $agent"
+  test ! -e "$spec_repo/.forge/reviews" ||
+    fail "Markdown lifecycle created a Review Viewer: $agent"
   index=$((index + 1))
 done
 
-for hashes_name in INSPECT_HASHES PAGE_HASHES REVIEW_HASHES TRANSITION_HASHES; do
+for hashes_name in INSPECT_HASHES REVIEW_HASHES TRANSITION_HASHES; do
   eval 'hashes=("${'"$hashes_name"'[@]}")'
   [[ "${hashes[0]}" == "${hashes[1]}" && "${hashes[1]}" == "${hashes[2]}" ]] ||
     fail "$hashes_name differs across installed exports"

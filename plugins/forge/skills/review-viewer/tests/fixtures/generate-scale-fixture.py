@@ -47,7 +47,7 @@ def build_spec() -> str:
         for number in range(1, ACCEPTANCE + 1)
     )
     return f"""---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 001-scale
 status: approved
 language: en

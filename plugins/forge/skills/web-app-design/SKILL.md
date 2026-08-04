@@ -32,7 +32,7 @@ Do NOT use for:
 - fixed Review Viewer generation — a single requested `review-viewer` build needs no UI design skill;
 - logic changes with no visible or interactive surface.
 
-Review Viewer tooling and Spec Pages tooling changes use `web-app-design`: shell, template, CSS, runtime, interaction, responsive behavior, and accessibility changes require the viewport×state matrix and full rendered verification below.
+Review Viewer tooling changes use `web-app-design`: shell, component grammar, template, CSS, runtime, interaction, responsive behavior, and accessibility changes require the viewport×state matrix and full rendered verification below.
 
 ## The Process
 

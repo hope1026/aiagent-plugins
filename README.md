@@ -6,7 +6,7 @@ AI agent plugins managed from one source tree. Forge installs into **Claude Code
 
 | Plugin | Purpose |
 |---|---|
-| `forge` | Spec-first development process: structured spec → tracked Spec Pages → plan → execute → verify, plus TDD, debugging, cross-agent authoring, UI design, writing tone overlays, and request-only Review Viewer snapshots. |
+| `forge` | Spec-first development process: structured Markdown spec → plan → execute → verify, plus TDD, debugging, cross-agent authoring, UI design, writing tone overlays, and request-only adaptive Review Viewer snapshots. |
 
 ```text
 plugins/<name>/
@@ -62,13 +62,13 @@ bash scripts/install.sh --agent codex --plugin forge
 | Skill | One line |
 |---|---|
 | `using-forge` | Entry point: routes any task to the right forge skill; spec-first iron law; shared artifact contract |
-| `writing-specs` | Idea → approved `forge/spec@1`; validates source and keeps tracked Spec Pages synchronized |
+| `writing-specs` | Idea → approved `forge/spec@2`; validates flexible structured Markdown without generating HTML |
 | `writing-plans` | Independent task-level plan with 0..N Related Specs; behavior changes still require approval |
 | `executing-plans` | Task-by-task execution with checkpoints and plan-local progress history |
 | `test-driven-development` | RED → GREEN → REFACTOR; no implementation without a failing test |
 | `systematic-debugging` | Reproduce → isolate → root-cause → fix; no fix without an understood cause |
 | `verifying-work` | Evidence before claims; walks acceptance criteria; flips spec to `implemented` |
-| `review-viewer` | Builds an untracked spec or plan review snapshot only after explicit create or refresh intent; the agent resolves source, mode, and review-id |
+| `review-viewer` | Builds an adaptive untracked spec or plan snapshot only after explicit intent, using Semantic IR, validated presentation planning, and reusable components |
 | `web-app-design` | Browser app hierarchy, control affordance, state geometry, and viewport×state verification |
 | `website-design` | Public website visual thesis, content composition, imagery, responsive behavior, and restrained motion |
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
@@ -97,9 +97,9 @@ the 14 active user-execution skills listed above.
 4. Verification is against the spec's acceptance criteria, with fresh evidence.
 5. Spec status `draft → approved` (human) `→ implemented` (verified only).
 6. Drift repair (`sync` mode) reconciles brownfield code against its spec.
-7. Markdown stays authoritative; tracked Spec Pages update in the same source transaction, while Review Viewer snapshots are request-only and untracked.
+7. The normal lifecycle creates Markdown only; Review Viewer HTML is request-only, adaptive, and untracked.
 
-Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`; generated `index.html` pages beside each spec plus `docs/specs/index.html` are tracked and refreshed with source, status, or tooling changes. Work-scoped plans live at `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay only while that plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html` and remain untracked. `.forge/research/` is local-only; promote durable findings to `docs/research/` and root-cause records to `docs/debug/`. Promote permanent decisions before deleting a completed plan.
+Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`. Work-scoped plans live at `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay only while that plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html`, are created only after an explicit request, and remain untracked. `.forge/research/` is local-only; promote durable findings to `docs/research/` and root-cause records to `docs/debug/`. Promote permanent decisions before deleting a completed plan.
 
 ## Validate
 
@@ -107,4 +107,4 @@ Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`; 
 bash scripts/validate.sh
 ```
 
-Lints plugin skills and repository-local wrappers, validates extensions, and runs strict structured-spec validation plus a deterministic Spec Pages check with an explicit repository root. CI runs lifecycle, artifact, UI routing, and renderer contracts on every push.
+Lints plugin skills and repository-local wrappers, validates extensions, and runs strict structured-spec validation with an explicit repository root. CI runs lifecycle, artifact, UI routing, and adaptive renderer contracts on every push.
