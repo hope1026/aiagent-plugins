@@ -116,6 +116,7 @@ class ReviewSource:
     path: str
     namespace: str
     sha256: str
+    text: str
     requirements: tuple[str, ...] = ()
     acceptance: tuple[str, ...] = ()
     status: str = ""
@@ -169,15 +170,15 @@ def _read_source(path: Path, repo_root: Path) -> tuple[Path, str, str]:
     return relative, text, hashlib.sha256(source).hexdigest()
 
 
-def _load_structured_spec(path: Path, repo_root: Path) -> tuple[SpecDocument, str]:
-    relative, _, digest = _read_source(path, repo_root)
+def _load_structured_spec(path: Path, repo_root: Path) -> tuple[SpecDocument, str, str]:
+    relative, text, digest = _read_source(path, repo_root)
     document, diagnostics = load_spec(repo_root.resolve() / relative, repo_root.resolve())
     if document is None:
         detail = "; ".join(
             f"{item.path}:{item.line}: {item.code} {item.message}" for item in diagnostics
         )
         raise ValueError(f"invalid structured spec: {detail}")
-    return document, digest
+    return document, text, digest
 
 
 def _spec_counts(document: SpecDocument, selected: PlanSpecRef | None = None) -> dict[str, int]:
@@ -190,6 +191,7 @@ def _spec_counts(document: SpecDocument, selected: PlanSpecRef | None = None) ->
 
 def _spec_source(
     document: SpecDocument,
+    text: str,
     digest: str,
     role: str,
     namespace: str,
@@ -200,6 +202,7 @@ def _spec_source(
         path=document.path.as_posix(),
         namespace=namespace,
         sha256=digest,
+        text=text,
         requirements=(
             selected.requirements
             if selected is not None
@@ -218,9 +221,10 @@ def _spec_source(
 def collect_spec_sources(
     primary: Path, comparisons: Sequence[Path], repo_root: Path
 ) -> ReviewBundle:
-    primary_document, primary_digest = _load_structured_spec(primary, repo_root)
+    primary_document, primary_text, primary_digest = _load_structured_spec(primary, repo_root)
     primary_source = _spec_source(
         primary_document,
+        primary_text,
         primary_digest,
         "primary_spec",
         f"current--{primary_document.metadata.id}",
@@ -229,12 +233,13 @@ def collect_spec_sources(
     comparison_counts: dict[str, object] = {}
     seen_paths = {primary_document.path}
     for index, comparison in enumerate(comparisons, 1):
-        document, digest = _load_structured_spec(comparison, repo_root)
+        document, text, digest = _load_structured_spec(comparison, repo_root)
         if document.path in seen_paths:
             raise ValueError(f"comparison source is duplicated: {document.path.as_posix()}")
         seen_paths.add(document.path)
         source = _spec_source(
             document,
+            text,
             digest,
             "comparison_spec",
             f"comparison-{index}--{document.metadata.id}",
@@ -738,12 +743,14 @@ def _collect_plan_sources(
 
     primary: list[ReviewSource] = []
     plan_sha = source_data[plan_relative][1]
+    plan_text = source_data[plan_relative][0]
     primary.append(
         ReviewSource(
             "primary_plan",
             plan_relative.as_posix(),
             f"plan--{document.plan_id}",
             plan_sha,
+            plan_text,
             status=document.status,
             document=document,
         )
@@ -756,6 +763,7 @@ def _collect_plan_sources(
                 relative.as_posix(),
                 f"progress--{document.plan_id}",
                 source_data[relative][1],
+                source_data[relative][0],
                 document=PlanAuxiliaryDocument(
                     relative.as_posix(), _mermaid_blocks(source_data[relative][0])
                 ),
@@ -769,6 +777,7 @@ def _collect_plan_sources(
                 relative.as_posix(),
                 f"task--{relative.stem}",
                 source_data[relative][1],
+                source_data[relative][0],
                 document=PlanAuxiliaryDocument(
                     relative.as_posix(), _mermaid_blocks(source_data[relative][0])
                 ),
@@ -779,10 +788,11 @@ def _collect_plan_sources(
     context_counts: dict[str, object] = {}
     for selected in related:
         spec_path = repo_root.resolve() / selected.path
-        spec_document, digest = _load_structured_spec(spec_path, repo_root)
+        spec_document, text, digest = _load_structured_spec(spec_path, repo_root)
         context.append(
             _spec_source(
                 spec_document,
+                text,
                 digest,
                 "related_spec_context",
                 f"context--{selected.id}",
