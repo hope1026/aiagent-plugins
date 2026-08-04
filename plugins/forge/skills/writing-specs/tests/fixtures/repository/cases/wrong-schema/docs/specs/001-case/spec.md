@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@2
+schema: forge/spec@1
 id: 001-case
 status: approved
 language: en

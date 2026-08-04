@@ -1,4 +1,4 @@
-"""Dependency-free typed parser for the ``forge/spec@1`` source contract."""
+"""Dependency-free typed parser for the ``forge/spec@2`` source contract."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ from types import MappingProxyType
 from typing import Mapping
 
 
-SCHEMA = "forge/spec@1"
-FRONTMATTER_KEYS = (
+SCHEMA = "forge/spec@2"
+REQUIRED_FRONTMATTER_KEYS = (
     "schema",
     "id",
     "status",
@@ -22,20 +22,19 @@ FRONTMATTER_KEYS = (
     "components",
     "relatedSpecs",
 )
+OPTIONAL_FRONTMATTER_KEYS = ("subtype",)
 STATUSES = frozenset(("draft", "approved", "implemented"))
 LANGUAGES = frozenset(("en", "ko"))
 KINDS = frozenset(("feature", "system", "interface", "policy"))
 RELATIONS = frozenset(("dependsOn", "refines", "supersedes", "relatedTo"))
-CANONICAL_SECTIONS = (
-    "Overview",
+REQUIRED_SEMANTIC_SECTIONS = (
     "Requirements",
-    "Behavior & Flows",
-    "Data & Interfaces",
     "Acceptance Criteria",
     "Decisions & History",
 )
 
 _ID_RE = re.compile(r"^[0-9]{3}-[a-z0-9]+(?:-[a-z0-9]+)*$")
+_SUBTYPE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _FRONTMATTER_LINE_RE = re.compile(r"^([A-Za-z][A-Za-z0-9]*): (.+)$")
 _IMPLICIT_SCALAR_RE = re.compile(
     r"^(?:true|false|null|~|[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)|"
@@ -72,6 +71,7 @@ class SpecMetadata:
     status: str
     language: str
     kind: str
+    subtype: str | None
     areas: tuple[str, ...]
     components: tuple[str, ...]
     related_specs: tuple[RelatedSpec, ...]
@@ -106,6 +106,7 @@ class SpecDocument:
     metadata: SpecMetadata
     title: str
     sections: Mapping[str, str]
+    section_order: tuple[str, ...]
     requirements: tuple[Requirement, ...]
     acceptance: tuple[AcceptanceCriterion, ...]
     mermaid: tuple[MermaidBlock, ...]
@@ -279,7 +280,7 @@ def _related_specs(
 
 def _headings(
     lines: list[str], body_start: int, path: Path, errors: list[Diagnostic]
-) -> tuple[str, dict[str, tuple[int, int]]]:
+) -> tuple[str, dict[str, tuple[int, int]], tuple[str, ...]]:
     h1: list[tuple[int, str]] = []
     h2: list[tuple[int, str]] = []
     fence: str | None = None
@@ -311,60 +312,38 @@ def _headings(
             )
 
     positions: dict[str, int] = {}
+    section_order: list[str] = []
     for index, heading in h2:
-        if heading not in CANONICAL_SECTIONS:
+        if heading in positions:
             errors.append(
                 _diagnostic(
                     path,
                     index + 1,
-                    "SPEC_HEADING_EXTRA",
-                    f"Unexpected H2 heading '{heading}'.",
-                )
-            )
-        elif heading in positions:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_HEADING_EXTRA",
-                    f"Canonical H2 heading '{heading}' is duplicated.",
+                    "SPEC_SECTION_DUPLICATE",
+                    f"H2 section '{heading}' is duplicated.",
                 )
             )
         else:
             positions[heading] = index
+            section_order.append(heading)
 
-    for heading in CANONICAL_SECTIONS:
+    for heading in REQUIRED_SEMANTIC_SECTIONS:
         if heading not in positions:
             errors.append(
                 _diagnostic(
                     path,
                     body_start + 1,
-                    "SPEC_HEADING_MISSING",
-                    f"Canonical H2 heading '{heading}' is missing.",
+                    "SPEC_SECTION_MISSING",
+                    f"Required semantic H2 section '{heading}' is missing.",
                 )
             )
 
-    present = [heading for _, heading in h2 if heading in CANONICAL_SECTIONS]
-    if len(positions) == len(CANONICAL_SECTIONS) and present != list(CANONICAL_SECTIONS):
-        errors.append(
-            _diagnostic(
-                path,
-                min(positions.values()) + 1,
-                "SPEC_HEADING_ORDER",
-                "Canonical H2 headings are not in the required order.",
-            )
-        )
-
     spans: dict[str, tuple[int, int]] = {}
-    if all(heading in positions for heading in CANONICAL_SECTIONS):
-        for offset, heading in enumerate(CANONICAL_SECTIONS):
-            start = positions[heading] + 1
-            if offset + 1 < len(CANONICAL_SECTIONS):
-                end = positions[CANONICAL_SECTIONS[offset + 1]]
-            else:
-                end = len(lines)
-            spans[heading] = (start, end)
-    return title, spans
+    for offset, heading in enumerate(section_order):
+        start = positions[heading] + 1
+        end = positions[section_order[offset + 1]] if offset + 1 < len(section_order) else len(lines)
+        spans[heading] = (start, end)
+    return title, spans, tuple(section_order)
 
 
 def _requirements(
@@ -542,15 +521,6 @@ def _mermaid_blocks(
                 )
             )
             break
-        if section != "Behavior & Flows":
-            errors.append(
-                _diagnostic(
-                    path,
-                    opening + 1,
-                    "SPEC_MERMAID_SECTION",
-                    "Mermaid fences belong in Behavior & Flows.",
-                )
-            )
         result.append(MermaidBlock("\n".join(content), opening + 1, section))
         index += 1
     return tuple(result)
@@ -582,7 +552,7 @@ def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagno
 
     errors: list[Diagnostic] = []
     keys = set(values)
-    for key in FRONTMATTER_KEYS:
+    for key in REQUIRED_FRONTMATTER_KEYS:
         if key not in keys:
             errors.append(
                 _diagnostic(
@@ -592,7 +562,8 @@ def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagno
                     f"Required frontmatter key '{key}' is missing.",
                 )
             )
-    for key in sorted(keys - set(FRONTMATTER_KEYS)):
+    allowed_keys = set(REQUIRED_FRONTMATTER_KEYS) | set(OPTIONAL_FRONTMATTER_KEYS)
+    for key in sorted(keys - allowed_keys):
         errors.append(
             _diagnostic(
                 relative_path,
@@ -609,6 +580,7 @@ def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagno
     status = values["status"]
     language = values["language"]
     kind = values["kind"]
+    subtype = values.get("subtype")
 
     metadata_lines: dict[str, int] = {}
     for index in range(1, body_start):
@@ -623,6 +595,8 @@ def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagno
         "language": language,
         "kind": kind,
     }
+    if subtype is not None:
+        scalar_values["subtype"] = subtype
     invalid_scalar_keys = {
         key for key, value in scalar_values.items() if not isinstance(value, str)
     }
@@ -690,13 +664,25 @@ def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagno
                 "Kind must be feature, system, interface, or policy.",
             )
         )
-
+    if (
+        subtype is not None
+        and "subtype" not in invalid_scalar_keys
+        and _SUBTYPE_RE.fullmatch(subtype) is None
+    ):
+        errors.append(
+            _diagnostic(
+                relative_path,
+                metadata_lines.get("subtype", 1),
+                "SPEC_SUBTYPE",
+                "Subtype must use lowercase kebab-case.",
+            )
+        )
     areas = _string_list(values, "areas", relative_path, errors)
     components = _string_list(values, "components", relative_path, errors)
     related_specs = _related_specs(values, relative_path, errors)
 
     lines = text.splitlines()
-    title, spans = _headings(lines, body_start, relative_path, errors)
+    title, spans, section_order = _headings(lines, body_start, relative_path, errors)
 
     for index in range(body_start, len(lines)):
         if re.fullmatch(r"Status:\s*.*", lines[index]):
@@ -740,6 +726,7 @@ def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagno
         status=str(status),
         language=str(language),
         kind=str(kind),
+        subtype=str(subtype) if subtype is not None else None,
         areas=areas,
         components=components,
         related_specs=related_specs,
@@ -755,6 +742,7 @@ def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagno
         metadata=metadata,
         title=title,
         sections=sections,
+        section_order=section_order,
         requirements=requirements,
         acceptance=acceptance,
         mermaid=mermaid,

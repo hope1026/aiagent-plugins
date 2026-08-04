@@ -1,5 +1,5 @@
 ---
-schema: forge/spec@1
+schema: forge/spec@2
 id: 001-valid-ko
 status: obsolete
 language: ko
