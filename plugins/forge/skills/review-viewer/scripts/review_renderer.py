@@ -1,4 +1,4 @@
-"""Deterministic six-panel renderer for requested Forge Review Viewers."""
+"""Deterministic adaptive renderer for requested Forge Review Viewers."""
 
 from __future__ import annotations
 
@@ -15,6 +15,15 @@ from review_sources import (
     ReviewBundle,
     ReviewSource,
 )
+from review_components import render_components
+from review_ir import SemanticIR, build_semantic_ir
+from review_planner import (
+    PresentationPlan,
+    ViewContext,
+    select_presentation_plan,
+    validate_presentation_plan,
+)
+from spec_model import SpecDocument
 
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
@@ -1221,6 +1230,9 @@ def render_review(
     rebuild_command: str,
     source_base: str,
     offline: bool,
+    view_context: ViewContext | None = None,
+    semantic_ir: SemanticIR | None = None,
+    presentation_plan: PresentationPlan | None = None,
 ) -> str:
     """Render one deterministic Review Viewer from validated source models."""
 
@@ -1234,27 +1246,35 @@ def render_review(
         raise ValueError("Review Viewer requires at least one source")
     labels = LABELS[locale]
     title = str(labels[f"{bundle.mode}_title"])
-    panels = (
-        _spec_panels(bundle, review_id, labels)
-        if bundle.mode == "spec"
-        else _plan_panels(bundle, review_id, labels)
+    ir = semantic_ir or build_semantic_ir(bundle)
+    if view_context is None:
+        primary_document = bundle.primary[0].document
+        kind = primary_document.metadata.kind if isinstance(primary_document, SpecDocument) else "plan"
+        subtype = primary_document.metadata.subtype if isinstance(primary_document, SpecDocument) else None
+        view_context = ViewContext(
+            bundle.mode,
+            kind,
+            subtype,
+            "execution" if bundle.mode == "plan" else "review",
+            "mixed",
+            locale,
+            "standalone",
+        )
+    plan = presentation_plan or select_presentation_plan(ir, view_context)
+    diagnostics = validate_presentation_plan(ir, plan)
+    if diagnostics:
+        raise ValueError("invalid Presentation Plan: " + "; ".join(item.code for item in diagnostics))
+    components = render_components(ir, plan, view_context, review_id)
+    navigation = "".join(
+        f'<a href="#{html.escape(component.component_id, quote=True)}">{html.escape(component.title)}</a>'
+        for component in components
     )
-    panels["history"] += _review_metadata(
-        bundle,
-        locale=locale,
-        generated_at=generated_at,
-        checkpoint=checkpoint,
-        commit=commit,
-        rebuild_command=rebuild_command,
-        source_base=source_base,
-        offline=offline,
-        labels=labels,
-    )
-    tabs = labels["tabs"]
-    assert isinstance(tabs, tuple)
     content = "\n".join(
-        _panel(panel_id, tabs[index], panels[panel_id])
-        for index, panel_id in enumerate(PANELS)
+        '<section class="review-component" '
+        f'id="{html.escape(component.component_id, quote=True)}" data-component="{html.escape(plan.components[index].component, quote=True)}">'
+        f'<h2>{html.escape(component.title)}</h2><p class="panel-orientation">{html.escape(component.orientation)}</p>'
+        f'{component.markup}</section>'
+        for index, component in enumerate(components)
     )
     manifest = _manifest(
         bundle,
@@ -1276,12 +1296,7 @@ def render_review(
         "GENERATED": html.escape(generated_at),
         "SOURCE_SUMMARY": _source_summary(bundle, labels),
         "NAV_LABEL": html.escape(str(labels["nav"]), quote=True),
-        "TAB_OVERVIEW": html.escape(tabs[0]),
-        "TAB_REQUIREMENTS": html.escape(tabs[1]),
-        "TAB_FLOWS": html.escape(tabs[2]),
-        "TAB_DATA": html.escape(tabs[3]),
-        "TAB_ACCEPTANCE": html.escape(tabs[4]),
-        "TAB_HISTORY": html.escape(tabs[5]),
+        "NAVIGATION": navigation,
         "CONTENT": content,
         "SOURCE_MANIFEST": _json_for_html(manifest),
         "FRESHNESS_RUNTIME": FRESHNESS_RUNTIME_PATH.read_text(encoding="utf-8"),
