@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@2
 id: 008-structured-spec-pages
-status: approved
+status: implemented
 language: ko
 kind: system
 areas: ["forge", "specs"]
@@ -268,3 +268,4 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐음을 보여주는 관찰 �
 - 2026-08-03 [APPROVED] 사용자가 조건부 Mermaid runtime, 양방향 R·AC coverage, page 요약 지표, section-local 목차와 `relatedSpecs` 파생 관계 도식 delta를 승인하고 계획 작성을 요청했다.
 - 2026-08-04 [CHANGE] R2, R4–R5, R8, R10–R13, R16–R24, R27–R34, R38–R47과 AC1–AC15 MODIFIED 또는 REMOVED: fixed six-section `forge/spec@1`과 committed Spec Pages를 `forge/spec@2` flexible Markdown source와 explicit-request-only Review Viewer 경계로 교체한다.
 - 2026-08-04 [APPROVED] 사용자가 flexible Markdown source, Markdown-only lifecycle과 명시적 `review-viewer` 요청에 한정된 HTML 생성을 승인하고 구현 진행을 요청했다.
+- 2026-08-04 [IMPLEMENTED] AC1–AC15의 fresh flexible parser·Markdown lifecycle·install·supersession·artifact inventory와 pressure evidence가 모두 PASS하여 `forge/spec@2` cutover를 구현 완료했다.

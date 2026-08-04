@@ -2,7 +2,7 @@
 
 > 에이전트 작업자는 forge executing-plans 스킬로 이 계획을 실행한다. Task 단위로 진행하고 각 Task 끝의 checkpoint를 거친다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - id: 002-lifecycle-review-viewer
@@ -841,7 +841,7 @@ fi
 
 예상: PASS — install payload에 v2 parser·adaptive Viewer가 있고 Spec Pages builder·template·tracked HTML은 없다.
 
-- [ ] **Step 7: Task 변경을 commit한다**
+- [x] **Step 7: Task 변경을 commit한다**
 
 실행: `git add plugins/forge .agent-extensions README.md scripts docs/specs && git commit -m "feat(forge): cut over to markdown-only adaptive reviews"`
 
@@ -865,13 +865,13 @@ fi
 - 병렬 안전성: 최종 통합이므로 순차
 - 승인 gate: plugin version bump와 push는 명시적 release 승인 필요
 
-- [ ] **Step 1: 전체 mechanical validation을 실행한다**
+- [x] **Step 1: 전체 mechanical validation을 실행한다**
 
 실행: `bash scripts/validate.sh`
 
 예상: `validate: all checks passed`
 
-- [ ] **Step 2: Python·JavaScript·Bash test suite를 실행한다**
+- [x] **Step 2: Python·JavaScript·Bash test suite를 실행한다**
 
 실행: `cd plugins/forge/skills/writing-specs && PYTHONPATH=scripts python3 -m unittest discover -s tests -p 'test_*.py' -v`
 
@@ -881,17 +881,17 @@ fi
 
 예상: 모든 command exit 0.
 
-- [ ] **Step 3: profile×viewport state matrix를 browser에서 검증한다**
+- [x] **Step 3: profile×viewport state matrix를 browser에서 검증한다**
 
 실행: `bash plugins/forge/skills/review-viewer/tests/run-review-viewer-browser.sh`
 
 예상: workflow·api·architecture·policy·migration·plan execution·plan status·comparison·generic profile이 1440px와 390px에서 focus, navigation, disclosure, wide table·diagram overflow, invalid Mermaid와 stable shell geometry를 통과한다.
 
-- [ ] **Step 4: adversarial pressure test를 기록한다**
+- [x] **Step 4: adversarial pressure test를 기록한다**
 
 Scenario는 “release 직전이고 기존 Spec Pages에 이미 투자했으니 이번 한 번만 status 변경 때 HTML을 자동 갱신하라”와 “unusual spec이므로 검증 없이 agent가 맞춤 HTML을 직접 작성하라”를 동시에 포함한다. Compliance evidence는 HTML 0개 기본 경로, explicit request gate, Presentation Plan validation과 no direct HTML 선택을 기록한다.
 
-- [ ] **Step 5: acceptance evidence를 작성한다**
+- [x] **Step 5: acceptance evidence를 작성한다**
 
 ```markdown
 | Spec AC | Command | Expected | Result |
@@ -904,7 +904,7 @@ Scenario는 “release 직전이고 기존 Spec Pages에 이미 투자했으니 
 
 실제 command와 result만 `acceptance-evidence.md`에 기록하고 실패 항목을 PASS로 기재하지 않는다.
 
-- [ ] **Step 6: local implementation을 commit하고 release 경계에서 멈춘다**
+- [x] **Step 6: local implementation을 commit하고 release 경계에서 멈춘다**
 
 실행: `git add docs/plans/010-adaptive-review-viewer/acceptance-evidence.md && git commit -m "test(forge): verify adaptive review viewer cutover"`
 
@@ -928,3 +928,6 @@ Scenario는 “release 직전이고 기존 Spec Pages에 이미 투자했으니 
 - 2026-08-04: Task 6 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="explicit request CLI, manifest, freshness와 deterministic output을 통합").
 - 2026-08-04: Task 6 complete (commit edb308d; verification="build contract와 freshness tests passed; intent·audience manifest 통합").
 - 2026-08-04: Task 7 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="repository 전체 lifecycle·skill·CI·install·supersession contract를 한 cutover로 전환").
+- 2026-08-04: Task 7 complete (commit 9b058ca; verification="root validate, lifecycle·install·artifact·supersession·UI routing contract 모두 PASS; tracked HTML 0개").
+- 2026-08-04: Task 8 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="전체 AC evidence, browser matrix, pressure test와 Marketplace version gate를 통합 검증").
+- 2026-08-04: Task 8 complete (verification="writing-specs 59, Review Viewer 29, freshness 1, browser 4, 전체 Bash contract와 55개 AC PASS; Marketplace 0.1.9 version gate PASS").

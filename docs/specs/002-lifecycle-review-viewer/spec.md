@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@2
 id: 002-lifecycle-review-viewer
-status: approved
+status: implemented
 language: ko
 kind: system
 areas: ["forge", "review"]
@@ -451,3 +451,4 @@ AC(Acceptance Criterion)는 연결된 R이 충족됐다고 판단할 수 있는 
 - 2026-08-03 [APPROVED] 사용자가 조건부 Mermaid runtime, Overview 요약 지표, provenance 반복 축약과 명사형 panel 제목 delta를 승인하고 계획 작성을 요청했다.
 - 2026-08-04 [CHANGE] R21, R57–R59, R61, R63, R85–R86과 AC14, AC17, AC20, AC31 MODIFIED 및 R91–R106, AC36–AC40 ADDED: fixed 6-panel rendering을 Semantic IR, View Context, validated Presentation Plan과 reusable component grammar 기반의 intent-aware adaptive Review Viewer로 교체한다. 일반 spec·plan lifecycle은 Markdown-only로 유지하고 명시적인 `review-viewer` 요청만 HTML 생성을 허용한다.
 - 2026-08-04 [APPROVED] 사용자가 adaptive Presentation Plan 기반 Review Viewer와 explicit-request-only HTML 생성 경계를 승인하고 구현 진행을 요청했다.
+- 2026-08-04 [IMPLEMENTED] AC1–AC40의 fresh parser·IR·planner·renderer·lifecycle·install·freshness·pressure·desktop/mobile browser evidence가 모두 PASS하여 Markdown-only adaptive Review Viewer 계약을 구현 완료했다.

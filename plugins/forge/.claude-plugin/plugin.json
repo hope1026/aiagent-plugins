@@ -1,8 +1,8 @@
 {
   "name": "forge",
   "displayName": "Forge",
-  "version": "0.1.8",
-  "description": "Spec-first development skills with structured spec authoring, validation, maintained Spec Pages, request-only Review Viewer output, cross-agent authoring, verification, debugging, and interface design. Produces adapters for Codex, Claude Code, and Antigravity.",
+  "version": "0.1.9",
+  "description": "Spec-first development skills with flexible Markdown spec authoring, validation, request-only adaptive Review Viewer output, cross-agent authoring, verification, debugging, and interface design. Produces adapters for Codex, Claude Code, and Antigravity.",
   "author": { "name": "Onestar Lee" },
   "skills": "./skills/",
   "keywords": ["spec-first", "process", "tdd", "debugging", "agent-skills", "mcp", "web-app-design", "website-design", "tone", "marketing", "operations", "customer-support", "korean", "codex", "claude-code", "antigravity"]
