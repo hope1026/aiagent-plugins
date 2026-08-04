@@ -16,6 +16,8 @@ from typing import Mapping
 
 from review_freshness import CheckResult, check_review, find_repository_root
 from review_renderer import render_review
+from review_ir import build_semantic_ir
+from review_planner import ViewContext, select_presentation_plan, validate_presentation_plan
 from review_sources import (
     ReviewBundle,
     ReviewSource,
@@ -45,6 +47,8 @@ def parse_args(argv: list[str]) -> tuple[argparse.ArgumentParser, argparse.Names
     parser.add_argument("--tasks-dir", type=Path)
     parser.add_argument("--review-id")
     parser.add_argument("--locale", choices=("en", "ko"))
+    parser.add_argument("--intent", choices=("review", "approval", "implementation", "comparison", "execution", "status"))
+    parser.add_argument("--audience", choices=("mixed", "product", "engineering", "operations"), default="mixed")
     parser.add_argument("--checkpoint")
     parser.add_argument("--generated-at")
     parser.add_argument("--offline", action="store_true")
@@ -186,7 +190,26 @@ def _normalized_rebuild_command(
     )
     if args.offline:
         command.append("--offline")
+    if args.intent is not None:
+        command.extend(("--intent", args.intent))
+    if args.audience != "mixed":
+        command.extend(("--audience", args.audience))
     return shlex.join(command)
+
+
+def _context_and_plan(bundle: ReviewBundle, args: argparse.Namespace):
+    primary = bundle.primary[0].document
+    metadata = getattr(primary, "metadata", None)
+    kind = getattr(metadata, "kind", "plan")
+    subtype = getattr(metadata, "subtype", None)
+    intent = args.intent or ("execution" if bundle.mode == "plan" else "review")
+    context = ViewContext(bundle.mode, kind, subtype, intent, args.audience, args.locale or "en", "standalone")
+    ir = build_semantic_ir(bundle)
+    plan = select_presentation_plan(ir, context)
+    diagnostics = validate_presentation_plan(ir, plan)
+    if diagnostics:
+        raise ValueError("; ".join(f"{item.code} {item.message}" for item in diagnostics))
+    return context, ir, plan
 
 
 def _dry_run_payload(
@@ -197,6 +220,7 @@ def _dry_run_payload(
 ) -> dict[str, object]:
     generated_at = _normalize_generated_at(parser, args.generated_at)
     sources = (*bundle.primary, *bundle.comparison, *bundle.context)
+    context, _, plan = _context_and_plan(bundle, args)
     return {
         "mode": bundle.mode,
         "locale": args.locale or "en",
@@ -214,6 +238,12 @@ def _dry_run_payload(
         "source_base": "../../../",
         "offline": args.offline,
         "output": f".forge/reviews/{args.review_id}/view.html",
+        "view_context": dict(context.__dict__),
+        "presentation_plan": {
+            "profile": plan.profile,
+            "primary_question_key": plan.primary_question_key,
+            "components": [dict(item.__dict__) for item in plan.components],
+        },
     }
 
 
@@ -276,6 +306,8 @@ def _run_check(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int
             args.tasks_dir,
             args.review_id,
             args.locale,
+            args.intent,
+            args.audience != "mixed",
             args.checkpoint,
             args.generated_at,
             args.offline,
@@ -369,6 +401,7 @@ def main(argv: list[str] | None = None) -> int:
     commit = _git_commit(parser, repo_root)
     rebuild_command = _normalized_rebuild_command(args, bundle, generated_at, repo_root)
     try:
+        context, ir, plan = _context_and_plan(bundle, args)
         document = render_review(
             bundle,
             review_id=args.review_id,
@@ -379,6 +412,9 @@ def main(argv: list[str] | None = None) -> int:
             rebuild_command=rebuild_command,
             source_base="../../../",
             offline=args.offline,
+            view_context=context,
+            semantic_ir=ir,
+            presentation_plan=plan,
         )
     except (OSError, UnicodeError, ValueError, RuntimeError) as error:
         _error(parser, f"Review Viewer rendering failed: {error}")

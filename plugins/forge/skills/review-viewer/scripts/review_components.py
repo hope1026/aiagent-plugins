@@ -51,8 +51,10 @@ def _block_markup(block: SemanticBlock) -> str:
     if block.kind == "mermaid":
         digest = hashlib.sha256(block.body.encode("utf-8")).hexdigest()
         return (
-            f'<div class="diagram-scroll" role="region" tabindex="0" data-mermaid-sha256="{digest}">'
-            f'<pre class="mermaid">{html.escape(block.body)}</pre></div>'
+            '<article class="diagram-card" data-origin="Source" '
+            f'data-source-path="{html.escape(block.source_path, quote=True)}" data-mermaid-sha256="{digest}">'
+            '<div class="diagram-scroll" role="region" tabindex="0">'
+            f'<pre class="mermaid">{html.escape(block.body)}</pre></div></article>'
         )
     if block.kind == "code":
         return f'<pre><code>{html.escape(block.body)}</code></pre>'

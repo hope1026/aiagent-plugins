@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+from dataclasses import asdict
 from pathlib import Path
 import re
 import sys
@@ -269,8 +270,10 @@ def _manifest(
     rebuild_command: str,
     source_base: str,
     offline: bool,
+    view_context: ViewContext | None = None,
+    presentation_plan: PresentationPlan | None = None,
 ) -> dict[str, object]:
-    return {
+    result = {
         "review_id": review_id,
         "mode": bundle.mode,
         "locale": locale,
@@ -295,6 +298,11 @@ def _manifest(
             for source in _source_sequence(bundle)
         ],
     }
+    if view_context is not None:
+        result["view_context"] = asdict(view_context)
+    if presentation_plan is not None:
+        result["presentation_plan"] = asdict(presentation_plan)
+    return result
 
 
 def _plain(value: object) -> object:
@@ -1286,6 +1294,8 @@ def render_review(
         rebuild_command=rebuild_command,
         source_base=source_base,
         offline=offline,
+        view_context=view_context,
+        presentation_plan=plan,
     )
     status = bundle.primary[0].status or getattr(bundle.primary[0].document, "status", "") or bundle.mode
     values = {
