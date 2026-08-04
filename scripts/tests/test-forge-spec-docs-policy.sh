@@ -13,7 +13,7 @@ USING_FORGE="$ROOT/plugins/forge/skills/using-forge/SKILL.md"
 VALIDATE="$ROOT/scripts/validate.sh"
 MAINTAINER="$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md"
 
-grep -q 'schema: forge/spec@1' "$SPEC_TEMPLATE" || fail "template misses forge/spec@1"
+grep -q 'schema: forge/spec@2' "$SPEC_TEMPLATE" || fail "template misses forge/spec@2"
 for field in schema id status language kind areas components relatedSpecs; do
   grep -q "^$field:" "$SPEC_TEMPLATE" || fail "template misses $field frontmatter"
 done
@@ -23,9 +23,10 @@ grep -q 'spec-docs.sh.*check --root docs/specs' "$MAINTAINER" || fail "maintaine
 if grep -Fq 'spec-docs.sh --repo-root . build --root docs/specs --changed' "$MAINTAINER"; then
   fail "maintainer tooling gate incorrectly uses changed-only build"
 fi
-for heading in 'Overview' 'Requirements' 'Behavior & Flows' 'Data & Interfaces' 'Acceptance Criteria' 'Decisions & History'; do
-  grep -q "^## $heading$" "$SPEC_TEMPLATE" || fail "template misses canonical heading: $heading"
+for heading in 'Requirements' 'Acceptance Criteria' 'Decisions & History'; do
+  grep -q "^## $heading$" "$SPEC_TEMPLATE" || fail "template misses required semantic heading: $heading"
 done
+grep -q '^subtype: <optional-lowercase-kebab-case>$' "$SPEC_TEMPLATE" || fail "template misses optional subtype"
 grep -q '^kind: <feature|system|interface|policy>$' "$SPEC_TEMPLATE" || fail "template misses exact kind enum"
 grep -q '^areas: \["<area>"\]$' "$SPEC_TEMPLATE" || fail "template areas are not JSON strings"
 grep -q '^components: \["<component>"\]$' "$SPEC_TEMPLATE" || fail "template components are not JSON strings"
@@ -41,14 +42,18 @@ path = Path(sys.argv[1])
 document, diagnostics = load_spec(path, path.parents[1])
 assert diagnostics == (), diagnostics
 assert document is not None
-assert document.metadata.schema == "forge/spec@1"
+assert document.metadata.schema == "forge/spec@2"
 assert document.metadata.kind in {"feature", "system", "interface", "policy"}
 assert "Data & Interfaces" in document.sections
 PY
 
-for command in 'validate --root docs/specs --baseline-ref HEAD' 'build --root docs/specs --changed' 'check --root docs/specs'; do
-  grep -q "$command" "$WRITING_SPECS" || fail "writing-specs misses spec-docs transaction: $command"
-done
+grep -q 'validate --root docs/specs --baseline-ref HEAD' "$WRITING_SPECS" || fail "writing-specs misses validation transaction"
+CLI_HELP="$(bash "$ROOT/plugins/forge/skills/writing-specs/scripts/spec-docs.sh" --help)"
+grep -q 'validate' <<<"$CLI_HELP" || fail "spec-docs CLI misses validate"
+grep -q 'inspect' <<<"$CLI_HELP" || fail "spec-docs CLI misses inspect"
+if grep -Eq '(^|[,{[:space:]])(build|check)([]},[:space:]]|$)' <<<"$CLI_HELP"; then
+  fail "spec-docs CLI still exposes Spec Pages commands"
+fi
 grep -q 'docs/specs/.transitions.json' "$WRITING_SPECS" || fail 'writing-specs misses transition manifest'
 grep -q 'replacement.*draft.*before.*old source' "$WRITING_SPECS" || fail 'writing-specs misses approval-first replacement gate'
 grep -q 'explicit approval' "$WRITING_SPECS" || fail 'writing-specs misses explicit supersession approval'

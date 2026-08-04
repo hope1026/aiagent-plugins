@@ -10,7 +10,6 @@ import subprocess
 import sys
 
 from spec_model import Diagnostic, parse_frontmatter
-from spec_render import RenderFailure, build_pages, check_pages
 from spec_validate import validate_repository
 
 
@@ -27,13 +26,6 @@ def _parser() -> argparse.ArgumentParser:
     inspect.add_argument("--spec", required=True, help="Repository-relative structured spec")
     inspect.add_argument("--format", required=True, choices=("json",))
 
-    build = commands.add_parser("build")
-    build.add_argument("--root", required=True, help="Repository-relative spec root")
-    build.add_argument("--changed", help="Repository-relative changed NNN-slug/spec.md")
-    build.add_argument("--offline", action="store_true", required=True)
-
-    check = commands.add_parser("check")
-    check.add_argument("--root", required=True, help="Repository-relative spec root")
     return parser
 
 
@@ -81,38 +73,6 @@ def _print_diagnostics(diagnostics: tuple[Diagnostic, ...]) -> None:
         print(f"{item.path}:{item.line}: {item.code} {item.message}")
 
 
-def _build_paths(
-    repo_root: Path,
-    arguments: argparse.Namespace,
-    parser: argparse.ArgumentParser,
-) -> tuple[Path, Path | None]:
-    resolved_root, relative_root = _contained_path(
-        repo_root,
-        arguments.root,
-        "--root",
-        parser,
-        relative_only=True,
-    )
-    relative_changed: Path | None = None
-    if getattr(arguments, "changed", None) is not None:
-        resolved_changed, relative_changed = _contained_path(
-            repo_root,
-            arguments.changed,
-            "--changed",
-            parser,
-            relative_only=True,
-        )
-        try:
-            inside_root = resolved_changed.relative_to(resolved_root)
-        except ValueError:
-            parser.error("--changed must remain inside --root")
-        if len(inside_root.parts) != 2 or inside_root.name != "spec.md":
-            parser.error("--changed must name an exact NNN-slug/spec.md below --root")
-        if not resolved_changed.is_file():
-            parser.error("--changed must name an existing spec.md file")
-    return relative_root, relative_changed
-
-
 def _baseline_contains_legacy_source(
     repo_root: Path, spec_root: Path, baseline_ref: str
 ) -> bool:
@@ -152,7 +112,7 @@ def _baseline_contains_legacy_source(
         except UnicodeDecodeError:
             return True
         values, _, diagnostics = parse_frontmatter(source, Path(path_text))
-        if diagnostics or values.get("schema") != "forge/spec@1":
+        if diagnostics or values.get("schema") != "forge/spec@2":
             return True
     return False
 
@@ -247,28 +207,6 @@ def main(argv: list[str] | None = None) -> int:
         payload, status = _inspect_payload(repo_root, spec_path, relative_spec)
         print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
         return status
-
-    if arguments.command == "build":
-        relative_root, relative_changed = _build_paths(repo_root, arguments, parser)
-        try:
-            built = build_pages(
-                repo_root,
-                relative_root,
-                changed=relative_changed,
-                offline=arguments.offline,
-            )
-        except RenderFailure as error:
-            print(f"{relative_root.as_posix()}:1: SPEC_PAGE_BUILD {error}")
-            return 1
-        for path in built:
-            print(path.relative_to(repo_root).as_posix())
-        return 0
-
-    if arguments.command == "check":
-        relative_root, _ = _build_paths(repo_root, arguments, parser)
-        diagnostics = check_pages(repo_root, relative_root)
-        _print_diagnostics(diagnostics)
-        return 0 if not diagnostics else 1
 
     parser.error("unknown command")
     return 2
