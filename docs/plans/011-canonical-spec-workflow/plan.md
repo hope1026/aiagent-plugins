@@ -358,7 +358,7 @@ bash scripts/validate.sh
 - 병렬 안전성: Task 2·3과 병렬 가능; write path가 분리되고 Task 1 contract만 소비한다.
 - 승인 gate: root cause가 기존 Canonical Spec을 바꾸거나 새로운 durable behavior 선택을 요구할 때 Spec Delta
 
-- [ ] **Step 1: 현재 no-spec verification gap을 RED evidence로 기록한다.**
+- [x] **Step 1: 현재 no-spec verification gap을 RED evidence로 기록한다.**
 
 실행:
 
@@ -368,15 +368,15 @@ rg -n "ceremony-floor|missing spec|every AC|spec status|Product behavior changes
 
 예상: behavior-changing no-spec work를 무조건 process gap으로 돌리거나 전체 AC 순회를 요구하는 문구가 출력된다.
 
-- [ ] **Step 2: debugging fix 전에 Canonical Spec impact를 분류한다.**
+- [x] **Step 2: debugging fix 전에 Canonical Spec impact를 분류한다.**
 
 Root cause 확정 뒤 fix가 existing approved contract restoration인지, code·test가 완전히 표현하는 local behavior인지, durable contract change인지 판정한다. 앞의 두 경우는 direct TDD로 진행하고 마지막 경우만 Spec Delta 승인을 요구한다. Investigation 자체는 Change Brief나 Canonical Spec을 자동 생성하지 않는다.
 
-- [ ] **Step 3: TDD의 spec 용어와 direct 실행 연결을 맞춘다.**
+- [x] **Step 3: TDD의 spec 용어와 direct 실행 연결을 맞춘다.**
 
 `docs/specs/` source를 Canonical Spec으로 부르고, Quick와 spec-backed direct cycle도 plan 없이 TDD를 사용할 수 있다고 명시한다. Test가 Canonical Spec과 충돌하면 승인 정본이 우선하고 contract를 바꾸려면 Spec Delta로 돌아간다.
 
-- [ ] **Step 4: `verifying-work`에 세 verification mode를 구현한다.**
+- [x] **Step 4: `verifying-work`에 세 verification mode를 구현한다.**
 
 Exact matrix:
 
@@ -390,11 +390,11 @@ Exact matrix:
 
 이전 `implemented` Canonical Spec의 Delta는 unchanged AC의 이전 evidence를 유지하고 affected AC와 regression command를 새로 검증한다. 새 Canonical Spec은 모든 AC를 순회한다. Plan 존재 여부는 검증 수준을 결정하지 않는다.
 
-- [ ] **Step 5: 완료 보고와 Red Flags를 Quick 오용에 맞춘다.**
+- [x] **Step 5: 완료 보고와 Red Flags를 Quick 오용에 맞춘다.**
 
 `simple` 또는 deadline만으로 focused command를 생략하지 못하게 하고, security/schema/interface contract를 Quick으로 분류하면 실패하도록 쓴다. Verification report는 work class, claim, fresh command, affected AC를 필요한 범위에서 보여준다.
 
-- [ ] **Step 6: targeted matrix 검사와 repository validation을 실행한다.**
+- [x] **Step 6: targeted matrix 검사와 repository validation을 실행한다.**
 
 실행:
 
@@ -539,4 +539,6 @@ Upstream 이후 `plugins/forge/skills/` 변경이 있으므로 push 전 두 mani
 - 2026-08-08: Task 2 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="writer owns Canonical Spec authority, approval boundaries, and Spec Delta promotion").
 - 2026-08-08: Task 2 complete (commit 19bfe4c; verification="Canonical Spec and Spec Delta contract scan passed; bash scripts/validate.sh printed validate: all checks passed").
 - 2026-08-08: Task 3 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="plan authority and execution escalation must remain consistent across authoring and runtime skills").
-- 2026-08-08: Task 3 complete (commit pending; verification="Execution Plan authority and plan-only route scans passed; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 3 complete (commit 653f02c; verification="Execution Plan authority and plan-only route scans passed; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 4 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="debugging classification and completion evidence determine when direct work is safe and when Canonical authority changes").
+- 2026-08-08: Task 4 complete (commit pending; verification="Quick, restoration, approved Delta, and new Canonical Spec evidence matrix scan passed; bash scripts/validate.sh printed validate: all checks passed").

@@ -1,122 +1,134 @@
 ---
 name: verifying-work
-description: 'Use when about to claim work is complete, fixed, passing, or done - before committing, creating PRs, reporting progress, or setting a spec to implemented. Triggers: "완료", "검증", "다 됐어?", "확인해줘", "verify", "done", finishing any plan or fix.'
+description: 'Use when about to claim work complete, fixed, passing, or done; before commits or progress claims; and when converting an approved Canonical Spec to implemented using evidence matched to Quick, restoration, Spec Delta, or plan-only work. Triggers: "완료", "검증", "다 됐어?", "확인해줘", "verify", "done", finishing any plan or fix.'
 ---
 
 # Verifying Work
 
-Announce at start: "Using the forge verifying-work skill: gathering fresh evidence before any completion claim."
+Announce at start: "Using the forge verifying-work skill: matching fresh evidence to this work class before any completion claim."
 
-Respond to the user in the user's language. The discipline below applies in every language.
+Respond in the user's language. The discipline below applies in every language.
 
 ## Overview
 
-Claiming work is complete without verification is dishonesty, not efficiency. Every "done", "fixed", or "passing" — in any wording, including paraphrases and implied satisfaction — must be backed by evidence produced in the current moment, and spec-driven work must be walked against the spec's acceptance criteria one by one.
+Verification depth follows project authority, not artifact count. Quick work still needs fresh focused evidence. Restoring an existing Canonical contract needs the original reproduction and affected contract observation. Implementing an approved Spec Delta needs the affected AC walk, and a new Canonical Spec needs every AC walked. An Execution Plan adds recovery and Task evidence but does not by itself raise or lower Canonical verification.
 
 ## Iron Law
 
+```text
+NO COMPLETION CLAIM WITHOUT FRESH EVIDENCE MATCHED TO THE WORK CLASS.
+NO CANONICAL SPEC STATUS CHANGE WITHOUT THE REQUIRED AC EVIDENCE.
 ```
-NO COMPLETION CLAIM WITHOUT FRESH VERIFICATION EVIDENCE. EVIDENCE BEFORE ASSERTIONS, ALWAYS.
-```
-
-Violating the letter of this law is violating its spirit. Rewording a claim ("should be good now", "looks complete") does not exempt it.
 
 ## When to Use / When NOT
 
 **Use before:**
 
-- Any statement that work is complete, fixed, passing, working, or done — exact words, synonyms, or implication.
-- Committing, creating a PR, reporting progress, or moving to the next plan task.
-- Setting structured spec frontmatter `status` to `implemented` (this skill is the ONLY workflow permitted to set that value).
-- Accepting a subagent's success report.
+- any statement that work is complete, fixed, passing, working, or done;
+- committing, reporting progress, accepting worker results, or moving to the next Execution Plan Task;
+- setting Canonical Spec lifecycle `status: implemented`.
 
-**NOT needed for:** neutral in-progress narration that claims nothing, answering questions that assert nothing about work state, or a fixed Review Viewer snapshot whose one requested build already succeeded. Review Viewer tooling changes still require full verification.
+**NOT needed for:** neutral in-progress narration that claims nothing, answering questions that assert nothing about work state, or one fixed Review Viewer build handled by the exception below.
+
+## Work-class Matrix
+
+| Work class | Required fresh evidence | Canonical lifecycle effect |
+|---|---|---|
+| Quick | focused test, build, lint, type check, real run, or observation that directly proves the claim | none |
+| Plan-only | every plan verification command and goal-level Done Check | none |
+| Existing-contract restoration | original reproduction now passes, affected Canonical contract observation matches, regression command passes | none |
+| Approved Spec Delta against an implemented baseline | every affected AC passes plus regression command for unchanged behavior | `approved → implemented` after validation |
+| New Canonical Spec or Delta against a never-implemented approved baseline | every AC passes plus the full relevant suite | `approved → implemented` after validation |
+
+Keep an applied Spec Delta through verification so its baseline lifecycle and affected R and AC IDs remain available. Remove it after evidence is recorded or promote it only as explicitly non-authoritative evidence.
 
 ## The Process
 
-Verification has two levels. Level 1 applies to implementation work. Level 2 additionally applies whenever that work traces to a spec. A fixed requested Review Viewer snapshot is handled by the exception below.
+### 1. Identify the claim and work class
 
-### Level 1 — command-level verification (always)
+State the exact claim. Read route evidence from the forge using-forge classification, optional Change Brief or Spec Delta, Related Canonical Specs, and optional Execution Plan. If the classification is missing, reconstruct both axes from actual scope before verifying.
 
-1. **Identify** the command that proves the claim: build, test suite, lint, type check, or a real run of the changed behavior.
-2. **Run it NOW in the shell** — the full command, fresh. Cached results, remembered output, and runs from earlier in the session count as nothing.
-3. **Read the full output.** Check the exit code. Count the failures yourself instead of skimming for a green word.
-4. **Compare output to claim.** If they disagree, state the actual status with the evidence — never soften or defer the bad news.
-5. **Only then** make the claim, and include the evidence with it.
+Plan existence does not determine the class. A plan-only route can have no Canonical Spec, and spec-backed direct work can have no plan.
 
-| Claim | Requires | Not sufficient |
+### 2. Run command-level verification now
+
+1. Choose the command or concrete observation that proves the exact claim.
+2. Run it now and read the full output and exit code.
+3. Count failures yourself. Cached, remembered, and worker-reported results count as no evidence.
+4. Compare actual output with the claim. Report disagreement directly.
+
+| Claim | Required evidence | Not sufficient |
 |---|---|---|
-| Tests pass | Fresh test run: 0 failures, exit 0 | An earlier run, "should pass" |
-| Build succeeds | Fresh build: exit 0 | Lint passing, logs looking fine |
-| Bug fixed | Original reproduction now passes | Code changed, fix assumed |
-| Subagent finished | You inspected the diff and re-ran checks | The subagent's own report |
-| Requirements met | Level 2 walk below | Tests passing alone |
+| Tests pass | Fresh test run, zero failures, exit 0 | earlier run or code review |
+| Build succeeds | Fresh build, exit 0 | lint passing |
+| Bug fixed | Original reproduction and regression command pass | changed code |
+| Plan-only work complete | Every plan command and Done Check passes | Task boxes alone |
+| Worker finished | Root diff review and fresh root verification | worker report |
 
-#### Fixed Review Viewer generation exception
+### 3. Add Canonical contract evidence when required
 
-Generating `.forge/reviews/<review-id>/view.html` from unchanged `review-viewer` tooling after explicit user intent to create or refresh a Review Viewer is read-only assembly. The agent resolves source, mode, and review-id from current context. The successful single build is sufficient evidence; do not add a second checker, browser, screenshot, layout, interaction, Mermaid, or freshness run.
+For existing-contract restoration or approved Spec Delta work:
 
-This exception is artifact-specific. Review Viewer tooling changes use `web-app-design` plus normal Level 1 and every governing Level 2 AC. A snapshot never changes structured spec frontmatter status.
+1. Inspect each governing source with `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <path> --format json`. Require `forge/spec@2`, lifecycle `approved|implemented` appropriate to the class, and empty diagnostics.
+2. Determine the AC set from the work class:
+   - restoration: the ACs whose approved behavior the fix restores;
+   - Delta against an implemented baseline: the affected ACs named in the approved Delta, plus any AC whose observable outcome the change touches;
+   - new Canonical Spec or never-implemented approved baseline: every AC.
+3. Create one checklist item per required AC.
+4. Walk each required AC in order: establish its precondition, perform its action, observe its expected outcome, and record `PASS` or `FAIL` with exact evidence. Code reading alone is not an observation.
+5. When an Execution Plan exists, confirm its Related Specs coverage, completed Task verification, route evidence, and goal-level Done Checks agree with the actual implementation.
 
-### Level 2 — spec-level verification (when a spec exists)
+Unchanged ACs from an implemented baseline retain their prior implementation evidence only when the approved Delta names every affected R and AC and a fresh regression command covers unchanged behavior. Any uncertainty expands the fresh AC set; it never shrinks it.
 
-1. Run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec docs/specs/NNN-<slug>/spec.md --format json`. Require `schema` = `forge/spec@2`, lifecycle `status` in `approved|implemented`, and empty `diagnostics`, then read the typed acceptance array.
-2. Create one todo per acceptance criterion (AC1..ACn) so none can be silently skipped.
-3. **Check route evidence** in the plan's `Progress History` and optional `progress.md`: every executed Task records tier, execution mode, parallel group or `none`, verification, and commit scope. For subagent work, confirm the root agent inspected the result and produced fresh verification; a worker report alone is not acceptance evidence.
-4. Walk each AC in order: reproduce its precondition, perform its action, and observe its expected outcome against the real implementation. Record a verdict — **PASS** or **FAIL** — with the exact command output or concrete observation as evidence. No AC may be judged from memory or from reading the code.
-5. Cross-check consistency: each AC still maps to current R-IDs, and each related plan under `docs/plans/` has a coverage table matching what was built. A dangling AC or uncovered requirement is a FAIL to resolve, not a footnote.
+### 4. Handle failures
 
-### Verdict handling
+Name each failure as one of these:
 
-Any AC FAIL means exactly one of two things, and you must name which:
+- **Implementation bug:** actual behavior misses Canonical authority or the work claim → use the forge systematic-debugging skill, then restart verification.
+- **Canonical Spec bug:** durable authority is wrong or incomplete → use the forge writing-specs skill in change mode, obtain approval, then restart verification.
+- **Plan defect:** execution steps or coverage are mechanically wrong while Canonical meaning remains correct → make the smallest plan correction, record it, and rerun affected evidence.
 
-- **Code bug** — the implementation does not meet the spec → fix it via the forge systematic-debugging skill, then redo the walk from Level 1.
-- **Spec bug** — the requirement itself is wrong or outdated → propose a delta via the forge writing-specs skill in change mode and get the user's approval, then re-verify.
+Never change implementation and Canonical meaning silently in the same repair.
 
-One of the two must change, explicitly. Never adjust both silently, and never re-interpret an AC until it passes.
+### 5. Complete the matching lifecycle
 
-### Completion
+- **Quick, plan-only, restoration:** report evidence without changing Canonical Spec status.
+- **Approved Spec Delta:** after the required AC set and regression evidence pass, set the Canonical Spec to `implemented`, append the verification history entry, and run the writer transaction. A transaction failure blocks completion reporting.
 
-Only after **every** AC records PASS with evidence for the actual implementation governed by that spec:
+The report names work class, claim, command evidence, and required AC verdicts:
 
-1. Set the spec frontmatter `status` to `implemented`. This value is set only by this skill at this point.
-2. Run the same Markdown-only source transaction used by the writer. A failure blocks handoff and completion reporting:
-   `spec-docs.sh --repo-root . validate --root docs/specs --baseline-ref HEAD`.
-3. Report the AC table to the user only after validation passes.
+```markdown
+Work class: Existing-contract restoration
+Claim: Refresh retries no longer duplicate writes.
 
-If no spec exists, first confirm the change is genuinely on the ceremony-floor exemption list (typo/comment/formatting, no-API dependency bump, non-output CI config, behavior-preserving refactor with passing tests). Only then does Level 1 alone gate the claim — and say explicitly that verification was command-level only. If the work altered behavior and has no spec, that is a process gap: route to the forge writing-specs skill before any completion claim, never around it.
-
-### Report format
-
-```
 | AC | Verdict | Evidence |
-|----|---------|----------|
-| AC1 | PASS | `npm test` → 42/42 passed, exit 0 |
-| AC2 | FAIL | POST /login returned 500, expected 201 (output attached) |
+|---|---|---|
+| AC3 | PASS | `pytest tests/test_refresh.py -q` → 7 passed, exit 0 |
 ```
+
+## Fixed Review Viewer Exception
+
+After explicit user intent, one successful build of `.forge/reviews/<review-id>/view.html` from unchanged review-viewer tooling proves generation only. Do not add a second checker, browser, screenshot, layout, interaction, Mermaid, or freshness run. Review Viewer tooling changes use normal command and Canonical evidence.
 
 ## Working Files
 
-- Reads: every related `docs/specs/NNN-<slug>/spec.md` and the current `docs/plans/PPP-<slug>/plan.md`, plus optional `progress.md` and `tasks/*.md`.
-- Writes: structured spec frontmatter `status: implemented`, only after all ACs pass. The AC report goes to the user in chat.
+- Reads: optional `.forge/work/<work-id>/brief.md` and `spec-delta.md`; Related Canonical Specs; optional Execution Plan, progress, and Task files.
+- Writes: Canonical Spec lifecycle `status: implemented` and history only after the required AC evidence passes; evidence goes to the user, plan progress, or an explicitly durable evidence path.
 
 ## Red Flags
 
 | Excuse | Reality |
 |---|---|
-| "Tests passed earlier" | Earlier is not now — the code has changed since. Run them again. |
-| "The diff looks right" | Reading code is not running it. Correct-looking code fails constantly. |
-| "I'm confident it works" | Confidence is not evidence. Run the command. |
-| "User is waiting, skip the rerun" | A false "done" costs far more of their time than one rerun. |
-| "The subagent reported success" | A report is a claim, not evidence. Inspect the diff and re-run the checks yourself. |
-| "The Task passed, so route evidence is optional." | Adaptive execution must remain auditable. Record tier, mode, group, verification, and root review before using the Task as AC evidence. |
-| "Lint is clean, so it builds" | A linter is neither a compiler nor a test suite. |
-| "I'll set implemented now, verify after" | Frontmatter status changes only after evidence and is incomplete until Markdown validation passes. |
-| "That AC obviously passes" | The "obvious" AC is where regressions hide. Walk it like every other one. |
-| "No spec exists, so Level 1 is enough" | Only if the change is on the ceremony-floor exemption list. A missing spec for behavior-changing work is a gap to close via the forge writing-specs skill, not a shortcut. |
-| "The generated View needs the full completion checklist." | Successful assembly is enough for this convenience artifact. Full verification belongs to Viewer tooling changes, not each generated file. |
-| "I can say the generated layout is verified because the build passed." | Build success proves generation only. Report the artifact without an independent layout claim. |
+| "Quick means no tests." | Quick removes formal artifacts, not fresh proof. |
+| "There is no spec, so verification is impossible." | Focused commands and plan Done Checks verify non-SOT work. |
+| "Every spec AC must run for this one restored branch." | Restoration verifies the affected contract and regression behavior without changing lifecycle status. |
+| "The Delta names one AC, so indirect effects do not count." | Any touched observable outcome joins the required AC set. |
+| "The baseline was implemented, so no fresh AC is needed." | Changed contract meaning requires fresh affected-AC evidence. |
+| "The plan passed, so the Canonical Spec is implemented." | Plan evidence and Canonical AC evidence have different authority. |
+| "The worker reported success." | Root review and fresh root evidence remain mandatory. |
+| "The deadline makes schema work Quick." | Misclassification is a routing failure, not a verification shortcut. |
+| "I can say it should work." | Confidence and code reading are not execution evidence. |
 
 ## Handoff
 
-**If any AC failed: use the forge systematic-debugging skill for a code bug or the forge writing-specs skill in change mode for a spec bug, then re-verify from Level 1. If all ACs passed: set frontmatter `status: implemented`, complete the Markdown validation transaction, and only then report the AC table.**
+**If evidence fails, route the named implementation, Canonical Spec, or plan defect and restart verification. If it passes, report only the claims the evidence proves; change Canonical lifecycle only for an approved Spec Delta with the required AC set complete.**

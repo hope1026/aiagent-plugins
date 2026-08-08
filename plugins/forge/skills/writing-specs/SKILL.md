@@ -107,7 +107,7 @@ Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an e
 |---|---|---|
 | Canonical Spec | `docs/specs/NNN-<slug>/spec.md` | Tracked, permanent SOT when approved or implemented |
 | Optional Change Brief | `.forge/work/<work-id>/brief.md` | Local work input |
-| Optional Spec Delta | `.forge/work/<work-id>/spec-delta.md` | Local approval proposal; remove or retain only as non-authoritative evidence |
+| Optional Spec Delta | `.forge/work/<work-id>/spec-delta.md` | Local approval proposal; retain through verification, then remove or promote only as non-authoritative evidence |
 | Supersession evidence | `docs/plans/`, `docs/adr/`, or `docs/evidence/` | Tracked when the transition requires it |
 | Investigation notes | `.forge/research/` | Local only; promote durable findings to `docs/research/` |
 

@@ -39,7 +39,7 @@ If you cannot state the root cause in one sentence AND show a reproduction that 
 
 **Do NOT use for:**
 
-- New features or behavior changes — that is the forge writing-specs skill
+- New feature work with no misbehavior — return to the forge using-forge route; only durable contract changes use the forge writing-specs skill
 - A test you just wrote failing as expected — that is the RED step of the forge test-driven-development skill working correctly
 
 ## The Process
@@ -84,17 +84,20 @@ Goal: the first wrong state and why it happened.
 
 Goal: the cause is fixed, proven, and guarded against regression.
 
-1. Fix the cause, not the symptom. If the wrong value originates three calls up, fix it there — do not pad the crash site with guards.
-2. Write the regression test first, using the forge test-driven-development skill: the test encodes the reproduction, fails before the fix, passes after.
-3. Apply ONE change. No bundled refactoring, no "while I'm here" improvements.
-4. Confirm the original reproduction from Phase 1 now passes, and the rest of the test suite still passes.
-5. If the fix does not work: STOP. Count your attempts. Fewer than three → return to Phase 1 with the new information. Three or more failed fixes → the problem is likely architectural; stop fixing and discuss the design with the user before any further attempt.
+1. **Classify the fix before mutation.** Compare the root cause and intended outcome with every relevant approved or implemented Canonical Spec. Restoring approved behavior, or fixing a local implementation detail whose complete intent stays in code and tests, has `Canonical Spec impact: no`. Changing durable contract meaning has impact `yes` and requires an approved Spec Delta through the forge writing-specs skill.
+2. **Classify execution complexity.** A bounded, reversible fix with strong focused verification proceeds directly. Multiple dependent components, migration or release ordering, meaningful rollback risk, or interruption recovery requires the forge writing-plans skill. Record both axes.
+3. Fix the cause, not the symptom. If the wrong value originates three calls up, fix it there — do not pad the crash site with guards.
+4. Write the regression test first, using the forge test-driven-development skill: the test encodes the reproduction, fails before the fix, passes after.
+5. Apply ONE change. No bundled refactoring, no "while I'm here" improvements.
+6. Confirm the original reproduction from Phase 1 now passes, the affected Canonical contract observation matches when one exists, and the rest of the test suite still passes.
+7. If the fix does not work: STOP. Count your attempts. Fewer than three → return to Phase 1 with the new information. Three or more failed fixes → the problem is likely architectural; stop fixing and discuss the design with the user before any further attempt.
 
-**Exit criterion:** original reproduction passes, regression test committed, suite green.
+**Exit criterion:** fix class recorded; original reproduction passes; affected Canonical contract matches when present; regression test committed; suite green.
 
 ## Working Files
 
 - Keep active investigation notes, reproduction scripts, and instrumentation experiments in `.forge/scratch/` (gitignored).
+- A clear investigation does not need a Change Brief file. Use `.forge/work/<work-id>/brief.md` only when resumption, delegation, scope coordination, or explicit user review needs independent work input.
 - When a non-trivial root cause is worth sharing or preserving, promote it to `docs/debug/YYYY-MM-DD-<slug>.md` with exactly these sections: **Symptom**, **Reproduction**, **Root cause**, **Fix**, **Regression test path**.
 
 ## Red Flags
@@ -110,6 +113,8 @@ If you catch yourself thinking any of these, STOP and return to Phase 1.
 | "This is urgent, no time for process" | Systematic debugging is faster than guess-and-check thrashing. Emergencies are when guessing costs most. |
 | "The issue is too simple for all this" | Simple bugs have root causes too, and the process is fast on simple bugs. |
 | "One more fix attempt" (after 2+ failures) | Repeated failures mean the mental model is wrong. Three or more → question the architecture with the user. |
+| "The bug changes behavior, so it always needs a new spec" | Restoration changes implementation behavior without changing Canonical authority. Compare the intended contract first. |
+| "It is only a bugfix, so it can never change the spec" | A root cause may expose a wrong durable contract. That result requires a Spec Delta before the fix changes authority. |
 
 ## Handoff
 
