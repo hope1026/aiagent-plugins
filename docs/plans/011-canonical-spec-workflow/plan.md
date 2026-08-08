@@ -161,7 +161,7 @@ flowchart TD
 - 병렬 안전성: sequential; 이후 모든 Task가 이 Task의 용어와 route contract를 소비한다.
 - 승인 gate: 분류 기준이 009 R8–R9의 의미를 바꿔야 할 때만 spec divergence
 
-- [ ] **Step 1: 기존 폐쇄형 ceremony 규칙을 RED evidence로 기록한다.**
+- [x] **Step 1: 기존 폐쇄형 ceremony 규칙을 RED evidence로 기록한다.**
 
 실행:
 
@@ -171,7 +171,7 @@ rg -n "Ceremony floor|Everything else gets a spec|small change may be|No impleme
 
 예상: 현재 spec·plan 강제 문구가 하나 이상 출력되어 009 AC2의 네 경로가 아직 구현되지 않았음을 보여준다.
 
-- [ ] **Step 2: `using-forge`의 Overview, Iron Law, Process와 Routing을 공통 계약으로 교체한다.**
+- [x] **Step 2: `using-forge`의 Overview, Iron Law, Process와 Routing을 공통 계약으로 교체한다.**
 
 반영할 exact route matrix:
 
@@ -186,15 +186,15 @@ rg -n "Ceremony floor|Everything else gets a spec|small change may be|No impleme
 
 Iron Law는 Canonical Spec이 필요한 변경만 승인된 Delta를 요구하고, high-complexity work만 Execution Plan을 요구하도록 쓴다. `Canonical Spec`, `Change Brief`, `Spec Delta`, `Execution Plan`, `Verification Evidence` 정의와 R8–R9의 SOT-impact predicate, R12의 다음 mutation 전 승격 규칙을 같은 skill 안에 둔다.
 
-- [ ] **Step 3: Routing table과 Red Flags를 네 경로에 맞춘다.**
+- [x] **Step 3: Routing table과 Red Flags를 네 경로에 맞춘다.**
 
 새 feature·change 요청을 자동으로 `writing-specs`에 보내지 않고 먼저 두 축으로 분류한다. Bug는 root cause 뒤 restoration이면 Quick/direct, durable contract change이면 Spec Delta로 보낸다. `simple`이라는 단어만으로 Quick을 허용하지 않고, security·schema·external interface·cross-component·durable policy는 Quick에서 제외한다.
 
-- [ ] **Step 4: Codex adaptation 설명을 Canonical Spec router 용어로 맞춘다.**
+- [x] **Step 4: Codex adaptation 설명을 Canonical Spec router 용어로 맞춘다.**
 
 `AGENTS.md` pointer 예시는 `spec-first workflow` 대신 `Canonical Spec and task-routing workflow`를 가리키고, platform capability가 네 경로의 의미를 바꾸지 않는다고 명시한다.
 
-- [ ] **Step 5: router 정적 검사를 실행한다.**
+- [x] **Step 5: router 정적 검사를 실행한다.**
 
 실행:
 
@@ -204,7 +204,7 @@ rg -n "Canonical Spec impact|Execution complexity|Quick direct|plan-only|spec-ba
 
 예상: 두 축, 네 경로, Delta와 승격 규칙이 모두 출력된다.
 
-- [ ] **Step 6: repository validator를 실행한다.**
+- [x] **Step 6: repository validator를 실행한다.**
 
 실행: `bash scripts/validate.sh`
 
@@ -534,3 +534,5 @@ Upstream 이후 `plugins/forge/skills/` 변경이 있으므로 push 전 두 mani
 ## Progress History
 
 - 2026-08-08: Plan created from approved `009-canonical-spec-work-artifacts`; execution not started.
+- 2026-08-08: Task 1 routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="router owns Canonical Spec authority and every downstream lifecycle route").
+- 2026-08-08: Task 1 complete (commit pending; verification="router terminology scan passed; bash scripts/validate.sh printed validate: all checks passed").

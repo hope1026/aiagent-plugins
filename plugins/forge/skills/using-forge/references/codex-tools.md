@@ -8,11 +8,11 @@ Codex has no session-start hook, so this router skill arrives by description mat
 
 - **Explicit:** invoke any forge skill by typing `$<skill-name>` (for example `$writing-specs`, `$systematic-debugging`).
 - **Implicit:** Codex matches skill descriptions against the task; the routing table in the forge using-forge skill still decides which one is correct.
-- **Recommended:** add one pointer line to the project's `AGENTS.md` so the workflow loads at session start, for example: "Before responding to any task, follow the forge using-forge skill (spec-first workflow)."
+- **Recommended:** add one pointer line to the project's `AGENTS.md` so the workflow loads at session start, for example: "Before responding to any task, follow the forge using-forge skill (Canonical Spec and task-routing workflow)."
 
 ## Action-to-tool mapping
 
-Forge skills name actions, never harness tools. On Codex, perform them as:
+Forge skills name actions, never harness tools. On Codex, perform them as follows. These mappings change execution mechanics, never Canonical Spec impact, execution complexity, or artifact authority:
 
 | When a forge skill says | On Codex, use |
 |---|---|

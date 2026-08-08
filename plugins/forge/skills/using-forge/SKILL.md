@@ -1,118 +1,149 @@
 ---
 name: using-forge
-description: 'Use when starting any conversation or task - establishes the forge spec-first workflow, how to find and route to forge skills before any response including clarifying questions, and the .forge/ working directory contract. Triggers: any task start, "forge", "포지", "스펙 우선", "작업 시작".'
+description: 'Use when starting any conversation or task - establishes Canonical Spec and task routing, work-artifact authority, direct and planned execution paths, and the .forge/ contract. Triggers: any task start, "forge", "포지", "정본 스펙", "작업 시작", "바로 진행".'
 ---
 
 # Using Forge
 
-**Announce at start:** "Using the forge using-forge skill to route this work."
+**Announce at start:** "Using the forge using-forge skill to classify Canonical Spec impact and execution complexity."
 
 Respond to the user in the user's language. This skill file stays in English.
 
 ## Overview
 
-Forge is a spec-first development process: the spec is the source of truth, code follows it, and every kind of work has a skill that says how to do it. This skill is the entry point — it exists to route you to the right forge skill before you do anything else.
+Forge separates durable project truth from the artifacts used to complete one piece of work. A Canonical Spec records approved intent, contracts, policy, and invariants that future work must preserve. A Change Brief, Spec Delta, Execution Plan, or Verification Evidence has narrower authority and a shorter lifetime.
 
-**If there is even a 1% chance a forge skill applies to what you are doing, you MUST invoke it. This is not negotiable. You cannot rationalize your way out of it.**
+Route every execution request on two independent axes:
+
+1. **Canonical Spec impact:** does the request change durable project authority?
+2. **Execution complexity:** does safe execution need an explicit multi-step plan?
+
+Small work can change a durable contract, and complex work can leave the project contract untouched. Do not infer one axis from the other.
 
 ## Iron Law
 
+```text
+NO DURABLE CONTRACT CHANGE WITHOUT AN APPROVED CANONICAL SPEC OR SPEC DELTA.
+NO HIGH-COMPLEXITY EXECUTION WITHOUT AN EXECUTION PLAN.
+NO COMPLETION CLAIM WITHOUT FRESH VERIFICATION EVIDENCE.
 ```
-NO PRODUCT-BEHAVIOR IMPLEMENTATION WITHOUT AN APPROVED SPEC.
-NO IMPLEMENTATION CODE WITHOUT A PLAN TASK. RELATED SPECS ARE THE SOURCE OF TRUTH.
-```
 
-### Ceremony floor (closed exemption list)
+## Terminology and Authority
 
-Spec-first is exempt ONLY when the change alters no documented or documentable behavior:
+| Artifact | Purpose | Default location | Authority and lifetime |
+|---|---|---|---|
+| Canonical Spec | Approved system intent, contract, policy, and invariants | `docs/specs/NNN-<slug>/spec.md` | Permanent project SOT; only `approved` or `implemented` is authoritative |
+| Change Brief | Goal, Scope, Out of Scope, and Done Checks for current work | Conversation or `.forge/work/<work-id>/brief.md` | Optional work input; not SOT |
+| Spec Delta | Proposed exact change to a Canonical Spec | Conversation or `.forge/work/<work-id>/spec-delta.md` | Approval proposal; not SOT before application |
+| Execution Plan | Dependencies, Tasks, Steps, checkpoints, and verification | `docs/plans/PPP-<slug>/plan.md` | Work-scoped execution source; not project SOT |
+| Verification Evidence | Fresh commands and observations supporting a claim | Conversation, plan progress, or promoted evidence | Proof for a claim; durable only when explicitly promoted |
 
-- typo / comment / formatting-only changes
-- dependency bumps with no API change
-- CI/tooling config not affecting build outputs
-- pure refactors with no observable behavior change AND existing tests pass
+Reserve `Requirements` and `Acceptance Criteria` for Canonical Specs. A Change Brief uses `Goal`, `Scope`, `Out of Scope`, and `Done Checks`. An Execution Plan uses `Task`, `Step`, `Checkpoint`, and `Verification`.
 
-Everything else gets a spec. Ceremony scales down — a small change may be a 10-line spec, but the file exists. This list is closed: if the change is not on it, do not invent a new exemption, and do not stretch a listed item to cover your case.
+## Classification
 
-## When to Use / When NOT
+### Axis 1 — Canonical Spec impact
 
-**Use:** at the start of every conversation and every new task — before any response (including clarifying questions) and before any action (including exploring the codebase or reading files).
+Classify `yes` when the work adds, changes, or removes any of these:
 
-**Do NOT use** only in one case: you were dispatched as a subagent to execute one specific, fully specified task. Then skip routing and execute that task exactly as instructed, including any forge skills the instructions name. A vague or open-ended dispatch does not qualify — route it.
+- an existing Canonical Spec R or AC;
+- an external interface, persisted data or schema, user workflow or state transition, or error meaning;
+- security, authorization, privacy, billing, compliance, or another durable policy;
+- a cross-component responsibility or integration contract;
+- a release or operational contract that future work must preserve;
+- a decision the user explicitly designates for permanent project authority.
+
+Classify `no` when the work restores implementation to an existing approved contract, or changes a local implementation or presentation detail whose complete intent is carried by code and tests and does not need durable project authority. Investigation alone does not create Canonical Spec impact.
+
+If durable value is genuinely unclear, ask one classification question before the first mutation. Do not turn ordinary implementation preferences into project policy by assumption.
+
+### Axis 2 — Execution complexity
+
+Classify `high` when safe execution needs any of these:
+
+- multiple dependent stages or components;
+- parallel write ownership or a zero-context handoff;
+- migration or release ordering;
+- meaningful rollback or data-safety risk;
+- a work sequence whose recovery point must survive interruption.
+
+Classify `low` when the work is bounded, local, reversible, independently understandable, and provable with a focused command or observation.
+
+### Route matrix
+
+| Canonical Spec impact | Execution complexity | Route |
+|---|---|---|
+| `no` | `low` | **Quick direct:** no Canonical Spec, Spec Delta, or Execution Plan; apply the relevant execution skill and gather fresh focused evidence |
+| `no` | `high` | **Plan-only:** create a Change Brief only when needed and use the forge writing-plans skill without inventing a Canonical Spec |
+| `yes` | `low` | **Spec-backed direct:** use the forge writing-specs skill for an approved Spec Delta, then execute directly without an Execution Plan |
+| `yes` | `high` | **Full lifecycle:** approved Spec Delta or Canonical Spec, then the forge writing-plans and executing-plans skills |
 
 ## The Process
 
-1. **Route before responding.** Match the task against the routing table below BEFORE answering questions, exploring, or touching any file.
-2. **Announce** the routed skill: "Using the forge <name> skill to <purpose>."
-3. **Follow it exactly.** If the skill has a checklist, create one todo per checklist item — never track checklist items only in memory.
-4. **When multiple skills apply,** process skills come first — they set the approach; implementation skills (web-app-design, website-design, writing-tone, test-driven-development) carry it out inside that process. Apply both UI design skills only when one approved Task explicitly changes separately owned application and public website files.
-5. **Setting a skill aside** is allowed only after reading it, and only by stating explicitly — in your response — why it does not apply. Silently dropping a skill is skipping, not setting aside.
+1. **Classify before mutating.** Record both axes and the selected route. Reading context needed to classify is allowed; implementation mutation waits for the route.
+2. **Route to the owning process.** Quick work goes directly to the relevant debugging, TDD, design, tone, or other execution skill. Plan-only work goes to the forge writing-plans skill. Canonical Spec impact goes to the forge writing-specs skill before implementation.
+3. **Apply specialist skills inside the route.** Bugs use the forge systematic-debugging skill before their fix class is final. Implementation code uses the forge test-driven-development skill. Browser application and public website work use their respective design skills. Human-readable prose uses the forge writing-tone skill.
+4. **Promote before the next mutation.** If Quick or plan-only work reveals Canonical Spec impact, a user-owned product decision, cross-component dependency, migration or release ordering, or meaningful rollback risk, stop the next mutation and reclassify. Add only the newly required Spec Delta or Execution Plan.
+5. **Verify at the matching level.** Quick work needs fresh focused command evidence. Existing-contract restoration needs the original reproduction, the affected contract observation, and a regression command. Approved Spec Delta work needs the affected AC walk and regression evidence; a new Canonical Spec needs every AC walked.
+6. **Promote durable outcomes.** Move lasting decisions or findings to a Canonical Spec, ADR, `docs/research/`, `docs/debug/`, or explicit evidence file. Do not leave a Change Brief, Spec Delta, or execution log as accidental SOT.
 
-### Routing
+### Specialist routing
 
-| The task looks like | Route to |
+| The task looks like | Route inside the selected path |
 |---|---|
-| "Build X" / "add X" / "change X" / new project / unclear requirements | the forge writing-specs skill |
-| "Fix this bug" / error / test failure / unexpected behavior | the forge systematic-debugging skill |
-| "Is it done?" / about to claim complete, fixed, or passing | the forge verifying-work skill |
-| Browser application UI — dashboards, admin, settings, tables, forms, controls, internal tools, SaaS workspaces, PWAs | the forge web-app-design skill |
-| Public website — landing pages, homepages, marketing or product sites, editorial, portfolios, public documentation | the forge website-design skill |
-| UI request with no evidence of application state/workflow or public content/acquisition | ask one classification question: "Is this a stateful browser application or a public content website?" Then route to exactly one UI skill |
-| Native mobile or desktop app while its specialist skill is not available | state that the specialist skill is not available; do not force-route it to a web UI skill |
-| Review Viewer shell, component, style, runtime, or interaction tooling changes | the forge web-app-design skill with full verification |
-| Writing prose humans will read — docs, PRs, commits, messages | the forge writing-tone skill |
-| Cross-agent skill, MCP, or bundle authoring for Codex, Claude Code, and Antigravity | the forge creating-agent-extensions skill |
-| Explicit request to create, update, visualize, present, print, share, or freshness-check a spec/plan Review Viewer | the forge review-viewer skill |
-| Approved spec exists, no plan yet | the forge writing-plans skill |
-| Operational, research, or ceremony-floor work needs an execution plan | the forge writing-plans skill |
-| A plan exists in `docs/plans/` with open tasks | the forge executing-plans skill |
-| Writing any implementation code | the forge test-driven-development skill |
+| Bug, error, test failure, or unexpected behavior | the forge systematic-debugging skill; classify the fix after root cause |
+| Canonical Spec proposal, durable behavior or policy change, clarification, or drift | the forge writing-specs skill |
+| High-complexity execution with or without Related Specs | the forge writing-plans skill |
+| Existing Execution Plan with open Tasks | the forge executing-plans skill |
+| Writing implementation code | the forge test-driven-development skill |
+| About to claim complete, fixed, or passing | the forge verifying-work skill |
+| Browser application UI | the forge web-app-design skill |
+| Public website | the forge website-design skill |
+| Human-readable prose | the forge writing-tone skill |
+| Cross-agent skill or MCP authoring | the forge creating-agent-extensions skill |
+| Explicit Review Viewer create, refresh, present, or freshness request | the forge review-viewer skill |
+
+When UI context does not reveal whether the surface is a stateful browser application or a public content website, ask that single classification question and route to exactly one UI skill. A missing native mobile or desktop specialist is not permission to force-route the work to a web UI skill.
+
+## When to Use / When NOT
+
+**Use:** at the start of every conversation and new task, before implementation mutation or a claim about work state.
+
+**Do NOT use:** when dispatched as a subagent for one concrete, fully specified Task whose route, authority, files, and verification are already fixed. Execute that Task and the skills it names. A vague or open-ended dispatch still requires this router.
 
 ## Working Files
 
-Forge keeps its artifacts in fixed locations inside the target project:
-
-| Artifact | Path | Committed |
+| Artifact | Path | Git policy |
 |---|---|---|
-| Specs — permanent source of truth | `docs/specs/NNN-<slug>/spec.md` | yes |
-| Work-scoped implementation plans | `docs/plans/PPP-<slug>/plan.md` | yes |
-| Optional plan progress and task details | `docs/plans/PPP-<slug>/progress.md`, `tasks/*.md` | yes while plan is retained |
-| Review Viewer — explicit request only | `.forge/reviews/<review-id>/view.html` | no |
-| Promoted debug / root-cause notes | `docs/debug/YYYY-MM-DD-<slug>.md` | yes |
-| Promoted research notes | `docs/research/YYYY-MM-DD-<slug>.md` | yes |
-| Scratch, research, ledgers, reviews, build intermediates | `.forge/` | no |
-
-`.forge/` is local-only. Promote durable research to `docs/research/` and durable root-cause records to `docs/debug/`. Spec directories use independent `NNN-<slug>` identifiers and persist for the project lifetime. Plan directories use independent `PPP-<slug>` identifiers. Before deleting a finished plan, promote permanent decisions to a spec, ADR, research record, or other durable document; `progress.md` and `tasks/*.md` never outlive their owning plan.
+| Canonical Spec | `docs/specs/NNN-<slug>/spec.md` | Tracked, permanent |
+| Execution Plan | `docs/plans/PPP-<slug>/plan.md` | Tracked while retained |
+| Optional plan progress and Task detail | `docs/plans/PPP-<slug>/progress.md`, `docs/plans/PPP-<slug>/tasks/*.md` | Tracked while the plan is retained |
+| Optional Change Brief and Spec Delta | `.forge/work/<work-id>/brief.md`, `.forge/work/<work-id>/spec-delta.md` | Local only until durable meaning is promoted |
+| Requested Review Viewer | `.forge/reviews/<review-id>/view.html` | Local only, explicit request required |
+| Shared research and root-cause records | `docs/research/`, `docs/debug/` | Tracked when promoted |
 
 ## Red Flags
 
-These thoughts mean STOP — you are rationalizing:
-
 | Excuse | Reality |
 |---|---|
-| "This is just a simple question" | Questions are tasks. Route before answering. |
-| "I need more context first" | The skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Route first. |
-| "The skill is overkill for this" | Simple things become complex. Ceremony scales down inside the skill, not by skipping it. |
-| "This change is too small for a spec" | Check the ceremony floor. If it is not on the closed list, it gets a spec — maybe a 10-line one. |
-| "The user told me exactly what to do" | A task description is not permission to skip process. Only an explicit "skip the spec / skip the skill" from the user is. |
-| "No forge skill matches this exactly" | Build/change → writing-specs. Broken → systematic-debugging. Done? → verifying-work. If truly nothing applies, state that conclusion out loud before proceeding. |
-| "I'm already halfway through" | Route the moment you notice. Work already done does not exempt the work remaining. |
-| "I remember what that skill says" | Skills evolve. Read the current version every time. |
-| "I'll just do this one thing first" | Route BEFORE doing anything. |
-| "The user seems in a hurry" | Skipping process produces rework, which is slower. The disciplined path is the fast path. |
+| "It is simple, so it is Quick." | Simplicity describes execution, not durable authority. Classify both axes. |
+| "It changes behavior, so it needs a new spec." | Only behavior that belongs in durable project authority needs a Canonical Spec or Delta. |
+| "No spec exists, so the change cannot affect the SOT." | A new durable contract is exactly when a Canonical Spec may be needed. |
+| "The plan captures the truth." | A plan owns execution order, not the project contract. |
+| "Quick means skip tests and verification." | Quick removes formal artifacts, never fresh evidence. |
+| "The bug fix is obviously a restoration." | Establish root cause and compare it with the approved contract before classifying the fix. |
+| "I already started, so reclassification would waste work." | Scope discovery changes the route before the next mutation; sunk cost grants no exemption. |
+| "The deadline makes schema work local." | Schema, security, interface, and cross-component contracts remain Canonical Spec impact under pressure. |
+| "The user said proceed, so every authority gate is approved." | Proceed authorizes in-scope execution. A Spec Delta, destructive action, external write, cost, or release still needs its own explicit boundary when required. |
 
 ## Platform Adaptation
 
-If running in Codex, read references/codex-tools.md — it maps forge's named actions to Codex tools, explains explicit skill invocation, and gives the sequential fallback rule when subagents are unavailable.
+If running in Codex, read `references/codex-tools.md`. It maps portable actions to current capabilities. Platform differences change how work runs, never which artifact has authority or which route applies.
 
 ## User Instructions and Language
 
-User instructions — project instruction files (AGENTS.md, CLAUDE.md, and similar) and direct requests — take precedence over skills, which in turn override default behavior. Only skip a skill's workflow when the user has explicitly told you to skip it; a request for an outcome ("just add the button") is not an instruction to skip the process that produces it.
-
-Execution-mode requests may choose only routes that satisfy the routed skill's safety gates: requesting parallel execution does not by itself waive dependency, write-overlap, verification, authority, or release gates. An explicit request to change one of those governing constraints is a spec or scope decision, not an ordinary routing preference.
-
-Skill files are written in English. Always respond to the user in the user's language.
+Direct user and project instructions take precedence over skills. An explicit instruction to skip a workflow gate may override it; a request for an outcome does not silently redefine artifact authority. Respond in the user's language. Distributed skill files stay in English.
 
 ## Handoff
 
-**Routing complete. The routed forge skill owns the process from here — follow its steps and its own Handoff line.** The default lifecycle chain is: the forge writing-specs skill → the forge writing-plans skill → the forge executing-plans skill → the forge verifying-work skill.
+**Routing complete. Follow the selected Quick, plan-only, spec-backed direct, or full-lifecycle path. Reclassify before the next mutation when its assumptions stop being true, and finish through the forge verifying-work skill.**
