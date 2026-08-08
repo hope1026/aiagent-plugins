@@ -40,6 +40,8 @@ Use EARS as a semantic discipline in the user's language. Each Canonical Spec re
 | A proposed candidate or Delta contains unresolved choices | `clarify` |
 | Approved authority and implementation disagree | `sync` |
 
+Before starting a mode, create one checklist item per numbered step in that mode and keep it current through approval, application, and validation.
+
 ### New
 
 1. Explore current product and repository context.

@@ -2,7 +2,7 @@
 
 > 이 계획은 forge `executing-plans` 스킬로 Task별 실행하며, 내부 checkpoint와 Route 알림을 유지하고 release 경계에서만 사용자 승인을 기다린다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - id: 009-canonical-spec-work-artifacts
@@ -480,7 +480,7 @@ rg -n "Canonical Spec|Change Brief|Spec Delta|Execution Plan|Quick" README.md .a
 - 병렬 안전성: sequential; root가 통합 diff, fresh evidence와 final judgment를 소유한다.
 - 승인 gate: manifest version bump와 push는 별도 release authorization이 필요하다.
 
-- [ ] **Step 1: 네 route와 adversarial pressure scenario를 작성한다.**
+- [x] **Step 1: 네 route와 adversarial pressure scenario를 작성한다.**
 
 Scenario set은 다음 exact classification을 요구한다.
 
@@ -492,11 +492,11 @@ Scenario set은 다음 exact classification을 요구한다.
 5. Adversarial: deadline + sunk-cost patch + authority asks to call schema work "simple" and skip fresh verification.
 ```
 
-- [ ] **Step 2: fresh agent에게 current skill source와 scenario를 주고 live pressure test를 실행한다.**
+- [x] **Step 2: fresh agent에게 current skill source와 scenario를 주고 live pressure test를 실행한다.**
 
 Agent가 네 route를 정확히 선택하고 adversarial case에서 Spec Delta, Plan, fresh verification을 유지하면 PASS다. Agent가 `simple`, deadline 또는 이미 수정했다는 이유로 축소하면 해당 rationalization을 pressure note에 기록하고 governing Red Flags를 보강한 뒤 test를 반복한다.
 
-- [ ] **Step 3: adversarial self-read와 banned-token scan을 실행한다.**
+- [x] **Step 3: adversarial self-read와 banned-token scan을 실행한다.**
 
 실행:
 
@@ -507,7 +507,7 @@ rg -n "Everything else gets a spec|Small change = small plan|No code without a p
 
 예상: 두 scan 모두 허용된 historical fixture를 제외하고 active instruction에서 0건이다. 발견된 active instruction은 제거하고 재검사한다.
 
-- [ ] **Step 4: repository validation과 spec inspect를 fresh 실행한다.**
+- [x] **Step 4: repository validation과 spec inspect를 fresh 실행한다.**
 
 실행:
 
@@ -519,17 +519,36 @@ git diff --check
 
 예상: `validate: all checks passed`, 009 schema `forge/spec@2`, status `approved`, diagnostics `[]`, diff check exit 0.
 
-- [ ] **Step 5: 009 AC1–AC12를 실제 source와 pressure evidence로 순서대로 판정한다.**
+- [x] **Step 5: 009 AC1–AC12를 실제 source와 pressure evidence로 순서대로 판정한다.**
 
 각 AC에 `PASS|FAIL`, exact command 또는 pressure-test observation을 기록한다. FAIL은 code/instruction bug면 systematic-debugging으로 수정하고, spec bug면 승인된 Spec Delta로 돌아간다.
 
-- [ ] **Step 6: 모든 AC PASS 뒤 009 lifecycle을 완료한다.**
+- [x] **Step 6: 모든 AC PASS 뒤 009 lifecycle을 완료한다.**
 
 `verifying-work`만 `status: implemented`로 바꾸고 Decisions & History에 검증 결정을 append한다. 이어 writer transaction과 `bash scripts/validate.sh`를 다시 실행한다. 하나라도 실패하면 status 변경을 완료로 보고하지 않는다.
 
-- [ ] **Step 7: release 전 상태를 기록한다.**
+- [x] **Step 7: release 전 상태를 기록한다.**
 
 Upstream 이후 `plugins/forge/skills/` 변경이 있으므로 push 전 두 manifest base version 동시 bump와 fresh Codex UTC suffix가 필요하다고 plan progress에 기록한다. 사용자 release 승인 전에는 version bump와 push를 실행하지 않는다.
+
+## Acceptance Evidence
+
+| AC | 판정 | Fresh evidence |
+|---|---|---|
+| 009 AC1 | PASS | `rg`로 lifecycle source를 검사해 다섯 artifact의 authority와 수명을 확인했고, active instruction에 `micro-spec` 또는 Plan=SOT 표현이 없음을 확인했다. |
+| 009 AC2 | PASS | 두 번째 fresh-agent pressure test가 no/low→Quick, no/high→plan-only, yes/low→spec-backed direct, yes/high→full lifecycle로 네 fixture를 분류하고 각 경로에 필요한 artifact만 요구했다. |
+| 009 AC3 | PASS | Scenario 1은 Canonical Spec·Execution Plan 없이 systematic debugging, TDD와 fresh focused test를 요구하는 Quick으로 판정됐다. |
+| 009 AC4 | PASS | Scenario 3은 기존 SOT를 승인 전 유지하고 Spec Delta 승인·validation 뒤 plan 없이 구현하며 affected AC를 검증하는 spec-backed direct로 판정됐다. |
+| 009 AC5 | PASS | Scenario 2는 제품 계약을 바꾸지 않는 migration을 Canonical Spec 없는 plan-only로 분류하고, durable discovery만 완료 후 승격하도록 판정됐다. |
+| 009 AC6 | PASS | Scenario 4는 외부 API와 저장 schema 변경을 approved Canonical change + Execution Plan + related AC/command evidence가 필요한 full lifecycle로 판정됐다. |
+| 009 AC7 | PASS | Scenario 6은 UI 문구의 정본 가치가 불명확하므로 mutation 전 정확히 하나의 분류 질문을 요구했다. |
+| 009 AC8 | PASS | Scenario 7은 Quick 조사 결과 cross-component contract와 migration이 드러난 즉시 다음 mutation 전 full lifecycle로 승격하고 기존 조사만 보존했다. |
+| 009 AC9 | PASS | Scenario 1·3·8과 `verifying-work` matrix가 각각 focused command, reproduction+affected contract+regression, affected AC+regression을 요구하고 Quick에는 lifecycle status 변경을 요구하지 않았다. |
+| 009 AC10 | PASS | `git ls-files '.forge/**'`는 빈 결과였고 변경 파일 목록에는 durable Canonical Spec·Execution Plan과 배포될 lifecycle source만 존재했다. |
+| 009 AC11 | PASS | portability source가 세 agent의 네 경로·승격 조건을 동일하게 고정하고 manager adapter validation이 PASS했다. Harness 차이는 invocation과 worker capability로만 제한된다. |
+| 009 AC12 | PASS | `bash scripts/validate.sh`가 성공했다. 최초 pressure probe의 quoted-authority 우회를 Red Flags로 보강한 뒤 새 agent 재시험에서 deadline·sunk cost·권위 압박에도 yes/high와 fresh verification을 유지했다. |
+
+Release evidence: `git diff --name-only origin/main...HEAD -- plugins/forge/skills`에 distributed skill 변경이 존재한다. 현재 Claude/Codex version은 각각 `0.1.9`, `0.1.9+codex.20260804090327`로 upstream과 같으므로 push 전 동시 base-version bump와 fresh Codex UTC suffix가 필요하다. 이번 실행은 사용자 release 승인이 없으므로 version bump와 push를 의도적으로 수행하지 않았다.
 
 ## Progress History
 
@@ -543,4 +562,8 @@ Upstream 이후 `plugins/forge/skills/` 변경이 있으므로 push 전 두 mani
 - 2026-08-08: Task 4 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="debugging classification and completion evidence determine when direct work is safe and when Canonical authority changes").
 - 2026-08-08: Task 4 complete (commit ef5fa4c; verification="Quick, restoration, approved Delta, and new Canonical Spec evidence matrix scan passed; bash scripts/validate.sh printed validate: all checks passed").
 - 2026-08-08: Task 5 routed (impact=medium, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="distribution copy spans shared metadata and must stay synchronized with the completed lifecycle source").
-- 2026-08-08: Task 5 complete (commit pending; verification="manifest JSON and terminology scans passed; manager render repaired expected canonical-hash drift from the portability reference change; extension validate PASS; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 5 complete (commit 1fc61b6; verification="manifest JSON and terminology scans passed; manager render repaired expected canonical-hash drift from the portability reference change; extension validate PASS; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 6 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root with read-only fresh-agent pressure probe, parallel_group=none, reason="root owns cross-skill acceptance judgment while an independent agent supplies behavioral pressure evidence").
+- 2026-08-08: First fresh-agent pressure probe selected all four base routes correctly but treated a quoted director demand as a workflow override; `using-forge` now distinguishes current-user instructions from quoted third-party pressure and forbids unsupported completion claims.
+- 2026-08-08: Second independent pressure probe passed all eight scenarios, including ambiguous durable value, Quick scope expansion, existing-contract restoration, deadline, sunk cost, and quoted authority pressure.
+- 2026-08-08: Task 6 complete (verification="009 AC1–AC12 PASS; repository and manager validation PASS; release boundary recorded without version bump or push").

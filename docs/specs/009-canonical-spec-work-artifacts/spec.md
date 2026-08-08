@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@2
 id: 009-canonical-spec-work-artifacts
-status: approved
+status: implemented
 language: ko
 kind: policy
 subtype: workflow-lifecycle
@@ -130,3 +130,4 @@ AC(Acceptance Criterion)는 연결된 R을 충족했음을 관찰 가능한 증�
 - 2026-08-08 [DECISION] Quick 경로는 formal spec·plan artifact를 생략하지만 fresh command-level verification은 유지한다.
 - 2026-08-08 [DECISION] Spec Delta는 승인 전 제안이며 기존 승인 Canonical Spec을 대체하지 않는다.
 - 2026-08-08 [DECISION] 사용자가 Canonical Spec과 작업 산출물 분리, 두 축 라우팅과 Quick 경로를 승인했다.
+- 2026-08-08 [DECISION] AC1–AC12가 repository validation, manager parity, static authority 검사와 보강 후 fresh-agent pressure test에서 모두 PASS하여 구현 일치를 확인했다.

@@ -44,6 +44,8 @@ Keep an applied Spec Delta through verification so its baseline lifecycle and af
 
 ## The Process
 
+Create one checklist item per applicable numbered stage below, plus one item per required Canonical AC. Do not collapse several ACs into one memory-only judgment.
+
 ### 1. Identify the claim and work class
 
 State the exact claim. Read route evidence from the forge using-forge classification, optional Change Brief or Spec Delta, Related Canonical Specs, and optional Execution Plan. If the classification is missing, reconstruct both axes from actual scope before verifying.
