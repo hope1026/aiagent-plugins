@@ -227,7 +227,7 @@ rg -n "Canonical Spec impact|Execution complexity|Quick direct|plan-only|spec-ba
 - 병렬 안전성: Task 3·4와 병렬 가능; write path가 분리되고 Task 1 contract만 소비한다.
 - 승인 gate: Delta의 규범적 의미가 사용자 승인본과 달라져야 할 때 spec divergence
 
-- [ ] **Step 1: 현재 change mode의 SOT 대체 동작을 RED evidence로 기록한다.**
+- [x] **Step 1: 현재 change mode의 SOT 대체 동작을 RED evidence로 기록한다.**
 
 실행:
 
@@ -237,15 +237,15 @@ rg -n "Return frontmatter.*draft|status.*draft|chat has no structured lifecycle|
 
 예상: 승인 전 기존 Canonical Spec을 draft로 바꾸는 현재 규칙이 출력된다.
 
-- [ ] **Step 2: `writing-specs`의 목적을 Canonical Spec authoring으로 좁힌다.**
+- [x] **Step 2: `writing-specs`의 목적을 Canonical Spec authoring으로 좁힌다.**
 
 Overview와 Contract는 `approved|implemented` source만 SOT이고 `draft` candidate·Spec Delta는 proposal이라고 정의한다. `Requirements`와 `Acceptance Criteria`는 Canonical Spec에만 쓰며 작업 입력에는 `Goal`, `Scope`, `Out of Scope`, `Done Checks`를 사용하도록 명시한다.
 
-- [ ] **Step 3: new·change·clarify·sync mode를 새 authority에 맞춘다.**
+- [x] **Step 3: new·change·clarify·sync mode를 새 authority에 맞춘다.**
 
 `new`는 proposed Canonical Spec 전체 Markdown을 검토받아 승인 후 `docs/specs/`에 `approved`로 두고 validation한다. `change`는 기존 approved/implemented source를 그대로 유지한 채 `.forge/work/<work-id>/spec-delta.md` 또는 대화에 exact affected R·AC·history change를 제시하고, 승인 뒤 canonical source에 반영해 `approved`로 전환한 다음 validation한다. `sync`의 code repair는 Delta 없이 direct repair로, contract change는 `change`로 보낸다.
 
-- [ ] **Step 4: Spec Delta template을 생성한다.**
+- [x] **Step 4: Spec Delta template을 생성한다.**
 
 `references/spec-delta-template.md`의 canonical structure:
 
@@ -271,11 +271,11 @@ Overview와 Contract는 `approved|implemented` source만 SOT이고 `draft` candi
 
 Template은 `Requirements`와 `Acceptance Criteria` heading을 사용하지 않고 Delta가 SOT가 아니라고 명시한다.
 
-- [ ] **Step 5: writer transaction과 Red Flags를 승인 전·후 경계에 맞춘다.**
+- [x] **Step 5: writer transaction과 Red Flags를 승인 전·후 경계에 맞춘다.**
 
 승인 전에는 기존 canonical bytes를 바꾸지 않는다. 승인 뒤 apply → `status: approved` → append history → repository validation 순서로 고정한다. Mechanical validation fix가 승인 의미를 바꾸면 재승인을 요구하고, 의미가 같으면 수정 후 재검증한다.
 
-- [ ] **Step 6: targeted contract와 repository validation을 실행한다.**
+- [x] **Step 6: targeted contract와 repository validation을 실행한다.**
 
 실행:
 
@@ -535,4 +535,6 @@ Upstream 이후 `plugins/forge/skills/` 변경이 있으므로 push 전 두 mani
 
 - 2026-08-08: Plan created from approved `009-canonical-spec-work-artifacts`; execution not started.
 - 2026-08-08: Task 1 routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="router owns Canonical Spec authority and every downstream lifecycle route").
-- 2026-08-08: Task 1 complete (commit pending; verification="router terminology scan passed; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 1 complete (commit ba35372; verification="router terminology scan passed; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 2 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="writer owns Canonical Spec authority, approval boundaries, and Spec Delta promotion").
+- 2026-08-08: Task 2 complete (commit pending; verification="Canonical Spec and Spec Delta contract scan passed; bash scripts/validate.sh printed validate: all checks passed").

@@ -1,6 +1,8 @@
-# Structured Spec Template
+# Canonical Spec Template
 
-Use the `forge/spec@2` semantic contract for `docs/specs/NNN-<slug>/spec.md`. The restricted frontmatter has eight required keys and one optional `subtype`. Values are a scalar or a JSON-compatible one-line collection; YAML anchors, tags, block scalars, aliases, implicit dates, and additional keys are forbidden.
+Use the `forge/spec@2` semantic contract for a Canonical Spec at `docs/specs/NNN-<slug>/spec.md`. The restricted frontmatter has eight required keys and one optional `subtype`. Values are a scalar or a JSON-compatible one-line collection; YAML anchors, tags, block scalars, aliases, implicit dates, and additional keys are forbidden.
+
+Canonical Specs record durable system intent, contracts, policy, and invariants. Do not use this template for a task brief, implementation sequence, temporary investigation, or execution log. Use `spec-delta-template.md` for the non-authoritative approval proposal that precedes a new or changed Canonical Spec.
 
 ## Language rules
 
@@ -11,7 +13,7 @@ Use the `forge/spec@2` semantic contract for `docs/specs/NNN-<slug>/spec.md`. Th
 
 ## Lifecycle
 
-The frontmatter `status` field moves `draft → approved → implemented`. Only explicit user approval sets `approved`; only `verifying-work` sets `implemented` after every AC passes. Any body, metadata, or status edit is incomplete until repository Markdown validation passes. It never implies HTML generation.
+Only `approved` and `implemented` Canonical Specs are project SOT. `approved` records accepted intent awaiting full implementation evidence; `implemented` records verified implementation alignment. `draft` is a proposal token for legacy or isolated candidate handling and never replaces existing approved authority. Only explicit user approval sets `approved`; only the forge verifying-work skill sets `implemented` after the required AC evidence passes. Any authoritative body, metadata, or status edit is incomplete until repository Markdown validation passes. It never implies HTML generation.
 
 ## Template
 
