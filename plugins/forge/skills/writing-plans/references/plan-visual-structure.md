@@ -1,6 +1,6 @@
 # Plan Visual Structure
 
-Use this reference for plans that need a human review view. The plan remains the source of truth; diagrams summarize only relationships explicitly written in the plan or its related specs.
+Use this reference for Execution Plans that need a human review view. The plan remains the work-scoped execution source, never the project SOT; diagrams summarize only relationships explicitly written in the plan or its Related Canonical Specs.
 
 ## Recommended order
 
@@ -10,7 +10,7 @@ Use this reference for plans that need a human review view. The plan remains the
 4. Runtime responsibility
 5. Major data flow
 6. Place, platform, or subsystem extension points
-7. Verification coverage and, when related specs exist, Task-level R·AC mapping
+7. Verification coverage and, when Related Canonical Specs exist, Task-level R·AC mapping
 8. Detailed Tasks and Steps
 9. Internal checkpoints, notify checkpoints, and approval boundaries
 
@@ -25,7 +25,7 @@ This order lets a reviewer move from scope to flow to implementation detail to e
 | Route 2 — Review | 4–6 | Review tooling shell | approval only before release |
 ```
 
-When a plan has any Related Spec, label every coverage and provenance reference with the explicit spec id or unique three-digit prefix, including single-spec plans. Do not merge same-numbered R/AC IDs across sources, infer cross-source links, or encode an unqualified range. The canonical Related Specs block owns exact `id`, `path`, `requirements`, and `acceptance` arrays; diagrams only visualize those declared mappings.
+When a plan has any Related Canonical Spec, label every coverage and provenance reference with the explicit spec id or unique three-digit prefix, including single-spec plans. Do not merge same-numbered R/AC IDs across sources, infer cross-source links, or encode an unqualified range. The canonical Related Specs block owns exact `id`, `path`, `requirements`, and `acceptance` arrays; diagrams only visualize those declared mappings.
 
 Use 6–10 Routes for a large plan. Every Task has one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
 
@@ -56,8 +56,8 @@ Each diagram has:
 The plan review path uses one of these source-owned link shapes:
 
 ```text
-related spec present: R → AC → Task → Step → verification method
-no related spec: Task → Step → verification method
+Related Canonical Spec present: R → AC → Task → Step → verification method
+no Related Canonical Spec: Task → Step → verification method
 ```
 
 Checkboxes record review progress, not product PASS or FAIL. Use Task-scoped Step keys such as `Task4-Step2` because Step numbering restarts inside each Task.

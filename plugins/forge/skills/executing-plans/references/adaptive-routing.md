@@ -1,6 +1,6 @@
 # Adaptive Execution Routing
 
-Use this reference to choose the capability tier, execution mode, parallel group, and escalation path for each plan Task. The plan remains authoritative; routing changes who performs the work, never what the Task means.
+Use this reference to choose the capability tier, execution mode, parallel group, and escalation path for each plan Task. The plan remains the execution source; routing changes who performs the work, never what the Task means or which artifact owns project authority.
 
 ## Routing Signals
 
@@ -19,9 +19,9 @@ Use the current Task text, its Files and Interfaces blocks, dependency diagram, 
 
 | Tier | Selection rule | Typical work |
 |---|---|---|
-| `fast` | All of `impact`, `uncertainty`, and `context_coupling` are `low`; `verification_clarity` is `strong`; no source-of-truth decision | inventory, focused search, mechanical fixture or formatting work |
+| `fast` | All of `impact`, `uncertainty`, and `context_coupling` are `low`; `verification_clarity` is `strong`; no Canonical Spec or other durable authority decision | inventory, focused search, mechanical fixture or formatting work |
 | `balanced` | Default when every `fast` condition is not met and no `frontier` signal exists | isolated implementation, tests, documentation with stable interfaces |
-| `frontier` | Any signal is `high`, verification is `weak`, or the Task owns spec, architecture, security, data safety, root cause, or final cross-system judgment | source-of-truth decisions, risky migration, ambiguous debugging, final synthesis |
+| `frontier` | Any signal is `high`, verification is `weak`, or the Task owns Canonical Spec, architecture, security, data safety, root cause, or final cross-system judgment | durable authority decisions, risky migration, ambiguous debugging, final synthesis |
 
 The tier is a capability requirement, not a permanent model slug. Platform configuration maps it to an available role, model, and reasoning setting.
 
@@ -29,7 +29,7 @@ The tier is a capability requirement, not a permanent model slug. Platform confi
 
 Choose one:
 
-- `root`: the root agent executes work that owns source-of-truth decisions, spans tightly coupled context, or would cost more to brief and review than to perform directly.
+- `root`: the root agent executes work that owns Canonical Spec or other durable authority decisions, spans tightly coupled context, or would cost more to brief and review than to perform directly.
 - `subagent`: one bounded worker receives the complete Task plus its Interfaces, files, constraints, verification, and allowed authority.
 - `parallel`: multiple independent Tasks run concurrently as one `parallel_group`.
 
@@ -41,7 +41,7 @@ Apply these defaults after selecting the capability tier and before forming a pa
 
 - `fast` defaults to `root`. Use `parallel` only for multiple mechanical Tasks that pass every parallel safety condition and save more wall-clock time than dispatch and review cost.
 - `balanced` defaults to `subagent` only when `context_coupling=low`, `verification_clarity=strong`, the handoff is complete, write ownership is disjoint, and root review is cheaper than direct execution. Otherwise use `root`. When two or more eligible Tasks also pass the parallel safety gate, prefer `parallel` within the concurrency cap.
-- `frontier` defaults to `root`. Delegate only bounded evidence collection that is separable from source-of-truth judgment; spec, architecture, security, data safety, root cause, integration, and final judgment remain root-owned.
+- `frontier` defaults to `root`. Delegate only bounded evidence collection that is separable from durable authority judgment; Canonical Spec, architecture, security, data safety, root cause, integration, and final judgment remain root-owned.
 
 User execution preferences override these defaults when they are more restrictive: honor `root-only`, disabled subagents, and a lower concurrency cap. A preference never waives dependency, write-overlap, verification, or root-ownership gates. Do not ask the user to choose a mode for an ordinary Task; record the automatic choice in the ledger and summarize delegation in a notify or final report.
 
@@ -64,7 +64,7 @@ Respect the platform limit and any user-configured cap. Without a user cap, use 
 
 The root agent always owns:
 
-- spec and plan source-of-truth changes;
+- Canonical Spec changes and Execution Plan source changes;
 - routing and `parallel_group` decisions;
 - approval requests and authority boundaries;
 - integration across worker results;

@@ -304,7 +304,7 @@ bash scripts/validate.sh
 - 병렬 안전성: Task 2·4와 병렬 가능; write path가 분리되고 Task 1 contract만 소비한다.
 - 승인 gate: 실행 중 새 durable contract 또는 사용자-owned scope decision이 발견될 때만 Spec Delta·scope approval
 
-- [ ] **Step 1: 현재 plan 강제 문구를 RED evidence로 기록한다.**
+- [x] **Step 1: 현재 plan 강제 문구를 RED evidence로 기록한다.**
 
 실행:
 
@@ -314,23 +314,23 @@ rg -n "Small change = small plan|No code without a plan task|ceremony-floor|sour
 
 예상: 작은 구현에도 plan을 강제하거나 plan을 SOT로 부르는 문구가 출력된다.
 
-- [ ] **Step 2: `writing-plans` precondition을 complexity 기반으로 교체한다.**
+- [x] **Step 2: `writing-plans` precondition을 complexity 기반으로 교체한다.**
 
 Plan은 여러 dependency, component, parallel ownership, migration·release sequence, meaningful rollback risk 또는 zero-context handoff가 있을 때만 만든다. Related Specs는 0..N Canonical Spec references이며 `None — Canonical Spec impact: no; <complexity reason>` 형식으로 plan-only 이유를 기록한다. low-complexity route는 `using-forge`로 돌려보낸다.
 
-- [ ] **Step 3: Plan authority와 Red Flags를 work source로 맞춘다.**
+- [x] **Step 3: Plan authority와 Red Flags를 work source로 맞춘다.**
 
 Plan은 실행 동안 authoritative work source이지만 project SOT가 아니며, Canonical Spec과 충돌하면 Spec Delta가 우선한다. `small change = small plan` 문구는 `low complexity does not need a plan`으로 교체한다. Review 구조와 R·AC traceability는 related Canonical Spec이 있을 때만 적용한다.
 
-- [ ] **Step 4: `executing-plans`의 spec-free 범위를 plan-only work 전체로 확장한다.**
+- [x] **Step 4: `executing-plans`의 spec-free 범위를 plan-only work 전체로 확장한다.**
 
 Operational·research·ceremony-floor 제한을 제거하고 `Canonical Spec impact: no, Execution complexity: high` plan을 허용한다. 실행 중 R8 contract가 발견되면 다음 mutation 전에 Task를 멈추고 Spec Delta로 승격한다. Plan을 `work contract` 또는 `execution source`로 부르고 SOT로 부르지 않는다.
 
-- [ ] **Step 5: adaptive routing과 visual reference의 authority 용어를 맞춘다.**
+- [x] **Step 5: adaptive routing과 visual reference의 authority 용어를 맞춘다.**
 
 `source-of-truth decision`은 `Canonical Spec or other durable authority decision`으로 구체화한다. `plan remains authoritative`는 `plan remains the execution source`로 바꾸고 task routing이 artifact 분류를 바꾸지 않는다고 명시한다.
 
-- [ ] **Step 6: plan·execution targeted 검사와 repository validation을 실행한다.**
+- [x] **Step 6: plan·execution targeted 검사와 repository validation을 실행한다.**
 
 실행:
 
@@ -537,4 +537,6 @@ Upstream 이후 `plugins/forge/skills/` 변경이 있으므로 push 전 두 mani
 - 2026-08-08: Task 1 routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="router owns Canonical Spec authority and every downstream lifecycle route").
 - 2026-08-08: Task 1 complete (commit ba35372; verification="router terminology scan passed; bash scripts/validate.sh printed validate: all checks passed").
 - 2026-08-08: Task 2 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="writer owns Canonical Spec authority, approval boundaries, and Spec Delta promotion").
-- 2026-08-08: Task 2 complete (commit pending; verification="Canonical Spec and Spec Delta contract scan passed; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 2 complete (commit 19bfe4c; verification="Canonical Spec and Spec Delta contract scan passed; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 3 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="plan authority and execution escalation must remain consistent across authoring and runtime skills").
+- 2026-08-08: Task 3 complete (commit pending; verification="Execution Plan authority and plan-only route scans passed; bash scripts/validate.sh printed validate: all checks passed").
