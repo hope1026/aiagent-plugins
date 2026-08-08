@@ -6,7 +6,7 @@ AI agent plugins managed from one source tree. Forge installs into **Claude Code
 
 | Plugin | Purpose |
 |---|---|
-| `forge` | Spec-first development process: structured Markdown spec → plan → execute → verify, plus TDD, debugging, cross-agent authoring, UI design, writing tone overlays, and request-only adaptive Review Viewer snapshots. |
+| `forge` | Canonical Spec and complexity-aware execution process: durable contract changes use approved Spec Deltas, bounded work can run directly with fresh evidence, and complex work uses optional Execution Plans. Includes TDD, debugging, cross-agent authoring, UI design, tone overlays, and request-only Review Viewer snapshots. |
 
 ```text
 plugins/<name>/
@@ -19,11 +19,11 @@ plugins/<name>/
 .claude/skills/                # generated Claude Code repository adapters
 .claude-plugin/marketplace.json    # this repo is a Claude Code marketplace
 .agents/plugins/marketplace.json   # ...and a Codex marketplace
-docs/specs/                    # specs for this repo (spec-first, dogfooded)
-docs/plans/                    # independent, work-scoped implementation plans
+docs/specs/                    # permanent Canonical Specs for this repo
+docs/plans/                    # optional, work-scoped Execution Plans
 docs/research/                 # promoted research worth sharing
 docs/debug/                    # promoted root-cause records
-.forge/                        # local scratch, research, review snapshots, ledgers, and build files
+.forge/                        # local briefs, Spec Deltas, scratch, reviews, ledgers, and build files
 ```
 
 ## Install (recommended: GitHub marketplace)
@@ -61,13 +61,13 @@ bash scripts/install.sh --agent codex --plugin forge
 
 | Skill | One line |
 |---|---|
-| `using-forge` | Entry point: routes any task to the right forge skill; spec-first iron law; shared artifact contract |
-| `writing-specs` | Idea → approved `forge/spec@2`; validates flexible structured Markdown without generating HTML |
-| `writing-plans` | Independent task-level plan with 0..N Related Specs; behavior changes still require approval |
-| `executing-plans` | Task-by-task execution with checkpoints and plan-local progress history |
+| `using-forge` | Classifies Canonical Spec impact and execution complexity, then selects Quick, plan-only, spec-backed direct, or full lifecycle |
+| `writing-specs` | Proposes approved Spec Deltas and maintains permanent `forge/spec@2` Canonical Specs without generating HTML |
+| `writing-plans` | Creates an optional Execution Plan for high-complexity work with 0..N Related Canonical Specs |
+| `executing-plans` | Executes plan Tasks with checkpoints while keeping the plan a work source rather than project SOT |
 | `test-driven-development` | RED → GREEN → REFACTOR; no implementation without a failing test |
 | `systematic-debugging` | Reproduce → isolate → root-cause → fix; no fix without an understood cause |
-| `verifying-work` | Evidence before claims; walks acceptance criteria; flips spec to `implemented` |
+| `verifying-work` | Matches fresh evidence to Quick, plan-only, restoration, or approved-Delta work; changes Canonical lifecycle only when required |
 | `review-viewer` | Builds an adaptive untracked spec or plan snapshot only after explicit intent, using Semantic IR, validated presentation planning, and reusable components |
 | `web-app-design` | Browser app hierarchy, control affordance, state geometry, and viewport×state verification |
 | `website-design` | Public website visual thesis, content composition, imagery, responsive behavior, and restrained motion |
@@ -89,17 +89,23 @@ entries through the `creating-agent-extensions` manager. These files stay
 outside `plugins/forge/`, so Marketplace and `scripts/install.sh` distribute
 the 14 active user-execution skills listed above.
 
-## Spec-first lifecycle (the short version)
+## Canonical Spec and task routing
 
-1. Product behavior changes require an approved spec; execution work requires a plan task.
-2. Change requests edit the spec first — never patch code and back-fill.
-3. Implementation discoveries pause for an approved spec delta.
-4. Verification is against the spec's acceptance criteria, with fresh evidence.
-5. Spec status `draft → approved` (human) `→ implemented` (verified only).
-6. Drift repair (`sync` mode) reconciles brownfield code against its spec.
-7. The normal lifecycle creates Markdown only; Review Viewer HTML is request-only, adaptive, and untracked.
+Forge decides two things independently:
 
-Per-project artifacts: permanent specs live in `docs/specs/NNN-<slug>/spec.md`. Work-scoped plans live at `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay only while that plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html`, are created only after an explicit request, and remain untracked. `.forge/research/` is local-only; promote durable findings to `docs/research/` and root-cause records to `docs/debug/`. Promote permanent decisions before deleting a completed plan.
+1. **Canonical Spec impact:** does the request change durable project authority such as an interface, schema, workflow, policy, cross-component responsibility, or user-designated permanent decision?
+2. **Execution complexity:** does safe work need dependent stages, several components, migration or release ordering, rollback, parallel ownership, or a zero-context handoff?
+
+| Canonical Spec impact | Execution complexity | Route |
+|---|---|---|
+| no | low | Quick direct execution with fresh focused evidence |
+| no | high | Optional Change Brief + Execution Plan |
+| yes | low | Approved Spec Delta + direct execution |
+| yes | high | Approved Spec Delta + Execution Plan |
+
+`spec` is reserved for permanent Canonical Specs. A Change Brief captures one work request; a Spec Delta is an approval proposal; an Execution Plan controls implementation order but is not project SOT; Verification Evidence proves a concrete claim. Quick removes formal artifacts, never TDD, debugging, or fresh verification.
+
+Per-project artifacts: authoritative Canonical Specs live in `docs/specs/NNN-<slug>/spec.md` with lifecycle `approved → implemented`. Optional work input lives at `.forge/work/<work-id>/brief.md` and `spec-delta.md` and stays untracked. High-complexity Execution Plans live at `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay only while the plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html`, require an explicit request, and remain untracked. Promote lasting decisions, research, and root-cause findings before removing work artifacts.
 
 ## Validate
 

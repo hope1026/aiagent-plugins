@@ -423,7 +423,7 @@ bash scripts/validate.sh
 - 병렬 안전성: sequential; 모든 lifecycle source가 안정된 뒤 설명을 동기화한다.
 - 승인 gate: version bump와 push는 release boundary이므로 이 Task에서 실행하지 않는다.
 
-- [ ] **Step 1: 이전 spec-first 표현을 RED evidence로 기록한다.**
+- [x] **Step 1: 이전 spec-first 표현을 RED evidence로 기록한다.**
 
 실행:
 
@@ -433,19 +433,19 @@ rg -n "Spec-first|spec-first|structured Markdown spec → plan|Product behavior 
 
 예상: 모든 작업을 한 lifecycle로 설명하는 문구가 출력된다.
 
-- [ ] **Step 2: portability artifact contract를 새 역할로 확장한다.**
+- [x] **Step 2: portability artifact contract를 새 역할로 확장한다.**
 
 Canonical Spec, optional `.forge/work/<work-id>/brief.md`, `.forge/work/<work-id>/spec-delta.md`, optional Execution Plan과 Verification Evidence의 authority·Git·lifetime을 표로 기록한다. Agent별 차이는 invocation과 capability뿐이며 네 route의 의미는 같다고 명시한다.
 
-- [ ] **Step 3: README catalog와 short lifecycle을 두 축 모델로 바꾼다.**
+- [x] **Step 3: README catalog와 short lifecycle을 두 축 모델로 바꾼다.**
 
 Forge 한 줄 설명은 `Canonical Spec when durable authority changes, optional Execution Plans for complex work, direct verified execution for bounded work`를 전달한다. Lifecycle section은 terminology → two-axis matrix → verification → artifact lifetime 순서로 쓴다.
 
-- [ ] **Step 4: plugin metadata의 설명과 prompt를 실제 동작에 맞춘다.**
+- [x] **Step 4: plugin metadata의 설명과 prompt를 실제 동작에 맞춘다.**
 
 두 manifest의 description은 Canonical Spec과 complexity-aware execution을 설명한다. Codex `shortDescription`, `longDescription`, `defaultPrompt`는 Quick local fix, durable contract Delta, complex plan-only work 예시를 포함한다. Version은 release authorization 전까지 변경하지 않는다.
 
-- [ ] **Step 5: JSON과 문서 정적 검사를 실행한다.**
+- [x] **Step 5: JSON과 문서 정적 검사를 실행한다.**
 
 실행:
 
@@ -457,7 +457,7 @@ rg -n "Canonical Spec|Change Brief|Spec Delta|Execution Plan|Quick" README.md .a
 
 예상: JSON 두 개가 exit 0이고 다섯 용어가 각 책임 문서에 나타난다.
 
-- [ ] **Step 6: 전체 repository validation을 실행한다.**
+- [x] **Step 6: 전체 repository validation을 실행한다.**
 
 실행: `bash scripts/validate.sh`
 
@@ -541,4 +541,6 @@ Upstream 이후 `plugins/forge/skills/` 변경이 있으므로 push 전 두 mani
 - 2026-08-08: Task 3 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="plan authority and execution escalation must remain consistent across authoring and runtime skills").
 - 2026-08-08: Task 3 complete (commit 653f02c; verification="Execution Plan authority and plan-only route scans passed; bash scripts/validate.sh printed validate: all checks passed").
 - 2026-08-08: Task 4 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="debugging classification and completion evidence determine when direct work is safe and when Canonical authority changes").
-- 2026-08-08: Task 4 complete (commit pending; verification="Quick, restoration, approved Delta, and new Canonical Spec evidence matrix scan passed; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 4 complete (commit ef5fa4c; verification="Quick, restoration, approved Delta, and new Canonical Spec evidence matrix scan passed; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-08: Task 5 routed (impact=medium, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="distribution copy spans shared metadata and must stay synchronized with the completed lifecycle source").
+- 2026-08-08: Task 5 complete (commit pending; verification="manifest JSON and terminology scans passed; manager render repaired expected canonical-hash drift from the portability reference change; extension validate PASS; bash scripts/validate.sh printed validate: all checks passed").
