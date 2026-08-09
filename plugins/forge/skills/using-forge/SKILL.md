@@ -124,6 +124,7 @@ When the selected route or specialist skill has a checklist, create one checklis
 | Public website | the forge website-design skill |
 | Human-readable prose | the forge writing-tone skill |
 | Cross-agent skill or MCP authoring | the forge creating-agent-extensions skill |
+| Review Viewer tooling implementation or UX changes | the forge web-app-design skill |
 | Explicit Review Viewer create, refresh, present, or freshness request | the forge review-viewer skill |
 
 When UI context does not reveal whether the surface is a stateful browser application or a public content website, ask that single classification question and route to exactly one UI skill. A missing native mobile or desktop specialist is not permission to force-route the work to a web UI skill.

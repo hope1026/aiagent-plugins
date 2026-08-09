@@ -31,7 +31,7 @@ EXECUTING_PLANS="$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
 REVIEW_VIEWER="$ROOT/plugins/forge/skills/review-viewer/SKILL.md"
 
 grep -q 'docs/plans/PPP-<slug>/plan.md' "$USING_FORGE"
-grep -q 'NO PRODUCT-BEHAVIOR IMPLEMENTATION WITHOUT AN APPROVED SPEC' "$USING_FORGE"
+grep -q 'NO DURABLE CONTRACT CHANGE WITHOUT AN APPROVED CANONICAL SPEC OR SPEC DELTA' "$USING_FORGE"
 grep -q '.forge/reviews/<review-id>/view.html' "$USING_FORGE" || fail "Review Viewer path missing"
 grep -q 'Review Viewer.*no' "$PORTABILITY" || fail "portability table does not untrack Review Viewer"
 grep -q 'docs/research/' "$ROOT/README.md"
