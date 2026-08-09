@@ -1,4 +1,4 @@
-"""Dependency-free typed parser for the ``forge/spec@2`` source contract."""
+"""Dependency-free typed parsers for Forge Canonical Spec sources."""
 
 from __future__ import annotations
 
@@ -9,9 +9,24 @@ from pathlib import Path
 import re
 from types import MappingProxyType
 from typing import Mapping
+import unicodedata
+from urllib.parse import unquote
 
 
 SCHEMA = "forge/spec@2"
+BUNDLE_SCHEMA = "forge/spec@3"
+BUNDLE_REQUIRED_FRONTMATTER_KEYS = (
+    "schema",
+    "role",
+    "status",
+    "language",
+    "kind",
+    "areas",
+    "components",
+    "relatedSpecs",
+)
+BUNDLE_OPTIONAL_FRONTMATTER_KEYS = ("subtype",)
+BUNDLE_MEMBER_ROLES = frozenset(("root", "contract", "acceptance", "history", "reference"))
 REQUIRED_FRONTMATTER_KEYS = (
     "schema",
     "id",
@@ -43,11 +58,16 @@ _IMPLICIT_SCALAR_RE = re.compile(
 )
 _H1_RE = re.compile(r"^# (\S.*)$")
 _H2_RE = re.compile(r"^## (\S.*)$")
+_H3_RE = re.compile(r"^### (\S.*)$")
 _FENCE_RE = re.compile(r"^\s*(```|~~~)")
 _REQUIREMENT_RE = re.compile(r"^- R([0-9]+)\. (\S.*)$")
 _AC_RE = re.compile(r"^- AC([0-9]+) \(([^)]+)\): (\S.*)$")
 _REFERENCE_RE = re.compile(r"^R([0-9]+)$")
 _REFERENCE_RANGE_RE = re.compile(r"^R([0-9]+)–R?([0-9]+)$")
+_DOCUMENT_RE = re.compile(
+    r"^- (root|contract|acceptance|history|reference): \[([^\]]+)\]\(([^)]+\.md)\)$"
+)
+_STATEMENT_LINK_RE = re.compile(r"^- \[([^\]]+)\]\(([^)#]+\.md)#([^)]+)\)$")
 
 
 @dataclass(frozen=True, order=True)
@@ -111,6 +131,66 @@ class SpecDocument:
     acceptance: tuple[AcceptanceCriterion, ...]
     mermaid: tuple[MermaidBlock, ...]
     source_sha256: str
+
+
+@dataclass(frozen=True)
+class RelatedBundle:
+    path: str
+    relation: str
+
+
+@dataclass(frozen=True)
+class SpecBundleMetadata:
+    schema: str
+    role: str
+    status: str
+    language: str
+    kind: str
+    subtype: str | None
+    areas: tuple[str, ...]
+    components: tuple[str, ...]
+    related_specs: tuple[RelatedBundle, ...]
+
+
+@dataclass(frozen=True)
+class StatementReference:
+    member_path: Path
+    heading: str
+    anchor: str
+    line: int
+
+
+@dataclass(frozen=True)
+class SpecStatement:
+    kind: str
+    heading: str
+    member_path: Path
+    line: int
+    references: tuple[StatementReference, ...] = ()
+
+
+@dataclass(frozen=True)
+class SpecMember:
+    path: Path
+    role: str
+    title: str
+    source_text: str
+    source_bytes: bytes
+    source_sha256: str
+    sections: Mapping[str, str]
+    section_order: tuple[str, ...]
+    mermaid: tuple[MermaidBlock, ...]
+
+
+@dataclass(frozen=True)
+class SpecBundle:
+    path: Path
+    root_path: Path
+    metadata: SpecBundleMetadata
+    title: str
+    members: tuple[SpecMember, ...]
+    statements: tuple[SpecStatement, ...]
+    bundle_sha256: str
 
 
 def _diagnostic(path: Path, line: int, code: str, message: str) -> Diagnostic:
@@ -276,6 +356,307 @@ def _related_specs(
             continue
         result.append(RelatedSpec(spec_id, relation))
     return tuple(result)
+
+
+def _related_bundles(
+    values: dict[str, object], path: Path, errors: list[Diagnostic]
+) -> tuple[RelatedBundle, ...]:
+    value = values.get("relatedSpecs")
+    if not isinstance(value, list):
+        errors.append(
+            _diagnostic(
+                path,
+                1,
+                "BUNDLE_RELATED_TYPE",
+                "Frontmatter 'relatedSpecs' must be a JSON array.",
+            )
+        )
+        return ()
+
+    result: list[RelatedBundle] = []
+    for item in value:
+        if not isinstance(item, dict) or set(item) != {"path", "relation"}:
+            errors.append(
+                _diagnostic(
+                    path,
+                    1,
+                    "BUNDLE_RELATED_TYPE",
+                    "Each relatedSpecs entry must contain only string path and relation fields.",
+                )
+            )
+            continue
+        bundle_path = item.get("path")
+        relation = item.get("relation")
+        if not isinstance(bundle_path, str) or not bundle_path.startswith("docs/specs/"):
+            errors.append(
+                _diagnostic(
+                    path,
+                    1,
+                    "BUNDLE_RELATED_PATH",
+                    "A related spec path must name a bundle below docs/specs/.",
+                )
+            )
+            continue
+        if not isinstance(relation, str) or relation not in RELATIONS:
+            errors.append(
+                _diagnostic(
+                    path,
+                    1,
+                    "BUNDLE_RELATED_RELATION",
+                    "A related spec relation must be dependsOn, refines, supersedes, or relatedTo.",
+                )
+            )
+            continue
+        result.append(RelatedBundle(bundle_path.rstrip("/"), relation))
+    return tuple(result)
+
+
+def statement_anchor(heading: str) -> str:
+    """Return the deterministic human-readable anchor for a statement heading."""
+
+    rendered = re.sub(r"`([^`]*)`", r"\1", heading)
+    normalized = unicodedata.normalize("NFC", rendered).casefold()
+    characters: list[str] = []
+    pending_separator = False
+    for character in normalized:
+        if character.isspace():
+            pending_separator = bool(characters)
+            continue
+        if character.isalnum() or character == "_":
+            if pending_separator and characters[-1] != "-":
+                characters.append("-")
+            characters.append(character)
+            pending_separator = False
+            continue
+        if character == "-":
+            if characters and characters[-1] != "-":
+                characters.append("-")
+            pending_separator = False
+    return "".join(characters).strip("-")
+
+
+def _bundle_headings(
+    lines: list[str],
+    body_start: int,
+    path: Path,
+    errors: list[Diagnostic],
+) -> tuple[str, dict[str, tuple[int, int]], tuple[str, ...]]:
+    h1: list[tuple[int, str]] = []
+    h2: list[tuple[int, str]] = []
+    fence: str | None = None
+    for index in range(body_start, len(lines)):
+        line = lines[index]
+        fence_match = _FENCE_RE.match(line)
+        if fence_match:
+            marker = fence_match.group(1)
+            if fence is None:
+                fence = marker
+            elif marker == fence:
+                fence = None
+            continue
+        if fence is not None:
+            continue
+        if match := _H1_RE.fullmatch(line):
+            h1.append((index, match.group(1)))
+        elif match := _H2_RE.fullmatch(line):
+            h2.append((index, match.group(1)))
+
+    if not h1:
+        errors.append(
+            _diagnostic(path, body_start + 1, "BUNDLE_TITLE_MISSING", "One H1 title is required.")
+        )
+        title = ""
+    else:
+        title = h1[0][1]
+        for index, _ in h1[1:]:
+            errors.append(
+                _diagnostic(path, index + 1, "BUNDLE_TITLE_DUPLICATE", "Only one H1 title is allowed.")
+            )
+
+    positions: dict[str, int] = {}
+    section_order: list[str] = []
+    for index, heading in h2:
+        if heading in positions:
+            errors.append(
+                _diagnostic(
+                    path,
+                    index + 1,
+                    "BUNDLE_SECTION_DUPLICATE",
+                    f"H2 section '{heading}' is duplicated in one member.",
+                )
+            )
+            continue
+        positions[heading] = index
+        section_order.append(heading)
+
+    spans: dict[str, tuple[int, int]] = {}
+    for offset, heading in enumerate(section_order):
+        start = positions[heading] + 1
+        end = positions[section_order[offset + 1]] if offset + 1 < len(section_order) else len(lines)
+        spans[heading] = (start, end)
+    return title, spans, tuple(section_order)
+
+
+def _document_inventory(
+    lines: list[str],
+    span: tuple[int, int],
+    path: Path,
+    errors: list[Diagnostic],
+) -> tuple[tuple[str, str, str, int], ...]:
+    result: list[tuple[str, str, str, int]] = []
+    for index in range(*span):
+        line = lines[index]
+        if not line.startswith("- "):
+            continue
+        match = _DOCUMENT_RE.fullmatch(line)
+        if match is None:
+            errors.append(
+                _diagnostic(
+                    path,
+                    index + 1,
+                    "BUNDLE_DOCUMENT_FORMAT",
+                    "Document entries must use '- <role>: [<H1>](<filename>.md)'.",
+                )
+            )
+            continue
+        role, title, member_path = match.groups()
+        result.append((role, title, member_path, index + 1))
+    return tuple(result)
+
+
+def _statement_references(
+    lines: list[str],
+    start: int,
+    end: int,
+    member_path: Path,
+    language: str,
+    errors: list[Diagnostic],
+) -> tuple[StatementReference, ...]:
+    label = "검증하는 요구사항:" if language == "ko" else "Verifies:"
+    label_index: int | None = None
+    for index in range(start, end):
+        if lines[index] == label:
+            label_index = index
+            break
+    if label_index is None:
+        errors.append(
+            _diagnostic(
+                member_path,
+                start + 1,
+                "STATEMENT_REFERENCE_LABEL",
+                f"An acceptance statement must include '{label}'.",
+            )
+        )
+        return ()
+
+    references: list[StatementReference] = []
+    for index in range(label_index + 1, end):
+        line = lines[index]
+        if not line.startswith("- "):
+            continue
+        match = _STATEMENT_LINK_RE.fullmatch(line)
+        if match is None:
+            errors.append(
+                _diagnostic(
+                    member_path,
+                    index + 1,
+                    "STATEMENT_REFERENCE_FORMAT",
+                    "Requirement references must be Markdown links to a member heading.",
+                )
+            )
+            continue
+        heading, raw_path, raw_anchor = match.groups()
+        target_path = member_path.parent / raw_path
+        references.append(
+            StatementReference(
+                member_path=target_path,
+                heading=heading,
+                anchor=unquote(raw_anchor),
+                line=index + 1,
+            )
+        )
+    if not references:
+        errors.append(
+            _diagnostic(
+                member_path,
+                label_index + 1,
+                "STATEMENT_REFERENCE_MISSING",
+                "An acceptance statement must reference at least one requirement.",
+            )
+        )
+    return tuple(references)
+
+
+def _bundle_statements(
+    lines: list[str],
+    spans: Mapping[str, tuple[int, int]],
+    member_path: Path,
+    language: str,
+    errors: list[Diagnostic],
+) -> tuple[SpecStatement, ...]:
+    result: list[SpecStatement] = []
+    for section, kind in (("Requirements", "requirement"), ("Acceptance Criteria", "acceptance")):
+        span = spans.get(section)
+        if span is None:
+            continue
+        headings: list[tuple[int, str]] = []
+        fence: str | None = None
+        for index in range(*span):
+            line = lines[index]
+            fence_match = _FENCE_RE.match(line)
+            if fence_match:
+                marker = fence_match.group(1)
+                if fence is None:
+                    fence = marker
+                elif marker == fence:
+                    fence = None
+                continue
+            if fence is None and (match := _H3_RE.fullmatch(line)):
+                headings.append((index, match.group(1)))
+        for offset, (index, heading) in enumerate(headings):
+            next_heading = headings[offset + 1][0] if offset + 1 < len(headings) else span[1]
+            references = (
+                _statement_references(
+                    lines,
+                    index + 1,
+                    next_heading,
+                    member_path,
+                    language,
+                    errors,
+                )
+                if kind == "acceptance"
+                else ()
+            )
+            result.append(
+                SpecStatement(
+                    kind=kind,
+                    heading=heading,
+                    member_path=member_path,
+                    line=index + 1,
+                    references=references,
+                )
+            )
+    return tuple(sorted(result, key=lambda statement: statement.line))
+
+
+def bundle_sha256(bundle_path: Path, members: tuple[SpecMember, ...]) -> str:
+    """Hash normalized bundle identity and exact member bytes deterministically."""
+
+    digest = hashlib.sha256()
+
+    def add_frame(value: bytes) -> None:
+        digest.update(len(value).to_bytes(8, "big"))
+        digest.update(value)
+
+    add_frame(bundle_path.as_posix().encode("utf-8"))
+    for member in sorted(members, key=lambda item: item.path.as_posix()):
+        try:
+            relative_member = member.path.relative_to(bundle_path)
+        except ValueError:
+            relative_member = member.path
+        add_frame(relative_member.as_posix().encode("utf-8"))
+        add_frame(member.source_bytes)
+    return digest.hexdigest()
 
 
 def _headings(
@@ -749,3 +1130,284 @@ def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagno
         source_sha256=hashlib.sha256(source).hexdigest(),
     )
     return document, ()
+
+
+def load_spec_bundle(path: Path, root: Path) -> tuple[SpecBundle | None, tuple[Diagnostic, ...]]:
+    """Load one ``forge/spec@3`` bundle without repository-wide inference."""
+
+    try:
+        resolved_path = path.resolve(strict=True)
+        resolved_root = root.resolve(strict=True)
+        bundle_path = resolved_path.relative_to(resolved_root)
+    except (OSError, ValueError):
+        bundle_path = path
+        diagnostic = _diagnostic(
+            bundle_path,
+            1,
+            "BUNDLE_SOURCE_PATH",
+            "The spec bundle must be a readable directory inside the repository root.",
+        )
+        return None, (diagnostic,)
+
+    if not resolved_path.is_dir():
+        return None, (
+            _diagnostic(
+                bundle_path,
+                1,
+                "BUNDLE_SOURCE_PATH",
+                "The spec bundle source must be a directory.",
+            ),
+        )
+
+    markdown_paths = tuple(sorted(resolved_path.glob("*.md"), key=lambda item: item.name))
+    root_candidates: list[tuple[Path, bytes, str, dict[str, object], int]] = []
+    read_errors: list[Diagnostic] = []
+    for markdown_path in markdown_paths:
+        relative_member = markdown_path.relative_to(resolved_root)
+        try:
+            source = markdown_path.read_bytes()
+            text = source.decode("utf-8")
+        except (OSError, UnicodeDecodeError) as error:
+            read_errors.append(
+                _diagnostic(
+                    relative_member,
+                    1,
+                    "BUNDLE_SOURCE_READ",
+                    f"A bundle member must be readable UTF-8: {error.__class__.__name__}.",
+                )
+            )
+            continue
+        if not text.splitlines() or text.splitlines()[0] != "---":
+            continue
+        values, body_start, frontmatter_errors = parse_frontmatter(text, relative_member)
+        if frontmatter_errors:
+            read_errors.extend(frontmatter_errors)
+            continue
+        if values.get("schema") == BUNDLE_SCHEMA and values.get("role") == "root":
+            root_candidates.append((markdown_path, source, text, values, body_start))
+
+    if read_errors:
+        return None, tuple(sorted(read_errors))
+    if len(root_candidates) != 1:
+        return None, (
+            _diagnostic(
+                bundle_path,
+                1,
+                "BUNDLE_ROOT_COUNT",
+                "A spec bundle must contain exactly one forge/spec@3 root document.",
+            ),
+        )
+
+    root_file, root_source, root_text, values, body_start = root_candidates[0]
+    root_relative = root_file.relative_to(resolved_root)
+    errors: list[Diagnostic] = []
+    keys = set(values)
+    for key in BUNDLE_REQUIRED_FRONTMATTER_KEYS:
+        if key not in keys:
+            errors.append(
+                _diagnostic(
+                    root_relative,
+                    1,
+                    "BUNDLE_FRONTMATTER_KEY",
+                    f"Required root frontmatter key '{key}' is missing.",
+                )
+            )
+    allowed_keys = set(BUNDLE_REQUIRED_FRONTMATTER_KEYS) | set(BUNDLE_OPTIONAL_FRONTMATTER_KEYS)
+    for key in sorted(keys - allowed_keys):
+        errors.append(
+            _diagnostic(
+                root_relative,
+                1,
+                "BUNDLE_FRONTMATTER_KEY",
+                f"Unexpected root frontmatter key '{key}'.",
+            )
+        )
+    if errors:
+        return None, tuple(sorted(errors))
+
+    scalar_keys = ("schema", "role", "status", "language", "kind")
+    for key in scalar_keys:
+        if not isinstance(values.get(key), str):
+            errors.append(
+                _diagnostic(
+                    root_relative,
+                    1,
+                    "BUNDLE_FRONTMATTER_TYPE",
+                    f"Root frontmatter '{key}' must be a scalar string.",
+                )
+            )
+    subtype = values.get("subtype")
+    if subtype is not None and not isinstance(subtype, str):
+        errors.append(
+            _diagnostic(
+                root_relative,
+                1,
+                "BUNDLE_FRONTMATTER_TYPE",
+                "Root frontmatter 'subtype' must be a scalar string.",
+            )
+        )
+    if errors:
+        return None, tuple(sorted(errors))
+
+    schema = str(values["schema"])
+    role = str(values["role"])
+    status = str(values["status"])
+    language = str(values["language"])
+    kind = str(values["kind"])
+    if schema != BUNDLE_SCHEMA:
+        errors.append(
+            _diagnostic(root_relative, 1, "BUNDLE_SCHEMA", f"Schema must be '{BUNDLE_SCHEMA}'.")
+        )
+    if role != "root":
+        errors.append(
+            _diagnostic(root_relative, 1, "BUNDLE_ROLE", "Root frontmatter role must be 'root'.")
+        )
+    if status not in STATUSES:
+        errors.append(
+            _diagnostic(
+                root_relative,
+                1,
+                "BUNDLE_STATUS",
+                "Status must be draft, approved, or implemented.",
+            )
+        )
+    if language not in LANGUAGES:
+        errors.append(
+            _diagnostic(root_relative, 1, "BUNDLE_LANGUAGE", "Language must be en or ko.")
+        )
+    if kind not in KINDS:
+        errors.append(
+            _diagnostic(
+                root_relative,
+                1,
+                "BUNDLE_KIND",
+                "Kind must be feature, system, interface, or policy.",
+            )
+        )
+    if isinstance(subtype, str) and _SUBTYPE_RE.fullmatch(subtype) is None:
+        errors.append(
+            _diagnostic(
+                root_relative,
+                1,
+                "BUNDLE_SUBTYPE",
+                "Subtype must use lowercase kebab-case.",
+            )
+        )
+
+    areas = _string_list(values, "areas", root_relative, errors)
+    components = _string_list(values, "components", root_relative, errors)
+    related_specs = _related_bundles(values, root_relative, errors)
+
+    root_lines = root_text.splitlines()
+    root_title, root_spans, _ = _bundle_headings(
+        root_lines, body_start, root_relative, errors
+    )
+    documents_span = root_spans.get("Documents")
+    if documents_span is None:
+        errors.append(
+            _diagnostic(
+                root_relative,
+                body_start + 1,
+                "BUNDLE_DOCUMENTS_MISSING",
+                "The root must contain one Documents section.",
+            )
+        )
+        inventory: tuple[tuple[str, str, str, int], ...] = ()
+    else:
+        inventory = _document_inventory(root_lines, documents_span, root_relative, errors)
+
+    members: list[SpecMember] = []
+    statements: list[SpecStatement] = []
+    for member_role, declared_title, filename, inventory_line in inventory:
+        member_file = resolved_path / filename
+        member_relative = bundle_path / filename
+        try:
+            member_source = root_source if member_file == root_file else member_file.read_bytes()
+            member_text = root_text if member_file == root_file else member_source.decode("utf-8")
+        except (OSError, UnicodeDecodeError) as error:
+            errors.append(
+                _diagnostic(
+                    root_relative,
+                    inventory_line,
+                    "BUNDLE_MEMBER_READ",
+                    f"Declared member '{filename}' must be readable UTF-8: {error.__class__.__name__}.",
+                )
+            )
+            continue
+
+        member_body_start = body_start if member_file == root_file else 0
+        member_lines = member_text.splitlines()
+        member_title, member_spans, member_section_order = _bundle_headings(
+            member_lines,
+            member_body_start,
+            member_relative,
+            errors,
+        )
+        if member_title != declared_title:
+            errors.append(
+                _diagnostic(
+                    root_relative,
+                    inventory_line,
+                    "BUNDLE_DOCUMENT_TITLE",
+                    f"Declared title '{declared_title}' must match member H1 '{member_title}'.",
+                )
+            )
+        sections = MappingProxyType(
+            {
+                heading: "\n".join(member_lines[start:end]).strip("\n")
+                for heading, (start, end) in member_spans.items()
+            }
+        )
+        member = SpecMember(
+            path=member_relative,
+            role=member_role,
+            title=member_title,
+            source_text=member_text,
+            source_bytes=member_source,
+            source_sha256=hashlib.sha256(member_source).hexdigest(),
+            sections=sections,
+            section_order=member_section_order,
+            mermaid=_mermaid_blocks(
+                member_lines,
+                member_body_start,
+                member_relative,
+                errors,
+            ),
+        )
+        members.append(member)
+        statements.extend(
+            _bundle_statements(
+                member_lines,
+                member_spans,
+                member_relative,
+                language,
+                errors,
+            )
+        )
+
+    sorted_errors = tuple(sorted(errors))
+    if sorted_errors:
+        return None, sorted_errors
+
+    metadata = SpecBundleMetadata(
+        schema=schema,
+        role=role,
+        status=status,
+        language=language,
+        kind=kind,
+        subtype=str(subtype) if subtype is not None else None,
+        areas=areas,
+        components=components,
+        related_specs=related_specs,
+    )
+    member_tuple = tuple(members)
+    bundle = SpecBundle(
+        path=bundle_path,
+        root_path=root_relative,
+        metadata=metadata,
+        title=root_title,
+        members=member_tuple,
+        statements=tuple(statements),
+        bundle_sha256=bundle_sha256(bundle_path, member_tuple),
+    )
+    return bundle, ()

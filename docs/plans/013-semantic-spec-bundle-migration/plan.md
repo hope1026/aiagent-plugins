@@ -709,6 +709,7 @@ Counter text: `A deadline, prior implementation, or reviewer request never autho
 ## Progress History
 
 - 2026-08-09: exact Spec Delta 승인, bootstrap governing source 3개 approved 전환과 writer transaction PASS.
+- Task 1: routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="모든 lifecycle consumer가 의존하는 durable schema model과 hash contract를 소유한다")
 
 ## Completion State
 
