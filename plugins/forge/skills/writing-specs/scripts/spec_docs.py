@@ -9,7 +9,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from spec_model import Diagnostic, parse_frontmatter
+from spec_model import Diagnostic, SpecBundle, load_spec_bundle, parse_frontmatter
 from spec_validate import validate_repository
 
 
@@ -23,7 +23,7 @@ def _parser() -> argparse.ArgumentParser:
     validate.add_argument("--baseline-ref")
 
     inspect = commands.add_parser("inspect")
-    inspect.add_argument("--spec", required=True, help="Repository-relative structured spec")
+    inspect.add_argument("--spec", required=True, help="Repository-relative spec bundle")
     inspect.add_argument("--format", required=True, choices=("json",))
 
     return parser
@@ -122,6 +122,18 @@ def _inspect_payload(
     spec_path: Path,
     relative_spec: Path,
 ) -> tuple[dict[str, object], int]:
+    if spec_path.is_dir():
+        bundle, bundle_diagnostics = load_spec_bundle(spec_path, repo_root)
+        repository_result = validate_repository(repo_root, Path("docs/specs"))
+        bundle_prefix = relative_spec.as_posix().rstrip("/") + "/"
+        repository_diagnostics = tuple(
+            item
+            for item in repository_result.diagnostics
+            if item.path == relative_spec.as_posix() or item.path.startswith(bundle_prefix)
+        )
+        diagnostics = tuple(sorted(set(bundle_diagnostics + repository_diagnostics)))
+        return _inspect_bundle_payload(relative_spec, bundle, diagnostics)
+
     result = validate_repository(repo_root, Path("docs/specs"))
     document = next((item for item in result.documents if item.path == relative_spec), None)
     diagnostics = tuple(item for item in result.diagnostics if item.path == relative_spec.as_posix())
@@ -178,6 +190,73 @@ def _inspect_payload(
     return payload, 0 if document is not None and not diagnostics else 1
 
 
+def _inspect_bundle_payload(
+    relative_bundle: Path,
+    bundle: SpecBundle | None,
+    diagnostics: tuple[Diagnostic, ...],
+) -> tuple[dict[str, object], int]:
+    payload: dict[str, object] = {
+        "schema": bundle.metadata.schema if bundle else None,
+        "bundlePath": bundle.path.as_posix() if bundle else relative_bundle.as_posix(),
+        "rootPath": bundle.root_path.as_posix() if bundle else None,
+        "title": bundle.title if bundle else None,
+        "status": bundle.metadata.status if bundle else None,
+        "language": bundle.metadata.language if bundle else None,
+        "kind": bundle.metadata.kind if bundle else None,
+        "subtype": bundle.metadata.subtype if bundle else None,
+        "areas": list(bundle.metadata.areas) if bundle else [],
+        "components": list(bundle.metadata.components) if bundle else [],
+        "relatedSpecs": [
+            {"path": item.path, "relation": item.relation}
+            for item in bundle.metadata.related_specs
+        ]
+        if bundle
+        else [],
+        "bundleSha256": bundle.bundle_sha256 if bundle else None,
+        "members": [
+            {
+                "path": member.path.as_posix(),
+                "title": member.title,
+                "role": member.role,
+                "sourceSha256": member.source_sha256,
+            }
+            for member in bundle.members
+        ]
+        if bundle
+        else [],
+        "statements": [
+            {
+                "kind": statement.kind,
+                "path": statement.member_path.as_posix(),
+                "heading": statement.heading,
+                "line": statement.line,
+                "references": [
+                    {
+                        "path": reference.member_path.as_posix(),
+                        "heading": reference.heading,
+                        "anchor": reference.anchor,
+                        "line": reference.line,
+                    }
+                    for reference in statement.references
+                ],
+            }
+            for statement in bundle.statements
+        ]
+        if bundle
+        else [],
+        "diagnostics": [
+            {
+                "path": item.path,
+                "line": item.line,
+                "code": item.code,
+                "message": item.message,
+            }
+            for item in diagnostics
+        ],
+    }
+    return payload, 0 if bundle is not None and not diagnostics else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     arguments = parser.parse_args(argv)
@@ -187,10 +266,6 @@ def main(argv: list[str] | None = None) -> int:
         _, relative_root = _contained_path(repo_root, arguments.root, "--root", parser)
         if arguments.baseline_ref is not None and not (repo_root / ".git").exists():
             parser.error("--baseline-ref requires a Git repository")
-        if arguments.baseline_ref is not None and _baseline_contains_legacy_source(
-            repo_root, relative_root, arguments.baseline_ref
-        ):
-            parser.error("--baseline-ref cannot select legacy schema sources")
         result = validate_repository(repo_root, relative_root, arguments.baseline_ref)
         _print_diagnostics(result.diagnostics)
         return 0 if result.ok else 1

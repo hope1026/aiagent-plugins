@@ -11,6 +11,7 @@ import unittest
 
 TEST_DIR = Path(__file__).parent
 FIXTURES = TEST_DIR / "fixtures" / "repository"
+BUNDLE_FIXTURE = TEST_DIR / "fixtures" / "spec-bundle" / "valid-multi-file"
 WRAPPER = TEST_DIR.parent / "scripts" / "spec-docs.sh"
 
 
@@ -25,6 +26,64 @@ def run_cli(*arguments: str, cwd: Path | None = None) -> subprocess.CompletedPro
 
 
 class SpecDocsCliTest(unittest.TestCase):
+    def test_inspect_bundle_json_uses_paths_and_full_statements_without_id(self) -> None:
+        with TemporaryDirectory() as temporary:
+            repo = Path(temporary) / "repo"
+            bundle_path = repo / "docs/specs/semantic-spec-bundles"
+            bundle_path.parent.mkdir(parents=True)
+            shutil.copytree(BUNDLE_FIXTURE, bundle_path)
+
+            result = run_cli(
+                "--repo-root",
+                str(repo),
+                "inspect",
+                "--spec",
+                "docs/specs/semantic-spec-bundles/",
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertNotIn("id", payload)
+            self.assertEqual(
+                list(payload),
+                [
+                    "schema",
+                    "bundlePath",
+                    "rootPath",
+                    "title",
+                    "status",
+                    "language",
+                    "kind",
+                    "subtype",
+                    "areas",
+                    "components",
+                    "relatedSpecs",
+                    "bundleSha256",
+                    "members",
+                    "statements",
+                    "diagnostics",
+                ],
+            )
+            self.assertEqual(
+                list(payload["members"][0]),
+                ["path", "title", "role", "sourceSha256"],
+            )
+            self.assertEqual(
+                list(payload["statements"][0]),
+                ["kind", "path", "heading", "line", "references"],
+            )
+            self.assertEqual(
+                payload["statements"][0]["heading"],
+                "Each bundle has exactly one root document",
+            )
+            self.assertEqual(payload["statements"][0]["references"], [])
+            self.assertEqual(
+                list(payload["statements"][1]["references"][0]),
+                ["path", "heading", "anchor", "line"],
+            )
+
     def test_cli_exposes_only_validate_and_inspect(self) -> None:
         result = run_cli("--help")
 
@@ -193,7 +252,7 @@ class SpecDocsCliTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 2)
 
-    def test_baseline_with_any_legacy_source_is_usage_failure(self) -> None:
+    def test_legacy_baseline_is_validated_instead_of_rejected_as_cli_usage(self) -> None:
         with TemporaryDirectory() as temporary:
             repo = Path(temporary) / "repo"
             shutil.copytree(FIXTURES / "valid-repository", repo)
@@ -226,7 +285,7 @@ class SpecDocsCliTest(unittest.TestCase):
                 "--baseline-ref",
                 "HEAD",
             )
-            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 if __name__ == "__main__":
     unittest.main()

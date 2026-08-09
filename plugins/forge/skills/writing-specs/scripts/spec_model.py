@@ -27,6 +27,9 @@ BUNDLE_REQUIRED_FRONTMATTER_KEYS = (
 )
 BUNDLE_OPTIONAL_FRONTMATTER_KEYS = ("subtype",)
 BUNDLE_MEMBER_ROLES = frozenset(("root", "contract", "acceptance", "history", "reference"))
+BUNDLE_SEMANTIC_SECTIONS = frozenset(
+    ("Documents", "Requirements", "Acceptance Criteria", "Decisions & History")
+)
 REQUIRED_FRONTMATTER_KEYS = (
     "schema",
     "id",
@@ -475,26 +478,50 @@ def _bundle_headings(
 
     positions: dict[str, int] = {}
     section_order: list[str] = []
+    section_occurrences: list[tuple[int, str]] = []
     for index, heading in h2:
         if heading in positions:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "BUNDLE_SECTION_DUPLICATE",
-                    f"H2 section '{heading}' is duplicated in one member.",
+            if heading in BUNDLE_SEMANTIC_SECTIONS:
+                errors.append(
+                    _diagnostic(
+                        path,
+                        index + 1,
+                        "BUNDLE_SECTION_DUPLICATE",
+                        f"Semantic H2 section '{heading}' is duplicated in one member.",
+                    )
                 )
-            )
-            continue
-        positions[heading] = index
+        else:
+            positions[heading] = index
         section_order.append(heading)
+        section_occurrences.append((index, heading))
 
     spans: dict[str, tuple[int, int]] = {}
-    for offset, heading in enumerate(section_order):
-        start = positions[heading] + 1
-        end = positions[section_order[offset + 1]] if offset + 1 < len(section_order) else len(lines)
-        spans[heading] = (start, end)
+    for offset, (position, heading) in enumerate(section_occurrences):
+        start = position + 1
+        end = (
+            section_occurrences[offset + 1][0]
+            if offset + 1 < len(section_occurrences)
+            else len(lines)
+        )
+        spans.setdefault(heading, (start, end))
     return title, spans, tuple(section_order)
+
+
+def _unfenced_line_indexes(lines: list[str], start: int, end: int):
+    """Yield source indexes outside Markdown fences in one top-level section."""
+
+    fence: str | None = None
+    for index in range(start, end):
+        fence_match = _FENCE_RE.match(lines[index])
+        if fence_match:
+            marker = fence_match.group(1)
+            if fence is None:
+                fence = marker
+            elif marker == fence:
+                fence = None
+            continue
+        if fence is None:
+            yield index
 
 
 def _document_inventory(
@@ -504,7 +531,7 @@ def _document_inventory(
     errors: list[Diagnostic],
 ) -> tuple[tuple[str, str, str, int], ...]:
     result: list[tuple[str, str, str, int]] = []
-    for index in range(*span):
+    for index in _unfenced_line_indexes(lines, *span):
         line = lines[index]
         if not line.startswith("- "):
             continue
@@ -534,7 +561,7 @@ def _statement_references(
 ) -> tuple[StatementReference, ...]:
     label = "검증하는 요구사항:" if language == "ko" else "Verifies:"
     label_index: int | None = None
-    for index in range(start, end):
+    for index in _unfenced_line_indexes(lines, start, end):
         if lines[index] == label:
             label_index = index
             break
@@ -550,7 +577,7 @@ def _statement_references(
         return ()
 
     references: list[StatementReference] = []
-    for index in range(label_index + 1, end):
+    for index in _unfenced_line_indexes(lines, label_index + 1, end):
         line = lines[index]
         if not line.startswith("- "):
             continue
@@ -642,19 +669,42 @@ def _bundle_statements(
 def bundle_sha256(bundle_path: Path, members: tuple[SpecMember, ...]) -> str:
     """Hash normalized bundle identity and exact member bytes deterministically."""
 
+    def normalized_repository_path(path: Path, label: str) -> str:
+        rendered = path.as_posix()
+        if (
+            path.is_absolute()
+            or not path.parts
+            or any(part in ("", ".", "..") for part in path.parts)
+            or "\\" in rendered
+            or unicodedata.normalize("NFC", rendered) != rendered
+        ):
+            raise ValueError(f"{label} must be a normalized repository-relative path")
+        return rendered
+
+    normalized_bundle = normalized_repository_path(bundle_path, "bundle_path")
+    normalized_members: list[tuple[str, SpecMember]] = []
+    seen_member_paths: set[str] = set()
+    for member in members:
+        normalized_member = normalized_repository_path(member.path, "member.path")
+        try:
+            relative_member = member.path.relative_to(bundle_path)
+        except ValueError as error:
+            raise ValueError("member.path must be contained by bundle_path") from error
+        normalized_relative = normalized_repository_path(relative_member, "member relative path")
+        if normalized_member in seen_member_paths:
+            raise ValueError("member.path values must be unique")
+        seen_member_paths.add(normalized_member)
+        normalized_members.append((normalized_relative, member))
+
     digest = hashlib.sha256()
 
     def add_frame(value: bytes) -> None:
         digest.update(len(value).to_bytes(8, "big"))
         digest.update(value)
 
-    add_frame(bundle_path.as_posix().encode("utf-8"))
-    for member in sorted(members, key=lambda item: item.path.as_posix()):
-        try:
-            relative_member = member.path.relative_to(bundle_path)
-        except ValueError:
-            relative_member = member.path
-        add_frame(relative_member.as_posix().encode("utf-8"))
+    add_frame(normalized_bundle.encode("utf-8"))
+    for relative_member, member in sorted(normalized_members, key=lambda item: item[0]):
+        add_frame(relative_member.encode("utf-8"))
         add_frame(member.source_bytes)
     return digest.hexdigest()
 
@@ -1160,6 +1210,34 @@ def load_spec_bundle(path: Path, root: Path) -> tuple[SpecBundle | None, tuple[D
         )
 
     markdown_paths = tuple(sorted(resolved_path.glob("*.md"), key=lambda item: item.name))
+    member_path_errors: list[Diagnostic] = []
+    for markdown_path in markdown_paths:
+        relative_member = markdown_path.relative_to(resolved_root)
+        try:
+            resolved_member = markdown_path.resolve(strict=True)
+            resolved_member.relative_to(resolved_path)
+        except (OSError, ValueError):
+            member_path_errors.append(
+                _diagnostic(
+                    relative_member,
+                    1,
+                    "BUNDLE_MEMBER_PATH",
+                    "A bundle member must resolve to a regular file inside the bundle directory.",
+                )
+            )
+            continue
+        if markdown_path.is_symlink() or not resolved_member.is_file():
+            member_path_errors.append(
+                _diagnostic(
+                    relative_member,
+                    1,
+                    "BUNDLE_MEMBER_PATH",
+                    "A bundle member must be a regular file, not a symbolic link.",
+                )
+            )
+    if member_path_errors:
+        return None, tuple(sorted(member_path_errors))
+
     root_candidates: list[tuple[Path, bytes, str, dict[str, object], int]] = []
     read_errors: list[Diagnostic] = []
     for markdown_path in markdown_paths:
@@ -1315,6 +1393,74 @@ def load_spec_bundle(path: Path, root: Path) -> tuple[SpecBundle | None, tuple[D
         inventory: tuple[tuple[str, str, str, int], ...] = ()
     else:
         inventory = _document_inventory(root_lines, documents_span, root_relative, errors)
+
+    valid_inventory: list[tuple[str, str, str, int]] = []
+    declared_lines: dict[str, int] = {}
+    for item in inventory:
+        member_role, declared_title, filename, inventory_line = item
+        filename_path = Path(filename)
+        if (
+            filename_path.is_absolute()
+            or len(filename_path.parts) != 1
+            or any(part in ("", ".", "..") for part in filename_path.parts)
+        ):
+            errors.append(
+                _diagnostic(
+                    root_relative,
+                    inventory_line,
+                    "BUNDLE_MEMBER_PATH",
+                    "A declared member must be a direct Markdown file inside the bundle directory.",
+                )
+            )
+            continue
+        if filename in declared_lines:
+            errors.append(
+                _diagnostic(
+                    root_relative,
+                    inventory_line,
+                    "BUNDLE_DOCUMENT_DUPLICATE",
+                    f"Declared member '{filename}' appears more than once in Documents.",
+                )
+            )
+            continue
+        declared_lines[filename] = inventory_line
+        valid_inventory.append(item)
+
+    actual_filenames = {markdown_path.name for markdown_path in markdown_paths}
+    for filename in sorted(actual_filenames - set(declared_lines)):
+        errors.append(
+            _diagnostic(
+                root_relative,
+                documents_span[0] + 1 if documents_span is not None else body_start + 1,
+                "BUNDLE_DOCUMENT_UNDECLARED",
+                f"Markdown member '{filename}' must be declared exactly once in Documents.",
+            )
+        )
+    for filename, inventory_line in sorted(declared_lines.items()):
+        if filename not in actual_filenames:
+            errors.append(
+                _diagnostic(
+                    root_relative,
+                    inventory_line,
+                    "BUNDLE_DOCUMENT_MISSING",
+                    f"Declared member '{filename}' must exist in the bundle directory.",
+                )
+            )
+
+    root_entries = [item for item in valid_inventory if item[0] == "root"]
+    if len(root_entries) != 1 or root_entries[0][2] != root_file.name:
+        errors.append(
+            _diagnostic(
+                root_relative,
+                root_entries[0][3] if root_entries else body_start + 1,
+                "BUNDLE_DOCUMENT_ROOT",
+                "Documents must declare the forge/spec@3 root file exactly once with role 'root'.",
+            )
+        )
+
+    inventory = tuple(valid_inventory)
+    if errors:
+        return None, tuple(sorted(errors))
 
     members: list[SpecMember] = []
     statements: list[SpecStatement] = []

@@ -1,4 +1,4 @@
-"""Strict parser for the append-only ``forge/spec-transitions@1`` manifest."""
+"""Strict parser for the append-only spec bundle transition manifest."""
 
 from __future__ import annotations
 
@@ -11,38 +11,40 @@ import stat
 from spec_model import Diagnostic
 
 
-SCHEMA = "forge/spec-transitions@1"
-MANIFEST_NAME = ".transitions.json"
+SCHEMA = "forge/spec-bundle-transitions@1"
+MANIFEST_NAME = ".bundle-transitions.json"
 TOP_LEVEL_KEYS = ("schema", "transitions")
 RECORD_KEYS = (
-    "fromId",
-    "fromPath",
+    "fromSourcePath",
     "fromSourceSha256",
     "disposition",
-    "toId",
-    "toPath",
+    "toBundlePath",
     "evidencePath",
     "reason",
 )
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_SEMANTIC_NAME_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 _WINDOWS_DRIVE_RE = re.compile(r"^[A-Za-z]:")
 
 
 @dataclass(frozen=True)
-class SpecTransition:
-    from_id: str
-    from_path: Path
+class SpecBundleTransition:
+    from_source_path: Path
     from_source_sha256: str
     disposition: str
-    to_id: str
-    to_path: Path
+    to_bundle_path: Path
     evidence_path: Path
     reason: str
 
 
+# Keep the neutral public type name used by repository validation while its
+# fields and manifest representation remain strictly path-based.
+SpecTransition = SpecBundleTransition
+
+
 @dataclass(frozen=True)
 class TransitionManifest:
-    transitions: tuple[SpecTransition, ...]
+    transitions: tuple[SpecBundleTransition, ...]
 
 
 class _ObjectPairs(list[tuple[str, object]]):
@@ -55,17 +57,15 @@ def _diagnostic(path: Path, code: str, message: str) -> Diagnostic:
 
 def _path_has_symlink(repo_root: Path, relative_path: PurePosixPath) -> bool:
     current = repo_root
-    for component in relative_path.parts:
+    for index, component in enumerate(relative_path.parts):
         current = current / component
         try:
             mode = current.lstat().st_mode
-        except FileNotFoundError:
-            return False
-        except OSError:
+        except (FileNotFoundError, OSError):
             return False
         if stat.S_ISLNK(mode):
             return True
-        if component != relative_path.parts[-1] and not stat.S_ISDIR(mode):
+        if index < len(relative_path.parts) - 1 and not stat.S_ISDIR(mode):
             return False
     return False
 
@@ -169,14 +169,12 @@ def _exact_object(
     return dict(value)
 
 
-def _parse_path(
+def _normalized_path(
     raw_path: str,
     field: str,
-    repo_root: Path,
-    spec_root: PurePosixPath,
     manifest_path: Path,
     diagnostics: list[Diagnostic],
-) -> Path | None:
+) -> PurePosixPath | None:
     parts = raw_path.split("/")
     invalid_shape = (
         raw_path.startswith("/")
@@ -194,12 +192,44 @@ def _parse_path(
             )
         )
         return None
+    return PurePosixPath(raw_path)
 
-    path = PurePosixPath(raw_path)
-    if field in ("fromPath", "toPath"):
-        root_parts = spec_root.parts
-        in_spec_root = path.parts[: len(root_parts)] == root_parts
-        allowed = in_spec_root and len(path.parts) > len(root_parts) and path.name == "spec.md"
+
+def _has_prefix(path: PurePosixPath, root: PurePosixPath) -> bool:
+    return path.parts[: len(root.parts)] == root.parts
+
+
+def _parse_path(
+    raw_path: str,
+    field: str,
+    repo_root: Path,
+    spec_root: PurePosixPath,
+    manifest_path: Path,
+    diagnostics: list[Diagnostic],
+) -> Path | None:
+    path = _normalized_path(raw_path, field, manifest_path, diagnostics)
+    if path is None:
+        return None
+
+    if field == "fromSourcePath":
+        legacy_or_member_source = (
+            len(path.parts) == len(spec_root.parts) + 2
+            and path.suffix == ".md"
+            and path.name != ".md"
+        )
+        bundle_source = (
+            len(path.parts) == len(spec_root.parts) + 1
+            and _SEMANTIC_NAME_RE.fullmatch(path.name) is not None
+        )
+        allowed = _has_prefix(path, spec_root) and (
+            legacy_or_member_source or bundle_source
+        )
+    elif field == "toBundlePath":
+        allowed = (
+            _has_prefix(path, spec_root)
+            and len(path.parts) == len(spec_root.parts) + 1
+            and _SEMANTIC_NAME_RE.fullmatch(path.name) is not None
+        )
     else:
         allowed_roots = (
             PurePosixPath("docs/plans"),
@@ -207,7 +237,7 @@ def _parse_path(
             PurePosixPath("docs/evidence"),
         )
         allowed = any(
-            path.parts[: len(root.parts)] == root.parts and len(path.parts) > len(root.parts)
+            _has_prefix(path, root) and len(path.parts) > len(root.parts)
             for root in allowed_roots
         )
 
@@ -231,9 +261,10 @@ def _parse_path(
         )
         return None
 
+    absolute = repo_root / Path(*path.parts)
     if field == "evidencePath":
         try:
-            mode = (repo_root / Path(*path.parts)).lstat().st_mode
+            mode = absolute.lstat().st_mode
         except OSError:
             mode = 0
         if not stat.S_ISREG(mode):
@@ -242,6 +273,22 @@ def _parse_path(
                     manifest_path,
                     "SPEC_TRANSITION_EVIDENCE",
                     "Transition evidencePath must identify an existing regular file.",
+                )
+            )
+            return None
+    elif field == "toBundlePath":
+        try:
+            mode = absolute.lstat().st_mode
+        except FileNotFoundError:
+            mode = 0
+        except OSError:
+            mode = 0
+        if mode and not stat.S_ISDIR(mode):
+            diagnostics.append(
+                _diagnostic(
+                    manifest_path,
+                    "SPEC_TRANSITION_PATH",
+                    "Transition field 'toBundlePath' must identify a bundle directory when it exists.",
                 )
             )
             return None
@@ -255,10 +302,10 @@ def load_transition_manifest(
     *,
     source: bytes | None = None,
 ) -> tuple[TransitionManifest | None, tuple[Diagnostic, ...]]:
-    """Load and strictly validate a spec transition manifest.
+    """Load and strictly validate a path-based bundle transition manifest.
 
-    ``source`` permits callers to parse exact Git-object bytes. When omitted,
-    the tracked manifest path is read only if it is a regular non-symlink file.
+    ``source`` lets repository validation parse exact Git-object bytes. When it
+    is omitted, only a regular, non-symlink manifest file is read.
     """
 
     manifest_path = spec_root / MANIFEST_NAME
@@ -319,8 +366,10 @@ def load_transition_manifest(
         )
         return None, tuple(sorted(diagnostics))
 
-    parsed: list[SpecTransition] = []
+    parsed: list[SpecBundleTransition] = []
     spec_root_posix = PurePosixPath(spec_root.as_posix())
+    seen_sources: set[Path] = set()
+    seen_targets: set[Path] = set()
     for index, item in enumerate(transitions):
         context = f"Transition record {index}"
         record = _exact_object(
@@ -345,9 +394,7 @@ def load_transition_manifest(
         if wrong_types:
             continue
 
-        values = {key: record[key] for key in RECORD_KEYS}
-        assert all(isinstance(value, str) for value in values.values())
-        typed = {key: str(value) for key, value in values.items()}
+        typed = {key: str(record[key]) for key in RECORD_KEYS}
         empty_fields = [key for key, value in typed.items() if not value.strip()]
         for key in empty_fields:
             diagnostics.append(
@@ -360,6 +407,7 @@ def load_transition_manifest(
         if empty_fields:
             continue
 
+        record_error_count = len(diagnostics)
         if typed["disposition"] != "superseded":
             diagnostics.append(
                 _diagnostic(
@@ -377,17 +425,17 @@ def load_transition_manifest(
                 )
             )
 
-        from_path = _parse_path(
-            typed["fromPath"],
-            "fromPath",
+        from_source_path = _parse_path(
+            typed["fromSourcePath"],
+            "fromSourcePath",
             repo_root,
             spec_root_posix,
             manifest_path,
             diagnostics,
         )
-        to_path = _parse_path(
-            typed["toPath"],
-            "toPath",
+        to_bundle_path = _parse_path(
+            typed["toBundlePath"],
+            "toBundlePath",
             repo_root,
             spec_root_posix,
             manifest_path,
@@ -401,20 +449,36 @@ def load_transition_manifest(
             manifest_path,
             diagnostics,
         )
-        if diagnostics:
+        if len(diagnostics) != record_error_count:
             continue
 
-        assert from_path is not None
-        assert to_path is not None
+        assert from_source_path is not None
+        assert to_bundle_path is not None
         assert evidence_path is not None
+        if from_source_path in seen_sources:
+            diagnostics.append(
+                _diagnostic(
+                    manifest_path,
+                    "SPEC_TRANSITION_DUPLICATE",
+                    f"{context} repeats fromSourcePath '{from_source_path.as_posix()}'.",
+                )
+            )
+        if to_bundle_path in seen_targets:
+            diagnostics.append(
+                _diagnostic(
+                    manifest_path,
+                    "SPEC_TRANSITION_DUPLICATE",
+                    f"{context} repeats toBundlePath '{to_bundle_path.as_posix()}'.",
+                )
+            )
+        seen_sources.add(from_source_path)
+        seen_targets.add(to_bundle_path)
         parsed.append(
-            SpecTransition(
-                from_id=typed["fromId"],
-                from_path=from_path,
+            SpecBundleTransition(
+                from_source_path=from_source_path,
                 from_source_sha256=typed["fromSourceSha256"],
                 disposition=typed["disposition"],
-                to_id=typed["toId"],
-                to_path=to_path,
+                to_bundle_path=to_bundle_path,
                 evidence_path=evidence_path,
                 reason=typed["reason"],
             )
