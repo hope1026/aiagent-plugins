@@ -27,7 +27,6 @@ Canonical Spec 필요 여부와 실행 계획 필요 여부는 같은 축이 아
 
 비목표:
 
-- Review Viewer 생성 조건이나 HTML artifact 정책은 변경하지 않는다.
 - 테스트, build, lint, 원래 재현 절차와 같은 fresh verification을 생략하지 않는다.
 - 보안·권한·결제·개인정보·데이터 migration·외부 interface 변경을 Quick 경로로 축소하지 않는다.
 - push, 배포 또는 Marketplace release authorization을 자동으로 부여하지 않는다.

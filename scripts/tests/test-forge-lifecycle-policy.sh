@@ -7,7 +7,7 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 WRITING_SPECS="$ROOT_DIR/plugins/forge/skills/writing-specs/SKILL.md"
 WRITING_PLANS="$ROOT_DIR/plugins/forge/skills/writing-plans/SKILL.md"
 PLAN_VISUAL="$ROOT_DIR/plugins/forge/skills/writing-plans/references/plan-visual-structure.md"
-REVIEW_VIEWER="$ROOT_DIR/plugins/forge/skills/review-viewer/SKILL.md"
+REVIEW_VIEWER="$ROOT_DIR/plugins/forge/skills/visual-docs/SKILL.md"
 EXECUTING_PLANS="$ROOT_DIR/plugins/forge/skills/executing-plans/SKILL.md"
 ROUTING_REF="$ROOT_DIR/plugins/forge/skills/executing-plans/references/adaptive-routing.md"
 CODEX_REF="$ROOT_DIR/plugins/forge/skills/using-forge/references/codex-tools.md"
@@ -20,29 +20,29 @@ for file in "$WRITING_SPECS" "$WRITING_PLANS" "$REVIEW_VIEWER" "$EXECUTING_PLANS
 done
 
 grep -q 'Markdown is the default review path' "$WRITING_SPECS" || fail "writing-specs does not default to Markdown"
-grep -q 'review-viewer' "$WRITING_SPECS" || fail "writing-specs misses request-only handoff"
-grep -q 'review-viewer' "$WRITING_PLANS" || fail "writing-plans misses request-only handoff"
-grep -q 'review-viewer' "$EXECUTING_PLANS" || fail "executing-plans misses request-only handoff"
+grep -q 'visual-docs' "$WRITING_SPECS" || fail "writing-specs misses request-only handoff"
+grep -q 'visual-docs' "$WRITING_PLANS" || fail "writing-plans misses request-only handoff"
+grep -q 'visual-docs' "$EXECUTING_PLANS" || fail "executing-plans misses request-only handoff"
 
-# Negative pressure: status/source changes never imply Review Viewer generation.
-grep -qi 'Report possible staleness without reading or updating the Viewer' "$WRITING_SPECS" || \
-  fail "negative pressure policy does not forbid assuming Viewer freshness"
+# Negative pressure: status/source changes never imply Visual Docs generation.
+grep -qi 'Report possible staleness without reading or updating it' "$WRITING_SPECS" || \
+  fail "negative pressure policy does not forbid assuming visual document freshness"
 grep -qi 'transaction validates Markdown only' "$WRITING_SPECS" || \
   fail "negative pressure policy does not keep Markdown as the lifecycle artifact"
 grep -q 'Source changes, approval, lifecycle status.*not generation requests' "$WRITING_SPECS" || \
-  fail "status changes can still trigger Review Viewer generation"
+  fail "status changes can still trigger Visual Docs generation"
 
-# Positive pressure: explicit Viewer intent is enough; the agent resolves source/mode/id at handoff.
-grep -qi 'Only an explicit user request.*Review Viewer permits one handoff' "$WRITING_SPECS" || fail "positive request intent is missing"
-if grep -q 'request names the current source path\|request naming.*source.*mode.*review-id' "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS"; then
-  fail "lifecycle wrongly requires the user to provide source, mode, and review-id"
+# Positive pressure: explicit Visual Docs intent is enough; the agent resolves source/kind/id at handoff.
+grep -qi 'Only an explicit user request.*permits one handoff' "$WRITING_SPECS" || fail "positive request intent is missing"
+if grep -q 'request names the current source path\|request naming.*source.*mode.*view-id' "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS"; then
+  fail "lifecycle wrongly requires the user to provide source, kind, and view-id"
 fi
-if rg -n 'explicit source/mode/review-id|Review Viewer still requires an exact request' \
+if rg -n 'explicit source/kind/view-id|Visual Docs still requires an exact request' \
   "$WRITING_SPECS" "$VERIFYING_WORK" "$README" >/dev/null; then
   fail "request overconstraint remains outside writer handoff"
 fi
 grep -q 'exactly one.*handoff\|one.*handoff' "$WRITING_SPECS" || fail "positive request does not cap handoff at one"
-grep -q 'Run one build command' "$REVIEW_VIEWER" || fail "review-viewer does not enforce one build"
+grep -q 'Run one build command' "$REVIEW_VIEWER" || fail "visual-docs does not enforce one build"
 
 if rg -n 'score 2\+ uses|rebuild an existing Viewer|If a lifecycle Viewer exists, rebuild|rebuild it before the first checkpoint' \
   "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS" >/dev/null; then

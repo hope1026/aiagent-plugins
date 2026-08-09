@@ -84,7 +84,7 @@ Use this subflow only when an `approved` or `implemented` source must move to a 
 4. Create a registered isolated Git worktree detached at the expected HEAD. Perform all supersession mutations there, never in the production root.
 5. In that worktree, append exactly one one-to-one `superseded` record to `docs/specs/.bundle-transitions.json`; promote the replacement at its new semantic bundle path; remove the prior bundle; update active relations and Markdown links; and preserve evidence. The transition uses `fromSourcePath`, `fromSourceSha256`, `toBundlePath`, `evidencePath`, and `reason`, never a document identifier.
 6. Run baseline validation against the expected HEAD and exact expected-byte checks. Create one candidate commit only after every gate passes.
-7. On any validation, expected-byte, or commit failure, discard the candidate worktree and prove that the production fingerprint is unchanged. When the user did not explicitly request a Review Viewer, the Review Viewer output count stays exactly zero.
+7. On any validation, expected-byte, or commit failure, discard the candidate worktree and prove that the production fingerprint is unchanged. When the user did not explicitly request a Visual Docs, the Visual Docs output count stays exactly zero.
 8. Immediately before promotion, require the production root to remain at the expected clean HEAD with the exact recorded fingerprint. Apply only the verified candidate commit with a fast-forward operation. Any HEAD or byte drift refuses promotion without modifying the root.
 
 The transition manifest is durable audit data, but the replacement bundle remains the active source of truth. Existing transition records stay in canonical order as an exact prefix; a prior record never authorizes another deletion.
@@ -97,13 +97,13 @@ Every approved Canonical Spec body, metadata, member layout, or lifecycle change
 bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . validate --root docs/specs --baseline-ref HEAD
 ```
 
-Any nonzero result blocks implementation handoff and completion claims. The transaction validates Markdown only and creates no HTML. `scripts/validate.sh` repeats repository validation; it never repairs sources or creates Review Viewers.
+Any nonzero result blocks implementation handoff and completion claims. The transaction validates Markdown only and creates no HTML. `scripts/validate.sh` repeats repository validation; it never repairs sources or creates Visual Docs.
 
-## Review Viewer Request Boundary
+## Visual Docs Request Boundary
 
-Markdown is the default review path. A Spec Delta is not a Review Viewer source and does not authorize HTML generation. Only an explicit user request to create, refresh, present, or freshness-check a Canonical Spec or Execution Plan Review Viewer permits one handoff to the forge review-viewer skill.
+Markdown is the default review path. A Spec Delta is not a Visual Docs source and does not authorize HTML generation. Only an explicit user request to create, refresh, present, or freshness-check a Brief, Canonical Spec, Execution Plan, or Project Handbook permits one handoff to the forge visual-docs skill.
 
-Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an existing Viewer are not generation requests. Report possible staleness without reading or updating the Viewer.
+Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an existing visual document are not generation requests. Report possible staleness without reading or updating it.
 
 ## Working Files
 

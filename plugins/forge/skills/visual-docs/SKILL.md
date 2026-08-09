@@ -1,0 +1,114 @@
+---
+name: visual-docs
+description: 'Use when a user explicitly asks to visualize, present, print, share, create, update, or check a human-readable visual document for a work brief, implementation plan, structured Forge spec, or whole project. Produces local Work or Spec Views and a tracked Project Handbook from source-backed Markdown; never generates or refreshes automatically. Triggers: "시각 문서", "브리프 뷰어", "스펙 시각화", "프로젝트 핸드북", "프로젝트 구조 뷰어".'
+---
+
+# Visual Docs
+
+Announce: "Using the forge visual-docs skill to create the requested human-readable view."
+
+Visual Docs turns authoritative or source-backed Markdown into a readable, self-contained HTML document. It is a presentation layer, never a source of truth. Do not invent descriptions, requirements, ownership, or status in generated HTML.
+
+Use this skill only after an explicit request from the user to create, refresh, or check a visual document. A lifecycle checkpoint, source change, completed implementation, or newly approved Spec does not authorize generation or refresh.
+
+## Choose the document kind
+
+| Kind | Primary source | Result | Lifecycle |
+|---|---|---|---|
+| `brief` | `.forge/work/<work-id>/brief.md` | Work View for Goal, Scope, Out of Scope, and Done Checks | local, untracked |
+| `plan` | `docs/plans/<plan-id>/plan.md` | Work View for execution routes, tasks, status, and evidence | local, untracked |
+| `spec` | one structured Canonical Spec Bundle | independent Spec View with full statements, diagrams, and provenance | local, untracked |
+| `project` | `docs/project/project-map.md` | Project Handbook with project overview, Spec, and structure | tracked derived document |
+
+There is no combined kind and no separate Spec Guide. Project Handbook Spec detail and independent Spec View must reuse the same normalized Spec entities and renderer.
+
+## Prepare the source
+
+For `brief`, if the requested brief exists only in conversation, write a non-authoritative source at `.forge/work/<work-id>/brief.md` before building. It must have exactly one H1 and non-empty `## Goal`, `## Scope`, `## Out of Scope`, and `## Done Checks` sections. The last three sections use Markdown lists.
+
+For `plan`, use the selected plan and its declared or conventional progress and task fragments. Preserve its exact Governing statements links.
+
+For `spec`, select one structured Spec Bundle directory. Comparisons are optional and must also be structured bundle directories.
+
+For `project`, require `docs/project/project-map.md` with `schema: forge/project-map@1`. The Project Map owns human-authored Project Overview, Key Capabilities, declared Spec Bundles, and each Structure entry's Purpose, Owns, Entry Points, Depends On, Related Specs, and exact Governing Statements links. A Structure entry with Related Specs must link the exact Canonical Spec statements that ground its responsibility. Repository scanning may supply only derived file evidence. It must never infer Purpose or Owns.
+
+## Write for the reader
+
+Identity and explanation are separate layers. Keep every identifier exact, including paths, commands, API and schema names, protocol values, code symbols, lifecycle tokens, and exact Requirement or Acceptance headings. Render identifiers as code or provenance; never translate, shorten, or silently replace them.
+
+Write reader-facing headings, orientation lines, summaries, and descriptions in the selected locale with familiar words and complete sentences. Explain what something does, why it exists, what it owns, or what the reader should confirm. Do not use raw internal tokens as reader-facing headings when a plain-language label exists. For example, show “File evidence” instead of `repository_evidence`, “Where this document is stored” instead of `output_lifecycle`, and “Spec details” instead of `project.spec-detail`.
+
+When the reader needs both, lead with the plain-language explanation and place the exact identifier beside or below it, such as “프로젝트 구조 설명 (`docs/project/project-map.md`)”. Keep hashes, namespaces, internal keys, and renderer profile names in provenance or collapsed Developer information unless they are the subject of the review.
+
+Do not paraphrase normative source statements or invent easier-sounding meaning. Preserve the source statement verbatim and use concise fixed UI vocabulary around it to explain how to read it. When authoring a requested Brief or Project Map source, write its descriptive prose for a person who does not already know the repository internals.
+
+## Build
+
+Run from anywhere inside the target Git repository. Choose a lowercase `view-id` matching `^[a-z0-9][a-z0-9-]{0,63}$`.
+Run one build command per explicit create or refresh request.
+A successful single build ends generation. A freshness check is a separate read-only action.
+
+Brief:
+
+```bash
+bash <visual-docs-skill>/scripts/build-visual-docs.sh \
+  --kind brief \
+  --brief .forge/work/<work-id>/brief.md \
+  --view-id <view-id> \
+  --locale en
+```
+
+Plan:
+
+```bash
+bash <visual-docs-skill>/scripts/build-visual-docs.sh \
+  --kind plan \
+  --plan docs/plans/<plan-id>/plan.md \
+  --view-id <view-id> \
+  --locale en
+```
+
+Spec:
+
+```bash
+bash <visual-docs-skill>/scripts/build-visual-docs.sh \
+  --kind spec \
+  --spec docs/specs/<bundle>/ \
+  --view-id <view-id> \
+  --locale en
+```
+
+Project Handbook:
+
+```bash
+bash <visual-docs-skill>/scripts/build-visual-docs.sh \
+  --kind project \
+  --project-map docs/project/project-map.md \
+  --view-id project-handbook \
+  --locale en
+```
+
+Use `--comparison <bundle>` only with `spec`. Use `--progress` and `--tasks-dir` only with `plan`. Add `--offline` when the result must work without network access. Locale defaults to `en`.
+
+## Outputs
+
+- Brief, Plan, and Spec: `.forge/visual-docs/<view-id>/view.html`
+- Project Handbook: `docs/project-viewer/index.html`
+
+Local outputs are disposable and untracked. Project Handbook is the only tracked generated exception, remains reproducible from Project Map, declared Canonical Specs, and repository evidence, and must not be hand-edited.
+
+The Project Handbook's primary navigation is limited to Project at a glance, Spec, and Structure. Purpose and Owns appear before file evidence. Runtime mirror, validation, drift, hashes, source records, and lifecycle counts belong only in collapsed Developer information.
+
+## Check freshness
+
+```bash
+bash <visual-docs-skill>/scripts/build-visual-docs.sh \
+  --check <path-to-view.html> \
+  --format json
+```
+
+The checker is read-only. It compares the embedded source manifest with current repository files and reports `current`, `stale`, or `unverified`. A stale result does not authorize a refresh; ask for or rely on the user's explicit refresh request.
+
+## Hand off
+
+Return the generated HTML path, its kind, and the freshness result. State that Markdown remains authoritative. Do not commit, push, publish, or refresh anything beyond the user's request.

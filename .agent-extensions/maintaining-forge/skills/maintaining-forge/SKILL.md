@@ -101,7 +101,7 @@ Forge skill.
    then use the corresponding boundary table above.
 3. Write the smallest complete change. For repository-only workflows, edit only
    the owned canonical skill and render its native adapters through the manager.
-4. Keep the normal spec and plan lifecycle Markdown-only. Review Viewer tooling may create HTML only through an explicit user request; maintainer tests use isolated temporary fixtures and never create a repository Review Viewer as a side effect.
+4. Keep the normal spec and plan lifecycle Markdown-only. Visual Docs tooling may create HTML only through an explicit user request; maintainer tests use isolated temporary fixtures and never create a repository Visual Docs as a side effect.
 5. Run `bash scripts/validate.sh` from the repository root. It must print
    `validate: all checks passed` before commit.
 6. Search changed skill files for banned tokens and re-read every gate under
@@ -180,7 +180,7 @@ The distributed Forge plugin contains user-execution skills only:
 | `test-driven-development` | Enforce red, green, refactor |
 | `systematic-debugging` | Reproduce, isolate, and establish root cause |
 | `verifying-work` | Gather fresh acceptance evidence |
-| `review-viewer` | Build an untracked spec or plan review snapshot only on explicit request |
+| `visual-docs` | Build request-only Brief, Plan, and Spec views plus the tracked source-backed Project Handbook |
 | `web-app-design` | Design browser application hierarchy, state geometry, and interaction |
 | `website-design` | Design public website content composition, imagery, and responsive behavior |
 | `writing-tone` | Shape natural human-readable prose |
@@ -207,7 +207,8 @@ distributed catalog.
 | Pressure-test notes | `.forge/scratch/` |
 | Repository Spec Bundles | `docs/specs/<semantic-bundle-name>/` with descriptive root and member filenames |
 | Repository plans | `docs/plans/PPP-<slug>/plan.md` |
-| Requested Review Viewer | `.forge/reviews/<review-id>/view.html` |
+| Requested Brief, Plan, or Spec view | `.forge/visual-docs/<view-id>/view.html` |
+| Requested Project Handbook | `docs/project-viewer/index.html` |
 | Shared research and debug records | `docs/research/`, `docs/debug/` |
 
 The validator checks distributed plugin skills, canonical extension skills,

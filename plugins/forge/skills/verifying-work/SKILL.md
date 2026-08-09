@@ -28,7 +28,7 @@ NO CANONICAL SPEC STATUS CHANGE WITHOUT THE REQUIRED ACCEPTANCE EVIDENCE.
 - committing, reporting progress, accepting worker results, or moving to the next Execution Plan Task;
 - setting Canonical Spec lifecycle `status: implemented`.
 
-**NOT needed for:** neutral in-progress narration that claims nothing, answering questions that assert nothing about work state, or one fixed Review Viewer build handled by the exception below.
+**NOT needed for:** neutral in-progress narration that claims nothing, answering questions that assert nothing about work state, or one fixed Visual Docs build handled by the exception below.
 
 ## Work-class Matrix
 
@@ -110,9 +110,9 @@ Claim: Refresh retries no longer duplicate writes.
 | Given one expired session, refresh returns one usable session | `session-verification.md` | PASS | `pytest tests/test_refresh.py -q` → 7 passed, exit 0 |
 ```
 
-## Fixed Review Viewer Exception
+## Fixed Visual Docs Exception
 
-After explicit user intent, one successful build of `.forge/reviews/<review-id>/view.html` from unchanged review-viewer tooling proves generation only. Do not add a second checker, browser, screenshot, layout, interaction, Mermaid, or freshness run. Review Viewer tooling changes use normal command and Canonical evidence.
+After explicit user intent, one successful build of a local `.forge/visual-docs/<view-id>/view.html` or tracked `docs/project-viewer/index.html` from unchanged visual-docs tooling proves generation only. Do not add a second checker, browser, screenshot, layout, interaction, Mermaid, or freshness run. Visual Docs tooling changes use normal command and Canonical evidence.
 
 ## Working Files
 

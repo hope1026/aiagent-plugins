@@ -28,8 +28,8 @@ flowchart TD
     B -->|"Landing·marketing·docs·portfolio"| D["website-design"]
     B -->|"불명확"| E["한 가지 범위 질문"]
     B -->|"Native mobile·desktop"| F["전용 스킬 탐색 또는 범위 확인"]
-    G["고정 Review Viewer 생성"] --> H["review-viewer"]
-    I["Review Viewer tooling 변경"] --> C
+    G["고정 Visual Docs 생성"] --> H["visual-docs"]
+    I["Visual Docs tooling 변경"] --> C
 ```
 
 ## Requirements
@@ -40,7 +40,7 @@ flowchart TD
 
 ### 요청의 주 surface가 불명확하면 한 가지 질문으로 application과 public website 중 어느 계약이 필요한지 확인하고, native mobile·desktop 요청을 두 web 스킬에 강제 라우팅하지 않아야 한다.
 
-### 고정 Review Viewer 생성·갱신 요청은 `review-viewer`가 소유하고, Review Viewer shell·component·profile·planner 같은 tooling 변경은 `web-app-design`을 함께 적용해야 한다.
+### Visual Docs 생성·갱신·freshness 요청은 `visual-docs`가 소유하고, shell·component·profile·planner·Project Handbook interaction 변경은 `web-app-design`을 함께 적용해야 한다.
 
 ### Forge source, manifest, installer와 skill catalog는 UI 구현 스킬로 `web-app-design`과 `website-design`만 배포하고 각 스킬의 이름·설명·trigger와 설치 결과를 Claude Code, Codex, Antigravity에서 일치시켜야 한다.
 
@@ -54,11 +54,11 @@ flowchart TD
 - [`using-forge`는 landing page, marketing site, product page, public documentation, editorial, portfolio와 공개 콘텐츠 website 구현·설계 요청을 `website-design`으로 라우팅해야 한다.](forge-ui-design-skill-separation.md#using-forge는-landing-page-marketing-site-product-page-public-documentation-editorial-portfolio와-공개-콘텐츠-website-구현설계-요청을-website-design으로-라우팅해야-한다)
 - [요청의 주 surface가 불명확하면 한 가지 질문으로 application과 public website 중 어느 계약이 필요한지 확인하고, native mobile·desktop 요청을 두 web 스킬에 강제 라우팅하지 않아야 한다.](forge-ui-design-skill-separation.md#요청의-주-surface가-불명확하면-한-가지-질문으로-application과-public-website-중-어느-계약이-필요한지-확인하고-native-mobiledesktop-요청을-두-web-스킬에-강제-라우팅하지-않아야-한다)
 
-### 고정 Review Viewer와 Viewer tooling 요청을 분류하면 전자는 `review-viewer`, 후자는 `review-viewer`와 `web-app-design`의 tooling 검증 경로를 사용한다.
+### Visual Docs 생성과 tooling 변경 요청을 분류하면 전자는 `visual-docs`, 후자는 `visual-docs`와 `web-app-design`의 tooling 검증 경로를 사용한다.
 
 검증하는 요구사항:
 
-- [고정 Review Viewer 생성·갱신 요청은 `review-viewer`가 소유하고, Review Viewer shell·component·profile·planner 같은 tooling 변경은 `web-app-design`을 함께 적용해야 한다.](forge-ui-design-skill-separation.md#고정-review-viewer-생성갱신-요청은-review-viewer가-소유하고-review-viewer-shellcomponentprofileplanner-같은-tooling-변경은-web-app-design을-함께-적용해야-한다)
+- [Visual Docs 생성·갱신·freshness 요청은 `visual-docs`가 소유하고, shell·component·profile·planner·Project Handbook interaction 변경은 `web-app-design`을 함께 적용해야 한다.](forge-ui-design-skill-separation.md#visual-docs-생성갱신freshness-요청은-visual-docs가-소유하고-shellcomponentprofileplannerproject-handbook-interaction-변경은-web-app-design을-함께-적용해야-한다)
 
 ### 세 agent용 Forge 설치 결과와 manifest를 검사하면 `web-app-design`과 `website-design`이 같은 계약으로 발견되고 추가 UI compatibility router는 배포되지 않는다.
 
@@ -68,4 +68,4 @@ flowchart TD
 
 ## Decisions & History
 
-- 2026-08-09 [CURRENT] Forge의 UI 디자인 surface는 `web-app-design`과 `website-design` 두 계약으로 운영한다.
+- 2026-08-09 [CURRENT] Forge의 UI 디자인 surface는 `web-app-design`과 `website-design` 두 계약으로 운영한다. `visual-docs`는 고정된 시각 문서 생성을 소유하고, shell·component·profile·planner·Project Handbook interaction 변경에만 `web-app-design`을 함께 적용한다.

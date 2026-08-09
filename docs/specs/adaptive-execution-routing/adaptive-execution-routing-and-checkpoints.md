@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: approved
+status: implemented
 language: ko
 kind: policy
 areas: ["forge","execution"]
@@ -26,7 +26,7 @@ Forge는 구현 계획의 Task 특성에 따라 적절한 LLM capability tier와
 - subagent가 spec 승인, spec delta 결정, 최종 완료 판정 또는 release 권한을 대신 행사하게 하지 않는다.
 - Task별 테스트, commit, progress ledger 같은 내부 복구 지점을 제거하지 않는다.
 - 파일이나 상태를 공유하는 Task를 무조건 병렬 실행하지 않는다.
-- 사용자 요청 없이 HTML Viewer를 생성하거나 갱신하지 않는다.
+- 사용자 요청 없이 local View나 tracked Project Handbook을 생성하거나 갱신하지 않는다.
 
 ## Behavior & Flows
 
@@ -188,7 +188,7 @@ Platform mapping 예시:
 
 ### notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.
 
-### 저장된 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.
+### 저장된 local View나 tracked Project Handbook이 있거나 checkpoint가 발생했다는 사실만으로 Visual Docs를 생성하거나 갱신하지 않아야 하며, stale 사실만 보고하고 Visual Docs 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.
 
 ### distributed Forge skill은 `fast`, `balanced`, `frontier`의 의미와 fallback 동작만 정의하고, 실제 model·agent role mapping은 platform adaptation reference 또는 사용자 설정에 두어야 한다.
 
@@ -295,11 +295,11 @@ Platform mapping 예시:
 
 - [notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#notify와-최종-보고는-어떤-task가-어느-tier와-실행-방식으로-처리됐는지-요약해야-하며-model-slug나-내부-reasoning-전문을-요구하지-않아야-한다)
 
-### 저장된 plan mode Review Viewer가 있는 plan을 internal·notify checkpoint까지 실행해도 HTML timestamp와 source hash가 바뀌지 않으며, 사용자가 갱신을 명시적으로 요청한 뒤에만 Viewer가 재생성된다.
+### 저장된 plan kind Visual Docs와 tracked Project Handbook이 있는 plan을 internal·notify checkpoint까지 실행해도 HTML timestamp와 source hash가 바뀌지 않으며, 사용자가 갱신을 명시적으로 요청한 뒤에만 해당 Visual Docs가 재생성된다.
 
 검증하는 요구사항:
 
-- [저장된 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
+- [저장된 local View나 tracked Project Handbook이 있거나 checkpoint가 발생했다는 사실만으로 Visual Docs를 생성하거나 갱신하지 않아야 하며, stale 사실만 보고하고 Visual Docs 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-local-view나-tracked-project-handbook이-있거나-checkpoint가-발생했다는-사실만으로-visual-docs를-생성하거나-갱신하지-않아야-하며-stale-사실만-보고하고-visual-docs-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
 
 ### instruction pressure test에서 deadline과 병렬 실행 압력이 함께 주어져도 agent는 충돌 Task를 순차 처리하고, ordinary Task마다 사용자 응답을 기다리지 않으며, spec divergence와 release 경계에서는 멈춘다.
 
@@ -329,7 +329,7 @@ Platform mapping 예시:
 - [`executing-plans`는 Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용하고 사용자 결정을 요구하는 지점에서만 approval checkpoint를 열어야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용하고-사용자-결정을-요구하는-지점에서만-approval-checkpoint를-열어야-한다)
 - [progress ledger는 Task별 capability tier, 실행 주체, 병렬 group, route 선택 이유, escalation, verification, commit 범위를 기록해야 한다.](adaptive-execution-routing-and-checkpoints.md#progress-ledger는-task별-capability-tier-실행-주체-병렬-group-route-선택-이유-escalation-verification-commit-범위를-기록해야-한다)
 - [notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#notify와-최종-보고는-어떤-task가-어느-tier와-실행-방식으로-처리됐는지-요약해야-하며-model-slug나-내부-reasoning-전문을-요구하지-않아야-한다)
-- [저장된 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
+- [저장된 local View나 tracked Project Handbook이 있거나 checkpoint가 발생했다는 사실만으로 Visual Docs를 생성하거나 갱신하지 않아야 하며, stale 사실만 보고하고 Visual Docs 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-local-view나-tracked-project-handbook이-있거나-checkpoint가-발생했다는-사실만으로-visual-docs를-생성하거나-갱신하지-않아야-하며-stale-사실만-보고하고-visual-docs-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
 - [distributed Forge skill은 `fast`, `balanced`, `frontier`의 의미와 fallback 동작만 정의하고, 실제 model·agent role mapping은 platform adaptation reference 또는 사용자 설정에 두어야 한다.](adaptive-execution-routing-and-checkpoints.md#distributed-forge-skill은-fast-balanced-frontier의-의미와-fallback-동작만-정의하고-실제-modelagent-role-mapping은-platform-adaptation-reference-또는-사용자-설정에-두어야-한다)
 
 ### `bash scripts/validate.sh`와 관련 skill 검증을 실행하면 `validate: all checks passed`가 출력되고 distributed skill portability 규칙 위반이 없다.
@@ -360,7 +360,7 @@ Platform mapping 예시:
 - [`executing-plans`는 Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용하고 사용자 결정을 요구하는 지점에서만 approval checkpoint를 열어야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용하고-사용자-결정을-요구하는-지점에서만-approval-checkpoint를-열어야-한다)
 - [progress ledger는 Task별 capability tier, 실행 주체, 병렬 group, route 선택 이유, escalation, verification, commit 범위를 기록해야 한다.](adaptive-execution-routing-and-checkpoints.md#progress-ledger는-task별-capability-tier-실행-주체-병렬-group-route-선택-이유-escalation-verification-commit-범위를-기록해야-한다)
 - [notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#notify와-최종-보고는-어떤-task가-어느-tier와-실행-방식으로-처리됐는지-요약해야-하며-model-slug나-내부-reasoning-전문을-요구하지-않아야-한다)
-- [저장된 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
+- [저장된 local View나 tracked Project Handbook이 있거나 checkpoint가 발생했다는 사실만으로 Visual Docs를 생성하거나 갱신하지 않아야 하며, stale 사실만 보고하고 Visual Docs 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-local-view나-tracked-project-handbook이-있거나-checkpoint가-발생했다는-사실만으로-visual-docs를-생성하거나-갱신하지-않아야-하며-stale-사실만-보고하고-visual-docs-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
 - [distributed Forge skill은 `fast`, `balanced`, `frontier`의 의미와 fallback 동작만 정의하고, 실제 model·agent role mapping은 platform adaptation reference 또는 사용자 설정에 두어야 한다.](adaptive-execution-routing-and-checkpoints.md#distributed-forge-skill은-fast-balanced-frontier의-의미와-fallback-동작만-정의하고-실제-modelagent-role-mapping은-platform-adaptation-reference-또는-사용자-설정에-두어야-한다)
 
 ### `frontier` escalation 후 같은 verification failure가 다시 발생하면 자동 재시도가 중단되고 the forge systematic-debugging skill로 전환되며, root cause가 spec divergence나 추가 권한으로 확인되지 않는 한 사용자 approval을 요구하지 않는다.

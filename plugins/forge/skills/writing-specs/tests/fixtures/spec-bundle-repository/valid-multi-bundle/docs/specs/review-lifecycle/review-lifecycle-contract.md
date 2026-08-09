@@ -5,7 +5,7 @@ status: implemented
 language: en
 kind: system
 areas: ["forge"]
-components: ["review-viewer"]
+components: ["visual-docs"]
 relatedSpecs: []
 ---
 # Review Lifecycle Contract

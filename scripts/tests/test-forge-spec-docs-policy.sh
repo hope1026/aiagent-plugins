@@ -11,8 +11,8 @@ WRITING_PLANS="$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
 EXECUTING_PLANS="$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
 VERIFYING_WORK="$ROOT/plugins/forge/skills/verifying-work/SKILL.md"
 USING_FORGE="$ROOT/plugins/forge/skills/using-forge/SKILL.md"
-REVIEW_VIEWER="$ROOT/plugins/forge/skills/review-viewer/SKILL.md"
-RENDERING_CONTRACT="$ROOT/plugins/forge/skills/review-viewer/references/rendering-contract.md"
+REVIEW_VIEWER="$ROOT/plugins/forge/skills/visual-docs/SKILL.md"
+RENDERING_CONTRACT="$ROOT/plugins/forge/skills/visual-docs/references/rendering-contract.md"
 VALIDATE="$ROOT/scripts/validate.sh"
 MAINTAINER="$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md"
 PORTABILITY="$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
@@ -74,7 +74,7 @@ grep -q 'registered isolated Git worktree' "$WRITING_SPECS" || fail 'writing-spe
 grep -q 'expected clean HEAD' "$WRITING_SPECS" || fail 'writing-specs misses exact root precondition'
 grep -q 'candidate commit' "$WRITING_SPECS" || fail 'writing-specs misses candidate commit gate'
 grep -q 'HEAD.*index.*tracked.*untracked bytes' "$WRITING_SPECS" || fail 'writing-specs misses root byte fingerprint'
-grep -q 'Review Viewer output count.*exactly zero' "$WRITING_SPECS" || fail 'writing-specs misses request-only zero gate'
+grep -q 'Visual Docs output count.*exactly zero' "$WRITING_SPECS" || fail 'writing-specs misses request-only zero gate'
 grep -q 'one-to-one.*superseded.*docs/specs/.bundle-transitions.json' "$SPEC_TEMPLATE" || fail 'template misses bundle supersession exception'
 grep -q 'schema.*status.*diagnostics' "$WRITING_PLANS" || fail "writing-plans does not inspect typed lifecycle fields"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$WRITING_PLANS" || fail "writing-plans misses inspect CLI"
@@ -87,8 +87,8 @@ if rg -n 'set (the )?spec.*`?Status: implemented|set .*Status: implemented' \
   fail "active lifecycle imperative still writes body Status"
 fi
 
-grep -q '.forge/reviews/<review-id>/view.html' "$USING_FORGE" || fail "using-forge misses Review Viewer output"
-grep -q 'review-viewer' "$USING_FORGE" || fail "using-forge misses review-viewer routing"
+grep -q '.forge/visual-docs/<view-id>/view.html' "$USING_FORGE" || fail "using-forge misses Visual Docs output"
+grep -q 'visual-docs' "$USING_FORGE" || fail "using-forge misses visual-docs routing"
 grep -qx '/.forge/' "$ROOT/.gitignore" || fail "root .forge ignore rule is not exact"
 
 grep -Fq '"$SPEC_DOCS" --repo-root "$ROOT_DIR" validate' "$VALIDATE" || fail "validator misses explicit repo-root validate"

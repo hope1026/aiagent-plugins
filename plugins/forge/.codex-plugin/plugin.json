@@ -1,7 +1,7 @@
 {
   "name": "forge",
-  "version": "0.1.11+codex.20260809052234",
-  "description": "Semantic Canonical Spec Bundles and complexity-aware execution skills with approved Spec Deltas, full-statement plan traceability, Quick verified execution, request-only Review Viewers, cross-agent authoring, debugging, and interface design.",
+  "version": "0.1.12+codex.20260809233508",
+  "description": "Semantic Canonical Spec Bundles and complexity-aware execution skills with approved Spec Deltas, full-statement plan traceability, Quick verified execution, request-only Visual Docs for briefs, plans, specs, and projects, cross-agent authoring, debugging, and interface design.",
   "author": {
     "name": "Onestar Lee"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Forge",
     "shortDescription": "Semantic Spec Bundles with task-sized execution paths.",
-    "longDescription": "Forge stores permanent Canonical Specs as semantic bundles with descriptive files and full-statement links, separate from work-scoped Change Briefs, Spec Deltas, Execution Plans, and Verification Evidence. Durable contract changes require explicit approval; bounded local work can use a Quick verified route; complex work can use plan-only or full lifecycle execution. Forge also includes one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design, website design, tone overlays, systematic debugging, and TDD. Review Viewer HTML is generated only on explicit request.",
+    "longDescription": "Forge stores permanent Canonical Specs as semantic bundles with descriptive files and full-statement links, separate from work-scoped Change Briefs, Spec Deltas, Execution Plans, and Verification Evidence. Durable contract changes require explicit approval; bounded local work can use a Quick verified route; complex work can use plan-only or full lifecycle execution. Forge also includes one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design, website design, tone overlays, systematic debugging, and TDD. Visual Docs presents briefs, plans, specs, and project handbooks only on explicit request.",
     "developerName": "Onestar Lee",
     "category": "Productivity",
     "capabilities": [
@@ -23,7 +23,7 @@
       "Use web-app-design to improve this dashboard settings workflow.",
       "Use website-design to create this public product landing page.",
       "Validate this flexible structured Markdown spec without generating HTML.",
-      "Create a Review Viewer for this spec only for this review request."
+      "Create a Visual Doc for this spec only for this review request."
     ]
   }
 }

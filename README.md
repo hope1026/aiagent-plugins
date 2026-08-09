@@ -6,7 +6,7 @@ AI agent plugins managed from one source tree. Forge installs into **Claude Code
 
 | Plugin | Purpose |
 |---|---|
-| `forge` | Canonical Spec and complexity-aware execution process: durable contract changes use approved Spec Deltas, bounded work can run directly with fresh evidence, and complex work uses optional Execution Plans. Includes TDD, debugging, cross-agent authoring, UI design, tone overlays, and request-only Review Viewer snapshots. |
+| `forge` | Canonical Spec and complexity-aware execution process: durable contract changes use approved Spec Deltas, bounded work can run directly with fresh evidence, and complex work uses optional Execution Plans. Includes TDD, debugging, cross-agent authoring, UI design, tone overlays, and request-only Visual Docs. |
 
 ```text
 plugins/<name>/
@@ -68,7 +68,7 @@ bash scripts/install.sh --agent codex --plugin forge
 | `test-driven-development` | RED → GREEN → REFACTOR; no implementation without a failing test |
 | `systematic-debugging` | Reproduce → isolate → root-cause → fix; no fix without an understood cause |
 | `verifying-work` | Matches fresh evidence to Quick, plan-only, restoration, or approved-Delta work; changes Canonical lifecycle only when required |
-| `review-viewer` | Builds an adaptive untracked spec or plan snapshot only after explicit intent, using Semantic IR, validated presentation planning, and reusable components |
+| `visual-docs` | Builds request-only Brief, Plan, and Spec views plus a tracked source-backed Project Handbook through one Semantic IR and component system |
 | `web-app-design` | Browser app hierarchy, control affordance, state geometry, and viewport×state verification |
 | `website-design` | Public website visual thesis, content composition, imagery, responsive behavior, and restrained motion |
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
@@ -107,7 +107,7 @@ Forge decides two things independently:
 
 Before routing, Forge drafts `Goal`, `Scope`, `Out of Scope`, and observable `Done Checks` in the conversation and inspects repository-discoverable facts. It asks one user-owned blocking choice only when ambiguity changes the outcome, scope, authority, safety, or destructive or external effects. Clear requests and safe reversible defaults proceed without a question or Brief file. Brief clarification defines the current work, Canonical classification decides whether a choice belongs in permanent authority, and Spec clarification resolves the exact meaning of that durable contract.
 
-Per-project artifacts: authoritative Canonical Specs live as `forge/spec@3` bundles under `docs/specs/<semantic-bundle-name>/` with lifecycle `approved → implemented`. The bundle path is the human-facing identity. Its root and member filenames describe their content, and one durable contract may use several members listed by the root `Documents` section. Requirement and Acceptance statements are complete headings linked by exact member path and anchor. Optional work input lives at `.forge/work/<work-id>/brief.md` and `spec-delta.md` and stays untracked. High-complexity Execution Plans live at `docs/plans/PPP-<slug>/plan.md`; their `Related Specs` list bundle paths and each governed Task uses `Governing statements:` links. Optional `progress.md` and `tasks/*.md` stay only while the plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html`, require an explicit request, and remain untracked. Promote lasting decisions, research, and root-cause findings before removing work artifacts.
+Per-project artifacts: authoritative Canonical Specs live as `forge/spec@3` bundles under `docs/specs/<semantic-bundle-name>/` with lifecycle `approved → implemented`. The bundle path is the human-facing identity. Its root and member filenames describe their content, and one durable contract may use several members listed by the root `Documents` section. Requirement and Acceptance statements are complete headings linked by exact member path and anchor. Optional work input lives at `.forge/work/<work-id>/brief.md` and `spec-delta.md` and stays untracked. High-complexity Execution Plans live at `docs/plans/PPP-<slug>/plan.md`; their `Related Specs` list bundle paths and each governed Task uses `Governing statements:` links. Optional `progress.md` and `tasks/*.md` stay only while the plan is retained. Requested Brief, Plan, and Spec views live at `.forge/visual-docs/<view-id>/view.html` and remain untracked. A requested Project Handbook is regenerated from `docs/project/project-map.md` and declared Specs at tracked `docs/project-viewer/index.html`. Promote lasting decisions, research, and root-cause findings before removing work artifacts.
 
 ## Validate
 

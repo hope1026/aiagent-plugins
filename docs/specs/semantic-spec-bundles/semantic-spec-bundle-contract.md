@@ -23,15 +23,15 @@ relatedSpecs: [{"path":"docs/specs/review-viewer-lifecycle/","relation":"related
 
 Forge의 spec과 plan은 Markdown을 유일한 기본 산출물과 source of truth로 유지해야 한다. 하나의 Canonical Spec은 의미가 드러나는 directory 안에 관련 Markdown을 묶은 Spec Bundle이다. Bundle metadata, full-statement traceability와 lifecycle gate는 기계적으로 검증하되, 서로 다른 feature·workflow·API·architecture·policy·migration 문서를 하나의 파일이나 화면 순서에 강제하지 않는다.
 
-HTML은 일반적인 spec 작성, plan 작성, 승인, handoff, 실행 checkpoint 또는 lifecycle status 변경에서 생성하지 않는다. 사람이 보기 좋은 별도 화면이 필요할 때 사용자가 `review-viewer`를 명시적으로 요청해야만 `docs/specs/review-viewer-lifecycle/`의 계약에 따라 로컬 Review Viewer를 생성한다.
+HTML은 일반적인 spec 작성, plan 작성, 승인, handoff, 실행 checkpoint 또는 lifecycle status 변경에서 생성하지 않는다. 사람이 보기 좋은 별도 화면이 필요할 때 사용자가 `visual-docs`를 명시적으로 요청해야만 `docs/specs/review-viewer-lifecycle/`의 계약에 따라 local View 또는 tracked Project Handbook을 생성한다.
 
 비목표:
 - HTML을 spec의 편집 가능한 source of truth로 만들지 않는다.
 - source에 없는 요구사항, 책임, 관계, 결정을 generated page에 추가하지 않는다.
 - Markdown의 서술 순서를 Viewer layout에 맞추도록 강제하지 않는다.
 - spec이나 plan 변경을 HTML 생성 요청으로 추론하지 않는다.
-- source 옆 `index.html`, `view.html` 또는 repository catalog HTML을 상시 관리하지 않는다.
-- Review Viewer 생성만으로 spec 승인 또는 구현 완료를 선언하지 않는다.
+- source 옆 `view.html`이나 repository catalog HTML을 상시 관리하지 않는다. 명시적 요청으로 재생성하는 `docs/project-viewer/index.html`만 tracked derived document 예외로 허용한다.
+- Visual Docs 생성만으로 spec 승인 또는 구현 완료를 선언하지 않는다.
 
 ## Behavior & Flows
 
@@ -42,18 +42,20 @@ flowchart TD
     A["Spec Bundle 또는 plan.md 작성·변경"] --> B["Markdown source validation·자체 검토"]
     B -->|실패| C["source 오류 보고와 lifecycle 중단"]
     B -->|성공| D["Markdown으로 승인 또는 handoff"]
-    D --> E{"사용자가 review-viewer를 명시적으로 요청했는가?"}
+    D --> E{"사용자가 visual-docs를 명시적으로 요청했는가?"}
     E -->|아니오| F["HTML 0개"]
-    E -->|예| G["요청형 Review Viewer 생성"]
+    E -->|예| G["요청형 local View 또는 Project Handbook 생성"]
 ```
 
-Markdown source와 요청형 Review Viewer의 lifecycle:
+Markdown source와 요청형 Visual Docs의 lifecycle:
 
 ```mermaid
 flowchart LR
-    S["Spec Bundle source of truth"] -. 사용자 명시 요청 .-> R["Review Viewer spec mode"]
-    L["plan source 집합"] -. 사용자 명시 요청 .-> V["Review Viewer plan mode"]
+    S["Spec Bundle source of truth"] -. 사용자 명시 요청 .-> R["Visual Docs spec kind"]
+    L["plan source 집합"] -. 사용자 명시 요청 .-> V["Visual Docs plan kind"]
     S -. Related Specs context .-> V
+    M["Project Map"] -. 사용자 명시 요청 .-> H["tracked Project Handbook"]
+    S -. declared Specs .-> H
 ```
 
 활성 bundle 교체 transaction:
@@ -118,7 +120,8 @@ spec-docs validate --root docs/specs
 |---|---|---:|---|
 | `docs/specs/<semantic-bundle-name>/` | 영구 source of truth | 예 | 요구사항·상태 변경 |
 | `docs/plans/PPP-<slug>/plan.md` | 작업 단위 실행 source | 예 | 계획·진행 변경 |
-| `.forge/reviews/<review-id>/view.html` | 요청형 맥락 snapshot | 아니오 | 사용자 명시 요청 |
+| `.forge/visual-docs/<view-id>/view.html` | 요청형 맥락 snapshot | 아니오 | 사용자 명시 요청 |
+| `docs/project-viewer/index.html` | 재생 가능한 Project Handbook | 예 | 사용자 명시 요청과 freshness 검증 |
 
 spec transition manifest:
 

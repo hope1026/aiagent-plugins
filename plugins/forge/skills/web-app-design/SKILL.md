@@ -29,10 +29,10 @@ Do NOT use for:
 
 - public landing pages, marketing sites, portfolios, editorial sites, or public content sites — use the forge website-design skill;
 - native iOS, Android, React Native, Flutter, desktop, Electron, or Tauri apps — the browser app contract does not own native platform behavior;
-- fixed Review Viewer generation — a single requested `review-viewer` build needs no UI design skill;
+- fixed Visual Docs generation — a single requested `visual-docs` build needs no UI design skill;
 - logic changes with no visible or interactive surface.
 
-Review Viewer tooling changes use `web-app-design`: shell, component grammar, template, CSS, runtime, interaction, responsive behavior, and accessibility changes require the viewport×state matrix and full rendered verification below.
+Visual Docs tooling changes use `web-app-design`: shell, component grammar, template, CSS, runtime, interaction, responsive behavior, and accessibility changes require the viewport×state matrix and full rendered verification below.
 
 ## The Process
 
