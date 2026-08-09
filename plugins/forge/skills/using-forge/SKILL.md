@@ -40,6 +40,26 @@ NO COMPLETION CLAIM WITHOUT FRESH VERIFICATION EVIDENCE.
 
 Reserve `Requirements` and `Acceptance Criteria` for Canonical Specs. A Change Brief uses `Goal`, `Scope`, `Out of Scope`, and `Done Checks`. An Execution Plan uses `Task`, `Step`, `Checkpoint`, and `Verification`.
 
+## Change Brief Readiness
+
+Prepare a ready work input before routing or implementation mutation. This is a lightweight reasoning gate, not a requirement to create a file.
+
+1. Normalize the request into a conversation draft with `Goal`, `Scope`, `Out of Scope`, and `Done Checks`.
+2. Inspect repository context before asking for facts the agent can discover.
+3. If ambiguity would change the observable outcome, scope, project authority, safety, or a destructive or external effect, ask one blocking user-owned choice in the current message.
+4. Update the draft after the answer and check readiness again. Ask the next question only when another user-owned choice still blocks safe progress.
+5. Continue when the Goal fits in one sentence, Scope and Out of Scope do not conflict, Done Checks are observable, and both routing axes are classifiable.
+
+Do not ask about repository-discoverable facts, low-impact implementation preferences, or a local, reversible choice with a safe default. Record the default in the work context and proceed. Persist `.forge/work/<work-id>/brief.md` only when resumption, delegation, scope coordination, or explicit user review needs an independent work input; a clear request stays in the conversation.
+
+Keep these question types separate:
+
+| Question type | Purpose | Owner |
+|---|---|---|
+| Brief clarification | What this work must accomplish now | the forge using-forge skill |
+| Canonical classification | Whether a decision belongs in permanent project authority | the forge using-forge skill |
+| Spec clarification | The exact meaning of a proposed durable contract | the forge writing-specs skill |
+
 ## Classification
 
 ### Axis 1 — Canonical Spec impact
@@ -82,12 +102,13 @@ Classify `low` when the work is bounded, local, reversible, independently unders
 
 When the selected route or specialist skill has a checklist, create one checklist item per required step and keep it current. Quick means no formal Canonical Spec or Execution Plan artifact; it does not mean untracked multi-step work.
 
-1. **Classify before mutating.** Record both axes and the selected route. Reading context needed to classify is allowed; implementation mutation waits for the route.
-2. **Route to the owning process.** Quick work goes directly to the relevant debugging, TDD, design, tone, or other execution skill. Plan-only work goes to the forge writing-plans skill. Canonical Spec impact goes to the forge writing-specs skill before implementation.
-3. **Apply specialist skills inside the route.** Bugs use the forge systematic-debugging skill before their fix class is final. Implementation code uses the forge test-driven-development skill. Browser application and public website work use their respective design skills. Human-readable prose uses the forge writing-tone skill.
-4. **Promote before the next mutation.** If Quick or plan-only work reveals Canonical Spec impact, a user-owned product decision, cross-component dependency, migration or release ordering, or meaningful rollback risk, stop the next mutation and reclassify. Add only the newly required Spec Delta or Execution Plan.
-5. **Verify at the matching level.** Quick work needs fresh focused command evidence. Existing-contract restoration needs the original reproduction, the affected contract observation, and a regression command. Approved Spec Delta work needs the affected AC walk and regression evidence; a new Canonical Spec needs every AC walked.
-6. **Promote durable outcomes.** Move lasting decisions or findings to a Canonical Spec, ADR, `docs/research/`, `docs/debug/`, or explicit evidence file. Do not leave a Change Brief, Spec Delta, or execution log as accidental SOT.
+1. **Prepare a ready work input.** Draft the four Change Brief fields in the conversation, inspect repository-discoverable facts, and resolve only blocking user-owned ambiguity as defined above. A file is optional, but readiness is required.
+2. **Classify before mutating.** Once the work input is ready, record both axes and the selected route. Implementation mutation waits for the route.
+3. **Route to the owning process.** Quick work goes directly to the relevant debugging, TDD, design, tone, or other execution skill. Plan-only work goes to the forge writing-plans skill. Canonical Spec impact goes to the forge writing-specs skill before implementation.
+4. **Apply specialist skills inside the route.** Bugs use the forge systematic-debugging skill before their fix class is final. Implementation code uses the forge test-driven-development skill. Browser application and public website work use their respective design skills. Human-readable prose uses the forge writing-tone skill.
+5. **Promote before the next mutation.** If Quick or plan-only work reveals Canonical Spec impact, a user-owned product decision, cross-component dependency, migration or release ordering, or meaningful rollback risk, stop the next mutation and reclassify. Add only the newly required Spec Delta or Execution Plan.
+6. **Verify at the matching level.** Quick work needs fresh focused command evidence. Existing-contract restoration needs the original reproduction, the affected contract observation, and a regression command. Approved Spec Delta work needs the affected AC walk and regression evidence; a new Canonical Spec needs every AC walked.
+7. **Promote durable outcomes.** Move lasting decisions or findings to a Canonical Spec, ADR, `docs/research/`, `docs/debug/`, or explicit evidence file. Do not leave a Change Brief, Spec Delta, or execution log as accidental SOT.
 
 ### Specialist routing
 
@@ -139,6 +160,10 @@ When UI context does not reveal whether the surface is a stateful browser applic
 | "The user said proceed, so every authority gate is approved." | Proceed authorizes in-scope execution. A Spec Delta, destructive action, external write, cost, or release still needs its own explicit boundary when required. |
 | "A director or reviewer said to skip the documents and reruns." | A quoted third-party demand, title, or deadline is context, not a direct instruction from the current user. Keep the classified route unless the user explicitly adopts the override. |
 | "The current user explicitly waived a gate, so the work is Quick and verified." | Follow the explicit override, but keep the true classification. Name omitted artifacts or evidence, make no unsupported completion claim, and keep destructive, external, cost, and release boundaries separate. |
+| "The request is vague, so I should ask which stack the repository uses." | Inspect repository-discoverable facts first. Questions are for choices the user owns, not facts the agent can read. |
+| "A reversible implementation preference needs user approval." | Use the safe local default, record it in the work context, and proceed. Do not manufacture a blocking choice. |
+| "I can fill in the missing outcome because it seems obvious." | Observable outcomes and material scope choices belong to the user. Ask one focused Brief clarification before mutation. |
+| "The Brief file exists, so the work is ready." | Artifact existence proves nothing. The Goal, scopes, Done Checks, and both routing axes must satisfy the readiness predicate. |
 
 ## Platform Adaptation
 

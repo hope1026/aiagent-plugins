@@ -145,25 +145,25 @@ flowchart TD
 - 병렬 안전성: sequential; 모든 consumer와 distribution copy가 이 Task의 exact terminology를 소비한다.
 - 승인 gate: approved 009의 질문 조건이나 ready predicate 의미를 바꿔야 할 때만 Spec Delta divergence
 
-- [ ] **Step 1: 현재 source에 일반 Brief readiness가 없다는 RED evidence를 기록한다.**
+- [x] **Step 1: 현재 source에 일반 Brief readiness가 없다는 RED evidence를 기록한다.**
 
 실행: `rg -n "Change Brief Readiness|repository-discoverable|user-owned blocking|Brief clarification|ready criteria" plugins/forge/skills/using-forge/SKILL.md`
 
 예상: exit 1 또는 정의·절차를 모두 충족하지 못하는 부분 결과가 나온다.
 
-- [ ] **Step 2: Terminology 다음에 `Change Brief Readiness` section을 추가한다.**
+- [x] **Step 2: Terminology 다음에 `Change Brief Readiness` section을 추가한다.**
 
 Section은 `Normalize request → inspect repository → ask one blocking user-owned choice → update draft → check ready → classify` 순서를 exact behavior로 가진다. Ready 조건은 one-sentence Goal, 충돌하지 않는 Scope와 Out of Scope, 관찰 가능한 Done Checks, 판정 가능한 두 routing axes다. `brief.md`는 재개·위임·범위 조정·명시적 검토에만 저장한다.
 
-- [ ] **Step 3: 세 clarification 유형과 Red Flags를 추가한다.**
+- [x] **Step 3: 세 clarification 유형과 Red Flags를 추가한다.**
 
 Brief clarification은 이번 작업의 결과, Canonical classification은 정본 보존 여부, Spec clarification은 정본 계약의 의미를 묻는다. Repository stack을 되묻기, 가역적 구현 선호를 승인 요청으로 바꾸기, user-owned outcome을 agent가 채우기, Brief 파일 존재를 readiness로 오인하기를 각각 막는다.
 
-- [ ] **Step 4: Process를 readiness gate에 연결한다.**
+- [x] **Step 4: Process를 readiness gate에 연결한다.**
 
 `Classify before mutating` 전에 draft와 repository inspection을 두고, ready하지 않으면 Plan·mutation을 차단한다. 질문은 현재 메시지의 최고 영향 blocking choice 하나만 포함한다.
 
-- [ ] **Step 5: Targeted scan과 repository validation을 실행한다.**
+- [x] **Step 5: Targeted scan과 repository validation을 실행한다.**
 
 실행: `rg -n "Change Brief Readiness|repository|user-owned|Goal|Out of Scope|Done Checks|Brief clarification|Canonical classification|Spec clarification|one.*question" plugins/forge/skills/using-forge/SKILL.md && bash scripts/validate.sh`
 
@@ -300,3 +300,5 @@ Outgoing range에 distributed skill 변경이 있으므로 push 전 두 manifest
 
 - 2026-08-09: Exact Spec Delta approved by the user and applied to `009-canonical-spec-work-artifacts`; writer validation passed with status `approved`, R=17, AC=13, diagnostics `[]` (commit 60a9116).
 - 2026-08-09: Plan created; execution not started.
+- 2026-08-09: Task 1 routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="router owns the durable readiness predicate consumed by every downstream lifecycle skill").
+- 2026-08-09: Task 1 complete (verification="readiness terminology and boundary scan passed; using-forge is 178 lines; bash scripts/validate.sh printed validate: all checks passed").
