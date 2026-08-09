@@ -476,9 +476,11 @@ Manifest는 bundle source와 member source를 분리해 hashes를 기록한다. 
 - 수정: `plugins/forge/skills/verifying-work/SKILL.md`
 - 수정: `plugins/forge/skills/review-viewer/SKILL.md`
 - 수정: `plugins/forge/skills/review-viewer/references/rendering-contract.md`
+- 수정: `plugins/forge/skills/test-driven-development/SKILL.md`
+- 수정: `plugins/forge/skills/executing-plans/references/adaptive-routing.md`
 - 수정: `.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md`
 - 수정: `.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md`
-- 수정: `README.md`, `README.ko.md`, plugin README·marketplace copy와 관련 `scripts/tests/test-forge-*.sh`
+- 수정: `README.md`, plugin manifest·marketplace copy와 관련 `scripts/tests/test-forge-*.sh`
 
 **Interfaces:**
 - 소비: approved bundle path·statement contract와 Task 3 plan grammar
@@ -490,7 +492,7 @@ Manifest는 bundle source와 member source를 분리해 hashes를 기록한다. 
 - 병렬 안전성: Task 4와 병렬 가능하지만 현재 session은 sequential fallback을 사용한다.
 - Approval gate: 없음
 
-- [ ] **Step 1: active instruction에서 legacy ID 문법을 거부하는 static failing test를 작성한다.**
+- [x] **Step 1: active instruction에서 legacy ID 문법을 거부하는 static failing test를 작성한다.**
 
 ```bash
 legacy_count="$(rg -l 'docs/specs/NNN-|spec ID|R·AC ID|<spec-id>:R|requirements: \[R|acceptance: \[AC' \
@@ -500,23 +502,23 @@ grep -q 'docs/specs/<semantic-bundle-name>/' plugins/forge/skills/writing-specs/
 grep -q 'Governing statements' plugins/forge/skills/writing-plans/SKILL.md || fail "statement trace contract missing"
 ```
 
-- [ ] **Step 2: static policy test를 실행해 legacy instruction inventory 때문에 FAIL을 확인한다.**
+- [x] **Step 2: static policy test를 실행해 legacy instruction inventory 때문에 FAIL을 확인한다.**
 
 실행: `bash scripts/tests/test-forge-spec-docs-policy.sh && bash scripts/tests/test-forge-lifecycle-policy.sh`
 
 예상: non-zero exit와 legacy path 또는 trace contract message.
 
-- [ ] **Step 3: skill·template·portability·README를 v3 용어와 exact workflow로 변경한다.**
+- [x] **Step 3: skill·template·portability·README를 v3 용어와 exact workflow로 변경한다.**
 
 `writing-specs`는 root/member authoring, splitting gate와 path-based Delta를 소유한다. `writing-plans`는 Related Specs bundle path와 Task Governing statements를 소유한다. `executing-plans`와 `verifying-work`는 inspect의 bundle status·statement를 사용한다. `review-viewer`는 bundle directory input을 사용한다. Distributed skill은 harness-specific tool 이름 없이 500줄 이하를 유지한다.
 
-- [ ] **Step 4: static policy와 manager parity validation을 실행해 PASS를 확인한다.**
+- [x] **Step 4: static policy와 manager parity validation을 실행해 PASS를 확인한다.**
 
 실행: `bash scripts/tests/test-forge-spec-docs-policy.sh && bash scripts/tests/test-forge-lifecycle-policy.sh && bash scripts/tests/test-forge-artifact-contract.sh`
 
 예상: 세 script exit 0, legacy active instruction inventory 0개.
 
-- [ ] **Step 5: instruction 변경을 commit한다.**
+- [x] **Step 5: instruction 변경을 commit한다.**
 
 실행: `git add plugins/forge/skills .agent-extensions/maintaining-forge README.md README.ko.md scripts/tests && git commit -m "docs(forge): adopt spec bundle authoring"`
 
@@ -719,8 +721,9 @@ Counter text: `A deadline, prior implementation, or reviewer request never autho
 - Task 2: routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="repository authority gate와 baseline transition safety를 함께 소유한다")
 - Task 2: complete (commit 7f9f4b0; verification="repository RED 27개와 inspect·baseline RED 확인 후 writing-specs Python 75 tests PASS, scripts/validate.sh PASS")
 - Plan correction: Review Viewer 결합 지점 audit 결과 Task 5 write ownership에 `review_freshness.py`, `review_components.py`, `viewer-freshness.mjs`, build·browser test runner를 추가했다. 승인 계약과 실행 순서는 바뀌지 않는다.
+- Task 6: complete (commit d47fee6; verification="static template RED 확인 후 spec-docs·lifecycle·artifact contract tests PASS, active instruction/reference/README legacy audit 0")
 
 ## Completion State
 
-- 현재: Task 2 완료, Task 3 plan trace cutover 진행 중
+- 현재: Task 3 plan trace와 Task 4 Review source cutover 진행 중, Task 6 lifecycle instruction 완료
 - 완료 조건: Task 1–10 checkbox 완료, 9개 v3 bundle diagnostics 0, legacy active trace 0, Review Viewer 생성 0, validation·install·pressure PASS, release는 별도 승인 대기
