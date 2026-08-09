@@ -225,23 +225,23 @@ Brief clarification은 이번 작업의 결과, Canonical classification은 정�
 - 병렬 안전성: sequential; canonical reference 변경 후 manager render가 state를 갱신한다.
 - 승인 gate: manifest version bump와 push는 release boundary이므로 이 Task에서 실행하지 않는다.
 
-- [ ] **Step 1: 기존 배포 설명의 readiness gap을 검사한다.**
+- [x] **Step 1: 기존 배포 설명의 readiness gap을 검사한다.**
 
 실행: `rg -n "Change Brief|Quick|Canonical Spec|Execution Plan" README.md .agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md`
 
 예상: authority와 route는 존재하지만 readiness 순서와 질문 경계는 없다.
 
-- [ ] **Step 2: README와 portability reference를 동기화한다.**
+- [x] **Step 2: README와 portability reference를 동기화한다.**
 
 두 source에 `draft in conversation → inspect repository → ask one user-owned blocking choice only when needed → ready → route`를 추가한다. Clear request는 질문·Brief file 없이 진행하며 Brief, Canonical classification과 Spec clarification을 혼동하지 않는다고 명시한다.
 
-- [ ] **Step 3: Canonical extension adapters를 manager로 render·validate한다.**
+- [x] **Step 3: Canonical extension adapters를 manager로 render·validate한다.**
 
 실행: `python3 plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py render --extension .agent-extensions/maintaining-forge && python3 plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py validate --extension .agent-extensions/maintaining-forge`
 
 예상: owned adapter state만 갱신되고 validate가 `"status": "PASS"`를 출력한다.
 
-- [ ] **Step 4: Portability scan과 repository validation을 실행한다.**
+- [x] **Step 4: Portability scan과 repository validation을 실행한다.**
 
 실행: `rg -n "repository|user-owned|ready|Brief clarification|Canonical classification|Spec clarification" README.md .agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md && bash scripts/validate.sh && git diff --check`
 
@@ -304,3 +304,5 @@ Outgoing range에 distributed skill 변경이 있으므로 push 전 두 manifest
 - 2026-08-09: Task 1 complete (verification="readiness terminology and boundary scan passed; using-forge is 178 lines; bash scripts/validate.sh printed validate: all checks passed").
 - 2026-08-09: Task 2 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="five lifecycle consumers must preserve one clarification boundary without creating new question or authority paths").
 - 2026-08-09: Task 2 complete (verification="consumer boundary scan passed across five lifecycle skills; every SKILL.md remains under 500 lines; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-09: Task 3 routed (impact=medium, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="README and canonical portability reference share stable terminology, while manager-owned state requires root integration and validation").
+- 2026-08-09: Task 3 complete (verification="README and portability readiness scan passed; manager render updated owned state with canonical hash 3cde513f; extension validate PASS; bash scripts/validate.sh printed validate: all checks passed").

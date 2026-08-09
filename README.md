@@ -105,6 +105,8 @@ Forge decides two things independently:
 
 `spec` is reserved for permanent Canonical Specs. A Change Brief captures one work request; a Spec Delta is an approval proposal; an Execution Plan controls implementation order but is not project SOT; Verification Evidence proves a concrete claim. Quick removes formal artifacts, never TDD, debugging, or fresh verification.
 
+Before routing, Forge drafts `Goal`, `Scope`, `Out of Scope`, and observable `Done Checks` in the conversation and inspects repository-discoverable facts. It asks one user-owned blocking choice only when ambiguity changes the outcome, scope, authority, safety, or destructive or external effects. Clear requests and safe reversible defaults proceed without a question or Brief file. Brief clarification defines the current work, Canonical classification decides whether a choice belongs in permanent authority, and Spec clarification resolves the exact meaning of that durable contract.
+
 Per-project artifacts: authoritative Canonical Specs live in `docs/specs/NNN-<slug>/spec.md` with lifecycle `approved → implemented`. Optional work input lives at `.forge/work/<work-id>/brief.md` and `spec-delta.md` and stays untracked. High-complexity Execution Plans live at `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay only while the plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html`, require an explicit request, and remain untracked. Promote lasting decisions, research, and root-cause findings before removing work artifacts.
 
 ## Validate

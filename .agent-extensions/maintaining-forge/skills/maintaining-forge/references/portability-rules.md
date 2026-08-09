@@ -57,6 +57,8 @@ commands. Install paths differ across harnesses and install modes.
 
 Forge routes work on two portable axes: `Canonical Spec impact: yes|no` and `Execution complexity: low|high`. These produce Quick direct, plan-only, spec-backed direct, and full-lifecycle paths on every supported agent. Platform invocation, worker availability, or model mapping changes execution mechanics, never route meaning or artifact authority.
 
+Change Brief readiness is portable too. Every supported agent drafts `Goal`, `Scope`, `Out of Scope`, and observable `Done Checks` in the conversation, inspects repository-discoverable facts, and asks at most one currently blocking user-owned choice before rechecking readiness. A clear request or local reversible default needs no question and no Brief file. Keep Brief clarification (current work outcome), Canonical classification (permanent authority), and Spec clarification (exact durable contract meaning) distinct. Invocation UI and worker availability do not change this boundary.
+
 The ordinary Canonical Spec and Execution Plan lifecycle is Markdown-only. Review Viewer is a separate request-only snapshot and never becomes project SOT. Promote durable `.forge/research/` findings to `docs/research/`. Retain an applied Spec Delta through verification, then remove it or promote it only as non-authoritative evidence. Before deleting a plan, promote permanent decisions; its `progress.md` and `tasks/*.md` do not remain as independent artifacts.
 
 ## 7. Process-skill Structure
