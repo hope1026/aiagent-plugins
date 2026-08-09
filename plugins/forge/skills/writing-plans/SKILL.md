@@ -32,6 +32,8 @@ EVERY RELATED CANONICAL ACCEPTANCE CRITERION MAPS TO A TASK.
 
 ## Precondition Gate
 
+Require a ready work input from the forge using-forge skill before drafting. The conversation or optional Change Brief must provide a one-sentence Goal, non-conflicting Scope and Out of Scope, observable Done Checks, and classifiable routing axes. Inspect repository-discoverable facts yourself. If a user-owned outcome or material scope choice is still blocking, return to Brief clarification; plan authoring must not decide it or hide it as an implementation assumption.
+
 Before drafting anything, prove both routing axes:
 
 1. **Execution complexity:** name the multiple dependencies or components, parallel ownership, migration or release ordering, meaningful rollback risk, zero-context handoff, or interruption-recovery need that makes complexity `high`. If none exists, STOP and return to the forge using-forge skill's selected direct route. Do not create a plan merely because code will change.
@@ -273,6 +275,7 @@ Fix issues inline and move on — no re-review loop.
 | "The Task list is already ordered, so Routes are decoration." | Routes make dependency and scope review possible before a reader opens 20 or more detailed Tasks. |
 | "The plan is complex, so handoff requires a Viewer." | Complexity justifies telling the user why a Viewer may help. Markdown remains valid, and HTML requires an explicit user request. |
 | "A user checkpoint after every Task is safer." | Put verification and recovery in the internal checkpoint. Reserve approval gates for spec divergence, new authority, scope decisions, and release. |
+| "The plan can define the missing product outcome." | A plan sequences ready work. Return a user-owned outcome or material scope gap to Brief clarification before drafting. |
 
 ## Handoff
 

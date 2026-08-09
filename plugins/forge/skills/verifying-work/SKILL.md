@@ -50,6 +50,8 @@ Create one checklist item per applicable numbered stage below, plus one item per
 
 State the exact claim. Read route evidence from the forge using-forge classification, optional Change Brief or Spec Delta, Related Canonical Specs, and optional Execution Plan. If the classification is missing, reconstruct both axes from actual scope before verifying.
 
+Treat a ready conversation draft or Change Brief as the claim boundary: its Goal and Done Checks say what must be proven, not that proof already exists. Inspect missing repository facts and run evidence yourself. Evidence gaps are failures or unknowns to resolve; they are not implementation-preference questions for the user.
+
 Plan existence does not determine the class. A plan-only route can have no Canonical Spec, and spec-backed direct work can have no plan.
 
 ### 2. Run command-level verification now
@@ -123,6 +125,7 @@ After explicit user intent, one successful build of `.forge/reviews/<review-id>/
 |---|---|
 | "Quick means no tests." | Quick removes formal artifacts, not fresh proof. |
 | "There is no spec, so verification is impossible." | Focused commands and plan Done Checks verify non-SOT work. |
+| "The Brief says done, so the evidence can be inferred." | A ready Brief defines the claim. Only fresh commands and observations prove it. |
 | "Every spec AC must run for this one restored branch." | Restoration verifies the affected contract and regression behavior without changing lifecycle status. |
 | "The Delta names one AC, so indirect effects do not count." | Any touched observable outcome joins the required AC set. |
 | "The baseline was implemented, so no fresh AC is needed." | Changed contract meaning requires fresh affected-AC evidence. |

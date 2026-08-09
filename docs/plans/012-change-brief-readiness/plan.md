@@ -188,21 +188,21 @@ Brief clarification은 이번 작업의 결과, Canonical classification은 정�
 - 병렬 안전성: root sequential; 용어와 handoff가 서로 맞물린다.
 - 승인 gate: 새로운 질문 유형이나 readiness 예외가 필요할 때만 Spec Delta divergence
 
-- [ ] **Step 1: Consumer별 현재 질문·범위 경계를 정적 검사한다.**
+- [x] **Step 1: Consumer별 현재 질문·범위 경계를 정적 검사한다.**
 
 실행: `rg -n "clarif|question|unclear|Change Brief|Scope|Done Checks" plugins/forge/skills/writing-specs/SKILL.md plugins/forge/skills/writing-plans/SKILL.md plugins/forge/skills/executing-plans/SKILL.md plugins/forge/skills/systematic-debugging/SKILL.md plugins/forge/skills/verifying-work/SKILL.md`
 
 예상: Canonical clarification과 일부 scope gate는 보이지만 공통 readiness consumer contract는 없다.
 
-- [ ] **Step 2: Authoring consumer 경계를 명확히 한다.**
+- [x] **Step 2: Authoring consumer 경계를 명확히 한다.**
 
 `writing-specs`는 Brief clarification이 `using-forge` 소유이고 `clarify` mode는 unresolved durable authority만 다룬다고 명시한다. `writing-plans` precondition은 ready Goal·Scope·Out of Scope·Done Checks를 요구하고 repository 사실은 직접 조사하며 user-owned blocking gap은 router로 반환하도록 한다.
 
-- [ ] **Step 3: Execution·debug·verification consumer 경계를 명확히 한다.**
+- [x] **Step 3: Execution·debug·verification consumer 경계를 명확히 한다.**
 
 `executing-plans`는 repository fact gap을 조사하고 user-owned scope·outcome gap만 approval boundary로 보낸다. `systematic-debugging`은 reproduction과 repository 조사로 사실을 먼저 확정하고 fix outcome·scope가 user-owned일 때만 Brief clarification으로 돌아간다. `verifying-work`는 ready Brief의 Done Checks를 claim 범위로 소비하되 evidence 부족을 preference question으로 바꾸지 않는다.
 
-- [ ] **Step 4: Consumer targeted scan과 validation을 실행한다.**
+- [x] **Step 4: Consumer targeted scan과 validation을 실행한다.**
 
 실행: `rg -n "Brief clarification|repository|user-owned|ready|Done Checks|durable authority|evidence" plugins/forge/skills/writing-specs/SKILL.md plugins/forge/skills/writing-plans/SKILL.md plugins/forge/skills/executing-plans/SKILL.md plugins/forge/skills/systematic-debugging/SKILL.md plugins/forge/skills/verifying-work/SKILL.md && bash scripts/validate.sh`
 
@@ -302,3 +302,5 @@ Outgoing range에 distributed skill 변경이 있으므로 push 전 두 manifest
 - 2026-08-09: Plan created; execution not started.
 - 2026-08-09: Task 1 routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="router owns the durable readiness predicate consumed by every downstream lifecycle skill").
 - 2026-08-09: Task 1 complete (verification="readiness terminology and boundary scan passed; using-forge is 178 lines; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-09: Task 2 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="five lifecycle consumers must preserve one clarification boundary without creating new question or authority paths").
+- 2026-08-09: Task 2 complete (verification="consumer boundary scan passed across five lifecycle skills; every SKILL.md remains under 500 lines; bash scripts/validate.sh printed validate: all checks passed").

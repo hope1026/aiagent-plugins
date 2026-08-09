@@ -38,7 +38,7 @@ The startup checklist and every plan task become todos — create one todo per i
 
 ### Phase 1: Startup
 
-1. **Read the plan** in `docs/plans/` end to end. For every Related Canonical Spec entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json`. Require `schema` = `forge/spec@2`, `status` in `approved|implemented`, and empty `diagnostics`; an approved source governs new contract work and an approved or implemented source may govern preservation or restoration. Review unclear instructions, contradictions, and missing preconditions before execution.
+1. **Read the plan** in `docs/plans/` end to end. For every Related Canonical Spec entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json`. Require `schema` = `forge/spec@2`, `status` in `approved|implemented`, and empty `diagnostics`; an approved source governs new contract work and an approved or implemented source may govern preservation or restoration. Review unclear instructions, contradictions, and missing preconditions before execution. Resolve repository-discoverable facts directly. If the Goal, scope, or observable Done Checks still depend on a user-owned choice, do not mutate; return to Brief clarification through the forge using-forge skill.
 2. **Open progress state.** The default source is Task checkboxes plus `Progress History` in `plan.md`. When `progress.md` exists beside the plan, use it for detailed routing and checkpoint evidence. When `tasks/*.md` exists, confirm each Task ID appears once in the plan index and once in its owned Task file.
 3. **Skip completed work.** Tasks the plan-local progress state marks complete are DONE — do not redo them. Resume at the first task not marked complete. After any compaction or resume, trust plan-local progress and commit history over recollection.
 4. **Create one todo per remaining task.**
@@ -102,6 +102,7 @@ Do not dispatch one fresh subagent mechanically for every Task. Delegate only bo
 | "Subagents are available, so every Task gets one." | Dispatch has context and review cost. Use root for tightly coupled work and delegate only Tasks that pass the adaptive routing gate. |
 | "I should ask which execution mode the user wants for each Task." | Apply the tier default and report the route. Execution mode is not an approval boundary. |
 | "The model role is missing, so parallel work is impossible." | Model mapping and subagent availability are independent. Inherit the current model and keep safe parallelism when workers remain available. |
+| "The plan exists, so its missing outcome is an implementation detail." | Plan existence does not prove work-input readiness. A user-owned outcome or material scope gap returns to Brief clarification before mutation. |
 
 ## Handoff
 

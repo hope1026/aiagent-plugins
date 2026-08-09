@@ -23,6 +23,8 @@ A Canonical Spec lives at `docs/specs/NNN-<slug>/spec.md` and records durable sy
 
 A Change Brief describes one work request with `Goal`, `Scope`, `Out of Scope`, and `Done Checks`. A Spec Delta proposes an exact Canonical Spec change before approval. Neither is SOT. Read `references/spec-delta-template.md` before proposing a new Canonical Spec or changing an existing one.
 
+The forge using-forge skill owns Brief clarification and work-input readiness before this skill starts. This skill's `clarify` mode owns only unresolved choices about durable Canonical authority. Inspect repository facts directly; do not turn a missing technical fact or ordinary implementation preference into a Spec clarification question.
+
 Use EARS as a semantic discipline in the user's language. Each Canonical Spec requirement names its condition and required behavior. Each AC cites explicit R IDs and states its precondition, action, and observable outcome. Keep `Decisions & History` append-only after approval.
 
 ## When to Use / When NOT
@@ -125,6 +127,7 @@ Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an e
 | "The baseline changed only a little." | Re-inspect and rebase before applying; silent merge can change approved meaning. |
 | "The bug proves the spec is wrong." | First establish whether implementation drift or contract change owns the mismatch. |
 | "A Viewer would make approval safer." | Markdown is sufficient; HTML still requires explicit Viewer intent. |
+| "The work request is vague, so Spec clarification should decide its scope." | Brief clarification owns the current work outcome. Spec clarification starts only after the durable contract question is identified. |
 
 ## Handoff
 

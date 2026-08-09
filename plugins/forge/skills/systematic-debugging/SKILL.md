@@ -57,6 +57,8 @@ Goal: a minimal, deterministic reproduction.
 
 **Exit criterion:** one command or short procedure that reliably shows the bug. If you cannot reproduce it, gather more evidence — logs, inputs, environment diffs, recent changes. Never fix what you cannot reproduce.
 
+Use the reproduction and repository inspection to resolve technical facts before asking the user. If the desired fixed outcome or material scope remains a user-owned choice, stop before fix mutation and return to Brief clarification through the forge using-forge skill. A missing framework, path, version, or current behavior that the repository can reveal is not a user question.
+
 ### Phase 2: Isolate
 
 Goal: shrink the search space until the fault has nowhere left to hide.
@@ -115,6 +117,7 @@ If you catch yourself thinking any of these, STOP and return to Phase 1.
 | "One more fix attempt" (after 2+ failures) | Repeated failures mean the mental model is wrong. Three or more → question the architecture with the user. |
 | "The bug changes behavior, so it always needs a new spec" | Restoration changes implementation behavior without changing Canonical authority. Compare the intended contract first. |
 | "It is only a bugfix, so it can never change the spec" | A root cause may expose a wrong durable contract. That result requires a Spec Delta before the fix changes authority. |
+| "I cannot reproduce yet, so I should ask which framework this uses." | Read the repository and runtime evidence first. Ask only when the desired outcome or material scope is a user-owned blocking choice. |
 
 ## Handoff
 
