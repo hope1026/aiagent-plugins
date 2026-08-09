@@ -8,7 +8,7 @@ from types import MappingProxyType
 from typing import Mapping
 
 from review_sources import PlanAuxiliaryDocument, PlanDocument, ReviewBundle, ReviewSource
-from spec_model import SpecDocument
+from spec_model import SpecMember, statement_anchor
 
 
 _HEADING_RE = re.compile(r"^(#{1,6}) (\S.*)$")
@@ -67,6 +67,10 @@ class ContentCoverage:
     total_blocks: int
     represented_blocks: int
 
+    @property
+    def ratio(self) -> float:
+        return 1.0 if self.total_blocks == 0 else self.represented_blocks / self.total_blocks
+
 
 @dataclass(frozen=True)
 class SemanticIR:
@@ -114,8 +118,15 @@ def _source_blocks(source: ReviewSource) -> tuple[tuple[str, ...], tuple[Semanti
     section = "Document"
     index = _frontmatter_end(lines)
 
-    def append(kind: str, start: int, end: int, body: str) -> None:
-        section_slug = _slug(section)
+    def append(
+        kind: str,
+        start: int,
+        end: int,
+        body: str,
+        heading: str | None = None,
+    ) -> None:
+        block_heading = heading or section
+        section_slug = _slug(block_heading)
         offset = counters.get(section_slug, 0)
         counters[section_slug] = offset + 1
         blocks.append(
@@ -124,7 +135,7 @@ def _source_blocks(source: ReviewSource) -> tuple[tuple[str, ...], tuple[Semanti
                 source_namespace=source.namespace,
                 source_path=source.path,
                 kind=kind,
-                heading=section,
+                heading=block_heading,
                 body=body,
                 line=start + 1,
                 end_line=end,
@@ -141,6 +152,8 @@ def _source_blocks(source: ReviewSource) -> tuple[tuple[str, ...], tuple[Semanti
             outline.append(title)
             if len(level) == 2:
                 section = title
+            elif len(level) == 3:
+                append("heading", index, index + 1, line, title)
             index += 1
             continue
         if fence := _FENCE_RE.fullmatch(line):
@@ -189,16 +202,22 @@ def _source_blocks(source: ReviewSource) -> tuple[tuple[str, ...], tuple[Semanti
 
 def _metadata(source: ReviewSource) -> Mapping[str, object]:
     document = source.document
-    if isinstance(document, SpecDocument):
+    if isinstance(document, SpecMember) and source.spec_bundle is not None:
+        bundle = source.spec_bundle
         metadata: dict[str, object] = {
-            "schema": document.metadata.schema,
-            "id": document.metadata.id,
-            "status": document.metadata.status,
-            "language": document.metadata.language,
-            "kind": document.metadata.kind,
-            "subtype": document.metadata.subtype,
-            "areas": document.metadata.areas,
-            "components": document.metadata.components,
+            "schema": bundle.metadata.schema,
+            "status": bundle.metadata.status,
+            "language": bundle.metadata.language,
+            "kind": bundle.metadata.kind,
+            "subtype": bundle.metadata.subtype,
+            "areas": bundle.metadata.areas,
+            "components": bundle.metadata.components,
+            "bundle_path": bundle.path.as_posix(),
+            "bundle_title": bundle.title,
+            "bundle_sha256": bundle.bundle_sha256,
+            "member_path": document.path.as_posix(),
+            "member_title": document.title,
+            "member_role": document.role,
         }
     elif isinstance(document, PlanDocument):
         metadata = {
@@ -249,39 +268,32 @@ def _entity(
 
 def _spec_entities(
     source: ReviewSource,
-    document: SpecDocument,
+    document: SpecMember,
     blocks: tuple[SemanticBlock, ...],
 ) -> tuple[SemanticEntity, ...]:
+    bundle = source.spec_bundle
+    if bundle is None:
+        return ()
     entities: list[SemanticEntity] = []
-    for requirement in document.requirements:
-        block = _block_at_line(blocks, requirement.line)
+    for statement in bundle.statements:
+        if statement.member_path != document.path:
+            continue
+        block = _block_at_line(blocks, statement.line)
         if block is not None:
             entities.append(
                 _entity(
                     source,
-                    "requirement",
-                    requirement.id,
+                    statement.kind,
+                    statement.heading,
                     block,
                     {
-                        "text": requirement.text,
-                        "line": requirement.line,
-                        "removed": requirement.removed,
-                    },
-                )
-            )
-    for criterion in document.acceptance:
-        block = _block_at_line(blocks, criterion.line)
-        if block is not None:
-            entities.append(
-                _entity(
-                    source,
-                    "acceptance",
-                    criterion.id,
-                    block,
-                    {
-                        "text": criterion.text,
-                        "line": criterion.line,
-                        "requirements": criterion.requirements,
+                        "heading": statement.heading,
+                        "anchor": statement_anchor(statement.heading),
+                        "line": statement.line,
+                        "bundle_path": bundle.path.as_posix(),
+                        "bundle_title": bundle.title,
+                        "member_path": document.path.as_posix(),
+                        "member_title": document.title,
                     },
                 )
             )
@@ -292,71 +304,121 @@ def _spec_entities(
                 _entity(
                     source,
                     "mermaid",
-                    f"M{offset}",
+                    f"{document.title} diagram at line {mermaid.line}",
                     block,
-                    {"line": mermaid.line, "section": mermaid.section},
+                    {
+                        "line": mermaid.line,
+                        "section": mermaid.section,
+                        "bundle_path": bundle.path.as_posix(),
+                        "member_path": document.path.as_posix(),
+                    },
                 )
             )
 
-    decision_number = 0
-    interface_number = 0
     for block in blocks:
         if block.heading == "Decisions & History":
             for line_offset, line in enumerate(block.body.splitlines()):
                 if not line.lstrip().startswith("-"):
                     continue
-                decision_number += 1
+                decision_text = line.lstrip()[1:].strip()
                 entities.append(
                     _entity(
                         source,
                         "decision",
-                        f"D{decision_number}",
+                        decision_text,
                         block,
-                        {"text": line.lstrip()[1:].strip(), "line": block.line + line_offset},
+                        {
+                            "text": decision_text,
+                            "line": block.line + line_offset,
+                            "bundle_path": bundle.path.as_posix(),
+                            "member_path": document.path.as_posix(),
+                        },
                     )
                 )
         heading = block.heading.lower()
         if any(token in heading for token in ("interface", "endpoint", "schema", "data")):
-            interface_number += 1
             entities.append(
                 _entity(
                     source,
                     "interface",
-                    f"I{interface_number}",
+                    block.heading,
                     block,
-                    {"heading": block.heading, "line": block.line},
+                    {
+                        "heading": block.heading,
+                        "line": block.line,
+                        "bundle_path": bundle.path.as_posix(),
+                        "member_path": document.path.as_posix(),
+                    },
                 )
             )
     return tuple(entities)
 
 
 def _spec_relations(
-    source: ReviewSource,
-    document: SpecDocument,
-    entities: tuple[SemanticEntity, ...],
+    sources: tuple[ReviewSource, ...],
+    documents: tuple[SemanticDocument, ...],
 ) -> tuple[SemanticRelation, ...]:
-    by_identity = {
-        (entity.entity_type, entity.entity_id): entity for entity in entities
-    }
-    relations: list[SemanticRelation] = []
-    for criterion in document.acceptance:
-        acceptance = by_identity.get(("acceptance", criterion.id))
-        if acceptance is None:
+    source_by_namespace = {source.namespace: source for source in sources}
+    targets: dict[tuple[str, str, str, str], SemanticEntity] = {}
+    for document in documents:
+        source = source_by_namespace.get(document.namespace)
+        if source is None or source.spec_bundle is None:
             continue
-        for requirement_id in criterion.requirements:
-            requirement = by_identity.get(("requirement", requirement_id))
-            if requirement is None:
+        for entity in document.entities:
+            if entity.entity_type not in {"requirement", "acceptance"}:
                 continue
-            relations.append(
-                SemanticRelation(
-                    key=f"{source.namespace}:covers:{criterion.id}:{requirement_id}",
-                    relation_type="covers",
-                    from_entity=acceptance.key,
-                    to_entity=requirement.key,
-                    source_namespace=source.namespace,
-                    line=criterion.line,
+            targets[
+                (
+                    source.spec_bundle.path.as_posix(),
+                    source.path,
+                    entity.entity_type,
+                    entity.entity_id,
+                )
+            ] = entity
+
+    relations: list[SemanticRelation] = []
+    for source in sources:
+        bundle = source.spec_bundle
+        document = source.document
+        if bundle is None or not isinstance(document, SpecMember):
+            continue
+        for statement in bundle.statements:
+            if statement.kind != "acceptance" or statement.member_path != document.path:
+                continue
+            acceptance = targets.get(
+                (
+                    bundle.path.as_posix(),
+                    statement.member_path.as_posix(),
+                    "acceptance",
+                    statement.heading,
                 )
             )
+            if acceptance is None:
+                continue
+            for reference in statement.references:
+                requirement = targets.get(
+                    (
+                        bundle.path.as_posix(),
+                        reference.member_path.as_posix(),
+                        "requirement",
+                        reference.heading,
+                    )
+                )
+                if requirement is None:
+                    continue
+                relations.append(
+                    SemanticRelation(
+                        key=(
+                            f"{source.namespace}:covers:{statement.heading}:"
+                            f"{reference.member_path.as_posix()}:{reference.heading}"
+                        ),
+                        relation_type="covers",
+                        from_entity=acceptance.key,
+                        to_entity=requirement.key,
+                        source_namespace=source.namespace,
+                        line=statement.line,
+                    )
+                )
     return tuple(relations)
 
 
@@ -438,13 +500,17 @@ def _plan_relations(
     tasks = {
         entity.entity_id: entity for entity in entities if entity.entity_type == "task"
     }
-    targets: dict[tuple[str, str, str], SemanticEntity] = {}
+    targets: dict[tuple[str, str, str, str], SemanticEntity] = {}
     for document in documents:
-        spec_id = document.metadata.get("id")
-        if not isinstance(spec_id, str):
+        bundle_path = document.metadata.get("bundle_path")
+        member_path = document.metadata.get("member_path")
+        if not isinstance(bundle_path, str) or not isinstance(member_path, str):
             continue
         for entity in document.entities:
-            targets[(spec_id, entity.entity_type, entity.entity_id)] = entity
+            if entity.entity_type in {"requirement", "acceptance"}:
+                targets[
+                    (bundle_path, member_path, entity.entity_type, entity.entity_id)
+                ] = entity
 
     relations: list[SemanticRelation] = []
     for step in (entity for entity in entities if entity.entity_type == "step"):
@@ -484,41 +550,46 @@ def _plan_relations(
         if task is None:
             continue
         line = task.attributes.get("line")
-        references = (
-            (("requirement", item) for item in plan_task.requirements),
-            (("acceptance", item) for item in plan_task.acceptance),
-        )
-        for group in references:
-            for entity_type, reference in group:
-                target = targets.get((reference.spec_id, entity_type, reference.item_id))
-                if target is None:
-                    continue
-                relations.append(
-                    SemanticRelation(
-                        key=f"{task.source_namespace}:traces:{task.entity_id}:{reference.spec_id}:{reference.item_id}",
-                        relation_type="traces",
-                        from_entity=task.key,
-                        to_entity=target.key,
-                        source_namespace=task.source_namespace,
-                        line=line if isinstance(line, int) else 1,
-                    )
+        for reference in plan_task.governing_statements:
+            target = targets.get(
+                (
+                    reference.bundle_path.as_posix(),
+                    reference.member_path.as_posix(),
+                    reference.kind,
+                    reference.heading,
                 )
+            )
+            if target is None:
+                continue
+            relations.append(
+                SemanticRelation(
+                    key=(
+                        f"{task.source_namespace}:traces:{task.entity_id}:"
+                        f"{reference.bundle_path.as_posix()}:"
+                        f"{reference.member_path.as_posix()}:"
+                        f"{reference.kind}:{reference.heading}"
+                    ),
+                    relation_type="traces",
+                    from_entity=task.key,
+                    to_entity=target.key,
+                    source_namespace=task.source_namespace,
+                    line=line if isinstance(line, int) else 1,
+                )
+            )
     return tuple(relations)
 
 
 def build_semantic_ir(bundle: ReviewBundle) -> SemanticIR:
     documents: list[SemanticDocument] = []
-    relations: list[SemanticRelation] = []
-    for source in (*bundle.primary, *bundle.comparison, *bundle.context):
+    sources = bundle.sources
+    for source in sources:
         outline, blocks = _source_blocks(source)
-        if isinstance(source.document, SpecDocument):
+        if isinstance(source.document, SpecMember):
             entities = _spec_entities(source, source.document, blocks)
         elif isinstance(source.document, (PlanDocument, PlanAuxiliaryDocument)):
             entities = _plan_entities(source, blocks)
         else:
             entities = ()
-        if isinstance(source.document, SpecDocument):
-            relations.extend(_spec_relations(source, source.document, entities))
         documents.append(
             SemanticDocument(
                 namespace=source.namespace,
@@ -530,12 +601,14 @@ def build_semantic_ir(bundle: ReviewBundle) -> SemanticIR:
                 entities=entities,
             )
         )
+    semantic_documents = tuple(documents)
+    relations = list(_spec_relations(sources, semantic_documents))
     if bundle.mode == "plan":
-        relations.extend(_plan_relations(bundle, tuple(documents)))
+        relations.extend(_plan_relations(bundle, semantic_documents))
     total = sum(len(document.blocks) for document in documents)
     return SemanticIR(
         mode=bundle.mode,
-        documents=tuple(documents),
+        documents=semantic_documents,
         relations=tuple(relations),
         coverage=ContentCoverage(total, total),
     )

@@ -15,6 +15,7 @@ from spec_model import (
     Diagnostic,
     SpecBundle,
     SpecDocument,
+    SpecStatement,
     load_spec,
     load_spec_bundle,
     parse_frontmatter,
@@ -32,8 +33,6 @@ MERMAID_VALIDATOR_BUNDLE = (
     Path(__file__).resolve().parent.parent / "assets" / "mermaid-validator.bundle.mjs"
 )
 _MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
-_PLAN_ID_RE = re.compile(r"^[0-9]{3}-[a-z0-9]+(?:-[a-z0-9]+)*$")
-_ITEM_RE = re.compile(r"^(?:R|AC)[0-9]+$")
 _SEMANTIC_DIRECTORY_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _SEMANTIC_MARKDOWN_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
 _NUMERIC_PREFIX_RE = re.compile(r"^[0-9]+[-_.]")
@@ -50,11 +49,18 @@ _GENERIC_MEMBER_FILENAMES = frozenset(
 
 
 @dataclass(frozen=True)
-class PlanSpecRef:
-    id: str
-    path: Path
-    requirements: tuple[str, ...]
-    acceptance: tuple[str, ...]
+class PlanBundleRef:
+    bundle_path: Path
+
+
+@dataclass(frozen=True)
+class PlanStatementRef:
+    kind: str
+    bundle_path: Path
+    member_path: Path
+    heading: str
+    anchor: str
+    line: int
 
 
 @dataclass(frozen=True)
@@ -1412,78 +1418,76 @@ def _plan_path(plan: Path, repo_root: Path) -> Path:
         return plan
 
 
-def _parse_item_array(
-    raw: str,
-    prefix: str,
-    path: Path,
-    line: int,
-    errors: list[Diagnostic],
-) -> tuple[str, ...]:
-    match = re.fullmatch(r"\[(.*)\]", raw)
-    if match is None:
-        errors.append(
-            _diagnostic(path, line, "PLAN_SPEC_FORMAT", f"{prefix} must use a bracketed ID list.")
-        )
-        return ()
-    content = match.group(1).strip()
-    if not content:
-        return ()
-    result: list[str] = []
-    for token in (item.strip() for item in content.split(",")):
-        if "–" in token or "-" in token:
-            errors.append(
-                _diagnostic(
-                    path,
-                    line,
-                    "PLAN_SPEC_RANGE_FORBIDDEN",
-                    "Top-level Related Specs arrays must list explicit IDs.",
-                )
-            )
-        elif _ITEM_RE.fullmatch(token) is None or not token.startswith(prefix):
-            errors.append(
-                _diagnostic(
-                    path,
-                    line,
-                    "PLAN_SPEC_ITEM_FORMAT",
-                    f"{prefix} references must use explicit {prefix}<number> IDs.",
-                )
-            )
-        else:
-            result.append(token)
-    return tuple(result)
+_PLAN_BUNDLE_ENTRY_RE = re.compile(
+    r"^- bundle: (docs/specs/([a-z0-9]+(?:-[a-z0-9]+)*)/)$"
+)
+_PLAN_NONE_RE = re.compile(
+    r"^\*\*Related Specs:\*\* None — Canonical Spec impact: no; \S.*$"
+)
+_PLAN_STATEMENT_LINK_RE = re.compile(
+    r"^- \[([^\]]+)\]\(([^()#]+)#([^()#]+)\)$"
+)
+_MARKDOWN_FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
 
 
-def parse_plan_related_specs(
-    plan: Path, repo_root: Path
-) -> tuple[tuple[PlanSpecRef, ...], tuple[Diagnostic, ...]]:
-    """Parse and resolve the canonical Related Specs block from one plan."""
-
+def _read_plan(
+    plan: Path,
+    repo_root: Path,
+) -> tuple[Path, tuple[str, ...] | None, tuple[Diagnostic, ...]]:
     repository = repo_root.resolve()
     try:
         relative_plan = plan.resolve().relative_to(repository)
     except ValueError:
-        diagnostic_path = Path(plan.name)
-        return (), (
+        return Path(plan.name), None, (
             _diagnostic(
-                diagnostic_path,
+                Path(plan.name),
                 1,
                 "PLAN_SPEC_PATH_ESCAPE",
                 "The plan source must resolve inside the repository root.",
             ),
         )
-    errors: list[Diagnostic] = []
     try:
-        lines = plan.read_text(encoding="utf-8").splitlines()
+        lines = tuple(plan.read_text(encoding="utf-8").splitlines())
     except (OSError, UnicodeDecodeError):
-        return (), (
-            _diagnostic(relative_plan, 1, "PLAN_SPEC_READ", "The plan must be readable UTF-8."),
+        return relative_plan, None, (
+            _diagnostic(
+                relative_plan,
+                1,
+                "PLAN_SPEC_READ",
+                "The plan must be readable UTF-8.",
+            ),
         )
+    return relative_plan, lines, ()
 
-    marker_index = next(
-        (index for index, line in enumerate(lines) if line.startswith("**Related Specs:**")),
-        None,
+
+def _path_uses_symlink(path: Path, repository: Path) -> bool:
+    try:
+        relative = path.relative_to(repository)
+    except ValueError:
+        return True
+    current = repository
+    for part in relative.parts:
+        current /= part
+        if current.is_symlink():
+            return True
+    return False
+
+
+def parse_plan_related_specs(
+    plan: Path, repo_root: Path
+) -> tuple[tuple[PlanBundleRef, ...], tuple[Diagnostic, ...]]:
+    """Parse and resolve the canonical Related Specs block from one plan."""
+
+    repository = repo_root.resolve()
+    relative_plan, lines, read_errors = _read_plan(plan, repository)
+    if lines is None:
+        return (), read_errors
+    errors: list[Diagnostic] = []
+
+    markers = tuple(
+        index for index, line in enumerate(lines) if line.startswith("**Related Specs:**")
     )
-    if marker_index is None:
+    if not markers:
         return (), (
             _diagnostic(
                 relative_plan,
@@ -1492,8 +1496,18 @@ def parse_plan_related_specs(
                 "The canonical Related Specs block is missing.",
             ),
         )
+    if len(markers) != 1:
+        return (), (
+            _diagnostic(
+                relative_plan,
+                markers[1] + 1,
+                "PLAN_SPEC_FORMAT",
+                "The canonical Related Specs block must appear exactly once.",
+            ),
+        )
+    marker_index = markers[0]
     marker = lines[marker_index]
-    if re.fullmatch(r"\*\*Related Specs:\*\* None — \S.*", marker):
+    if _PLAN_NONE_RE.fullmatch(marker):
         return (), ()
     if marker != "**Related Specs:**":
         return (), (
@@ -1505,141 +1519,123 @@ def parse_plan_related_specs(
             ),
         )
 
-    refs: list[PlanSpecRef] = []
-    seen: set[str] = set()
+    refs: list[PlanBundleRef] = []
+    seen: set[Path] = set()
     index = marker_index + 1
-    while index < len(lines) and lines[index].startswith("- id: "):
-        start_line = index + 1
-        if index + 3 >= len(lines):
-            errors.append(
-                _diagnostic(relative_plan, start_line, "PLAN_SPEC_FORMAT", "Related Specs entry is incomplete.")
-            )
-            break
-        id_line, path_line, requirements_line, acceptance_line = lines[index : index + 4]
-        if not (
-            path_line.startswith("  path: ")
-            and requirements_line.startswith("  requirements: ")
-            and acceptance_line.startswith("  acceptance: ")
-        ):
-            errors.append(
-                _diagnostic(relative_plan, start_line, "PLAN_SPEC_FORMAT", "Related Specs fields are malformed.")
-            )
-            index += 4
-            continue
-        spec_id = id_line.removeprefix("- id: ")
-        raw_path = path_line.removeprefix("  path: ")
-        requirements = _parse_item_array(
-            requirements_line.removeprefix("  requirements: "),
-            "R",
-            relative_plan,
-            index + 3,
-            errors,
-        )
-        acceptance = _parse_item_array(
-            acceptance_line.removeprefix("  acceptance: "),
-            "AC",
-            relative_plan,
-            index + 4,
-            errors,
-        )
-        if _PLAN_ID_RE.fullmatch(spec_id) is None:
-            errors.append(
-                _diagnostic(relative_plan, start_line, "PLAN_SPEC_ID", "Related spec id is invalid.")
-            )
-        if spec_id in seen:
+    while index < len(lines) and lines[index] == "":
+        index += 1
+    entry_count = 0
+    while index < len(lines) and lines[index].startswith("-"):
+        line_number = index + 1
+        entry_count += 1
+        if lines[index].startswith("- bundle: "):
+            supplied = Path(lines[index].removeprefix("- bundle: ").rstrip("/"))
+            if supplied.is_absolute() or ".." in supplied.parts:
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_SPEC_PATH_ESCAPE",
+                        "A related Spec Bundle path must not escape its canonical repository location.",
+                    )
+                )
+                index += 1
+                continue
+        entry = _PLAN_BUNDLE_ENTRY_RE.fullmatch(lines[index])
+        if entry is None:
             errors.append(
                 _diagnostic(
                     relative_plan,
-                    start_line,
-                    "PLAN_SPEC_DUPLICATE",
-                    f"Related spec '{spec_id}' is duplicated.",
+                    line_number,
+                    "PLAN_SPEC_FORMAT",
+                    "Related Specs entries must use '- bundle: docs/specs/<semantic-name>/'.",
                 )
             )
-        seen.add(spec_id)
-
-        supplied_path = Path(raw_path)
-        target = supplied_path.resolve() if supplied_path.is_absolute() else (repository / supplied_path).resolve()
+            index += 1
+            continue
+        raw_path, directory_name = entry.groups()
+        bundle_path = Path(raw_path.rstrip("/"))
+        lexical_target = repository / bundle_path
+        target = lexical_target.resolve()
         try:
             repository_path = target.relative_to(repository)
         except ValueError:
             errors.append(
                 _diagnostic(
                     relative_plan,
-                    index + 2,
+                    line_number,
                     "PLAN_SPEC_PATH_ESCAPE",
-                    "Related spec path must remain inside the repository.",
+                    "A related Spec Bundle path must remain inside the repository.",
                 )
             )
-            index += 4
+            index += 1
             continue
-        if not target.is_file():
+        if (
+            ".." in bundle_path.parts
+            or _NUMERIC_PREFIX_RE.match(directory_name)
+            or repository_path != bundle_path
+            or _path_uses_symlink(lexical_target, repository)
+        ):
             errors.append(
                 _diagnostic(
                     relative_plan,
-                    index + 2,
+                    line_number,
+                    "PLAN_SPEC_PATH_ESCAPE",
+                    "A related Spec Bundle path must be canonical and must not traverse symbolic links.",
+                )
+            )
+            index += 1
+            continue
+        if bundle_path in seen:
+            errors.append(
+                _diagnostic(
+                    relative_plan,
+                    line_number,
+                    "PLAN_SPEC_DUPLICATE",
+                    f"Related Spec Bundle '{bundle_path.as_posix()}' is duplicated.",
+                )
+            )
+            index += 1
+            continue
+        seen.add(bundle_path)
+        if not target.is_dir():
+            errors.append(
+                _diagnostic(
+                    relative_plan,
+                    line_number,
                     "PLAN_SPEC_MISSING",
-                    f"Related spec path '{repository_path.as_posix()}' does not exist.",
+                    f"Related Spec Bundle '{bundle_path.as_posix()}' does not exist.",
                 )
             )
-            index += 4
+            index += 1
             continue
-        document, parse_errors = load_spec(target, repository)
-        if document is None:
+        bundle, _ = load_spec_bundle(target, repository)
+        if bundle is None:
             errors.append(
                 _diagnostic(
                     relative_plan,
-                    index + 2,
+                    line_number,
                     "PLAN_SPEC_INVALID",
-                    f"Related spec '{repository_path.as_posix()}' is invalid.",
+                    f"Related Spec Bundle '{bundle_path.as_posix()}' is invalid.",
                 )
             )
-            errors.extend(parse_errors)
-            index += 4
+            index += 1
             continue
-        if document.metadata.id != spec_id:
+        if bundle.metadata.status not in {"approved", "implemented"}:
             errors.append(
                 _diagnostic(
                     relative_plan,
-                    start_line,
-                    "PLAN_SPEC_ID_PATH_MISMATCH",
-                    f"Related spec id '{spec_id}' does not match '{document.metadata.id}'.",
-                )
-            )
-        if document.metadata.status not in {"approved", "implemented"}:
-            errors.append(
-                _diagnostic(
-                    relative_plan,
-                    start_line,
+                    line_number,
                     "PLAN_SPEC_STATUS",
-                    f"Related spec '{spec_id}' must be approved or implemented.",
+                    f"Related Spec Bundle '{bundle_path.as_posix()}' must be approved or implemented.",
                 )
             )
-        requirement_ids = {item.id for item in document.requirements if not item.removed}
-        acceptance_ids = {item.id for item in document.acceptance}
-        for item_id in requirements:
-            if item_id not in requirement_ids:
-                errors.append(
-                    _diagnostic(
-                        relative_plan,
-                        index + 3,
-                        "PLAN_SPEC_REQUIREMENT_MISSING",
-                        f"Related spec '{spec_id}' has no active '{item_id}'.",
-                    )
-                )
-        for item_id in acceptance:
-            if item_id not in acceptance_ids:
-                errors.append(
-                    _diagnostic(
-                        relative_plan,
-                        index + 4,
-                        "PLAN_SPEC_ACCEPTANCE_MISSING",
-                        f"Related spec '{spec_id}' has no '{item_id}'.",
-                    )
-                )
-        refs.append(PlanSpecRef(spec_id, repository_path, requirements, acceptance))
-        index += 4
+            index += 1
+            continue
+        refs.append(PlanBundleRef(bundle.path))
+        index += 1
 
-    if not refs and not errors:
+    if entry_count == 0:
         errors.append(
             _diagnostic(
                 relative_plan,
@@ -1648,6 +1644,337 @@ def parse_plan_related_specs(
                 "A bare Related Specs block must contain an entry or use 'None — <reason>'.",
             )
         )
+
+    while index < len(lines) and lines[index] == "":
+        index += 1
+    if index < len(lines) and (
+        lines[index].startswith("  ")
+        or lines[index].startswith("- bundle:")
+    ):
+        errors.append(
+            _diagnostic(
+                relative_plan,
+                index + 1,
+                "PLAN_SPEC_FORMAT",
+                "Related Specs may contain only canonical bundle entries.",
+            )
+        )
+
+    sorted_errors = tuple(sorted(errors))
+    return (() if sorted_errors else tuple(refs)), sorted_errors
+
+
+def parse_plan_governing_statements(
+    plan: Path,
+    repo_root: Path,
+    related_specs: tuple[PlanBundleRef, ...],
+) -> tuple[tuple[PlanStatementRef, ...], tuple[Diagnostic, ...]]:
+    """Resolve every governed plan Task to exact statements in related bundles."""
+
+    if not related_specs:
+        return (), ()
+    repository = repo_root.resolve()
+    relative_plan, lines, read_errors = _read_plan(plan, repository)
+    if lines is None:
+        mapped = tuple(
+            Diagnostic(
+                item.path,
+                item.line,
+                "PLAN_STATEMENT_PATH_ESCAPE"
+                if item.code == "PLAN_SPEC_PATH_ESCAPE"
+                else "PLAN_STATEMENT_READ",
+                item.message,
+            )
+            for item in read_errors
+        )
+        return (), mapped
+
+    errors: list[Diagnostic] = []
+    bundles: list[SpecBundle] = []
+    for related in related_specs:
+        lexical_bundle = repository / related.bundle_path
+        try:
+            resolved_bundle = lexical_bundle.resolve(strict=True)
+            resolved_bundle.relative_to(repository)
+        except (OSError, ValueError):
+            errors.append(
+                _diagnostic(
+                    relative_plan,
+                    1,
+                    "PLAN_STATEMENT_BUNDLE",
+                    f"Related Spec Bundle '{related.bundle_path.as_posix()}' cannot be resolved.",
+                )
+            )
+            continue
+        bundle, diagnostics = load_spec_bundle(resolved_bundle, repository)
+        if bundle is None or diagnostics:
+            errors.append(
+                _diagnostic(
+                    relative_plan,
+                    1,
+                    "PLAN_STATEMENT_BUNDLE",
+                    f"Related Spec Bundle '{related.bundle_path.as_posix()}' is invalid.",
+                )
+            )
+            continue
+        if bundle.metadata.status not in {"approved", "implemented"}:
+            errors.append(
+                _diagnostic(
+                    relative_plan,
+                    1,
+                    "PLAN_STATEMENT_STATUS",
+                    f"Related Spec Bundle '{bundle.path.as_posix()}' must be approved or implemented.",
+                )
+            )
+            continue
+        bundles.append(bundle)
+
+    statement_members: dict[Path, tuple[SpecBundle, tuple[SpecStatement, ...]]] = {}
+    member_h3_headings: dict[Path, set[tuple[str, str]]] = {}
+    for bundle in bundles:
+        for member in bundle.members:
+            member_statements = tuple(
+                statement
+                for statement in bundle.statements
+                if statement.member_path == member.path
+            )
+            statement_members[member.path] = (bundle, member_statements)
+            headings: set[tuple[str, str]] = set()
+            fence: str | None = None
+            for line in member.source_text.splitlines():
+                fence_match = _MARKDOWN_FENCE_RE.match(line)
+                if fence_match is not None:
+                    marker = fence_match.group(1)
+                    if fence is None:
+                        fence = marker[0]
+                    elif marker[0] == fence:
+                        fence = None
+                    continue
+                if fence is None and line.startswith("### "):
+                    heading = line.removeprefix("### ")
+                    headings.add((heading, statement_anchor(heading)))
+            member_h3_headings[member.path] = headings
+
+    task_starts = tuple(
+        index for index, line in enumerate(lines) if re.match(r"^### Task\b", line)
+    )
+    if not task_starts:
+        errors.append(
+            _diagnostic(
+                relative_plan,
+                1,
+                "PLAN_STATEMENT_TASK_MISSING",
+                "A governed plan must contain at least one '### Task' section.",
+            )
+        )
+        return (), tuple(sorted(errors))
+
+    refs: list[PlanStatementRef] = []
+    for task_offset, task_start in enumerate(task_starts):
+        task_end = (
+            task_starts[task_offset + 1]
+            if task_offset + 1 < len(task_starts)
+            else len(lines)
+        )
+        markers = tuple(
+            index
+            for index in range(task_start + 1, task_end)
+            if lines[index] == "Governing statements:"
+        )
+        if not markers:
+            errors.append(
+                _diagnostic(
+                    relative_plan,
+                    task_start + 1,
+                    "PLAN_STATEMENT_BLOCK_MISSING",
+                    "Every Task in a governed plan must contain a Governing statements block.",
+                )
+            )
+            continue
+        if len(markers) != 1:
+            errors.append(
+                _diagnostic(
+                    relative_plan,
+                    markers[1] + 1,
+                    "PLAN_STATEMENT_FORMAT",
+                    "A Task may contain exactly one Governing statements block.",
+                )
+            )
+            continue
+
+        index = markers[0] + 1
+        while index < task_end and lines[index] == "":
+            index += 1
+        link_count = 0
+        task_seen: set[tuple[Path, str]] = set()
+        while index < task_end and lines[index].startswith("-"):
+            line_number = index + 1
+            link_count += 1
+            match = _PLAN_STATEMENT_LINK_RE.fullmatch(lines[index])
+            if match is None:
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_FORMAT",
+                        "Governing statements entries must be exact Markdown links with an anchor.",
+                    )
+                )
+                index += 1
+                continue
+            heading, raw_member_path, anchor = match.groups()
+            supplied_member = Path(raw_member_path)
+            lexical_member = repository / relative_plan.parent / supplied_member
+            if supplied_member.is_absolute() or ".." in supplied_member.parts and not raw_member_path.startswith("../"):
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_PATH_ESCAPE",
+                        "A Governing statement link must resolve from the plan file inside the repository.",
+                    )
+                )
+                index += 1
+                continue
+            try:
+                resolved_member = lexical_member.resolve(strict=True)
+                repository_member = resolved_member.relative_to(repository)
+            except FileNotFoundError:
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_MISSING",
+                        "The Governing statement target member does not exist.",
+                    )
+                )
+                index += 1
+                continue
+            except (OSError, ValueError):
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_PATH_ESCAPE",
+                        "A Governing statement link must resolve inside the repository.",
+                    )
+                )
+                index += 1
+                continue
+            if _path_uses_symlink(lexical_member, repository):
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_PATH_ESCAPE",
+                        "A Governing statement link must not traverse a symbolic link.",
+                    )
+                )
+                index += 1
+                continue
+            member_entry = statement_members.get(repository_member)
+            if member_entry is None:
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_BUNDLE",
+                        "A Governing statement must belong to a declared Related Spec Bundle.",
+                    )
+                )
+                index += 1
+                continue
+            bundle, member_statements = member_entry
+            by_heading = next(
+                (statement for statement in member_statements if statement.heading == heading),
+                None,
+            )
+            by_anchor = next(
+                (
+                    statement
+                    for statement in member_statements
+                    if statement_anchor(statement.heading) == anchor
+                ),
+                None,
+            )
+            if by_heading is not None and statement_anchor(by_heading.heading) != anchor:
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_ANCHOR",
+                        "The link anchor must match the exact statement heading.",
+                    )
+                )
+                index += 1
+                continue
+            if by_anchor is not None and by_anchor.heading != heading:
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_TEXT",
+                        "The link text must equal the exact target statement heading.",
+                    )
+                )
+                index += 1
+                continue
+            target = by_heading if by_heading is not None else by_anchor
+            if target is None:
+                code = (
+                    "PLAN_STATEMENT_KIND"
+                    if (heading, anchor) in member_h3_headings.get(repository_member, set())
+                    else "PLAN_STATEMENT_MISSING"
+                )
+                message = (
+                    "A Governing statement must target a Requirement or Acceptance Criterion."
+                    if code == "PLAN_STATEMENT_KIND"
+                    else "The Governing statement target does not exist in the member."
+                )
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        code,
+                        message,
+                    )
+                )
+                index += 1
+                continue
+            key = (repository_member, anchor)
+            if key in task_seen:
+                errors.append(
+                    _diagnostic(
+                        relative_plan,
+                        line_number,
+                        "PLAN_STATEMENT_DUPLICATE",
+                        "A Task must not repeat the same Governing statement.",
+                    )
+                )
+                index += 1
+                continue
+            task_seen.add(key)
+            refs.append(
+                PlanStatementRef(
+                    kind=target.kind,
+                    bundle_path=bundle.path,
+                    member_path=target.member_path,
+                    heading=target.heading,
+                    anchor=anchor,
+                    line=line_number,
+                )
+            )
+            index += 1
+
+        if link_count == 0:
+            errors.append(
+                _diagnostic(
+                    relative_plan,
+                    markers[0] + 1,
+                    "PLAN_STATEMENT_EMPTY",
+                    "Every Task in a governed plan must name at least one Governing statement.",
+                )
+            )
 
     sorted_errors = tuple(sorted(errors))
     return (() if sorted_errors else tuple(refs)), sorted_errors

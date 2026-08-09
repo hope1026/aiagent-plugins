@@ -29,13 +29,7 @@ class ReviewPlannerTest(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         repository = Path(temporary.name)
         shutil.copytree(REPOSITORY, repository, dirs_exist_ok=True)
-        source = repository / "docs/specs/008-alpha/spec.md"
-        source.write_text(
-            source.read_text(encoding="utf-8").replace(
-                "kind: system", "kind: system\nsubtype: workflow", 1
-            ),
-            encoding="utf-8",
-        )
+        source = repository / "docs/specs/semantic-spec-bundles"
         return build_semantic_ir(collect_spec_sources(source, (), repository))
 
     def test_workflow_approval_selects_state_first(self) -> None:

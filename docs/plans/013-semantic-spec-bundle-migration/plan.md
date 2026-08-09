@@ -323,7 +323,7 @@ def test_bundle_layout_statement_and_path_transition_matrix(self) -> None:
 - 병렬 안전성: sequential; Review Viewer가 Task trace model을 소비한다.
 - Approval gate: 없음
 
-- [ ] **Step 1: ID 배열이 없는 valid plan과 dangling statement의 failing test를 작성한다.**
+- [x] **Step 1: ID 배열이 없는 valid plan과 dangling statement의 failing test를 작성한다.**
 
 ```python
 def test_related_bundles_and_governing_statements_resolve_exact_headings(self) -> None:
@@ -334,23 +334,23 @@ def test_related_bundles_and_governing_statements_resolve_exact_headings(self) -
     self.assertEqual(task_refs[0].heading, "각 bundle에는 root 문서가 정확히 하나 있어야 한다")
 ```
 
-- [ ] **Step 2: focused tests를 실행해 old `id/path/requirements/acceptance` parser의 format diagnostic으로 assertion failure를 확인한다.**
+- [x] **Step 2: focused tests를 실행해 old `id/path/requirements/acceptance` parser의 format diagnostic으로 assertion failure를 확인한다.**
 
 실행: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts:plugins/forge/skills/review-viewer/scripts python3 -m unittest plugins/forge/skills/writing-specs/tests/test_spec_validate.py plugins/forge/skills/review-viewer/tests/test_review_sources.py -v`
 
 예상: 새 canonical bundle block test가 `FAIL`; message에 current `PLAN_SPEC_FORMAT` 또는 expected bundle path mismatch가 나타난다.
 
-- [ ] **Step 3: Related Specs와 Governing statements parser를 구현한다.**
+- [x] **Step 3: Related Specs와 Governing statements parser를 구현한다.**
 
 `parse_plan_related_specs`는 exact `- bundle: docs/specs/<semantic-name>/` entry 또는 기존 `None — Canonical Spec impact: no; <reason>`만 받고 duplicate·escape·unknown·draft bundle을 거부한다. `parse_plan_governing_statements`는 각 governed Task의 link가 Related Specs bundle에 속하고 target statement kind·heading·anchor·link text가 정확히 일치하는지 검사한다.
 
-- [ ] **Step 4: plan validation과 Review source focused suite를 실행해 PASS를 확인한다.**
+- [x] **Step 4: plan validation과 Review source focused suite를 실행해 PASS를 확인한다.**
 
 실행: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts:plugins/forge/skills/review-viewer/scripts python3 -m unittest plugins/forge/skills/writing-specs/tests/test_spec_validate.py plugins/forge/skills/review-viewer/tests/test_review_sources.py -v`
 
 예상: 모든 test `OK`, ID array plan fixture는 legacy-format diagnostic으로 실패한다.
 
-- [ ] **Step 5: plan trace 변경을 commit하고 notify checkpoint를 기록한다.**
+- [x] **Step 5: plan trace 변경을 commit하고 notify checkpoint를 기록한다.**
 
 실행: `git add plugins/forge/skills/writing-specs plugins/forge/skills/review-viewer/scripts/review_sources.py plugins/forge/skills/review-viewer/tests/test_review_sources.py && git commit -m "feat(forge): trace plans to spec statements"`
 
@@ -374,7 +374,7 @@ def test_related_bundles_and_governing_statements_resolve_exact_headings(self) -
 - 병렬 안전성: Task 6과 병렬 가능하지만 현재 session은 sequential fallback을 사용한다.
 - Approval gate: 없음
 
-- [ ] **Step 1: five-member source collection과 content coverage failing test를 작성한다.**
+- [x] **Step 1: five-member source collection과 content coverage failing test를 작성한다.**
 
 ```python
 def test_spec_bundle_members_enter_ir_once_with_statement_relations(self) -> None:
@@ -386,23 +386,23 @@ def test_spec_bundle_members_enter_ir_once_with_statement_relations(self) -> Non
     self.assertTrue(all(entity.source_path.endswith(".md") for entity in ir.entities))
 ```
 
-- [ ] **Step 2: focused source·IR test를 실행해 directory source를 읽지 못하는 assertion failure를 확인한다.**
+- [x] **Step 2: focused source·IR test를 실행해 directory source를 읽지 못하는 assertion failure를 확인한다.**
 
 실행: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts:plugins/forge/skills/review-viewer/scripts python3 -m unittest plugins/forge/skills/review-viewer/tests/test_review_sources.py plugins/forge/skills/review-viewer/tests/test_review_ir.py -v`
 
 예상: 새 test가 `FAIL`; `bundle.sources` count 또는 source path assertion이 old single-file model과 다르다.
 
-- [ ] **Step 3: bundle/member source model과 statement relation을 구현한다.**
+- [x] **Step 3: bundle/member source model과 statement relation을 구현한다.**
 
 각 member는 exact bytes, H1, role, relative path, source SHA-256과 shared bundle SHA-256을 보존한다. IR entity identity는 내부에서 bundle path·member path·kind·heading으로 계산하고 provenance에는 human-readable H1·path·line을 유지한다. Acceptance relation은 source link가 명시한 Requirement만 연결한다.
 
-- [ ] **Step 4: Review source·IR suite를 실행해 PASS를 확인한다.**
+- [x] **Step 4: Review source·IR suite를 실행해 PASS를 확인한다.**
 
 실행: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts:plugins/forge/skills/review-viewer/scripts python3 -m unittest plugins/forge/skills/review-viewer/tests/test_review_sources.py plugins/forge/skills/review-viewer/tests/test_review_ir.py plugins/forge/skills/review-viewer/tests/test_review_planner.py -v`
 
 예상: 모든 test `OK`, source content coverage 100%.
 
-- [ ] **Step 5: Review source model을 commit한다.**
+- [x] **Step 5: Review source model을 commit한다.**
 
 실행: `git add plugins/forge/skills/review-viewer/scripts plugins/forge/skills/review-viewer/tests && git commit -m "feat(forge): load spec bundles into review ir"`
 
@@ -722,8 +722,10 @@ Counter text: `A deadline, prior implementation, or reviewer request never autho
 - Task 2: complete (commit 7f9f4b0; verification="repository RED 27개와 inspect·baseline RED 확인 후 writing-specs Python 75 tests PASS, scripts/validate.sh PASS")
 - Plan correction: Review Viewer 결합 지점 audit 결과 Task 5 write ownership에 `review_freshness.py`, `review_components.py`, `viewer-freshness.mjs`, build·browser test runner를 추가했다. 승인 계약과 실행 순서는 바뀌지 않는다.
 - Task 6: complete (commit d47fee6; verification="static template RED 확인 후 spec-docs·lifecycle·artifact contract tests PASS, active instruction/reference/README legacy audit 0")
+- Task 3: complete (verification="새 bundle/statement trace RED 확인 후 writing-specs Python 80 tests PASS")
+- Task 4: complete (verification="bundle directory·plan trace RED 확인 후 Review source·IR·planner 28 tests PASS")
 
 ## Completion State
 
-- 현재: Task 3 plan trace와 Task 4 Review source cutover 진행 중, Task 6 lifecycle instruction 완료
+- 현재: Task 5 Review Viewer renderer와 Task 7 canonical source migration 진행 중
 - 완료 조건: Task 1–10 checkbox 완료, 9개 v3 bundle diagnostics 0, legacy active trace 0, Review Viewer 생성 0, validation·install·pressure PASS, release는 별도 승인 대기

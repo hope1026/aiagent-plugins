@@ -1,4 +1,4 @@
-### Task 2: Assemble manifest (008 R3 · 002 AC6)
+### Task 2: Assemble manifest
 
 - Route: cli
 - 의존성: Tasks 1–1; source model is required

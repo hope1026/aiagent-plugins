@@ -22,8 +22,18 @@ def _load_shared_parser() -> None:
 
 _load_shared_parser()
 
-from spec_model import MermaidBlock, SpecDocument, load_spec  # noqa: E402
-from spec_validate import PlanSpecRef, parse_plan_related_specs  # noqa: E402
+from spec_model import (  # noqa: E402
+    MermaidBlock,
+    SpecBundle,
+    SpecMember,
+    load_spec_bundle,
+)
+from spec_validate import (  # noqa: E402
+    PlanBundleRef,
+    PlanStatementRef,
+    parse_plan_governing_statements,
+    parse_plan_related_specs,
+)
 
 
 _REVIEW_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
@@ -34,8 +44,6 @@ _TASK_RE = re.compile(r"^### Task ([0-9]+): (.+?)(?: \(([^()]*)\))?$")
 _STEP_RE = re.compile(r"^- \[([ xX])\] \*\*Step ([0-9]+): (.+)\*\*$")
 _ROUTE_RE = re.compile(r"^- Route: ([a-z0-9][a-z0-9-]{0,63})$")
 _DEPENDENCY_RE = re.compile(r"^- (?:Dependencies|의존성): (\S.*)$")
-_ITEM_RE = re.compile(r"^(R|AC)([0-9]+)$")
-_RANGE_RE = re.compile(r"^(R|AC)([0-9]+)–(?:(R|AC))?([0-9]+)$")
 
 
 @dataclass(frozen=True)
@@ -46,18 +54,11 @@ class PlanStep:
 
 
 @dataclass(frozen=True)
-class SpecItemRef:
-    spec_id: str
-    item_id: str
-
-
-@dataclass(frozen=True)
 class PlanTask:
     id: str
     title: str
     route: str | None
-    requirements: tuple[SpecItemRef, ...]
-    acceptance: tuple[SpecItemRef, ...]
+    governing_statements: tuple[PlanStatementRef, ...]
     steps: tuple[PlanStep, ...]
 
 
@@ -80,7 +81,7 @@ class PlanDependency:
 class VerificationEvidence:
     id: str
     task_ids: tuple[str, ...]
-    acceptance: tuple[SpecItemRef, ...]
+    governing_statements: tuple[PlanStatementRef, ...]
     command: str
     expected: str
 
@@ -99,7 +100,7 @@ class PlanDocument:
     status: str
     goal: str
     sections: Mapping[str, str]
-    related_specs: tuple[PlanSpecRef, ...]
+    related_specs: tuple[PlanBundleRef, ...]
     routes: tuple[PlanRoute, ...]
     tasks: tuple[PlanTask, ...]
     dependencies: tuple[PlanDependency, ...]
@@ -117,10 +118,16 @@ class ReviewSource:
     namespace: str
     sha256: str
     text: str
-    requirements: tuple[str, ...] = ()
-    acceptance: tuple[str, ...] = ()
+    source_bytes: bytes = b""
+    title: str = ""
+    bundle_path: str = ""
+    bundle_title: str = ""
+    bundle_sha256: str = ""
+    member_title: str = ""
+    member_role: str = ""
     status: str = ""
-    document: SpecDocument | PlanDocument | PlanAuxiliaryDocument | None = None
+    document: SpecMember | PlanDocument | PlanAuxiliaryDocument | None = None
+    spec_bundle: SpecBundle | None = None
 
 
 @dataclass(frozen=True)
@@ -130,6 +137,10 @@ class ReviewBundle:
     comparison: tuple[ReviewSource, ...]
     context: tuple[ReviewSource, ...]
     counts: Mapping[str, object]
+
+    @property
+    def sources(self) -> tuple[ReviewSource, ...]:
+        return (*self.primary, *self.comparison, *self.context)
 
     @property
     def mermaid(self) -> tuple[MermaidBlock, ...]:
@@ -170,93 +181,90 @@ def _read_source(path: Path, repo_root: Path) -> tuple[Path, str, str]:
     return relative, text, hashlib.sha256(source).hexdigest()
 
 
-def _load_structured_spec(path: Path, repo_root: Path) -> tuple[SpecDocument, str, str]:
-    relative, text, digest = _read_source(path, repo_root)
-    document, diagnostics = load_spec(repo_root.resolve() / relative, repo_root.resolve())
-    if document is None:
+def _load_structured_bundle(path: Path, repo_root: Path) -> SpecBundle:
+    relative = repository_relative(path, repo_root)
+    bundle, diagnostics = load_spec_bundle(
+        repo_root.resolve() / relative,
+        repo_root.resolve(),
+    )
+    if bundle is None or diagnostics:
         detail = "; ".join(
             f"{item.path}:{item.line}: {item.code} {item.message}" for item in diagnostics
         )
-        raise ValueError(f"invalid structured spec: {detail}")
-    return document, text, digest
+        raise ValueError(f"invalid structured Spec Bundle: {detail}")
+    return bundle
 
 
-def _spec_counts(document: SpecDocument, selected: PlanSpecRef | None = None) -> dict[str, int]:
+def _spec_counts(bundle: SpecBundle) -> dict[str, int]:
     return {
-        "requirement": len(selected.requirements if selected else document.requirements),
-        "acceptance": len(selected.acceptance if selected else document.acceptance),
-        "mermaid": len(document.mermaid),
+        "requirement": sum(item.kind == "requirement" for item in bundle.statements),
+        "acceptance": sum(item.kind == "acceptance" for item in bundle.statements),
+        "mermaid": sum(len(member.mermaid) for member in bundle.members),
     }
 
 
-def _spec_source(
-    document: SpecDocument,
-    text: str,
-    digest: str,
+def _bundle_member_sources(
+    bundle: SpecBundle,
     role: str,
-    namespace: str,
-    selected: PlanSpecRef | None = None,
-) -> ReviewSource:
-    return ReviewSource(
-        role=role,
-        path=document.path.as_posix(),
-        namespace=namespace,
-        sha256=digest,
-        text=text,
-        requirements=(
-            selected.requirements
-            if selected is not None
-            else tuple(item.id for item in document.requirements if not item.removed)
-        ),
-        acceptance=(
-            selected.acceptance
-            if selected is not None
-            else tuple(item.id for item in document.acceptance)
-        ),
-        status=document.metadata.status,
-        document=document,
+    group: str,
+) -> tuple[ReviewSource, ...]:
+    return tuple(
+        ReviewSource(
+            role=role,
+            path=member.path.as_posix(),
+            namespace=(
+                f"{group}--{bundle.path.as_posix()}--"
+                f"{member.path.relative_to(bundle.path).as_posix()}"
+            ),
+            sha256=member.source_sha256,
+            text=member.source_text,
+            source_bytes=member.source_bytes,
+            title=member.title,
+            bundle_path=bundle.path.as_posix(),
+            bundle_title=bundle.title,
+            bundle_sha256=bundle.bundle_sha256,
+            member_title=member.title,
+            member_role=member.role,
+            status=bundle.metadata.status,
+            document=member,
+            spec_bundle=bundle,
+        )
+        for member in bundle.members
     )
 
 
 def collect_spec_sources(
     primary: Path, comparisons: Sequence[Path], repo_root: Path
 ) -> ReviewBundle:
-    primary_document, primary_text, primary_digest = _load_structured_spec(primary, repo_root)
-    primary_source = _spec_source(
-        primary_document,
-        primary_text,
-        primary_digest,
-        "primary_spec",
-        f"current--{primary_document.metadata.id}",
-    )
+    primary_bundle = _load_structured_bundle(primary, repo_root)
+    primary_sources = _bundle_member_sources(primary_bundle, "primary_spec", "primary")
     comparison_sources: list[ReviewSource] = []
     comparison_counts: dict[str, object] = {}
-    seen_paths = {primary_document.path}
+    seen_paths = {primary_bundle.path}
     for index, comparison in enumerate(comparisons, 1):
-        document, text, digest = _load_structured_spec(comparison, repo_root)
-        if document.path in seen_paths:
-            raise ValueError(f"comparison source is duplicated: {document.path.as_posix()}")
-        seen_paths.add(document.path)
-        source = _spec_source(
-            document,
-            text,
-            digest,
+        comparison_bundle = _load_structured_bundle(comparison, repo_root)
+        if comparison_bundle.path in seen_paths:
+            raise ValueError(
+                f"comparison Spec Bundle is duplicated: {comparison_bundle.path.as_posix()}"
+            )
+        seen_paths.add(comparison_bundle.path)
+        sources = _bundle_member_sources(
+            comparison_bundle,
             "comparison_spec",
-            f"comparison-{index}--{document.metadata.id}",
+            f"comparison-{index}",
         )
-        comparison_sources.append(source)
-        count_key = document.metadata.id
-        if count_key in comparison_counts:
-            count_key = source.namespace
-        comparison_counts[count_key] = _spec_counts(document)
+        comparison_sources.extend(sources)
+        comparison_counts[comparison_bundle.path.as_posix()] = _spec_counts(
+            comparison_bundle
+        )
     counts: Mapping[str, object] = MappingProxyType(
         {
-            "primary": MappingProxyType(_spec_counts(primary_document)),
+            "primary": MappingProxyType(_spec_counts(primary_bundle)),
             "comparison": MappingProxyType(comparison_counts),
             "context": MappingProxyType({}),
         }
     )
-    return ReviewBundle("spec", (primary_source,), tuple(comparison_sources), (), counts)
+    return ReviewBundle("spec", primary_sources, tuple(comparison_sources), (), counts)
 
 
 def _sections(lines: list[str]) -> Mapping[str, str]:
@@ -338,58 +346,6 @@ def _mermaid_blocks(text: str) -> tuple[MermaidBlock, ...]:
     return tuple(result)
 
 
-def _trace_items(raw: str, related: tuple[PlanSpecRef, ...]) -> tuple[tuple[SpecItemRef, ...], tuple[SpecItemRef, ...]]:
-    if not raw:
-        if related:
-            raise ValueError("Task trace must use source-qualified spec prefixes")
-        return (), ()
-    by_prefix: dict[str, list[PlanSpecRef]] = {}
-    for item in related:
-        by_prefix.setdefault(item.id[:3], []).append(item)
-    requirements: list[SpecItemRef] = []
-    acceptance: list[SpecItemRef] = []
-    for clause in raw.split(" · "):
-        match = re.fullmatch(r"([0-9]{3}) (\S.*)", clause)
-        if match is None:
-            raise ValueError(f"invalid source-qualified Task trace: {clause}")
-        prefix, item_list = match.groups()
-        matches = by_prefix.get(prefix, [])
-        if len(matches) != 1:
-            label = "unknown" if not matches else "ambiguous"
-            raise ValueError(f"{label} spec prefix in Task trace: {prefix}")
-        related_spec = matches[0]
-        allowed = {
-            "R": set(related_spec.requirements),
-            "AC": set(related_spec.acceptance),
-        }
-        for token in (item.strip() for item in item_list.split(",")):
-            expanded: list[str]
-            if single := _ITEM_RE.fullmatch(token):
-                expanded = [token]
-                kind = single.group(1)
-            elif range_match := _RANGE_RE.fullmatch(token):
-                first_kind, first_raw, last_kind, last_raw = range_match.groups()
-                if last_kind is not None and last_kind != first_kind:
-                    raise ValueError(f"mixed Task trace range: {token}")
-                first, last = int(first_raw), int(last_raw)
-                if first > last:
-                    raise ValueError(f"descending Task trace range: {token}")
-                kind = first_kind
-                expanded = [f"{kind}{number}" for number in range(first, last + 1)]
-            else:
-                raise ValueError(f"invalid Task trace item: {token}")
-            for item_id in expanded:
-                if item_id not in allowed[kind]:
-                    raise ValueError(
-                        f"Task trace item is not selected by Related Specs: {related_spec.id}:{item_id}"
-                    )
-                reference = SpecItemRef(related_spec.id, item_id)
-                target = requirements if kind == "R" else acceptance
-                if reference not in target:
-                    target.append(reference)
-    return tuple(requirements), tuple(acceptance)
-
-
 def _dependency_ids(raw: str) -> tuple[tuple[str, ...], str]:
     value = raw.strip()
     if value in {"none", "없음"}:
@@ -440,7 +396,10 @@ class _ParsedTask:
     verification: tuple[VerificationEvidence, ...]
 
 
-def _parse_tasks(text: str, related: tuple[PlanSpecRef, ...]) -> tuple[_ParsedTask, ...]:
+def _parse_tasks(
+    text: str,
+    governing_statements: tuple[PlanStatementRef, ...] = (),
+) -> tuple[_ParsedTask, ...]:
     lines = text.splitlines()
     visible_lines = _outside_fences(lines)
     headings = [
@@ -462,7 +421,15 @@ def _parse_tasks(text: str, related: tuple[PlanSpecRef, ...]) -> tuple[_ParsedTa
         visible_block = [line for _, line in _outside_fences(block)]
         number, title, trace = match.groups()
         task_id = f"Task{int(number)}"
-        requirements, acceptance = _trace_items(trace or "", related)
+        if trace:
+            raise ValueError(
+                f"{task_id} uses a legacy parenthetical trace; use exact Governing statements links"
+            )
+        task_governing = tuple(
+            reference
+            for reference in governing_statements
+            if start + 1 <= reference.line <= next_h2
+        )
 
         routes = [
             route.group(1)
@@ -512,7 +479,7 @@ def _parse_tasks(text: str, related: tuple[PlanSpecRef, ...]) -> tuple[_ParsedTa
                 VerificationEvidence(
                     evidence_id,
                     (task_id,),
-                    acceptance,
+                    task_governing,
                     _inline_value(command_match.group(1)),
                     _inline_value(expected_match.group(1)),
                 )
@@ -523,8 +490,7 @@ def _parse_tasks(text: str, related: tuple[PlanSpecRef, ...]) -> tuple[_ParsedTa
                     task_id,
                     title,
                     routes[0] if routes else None,
-                    requirements,
-                    acceptance,
+                    task_governing,
                     tuple(steps),
                 ),
                 dependencies,
@@ -602,7 +568,8 @@ def _validate_dependencies(
 def _plan_document(
     plan: Path,
     repo_root: Path,
-    related: tuple[PlanSpecRef, ...],
+    related: tuple[PlanBundleRef, ...],
+    governing_statements: tuple[PlanStatementRef, ...],
     progress: Path | None,
     task_paths: tuple[Path, ...],
 ) -> tuple[PlanDocument, dict[Path, tuple[str, str]]]:
@@ -639,8 +606,13 @@ def _plan_document(
     status = status_match.group(1) if status_match else ""
 
     parsed_tasks: list[_ParsedTask] = []
-    for text, _ in source_data.values():
-        parsed_tasks.extend(_parse_tasks(text, related))
+    for relative, (text, _) in source_data.items():
+        parsed_tasks.extend(
+            _parse_tasks(
+                text,
+                governing_statements if relative == plan_relative else (),
+            )
+        )
     task_ids = [item.task.id for item in parsed_tasks]
     if len(set(task_ids)) != len(task_ids):
         raise ValueError("duplicate plan Task across primary and task fragments")
@@ -703,15 +675,17 @@ def _collect_plan_sources(
             f"{item.path}:{item.line}: {item.code} {item.message}" for item in diagnostics
         )
         raise ValueError(f"invalid plan Related Specs: {detail}")
-    for selected in related:
-        for label, values in (
-            ("requirements", selected.requirements),
-            ("acceptance", selected.acceptance),
-        ):
-            if len(values) != len(set(values)):
-                raise ValueError(
-                    f"duplicate Related Specs {label} selection: {selected.id}"
-                )
+    governing_statements, statement_diagnostics = parse_plan_governing_statements(
+        resolved_plan,
+        repo_root.resolve(),
+        related,
+    )
+    if statement_diagnostics:
+        detail = "; ".join(
+            f"{item.path}:{item.line}: {item.code} {item.message}"
+            for item in statement_diagnostics
+        )
+        raise ValueError(f"invalid plan Governing statements: {detail}")
 
     progress_candidate = (
         progress_override
@@ -738,7 +712,12 @@ def _collect_plan_sources(
         else ()
     )
     document, source_data = _plan_document(
-        resolved_plan, repo_root, related, progress, task_paths
+        resolved_plan,
+        repo_root,
+        related,
+        governing_statements,
+        progress,
+        task_paths,
     )
 
     primary: list[ReviewSource] = []
@@ -751,6 +730,8 @@ def _collect_plan_sources(
             f"plan--{document.plan_id}",
             plan_sha,
             plan_text,
+            source_bytes=plan_text.encode("utf-8"),
+            title=document.title,
             status=document.status,
             document=document,
         )
@@ -764,6 +745,8 @@ def _collect_plan_sources(
                 f"progress--{document.plan_id}",
                 source_data[relative][1],
                 source_data[relative][0],
+                source_bytes=source_data[relative][0].encode("utf-8"),
+                title=relative.name,
                 document=PlanAuxiliaryDocument(
                     relative.as_posix(), _mermaid_blocks(source_data[relative][0])
                 ),
@@ -778,6 +761,8 @@ def _collect_plan_sources(
                 f"task--{relative.stem}",
                 source_data[relative][1],
                 source_data[relative][0],
+                source_bytes=source_data[relative][0].encode("utf-8"),
+                title=relative.stem,
                 document=PlanAuxiliaryDocument(
                     relative.as_posix(), _mermaid_blocks(source_data[relative][0])
                 ),
@@ -787,19 +772,18 @@ def _collect_plan_sources(
     context: list[ReviewSource] = []
     context_counts: dict[str, object] = {}
     for selected in related:
-        spec_path = repo_root.resolve() / selected.path
-        spec_document, text, digest = _load_structured_spec(spec_path, repo_root)
-        context.append(
-            _spec_source(
-                spec_document,
-                text,
-                digest,
+        spec_bundle = _load_structured_bundle(
+            repo_root.resolve() / selected.bundle_path,
+            repo_root,
+        )
+        context.extend(
+            _bundle_member_sources(
+                spec_bundle,
                 "related_spec_context",
-                f"context--{selected.id}",
-                selected,
+                "context",
             )
         )
-        context_counts[selected.id] = _spec_counts(spec_document, selected)
+        context_counts[spec_bundle.path.as_posix()] = _spec_counts(spec_bundle)
 
     primary_counts = {
         "task": len(document.tasks),

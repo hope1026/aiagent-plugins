@@ -3,14 +3,9 @@
 Status: active
 
 **Related Specs:**
-- id: 008-alpha
-  path: docs/specs/008-alpha/spec.md
-  requirements: [R1, R2, R3]
-  acceptance: [AC1]
-- id: 002-beta
-  path: docs/specs/002-beta/spec.md
-  requirements: [R1]
-  acceptance: [AC4, AC6]
+
+- bundle: docs/specs/semantic-spec-bundles/
+- bundle: docs/specs/supporting-policy/
 
 **Goal:** Build a deterministic review source bundle.
 
@@ -29,7 +24,12 @@ flowchart LR
 
 ## Tasks
 
-### Task 1: Parse sources (008 R1–R3 · 002 AC4, AC6)
+### Task 1: Parse sources
+
+Governing statements:
+
+- [Every declared member enters the review source set exactly once](../../specs/semantic-spec-bundles/member-loading-and-provenance.md#every-declared-member-enters-the-review-source-set-exactly-once)
+- [Repository-contained review inputs load successfully](../../specs/supporting-policy/supporting-policy-contract.md#repository-contained-review-inputs-load-successfully)
 
 - Route: source-model
 - Dependencies: none

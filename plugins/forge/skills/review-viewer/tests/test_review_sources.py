@@ -13,6 +13,16 @@ import unittest
 
 TEST_DIR = Path(__file__).resolve().parent
 REPO = TEST_DIR / "fixtures" / "repository"
+SPEC_BUNDLE_FIXTURES = (
+    TEST_DIR.parents[1] / "writing-specs" / "tests" / "fixtures" / "spec-bundle"
+)
+PLAN_BUNDLE_REPOSITORY = (
+    TEST_DIR.parents[1]
+    / "writing-specs"
+    / "tests"
+    / "fixtures"
+    / "plan-bundle-repository"
+)
 SCRIPTS = TEST_DIR.parent / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
@@ -78,6 +88,66 @@ def write_viewer(path: Path, manifest: dict[str, object]) -> None:
 
 
 class ReviewSourcesTest(unittest.TestCase):
+    def test_five_member_bundle_preserves_member_and_bundle_provenance_once(self) -> None:
+        bundle_path = SPEC_BUNDLE_FIXTURES / "valid-five-file"
+
+        bundle = collect_spec_sources(bundle_path, (), SPEC_BUNDLE_FIXTURES)
+
+        self.assertEqual(len(bundle.sources), 5)
+        self.assertEqual(
+            [source.path for source in bundle.primary],
+            [
+                "valid-five-file/multi-document-bundle.md",
+                "valid-five-file/runtime-behavior.md",
+                "valid-five-file/acceptance-outcomes.md",
+                "valid-five-file/decisions-and-history.md",
+                "valid-five-file/supporting-context.md",
+            ],
+        )
+        self.assertEqual(len({source.path for source in bundle.primary}), 5)
+        self.assertEqual(len({source.bundle_sha256 for source in bundle.primary}), 1)
+        self.assertTrue(
+            all(
+                source.bundle_path == "valid-five-file"
+                and source.member_title
+                and source.member_role
+                and source.sha256 == hashlib.sha256(source.source_bytes).hexdigest()
+                for source in bundle.primary
+            )
+        )
+
+    def test_legacy_single_file_spec_is_not_a_review_source(self) -> None:
+        with self.assertRaisesRegex(ValueError, "invalid structured Spec Bundle"):
+            collect_spec_sources(
+                REPO / "docs/specs/008-alpha/spec.md",
+                (),
+                REPO,
+            )
+
+    def test_plan_collects_every_related_bundle_member_and_exact_statement_refs(self) -> None:
+        bundle = collect_plan_sources(
+            PLAN_BUNDLE_REPOSITORY
+            / "docs/plans/semantic-migration/valid-plan.md",
+            PLAN_BUNDLE_REPOSITORY,
+        )
+
+        document = bundle.primary[0].document
+        assert document is not None
+        self.assertEqual(
+            [source.path for source in bundle.context],
+            [
+                "docs/specs/semantic-spec-bundles/semantic-spec-bundle-contract.md",
+                "docs/specs/semantic-spec-bundles/bundle-validation-outcomes.md",
+            ],
+        )
+        self.assertEqual(
+            [reference.heading for reference in document.tasks[0].governing_statements],
+            [
+                "Each bundle has exactly one root document",
+                "A bundle with one declared root passes structural validation",
+            ],
+        )
+
     def test_plan_document_preserves_canonical_goal_in_both_locales(self) -> None:
         english = collect_plan_sources(
             REPO / "docs/plans/001-demo/plan.md",
@@ -200,48 +270,21 @@ SHOULD_NOT --> COUNT_TILDE
                 ("flowchart LR\n    P[Plan] --> T[Tasks]",),
             )
 
-    def test_duplicate_related_spec_selections_fail_public_and_cli_collection(self) -> None:
-        results: list[tuple[str | None, int, bool]] = []
-        replacements = (
-            ("requirements: [R1]", "requirements: [R1, R1]"),
-            ("acceptance: [AC4, AC6]", "acceptance: [AC4, AC4]"),
-        )
-        for old, new in replacements:
-            with TemporaryDirectory() as temporary:
-                root = Path(temporary)
-                shutil.copytree(REPO, root, dirs_exist_ok=True)
-                plan = root / "docs/plans/001-demo/plan.md"
-                plan.write_text(
-                    plan.read_text(encoding="utf-8").replace(old, new),
-                    encoding="utf-8",
-                )
-                try:
-                    collect_plan_sources(plan, root)
-                except ValueError as error:
-                    public_error = str(error)
-                else:
-                    public_error = None
-                initialize_git_repository(root)
-                before = repository_snapshot(root)
-                result = run_builder(
-                    root,
-                    "--mode",
-                    "plan",
-                    "--plan",
-                    "docs/plans/001-demo/plan.md",
-                    "--review-id",
-                    "duplicate-selection",
-                    "--generated-at",
-                    "2026-08-01T00:00:00Z",
-                    "--dry-run",
-                    "--format",
-                    "json",
-                )
-                results.append((public_error, result.returncode, before == repository_snapshot(root)))
-        self.assertEqual(
-            tuple((error is not None and "duplicate" in error, code, unchanged) for error, code, unchanged in results),
-            ((True, 2, True), (True, 2, True)),
-        )
+    def test_duplicate_related_bundle_fails_source_collection(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(REPO, root, dirs_exist_ok=True)
+            plan = root / "docs/plans/001-demo/plan.md"
+            plan.write_text(
+                plan.read_text(encoding="utf-8").replace(
+                    "- bundle: docs/specs/supporting-policy/",
+                    "- bundle: docs/specs/semantic-spec-bundles/",
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "duplicated"):
+                collect_plan_sources(plan, root)
 
     def test_resolved_plan_source_aliases_fail_public_and_cli_collection(self) -> None:
         results: list[tuple[str | None, int, bool]] = []
@@ -418,20 +461,25 @@ SHOULD_NOT --> COUNT_TILDE
 
     def test_spec_primary_and_comparison_are_namespaced(self) -> None:
         bundle = collect_spec_sources(
-            REPO / "docs/specs/008-alpha/spec.md",
-            [REPO / "docs/specs/002-beta/spec.md"],
+            REPO / "docs/specs/semantic-spec-bundles",
+            [REPO / "docs/specs/supporting-policy"],
             REPO,
         )
 
         self.assertEqual(bundle.mode, "spec")
-        self.assertEqual([source.role for source in bundle.primary], ["primary_spec"])
-        self.assertEqual(
-            [source.role for source in bundle.comparison], ["comparison_spec"]
-        )
+        self.assertEqual(len(bundle.primary), 5)
+        self.assertEqual({source.role for source in bundle.primary}, {"primary_spec"})
+        self.assertEqual({source.role for source in bundle.comparison}, {"comparison_spec"})
         self.assertNotEqual(bundle.primary[0].namespace, bundle.comparison[0].namespace)
-        self.assertEqual(bundle.primary[0].path, "docs/specs/008-alpha/spec.md")
-        self.assertEqual(bundle.counts["primary"]["requirement"], 3)
-        self.assertEqual(bundle.counts["comparison"]["002-beta"]["acceptance"], 6)
+        self.assertEqual(
+            bundle.primary[0].path,
+            "docs/specs/semantic-spec-bundles/semantic-spec-bundle-contract.md",
+        )
+        self.assertEqual(bundle.counts["primary"]["requirement"], 1)
+        self.assertEqual(
+            bundle.counts["comparison"]["docs/specs/supporting-policy"]["acceptance"],
+            1,
+        )
 
     def test_plan_primary_auxiliary_and_context_are_separate(self) -> None:
         bundle = collect_plan_sources(REPO / "docs/plans/001-demo/plan.md", REPO)
@@ -442,26 +490,28 @@ SHOULD_NOT --> COUNT_TILDE
         )
         self.assertEqual(
             [source.role for source in bundle.context],
-            ["related_spec_context", "related_spec_context"],
+            ["related_spec_context"] * 6,
         )
         self.assertEqual(bundle.counts["primary"]["task"], 2)
         self.assertEqual(bundle.counts["primary"]["step"], 3)
-        self.assertEqual(bundle.counts["context"]["008-alpha"]["requirement"], 3)
-        self.assertEqual(bundle.counts["context"]["002-beta"]["acceptance"], 2)
+        self.assertEqual(
+            bundle.counts["context"]["docs/specs/semantic-spec-bundles"]["requirement"],
+            1,
+        )
+        self.assertEqual(
+            bundle.counts["context"]["docs/specs/supporting-policy"]["acceptance"],
+            1,
+        )
 
         document = bundle.primary[0].document
         self.assertIsNotNone(document)
         assert document is not None
         self.assertEqual(
-            document.tasks[0].requirements,
-            tuple(type(document.tasks[0].requirements[0])("008-alpha", f"R{number}") for number in range(1, 4)),
-        )
-        self.assertEqual(
-            document.tasks[0].acceptance,
-            (
-                type(document.tasks[0].acceptance[0])("002-beta", "AC4"),
-                type(document.tasks[0].acceptance[0])("002-beta", "AC6"),
-            ),
+            [item.heading for item in document.tasks[0].governing_statements],
+            [
+                "Every declared member enters the review source set exactly once",
+                "Repository-contained review inputs load successfully",
+            ],
         )
         self.assertEqual(
             [(item.from_task, item.to_task) for item in document.dependencies],
@@ -482,15 +532,22 @@ SHOULD_NOT --> COUNT_TILDE
             ],
         )
 
-    def test_trace_and_dependency_errors_fail_closed(self) -> None:
+    def test_statement_trace_and_dependency_errors_fail_closed(self) -> None:
         plan = (REPO / "docs/plans/001-demo/plan.md").read_text(encoding="utf-8")
         task = (
             REPO / "docs/plans/001-demo/tasks/002-manifest.md"
         ).read_text(encoding="utf-8")
         cases = {
-            "unknown prefix": plan.replace("008 R1–R3", "999 R1–R3"),
-            "descending range": plan.replace("008 R1–R3", "008 R3–R1"),
-            "mixed range": plan.replace("008 R1–R3", "008 R1–AC3"),
+            "wrong heading": plan.replace(
+                "Every declared member enters the review source set exactly once",
+                "A missing statement heading",
+                1,
+            ),
+            "wrong anchor": plan.replace(
+                "#every-declared-member-enters-the-review-source-set-exactly-once)",
+                "#wrong-anchor)",
+                1,
+            ),
             "missing dependency": task.replace("Tasks 1–1", "Task 9"),
             "self dependency": task.replace("Tasks 1–1", "Task 2"),
             "cycle": plan.replace("- Dependencies: none", "- Dependencies: Task 2"),
@@ -501,7 +558,7 @@ SHOULD_NOT --> COUNT_TILDE
                 shutil.copytree(REPO, root, dirs_exist_ok=True)
                 target = root / "docs/plans/001-demo/plan.md"
                 fragment = root / "docs/plans/001-demo/tasks/002-manifest.md"
-                if name in {"unknown prefix", "descending range", "mixed range", "cycle"}:
+                if name in {"wrong heading", "wrong anchor", "cycle"}:
                     target.write_text(replacement, encoding="utf-8")
                 else:
                     fragment.write_text(replacement, encoding="utf-8")
@@ -510,7 +567,11 @@ SHOULD_NOT --> COUNT_TILDE
 
     def test_dependency_grammar_and_historical_task_are_preserved(self) -> None:
         task_three = """\
-### Task 3: Historical record (008 R1 · 002 AC4)
+### Task 3: Historical record
+
+Governing statements:
+
+- [Every declared member enters the review source set exactly once](../../specs/semantic-spec-bundles/member-loading-and-provenance.md#every-declared-member-enters-the-review-source-set-exactly-once)
 
 - Dependencies: Tasks 1–2; both canonical tasks are prerequisites
 
@@ -593,7 +654,7 @@ Expected: this fenced example is ignored
             shutil.copytree(REPO, root, dirs_exist_ok=True)
             first = root / "docs/plans/001-demo/tasks/001-first.md"
             first.write_text(
-                """### Task 4: Lexically first source (008 R1)
+                """### Task 4: Lexically first source
 
 - Route: source-model
 - Dependencies: none
