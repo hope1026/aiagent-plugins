@@ -267,7 +267,7 @@ class SpecBundle:
 - 병렬 안전성: sequential; plan과 Viewer가 stable diagnostics·inspect schema를 소비한다.
 - Approval gate: 없음
 
-- [ ] **Step 1: invalid matrix와 inspect JSON의 failing tests를 추가한다.**
+- [x] **Step 1: invalid matrix와 inspect JSON의 failing tests를 추가한다.**
 
 ```python
 def test_bundle_layout_statement_and_path_transition_matrix(self) -> None:
@@ -284,23 +284,23 @@ def test_bundle_layout_statement_and_path_transition_matrix(self) -> None:
     })
 ```
 
-- [ ] **Step 2: focused validation test를 실행해 기존 `spec.md` discovery 때문에 expected code set과 다른 assertion failure를 확인한다.**
+- [x] **Step 2: focused validation test를 실행해 기존 `spec.md` discovery 때문에 expected code set과 다른 assertion failure를 확인한다.**
 
 실행: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts python3 -m unittest plugins/forge/skills/writing-specs/tests/test_spec_validate.py plugins/forge/skills/writing-specs/tests/test_spec_transitions.py plugins/forge/skills/writing-specs/tests/test_spec_docs_cli.py -v`
 
 예상: 새 bundle matrix test가 `FAIL`; 기존 test는 implementation 전 baseline 결과를 유지한다.
 
-- [ ] **Step 3: bundle discovery, containment, statement coverage, relation, hash와 path transition validation을 구현한다.**
+- [x] **Step 3: bundle discovery, containment, statement coverage, relation, hash와 path transition validation을 구현한다.**
 
 `validate_repository`는 `docs/specs/`의 direct child directory를 lexical order로 순회하고 각 directory에서 `role: root`가 있는 Markdown을 정확히 하나 찾는다. `.bundle-transitions.json`은 `fromSourcePath`, `fromSourceSha256`, `disposition`, `toBundlePath`, `evidencePath`, `reason`만 받으며 v2 transition field를 거부한다. Diagnostics는 `(bundle path, member path, line, code)` 순서로 정렬한다.
 
-- [ ] **Step 4: CLI inspect와 repository suite를 실행해 PASS를 확인한다.**
+- [x] **Step 4: CLI inspect와 repository suite를 실행해 PASS를 확인한다.**
 
 실행: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts python3 -m unittest discover -s plugins/forge/skills/writing-specs/tests -p 'test_*.py' -v`
 
 예상: 모든 Python test `OK`; inspect JSON에 `id`가 없고 exact key order가 유지된다.
 
-- [ ] **Step 5: validator 변경을 commit한다.**
+- [x] **Step 5: validator 변경을 commit한다.**
 
 실행: `git add plugins/forge/skills/writing-specs/scripts plugins/forge/skills/writing-specs/tests && git commit -m "feat(forge): validate semantic spec bundles"`
 
@@ -411,10 +411,15 @@ def test_spec_bundle_members_enter_ir_once_with_statement_relations(self) -> Non
 **파일:**
 - 수정: `plugins/forge/skills/review-viewer/scripts/review_renderer.py`
 - 수정: `plugins/forge/skills/review-viewer/scripts/build_review_viewer.py`
+- 수정: `plugins/forge/skills/review-viewer/scripts/review_freshness.py`
+- 수정: `plugins/forge/skills/review-viewer/scripts/review_components.py`
 - 수정: `plugins/forge/skills/review-viewer/assets/viewer-template.html`
+- 수정: `plugins/forge/skills/review-viewer/assets/viewer-freshness.mjs`
 - 수정: `plugins/forge/skills/review-viewer/tests/test_review_renderer.py`
 - 수정: `plugins/forge/skills/review-viewer/tests/test-viewer-freshness.mjs`
 - 수정: `plugins/forge/skills/review-viewer/tests/browser/review-viewer.spec.mjs`
+- 수정: `plugins/forge/skills/review-viewer/tests/test-build-review-viewer.sh`
+- 수정: `plugins/forge/skills/review-viewer/tests/run-review-viewer-browser.sh`
 
 **Interfaces:**
 - 소비: Task 4의 bundle/member Review sources와 Semantic IR
@@ -710,9 +715,12 @@ Counter text: `A deadline, prior implementation, or reviewer request never autho
 
 - 2026-08-09: exact Spec Delta 승인, bootstrap governing source 3개 approved 전환과 writer transaction PASS.
 - Task 1: routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="모든 lifecycle consumer가 의존하는 durable schema model과 hash contract를 소유한다")
-- Task 1: complete (commits 3a359a7..3a359a7; verification="bundle model RED 2회 확인 후 writing-specs Python 61 tests PASS")
+- Task 1: complete (commits 3a359a7..7f9f4b0; verification="초기 bundle model RED와 경계 audit RED 8개 확인 후 model·legacy parser 16 tests PASS")
+- Task 2: routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="repository authority gate와 baseline transition safety를 함께 소유한다")
+- Task 2: complete (commit 7f9f4b0; verification="repository RED 27개와 inspect·baseline RED 확인 후 writing-specs Python 75 tests PASS, scripts/validate.sh PASS")
+- Plan correction: Review Viewer 결합 지점 audit 결과 Task 5 write ownership에 `review_freshness.py`, `review_components.py`, `viewer-freshness.mjs`, build·browser test runner를 추가했다. 승인 계약과 실행 순서는 바뀌지 않는다.
 
 ## Completion State
 
-- 현재: plan 작성 완료, candidate execution 시작 전
+- 현재: Task 2 완료, Task 3 plan trace cutover 진행 중
 - 완료 조건: Task 1–10 checkbox 완료, 9개 v3 bundle diagnostics 0, legacy active trace 0, Review Viewer 생성 0, validation·install·pressure PASS, release는 별도 승인 대기
