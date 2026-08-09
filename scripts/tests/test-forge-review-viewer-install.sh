@@ -73,7 +73,7 @@ for skills in "$CODEX_SKILLS" "$CLAUDE_SKILLS" "$ANTIGRAVITY_SKILLS"; do
     fail "missing installed structured spec template: $skills"
   test -x "$skills/review-viewer/scripts/build-review-viewer.sh" ||
     fail "missing installed Review Viewer builder: $skills"
-  for module in review_ir.py review_planner.py review_components.py review_renderer.py; do
+  for module in review_sources.py review_ir.py review_planner.py review_components.py review_renderer.py review_freshness.py; do
     test -f "$skills/review-viewer/scripts/$module" ||
       fail "missing installed adaptive Review Viewer module $module: $skills"
   done
@@ -88,7 +88,7 @@ test ! -e "$TEST_HOME/.claude" || fail "--target-root wrote Claude data to HOME"
 assert_inside_target_trace
 
 # One committed source fixture makes provenance stable across all three exports.
-cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/repository/valid-repository" \
+cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/spec-bundle-repository/valid-multi-bundle" \
   "$TEST_ROOT/spec-source"
 git -C "$TEST_ROOT/spec-source" init -q
 git -C "$TEST_ROOT/spec-source" config user.name fixture
@@ -132,15 +132,13 @@ from spec_transitions import load_transition_manifest
 repo = Path(sys.argv[1])
 source = json.dumps(
     {
-        "schema": "forge/spec-transitions@1",
+        "schema": "forge/spec-bundle-transitions@1",
         "transitions": [
             {
-                "fromId": "001-old",
-                "fromPath": "docs/specs/001-old/spec.md",
+                "fromSourcePath": "docs/specs/prior-contract",
                 "fromSourceSha256": "a" * 64,
                 "disposition": "superseded",
-                "toId": "001-current",
-                "toPath": "docs/specs/001-current/spec.md",
+                "toBundlePath": "docs/specs/semantic-workflows",
                 "evidencePath": "docs/plans/install-proof/evidence.md",
                 "reason": "Installed parser parity.",
             }
@@ -157,12 +155,10 @@ transition = manifest.transitions[0]
 print(
     json.dumps(
         {
-            "fromId": transition.from_id,
-            "fromPath": transition.from_path.as_posix(),
+            "fromSourcePath": transition.from_source_path.as_posix(),
             "fromSourceSha256": transition.from_source_sha256,
             "disposition": transition.disposition,
-            "toId": transition.to_id,
-            "toPath": transition.to_path.as_posix(),
+            "toBundlePath": transition.to_bundle_path.as_posix(),
             "evidencePath": transition.evidence_path.as_posix(),
             "reason": transition.reason,
         },
@@ -174,13 +170,13 @@ PY
   "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$spec_repo" \
     validate --root docs/specs
   "$skills/writing-specs/scripts/spec-docs.sh" --repo-root "$spec_repo" \
-    inspect --spec docs/specs/001-valid-feature/spec.md --format json \
+    inspect --spec docs/specs/semantic-workflows/ --format json \
     >"$TEST_ROOT/$agent.inspect.json"
 
   (
     cd "$review_repo"
     "$skills/review-viewer/scripts/build-review-viewer.sh" \
-      --mode spec --spec docs/specs/008-alpha/spec.md \
+      --mode spec --spec docs/specs/semantic-spec-bundles/ \
       --review-id install-proof --generated-at 2026-08-01T00:00:00Z --offline
   ) >/dev/null
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 from pathlib import Path
 import shutil
@@ -33,7 +32,6 @@ from review_sources import (  # noqa: E402
     validate_review_id,
 )
 from review_freshness import find_repository_root  # noqa: E402
-from review_freshness import check_review  # noqa: E402
 
 
 BUILDER = TEST_DIR.parent / "scripts" / "build-review-viewer.sh"
@@ -77,16 +75,6 @@ def run_builder(root: Path, *arguments: str) -> subprocess.CompletedProcess[str]
     )
 
 
-def write_viewer(path: Path, manifest: dict[str, object]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        '<script type="application/json" id="forge-source-manifest">'
-        + json.dumps(manifest, sort_keys=True)
-        + "</script>\n",
-        encoding="utf-8",
-    )
-
-
 class ReviewSourcesTest(unittest.TestCase):
     def test_five_member_bundle_preserves_member_and_bundle_provenance_once(self) -> None:
         bundle_path = SPEC_BUNDLE_FIXTURES / "valid-five-file"
@@ -116,12 +104,12 @@ class ReviewSourcesTest(unittest.TestCase):
             )
         )
 
-    def test_legacy_single_file_spec_is_not_a_review_source(self) -> None:
+    def test_unsupported_single_file_spec_is_not_a_review_source(self) -> None:
         with self.assertRaisesRegex(ValueError, "invalid structured Spec Bundle"):
             collect_spec_sources(
-                REPO / "docs/specs/008-alpha/spec.md",
+                TEST_DIR / "fixtures/unsupported-single-file.md",
                 (),
-                REPO,
+                TEST_DIR / "fixtures",
             )
 
     def test_plan_collects_every_related_bundle_member_and_exact_statement_refs(self) -> None:
@@ -326,138 +314,6 @@ SHOULD_NOT --> COUNT_TILDE
             tuple((error is not None and "alias" in error, code, unchanged) for error, code, unchanged in results),
             ((True, 2, True), (True, 2, True)),
         )
-
-    def test_checker_rejects_wrong_path_shape_and_mode_cardinality_read_only(self) -> None:
-        with TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            shutil.copytree(REPO, root, dirs_exist_ok=True)
-            initialize_git_repository(root)
-            alpha = root / "docs/specs/008-alpha/spec.md"
-            beta = root / "docs/specs/002-beta/spec.md"
-
-            def source(role: str, path: Path, namespace: str) -> dict[str, object]:
-                return {
-                    "role": role,
-                    "path": path.relative_to(root).as_posix(),
-                    "namespace": namespace,
-                    "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-                    "requirements": ["R1"],
-                    "acceptance": ["AC1"],
-                }
-
-            primary = source("primary_spec", alpha, "current--008-alpha")
-            manifest: dict[str, object] = {
-                "review_id": "checker",
-                "mode": "spec",
-                "locale": "en",
-                "generated_at": "2026-08-01T00:00:00Z",
-                "checkpoint": "working-tree",
-                "commit": "fixture",
-                "rebuild_command": "build-review-viewer.sh --mode spec",
-                "source_base": "../../../",
-                "offline": False,
-                "counts": {
-                    "primary": {"requirement": 3},
-                    "comparison": {},
-                    "context": {},
-                },
-                "freshness": "unverified",
-                "sources": [primary],
-            }
-            fixed = root / ".forge/reviews/checker/view.html"
-            write_viewer(fixed, manifest)
-            valid_state = check_review(fixed, root).overall
-
-            invalid_states: list[str] = []
-            wrong_path = root / "docs/specs/008-alpha/view.html"
-            write_viewer(wrong_path, manifest)
-            invalid_states.append(check_review(wrong_path, root).overall)
-
-            cases: list[dict[str, object]] = []
-            mismatch = dict(manifest)
-            mismatch["review_id"] = "different"
-            cases.append(mismatch)
-            invalid_mode = dict(manifest)
-            invalid_mode["mode"] = 7
-            cases.append(invalid_mode)
-            cases.append({"sources": [primary]})
-            comparison_only = dict(manifest)
-            comparison_only["sources"] = [
-                source("comparison_spec", alpha, "comparison-1--008-alpha")
-            ]
-            cases.append(comparison_only)
-            missing_arrays = dict(manifest)
-            missing_arrays["sources"] = [
-                {key: value for key, value in primary.items() if key != "acceptance"}
-            ]
-            cases.append(missing_arrays)
-            plan_duplicate = dict(manifest)
-            plan_duplicate["mode"] = "plan"
-            plan_duplicate["sources"] = [
-                source("primary_plan", alpha, "plan--one"),
-                source("primary_plan", beta, "plan--two"),
-            ]
-            cases.append(plan_duplicate)
-            for case in cases:
-                write_viewer(fixed, case)
-                invalid_states.append(check_review(fixed, root).overall)
-
-            plan_manifest = dict(manifest)
-            plan_manifest["review_id"] = "plan-checker"
-            plan_manifest["mode"] = "plan"
-            plan_rows = [
-                source(
-                    "primary_plan",
-                    root / "docs/plans/001-demo/plan.md",
-                    "plan--001-demo",
-                ),
-                source(
-                    "plan_progress",
-                    root / "docs/plans/001-demo/progress.md",
-                    "progress--001-demo",
-                ),
-                source(
-                    "plan_task",
-                    root / "docs/plans/001-demo/tasks/002-manifest.md",
-                    "task--002-manifest",
-                ),
-                source("related_spec_context", alpha, "context--008-alpha"),
-                source("related_spec_context", beta, "context--002-beta"),
-            ]
-            for row in plan_rows[:3]:
-                row["requirements"] = []
-                row["acceptance"] = []
-            plan_manifest["sources"] = plan_rows
-            plan_viewer = root / ".forge/reviews/plan-checker/view.html"
-            write_viewer(plan_viewer, plan_manifest)
-            valid_plan_state = check_review(plan_viewer, root).overall
-
-            before = repository_snapshot(root)
-            cli = run_builder(
-                root,
-                "--check",
-                ".forge/reviews/checker/view.html",
-                "--repo-root",
-                str(root),
-                "--format",
-                "json",
-            )
-            self.assertEqual(
-                (
-                    valid_state,
-                    valid_plan_state,
-                    tuple(invalid_states),
-                    cli.returncode,
-                    before == repository_snapshot(root),
-                ),
-                (
-                    "current",
-                    "current",
-                    ("malformed",) * 7,
-                    1,
-                    True,
-                ),
-            )
 
     def test_spec_primary_and_comparison_are_namespaced(self) -> None:
         bundle = collect_spec_sources(

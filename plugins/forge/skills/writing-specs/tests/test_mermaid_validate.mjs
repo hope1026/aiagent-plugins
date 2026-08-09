@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,11 +41,14 @@ function extractMermaid(path) {
   );
 }
 
-const diagrams = [
-  ...extractMermaid(resolve(repoRoot, "docs/specs/adaptive-execution-routing/adaptive-execution-routing-and-checkpoints.md")),
-  ...extractMermaid(resolve(repoRoot, "docs/specs/forge-ui-design-skill-separation/forge-ui-design-skill-separation.md")),
-];
-assert.equal(diagrams.length, 4, "the two governing bundles must provide four diagrams");
+const specMarkdown = readdirSync(resolve(repoRoot, "docs/specs"), {
+  recursive: true,
+  withFileTypes: true,
+})
+  .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+  .map((entry) => resolve(entry.parentPath, entry.name));
+const diagrams = specMarkdown.flatMap(extractMermaid);
+assert.ok(diagrams.length > 0, "active Spec Bundles must provide Mermaid coverage");
 for (const diagram of diagrams) {
   const { status, payload } = validate(diagram);
   assert.equal(status, 0);

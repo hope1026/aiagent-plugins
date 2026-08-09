@@ -18,10 +18,10 @@ _MANIFEST_RE = re.compile(
 )
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _REVIEW_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
-_REQUIREMENT_RE = re.compile(r"^R[0-9]+$")
-_ACCEPTANCE_RE = re.compile(r"^AC[0-9]+$")
 _STATE_RANK = {"current": 0, "stale": 1, "missing": 2, "malformed": 3}
 _GROUPS = ("primary", "comparison", "context")
+_MEMBER_ROLES = {"primary_spec", "comparison_spec", "related_spec_context"}
+_PLAN_ROLES = {"primary_plan", "plan_progress", "plan_task"}
 
 
 @dataclass(frozen=True)
@@ -55,11 +55,20 @@ def _repo_relative(path: Path, repo_root: Path) -> Path:
         raise ValueError(f"path must remain inside repository: {path}") from error
 
 
-def _digest(path: Path) -> str:
+def _bundle_digest(bundle_path: str, members: list[tuple[str, bytes]]) -> str:
     value = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(65536), b""):
-            value.update(chunk)
+
+    def frame(contents: bytes) -> None:
+        value.update(len(contents).to_bytes(8, "big"))
+        value.update(contents)
+
+    frame(bundle_path.encode("utf-8"))
+    prefix = bundle_path + "/"
+    for path, contents in sorted(members):
+        if not path.startswith(prefix):
+            raise ValueError(f"member path is outside bundle: {path}")
+        frame(path[len(prefix) :].encode("utf-8"))
+        frame(contents)
     return value.hexdigest()
 
 
@@ -96,11 +105,7 @@ def _malformed(viewer: str, diagnostic: str) -> CheckResult:
 
 
 def _valid_counts(value: object) -> bool:
-    if not isinstance(value, dict) or set(value) != {
-        "primary",
-        "comparison",
-        "context",
-    }:
+    if not isinstance(value, dict) or set(value) != set(_GROUPS):
         return False
 
     def valid_node(node: object) -> bool:
@@ -114,32 +119,21 @@ def _valid_counts(value: object) -> bool:
     return all(isinstance(group, dict) and valid_node(group) for group in value.values())
 
 
-def _valid_selected_items(value: object, pattern: re.Pattern[str]) -> bool:
-    return (
-        isinstance(value, list)
-        and all(isinstance(item, str) and pattern.fullmatch(item) for item in value)
-        and len(value) == len(set(value))
-    )
+def _valid_text(row: dict[str, object], fields: tuple[str, ...]) -> bool:
+    return all(isinstance(row.get(field), str) and row[field] for field in fields)
 
 
-def _manifest_shape_error(
-    manifest: object, path_review_id: str
-) -> str | None:
+def _valid_hash(value: object) -> bool:
+    return isinstance(value, str) and _SHA256_RE.fullmatch(value) is not None
+
+
+def _manifest_shape_error(manifest: object, path_review_id: str) -> str | None:
     if not isinstance(manifest, dict):
         return "source manifest must be an object"
     required = {
-        "review_id",
-        "mode",
-        "locale",
-        "generated_at",
-        "checkpoint",
-        "commit",
-        "rebuild_command",
-        "source_base",
-        "offline",
-        "counts",
-        "freshness",
-        "sources",
+        "review_id", "mode", "locale", "generated_at", "checkpoint", "commit",
+        "rebuild_command", "source_base", "offline", "counts", "freshness",
+        "bundles", "member_sources", "plan_sources",
     }
     missing = sorted(required - set(manifest))
     if missing:
@@ -149,21 +143,15 @@ def _manifest_shape_error(
         return "source manifest review_id is invalid"
     if review_id != path_review_id:
         return "source manifest review_id does not match the viewer path"
-    if not isinstance(manifest["mode"], str) or manifest["mode"] not in {
-        "spec",
-        "plan",
-    }:
+    if manifest["mode"] not in {"spec", "plan"}:
         return "source manifest mode must be spec or plan"
-    if not isinstance(manifest["locale"], str) or manifest["locale"] not in {
-        "en",
-        "ko",
-    }:
+    if manifest["locale"] not in {"en", "ko"}:
         return "source manifest locale must be en or ko"
     for field in ("generated_at", "checkpoint", "rebuild_command"):
         if not isinstance(manifest[field], str) or not manifest[field]:
             return f"source manifest {field} must be a non-empty string"
-    if manifest["commit"] is not None and (
-        not isinstance(manifest["commit"], str) or not manifest["commit"]
+    if manifest["commit"] is not None and not (
+        isinstance(manifest["commit"], str) and manifest["commit"]
     ):
         return "source manifest commit must be null or a non-empty string"
     if manifest["source_base"] != "../../../":
@@ -174,59 +162,91 @@ def _manifest_shape_error(
         return "source manifest counts must contain primary, comparison, and context count maps"
     if manifest["freshness"] != "unverified":
         return "source manifest freshness must be unverified"
-    sources = manifest["sources"]
-    if not isinstance(sources, list) or not sources:
-        return "source manifest must contain at least one source"
-    for index, row in enumerate(sources):
-        if not isinstance(row, dict):
-            return f"source row {index + 1} must be an object"
-        missing_row = sorted(
-            {"role", "namespace", "path", "sha256", "requirements", "acceptance"}
-            - set(row)
-        )
-        if missing_row:
-            return f"source row {index + 1} is missing fields: {', '.join(missing_row)}"
-        if not all(
-            isinstance(row[field], str) and row[field]
-            for field in ("role", "namespace", "path")
-        ):
-            return f"source row {index + 1} has invalid role, namespace, or path"
-        if (
-            not isinstance(row["sha256"], str)
-            or _SHA256_RE.fullmatch(row["sha256"]) is None
-        ):
-            return f"source row {index + 1} has invalid sha256"
-        if not _valid_selected_items(row["requirements"], _REQUIREMENT_RE):
-            return f"source row {index + 1} has invalid requirements"
-        if not _valid_selected_items(row["acceptance"], _ACCEPTANCE_RE):
-            return f"source row {index + 1} has invalid acceptance"
-        if "status" in row and not isinstance(row["status"], str):
-            return f"source row {index + 1} has invalid status"
+    bundles = manifest["bundles"]
+    members = manifest["member_sources"]
+    plan_sources = manifest["plan_sources"]
+    if not all(isinstance(value, list) for value in (bundles, members, plan_sources)):
+        return "source manifest bundles, member_sources, and plan_sources must be arrays"
+    if not members and not plan_sources:
+        return "source manifest must contain at least one member or plan source"
 
-    roles = [row["role"] for row in sources]
+    bundle_keys: set[tuple[str, str]] = set()
+    for index, row in enumerate(bundles):
+        if not isinstance(row, dict) or not _valid_text(
+            row, ("role", "path", "root_path", "title", "sha256")
+        ):
+            return f"bundle row {index + 1} has invalid fields"
+        if row["role"] not in _MEMBER_ROLES:
+            return f"bundle row {index + 1} has invalid role"
+        if not _valid_hash(row["sha256"]):
+            return f"bundle row {index + 1} has invalid sha256"
+        key = (str(row["role"]), str(row["path"]))
+        if key in bundle_keys:
+            return f"duplicate bundle row: {row['path']}"
+        bundle_keys.add(key)
+
+    member_paths: set[str] = set()
+    member_keys: dict[tuple[str, str], list[dict[str, object]]] = {}
+    for index, row in enumerate(members):
+        if not isinstance(row, dict) or not _valid_text(
+            row,
+            (
+                "key", "role", "namespace", "bundle_path", "bundle_title",
+                "bundle_sha256", "path", "title", "member_role", "sha256",
+            ),
+        ):
+            return f"member source row {index + 1} has invalid fields"
+        if row["role"] not in _MEMBER_ROLES:
+            return f"member source row {index + 1} has invalid role"
+        if not _valid_hash(row["sha256"]) or not _valid_hash(row["bundle_sha256"]):
+            return f"member source row {index + 1} has invalid sha256"
+        bundle_key = (str(row["role"]), str(row["bundle_path"]))
+        if bundle_key not in bundle_keys:
+            return f"member source row {index + 1} has no matching bundle"
+        bundle_row = next(
+            item for item in bundles
+            if (item["role"], item["path"]) == bundle_key
+        )
+        if row["bundle_sha256"] != bundle_row["sha256"]:
+            return f"member source row {index + 1} has inconsistent bundle sha256"
+        path = str(row["path"])
+        if path in member_paths:
+            return f"duplicate member source path: {path}"
+        member_paths.add(path)
+        member_keys.setdefault(bundle_key, []).append(row)
+    for bundle in bundles:
+        key = (str(bundle["role"]), str(bundle["path"]))
+        rows = member_keys.get(key, [])
+        if not rows:
+            return f"bundle has no member sources: {bundle['path']}"
+        if bundle["root_path"] not in {row["path"] for row in rows}:
+            return f"bundle root_path is not a declared member: {bundle['root_path']}"
+
+    plan_order = {"primary_plan": 0, "plan_progress": 1, "plan_task": 2}
+    plan_roles: list[str] = []
+    for index, row in enumerate(plan_sources):
+        if not isinstance(row, dict) or not _valid_text(
+            row, ("key", "role", "namespace", "path", "title", "sha256")
+        ):
+            return f"plan source row {index + 1} has invalid fields"
+        if row["role"] not in _PLAN_ROLES or not _valid_hash(row["sha256"]):
+            return f"plan source row {index + 1} has invalid role or sha256"
+        plan_roles.append(str(row["role"]))
+
+    bundle_roles = [str(row["role"]) for row in bundles]
     if manifest["mode"] == "spec":
-        if roles[:1] != ["primary_spec"] or any(
-            role != "comparison_spec" for role in roles[1:]
+        if plan_sources or bundle_roles[:1] != ["primary_spec"] or any(
+            role != "comparison_spec" for role in bundle_roles[1:]
         ):
-            return "spec manifest requires one primary_spec followed by comparison_spec sources"
-    else:
-        allowed = {
-            "primary_plan": 0,
-            "plan_progress": 1,
-            "plan_task": 2,
-            "related_spec_context": 3,
-        }
-        if (
-            roles[:1] != ["primary_plan"]
-            or roles.count("primary_plan") != 1
-            or roles.count("plan_progress") > 1
-            or any(role not in allowed for role in roles)
-            or any(
-                allowed[first] > allowed[second]
-                for first, second in zip(roles, roles[1:])
-            )
-        ):
-            return "plan manifest has invalid source role cardinality or order"
+            return "spec manifest requires one primary bundle followed by comparison bundles"
+    elif (
+        plan_roles[:1] != ["primary_plan"]
+        or plan_roles.count("primary_plan") != 1
+        or plan_roles.count("plan_progress") > 1
+        or any(plan_order[first] > plan_order[second] for first, second in zip(plan_roles, plan_roles[1:]))
+        or any(role != "related_spec_context" for role in bundle_roles)
+    ):
+        return "plan manifest has invalid plan source or context bundle order"
     return None
 
 
@@ -246,10 +266,7 @@ def check_review(viewer: Path, repo_root: Path) -> CheckResult:
         or parts[3] != "view.html"
         or _REVIEW_ID_RE.fullmatch(parts[2]) is None
     ):
-        return _malformed(
-            viewer_label,
-            "viewer path must be .forge/reviews/<review-id>/view.html",
-        )
+        return _malformed(viewer_label, "viewer path must be .forge/reviews/<review-id>/view.html")
     viewer_path = root / viewer_relative
     if not viewer_path.is_file():
         return _malformed(viewer_label, f"viewer file is missing: {viewer_label}")
@@ -259,10 +276,7 @@ def check_review(viewer: Path, repo_root: Path) -> CheckResult:
         return _malformed(viewer_label, f"viewer is not readable UTF-8: {error}")
     matches = _MANIFEST_RE.findall(contents)
     if len(matches) != 1:
-        return _malformed(
-            viewer_label,
-            "viewer must contain exactly one forge-source-manifest JSON script",
-        )
+        return _malformed(viewer_label, "viewer must contain exactly one forge-source-manifest JSON script")
     try:
         manifest = json.loads(matches[0])
     except json.JSONDecodeError as error:
@@ -271,66 +285,77 @@ def check_review(viewer: Path, repo_root: Path) -> CheckResult:
     if shape_error is not None:
         return _malformed(viewer_label, shape_error)
     assert isinstance(manifest, dict)
-    assert isinstance(manifest["sources"], list)
+    rows = [*manifest["member_sources"], *manifest["plan_sources"]]
 
-    sources: list[tuple[str, str, str]] = []
+    sources: list[list[str]] = []
     diagnostics: list[str] = []
-    grouped: dict[str, list[str]] = {}
-    namespaces: set[str] = set()
+    grouped: dict[str, list[int]] = {}
+    identities: set[str] = set()
     paths: set[str] = set()
-    for index, row in enumerate(manifest["sources"]):
-        if not isinstance(row, dict):
-            return _malformed(viewer_label, f"source row {index + 1} must be an object")
-        namespace = row.get("namespace")
-        path_value = row.get("path")
-        expected = row.get("sha256")
-        role = row.get("role")
-        if not all(isinstance(value, str) and value for value in (namespace, path_value, role)):
-            return _malformed(
-                viewer_label,
-                f"source row {index + 1} has invalid namespace, path, or role",
-            )
-        if not isinstance(expected, str) or _SHA256_RE.fullmatch(expected) is None:
-            return _malformed(viewer_label, f"source row {index + 1} has invalid sha256")
+    bytes_by_path: dict[str, bytes] = {}
+    row_index: dict[str, int] = {}
+    for index, row in enumerate(rows):
+        identity = str(row["namespace"])
+        path_value = str(row["path"])
+        expected = str(row["sha256"])
+        role = str(row["role"])
         group = _group_for_role(role)
         if group is None:
             return _malformed(viewer_label, f"source row {index + 1} has unknown role: {role}")
-        if namespace in namespaces:
-            return _malformed(viewer_label, f"duplicate source namespace: {namespace}")
+        if identity in identities:
+            return _malformed(viewer_label, f"duplicate source namespace: {identity}")
         if path_value in paths:
             return _malformed(viewer_label, f"duplicate source path: {path_value}")
-        namespaces.add(namespace)
+        identities.add(identity)
         paths.add(path_value)
         try:
             relative = _repo_relative(Path(path_value), root)
         except ValueError as error:
             return _malformed(viewer_label, str(error))
         if relative.as_posix() != path_value:
-            return _malformed(
-                viewer_label,
-                f"source path must be normalized repository-relative POSIX: {path_value}",
-            )
+            return _malformed(viewer_label, f"source path must be normalized repository-relative POSIX: {path_value}")
         source_path = root / relative
         if not source_path.is_file():
             state = "missing"
             diagnostics.append(f"missing source: {path_value}")
-        elif _digest(source_path) != expected:
-            state = "stale"
-            diagnostics.append(f"stale source: {path_value}")
         else:
-            state = "current"
-        sources.append((namespace, path_value, state))
-        grouped.setdefault(group, []).append(state)
+            source_bytes = source_path.read_bytes()
+            bytes_by_path[path_value] = source_bytes
+            if hashlib.sha256(source_bytes).hexdigest() != expected:
+                state = "stale"
+                diagnostics.append(f"stale source: {path_value}")
+            else:
+                state = "current"
+        row_index[path_value] = index
+        sources.append([identity, path_value, state])
+        grouped.setdefault(group, []).append(index)
+
+    for bundle in manifest["bundles"]:
+        bundle_members = [
+            row for row in manifest["member_sources"]
+            if row["role"] == bundle["role"] and row["bundle_path"] == bundle["path"]
+        ]
+        if any(str(row["path"]) not in bytes_by_path for row in bundle_members):
+            continue
+        current_digest = _bundle_digest(
+            str(bundle["path"]),
+            [(str(row["path"]), bytes_by_path[str(row["path"])]) for row in bundle_members],
+        )
+        if current_digest == bundle["sha256"]:
+            continue
+        diagnostics.append(f"stale bundle: {bundle['path']}")
+        for row in bundle_members:
+            sources[row_index[str(row["path"]) ]][2] = "stale"
 
     aggregates = {
-        group: _aggregate(grouped.get(group, []))
+        group: _aggregate([sources[index][2] for index in grouped.get(group, [])])
         for group in _GROUPS
     }
-    overall = _diagnostic_overall([state for _, _, state in sources])
+    states = [state for _, _, state in sources]
     return CheckResult(
         viewer_label,
-        tuple(sources),
+        tuple(tuple(source) for source in sources),
         MappingProxyType(aggregates),
-        overall,
+        _diagnostic_overall(states),
         tuple(diagnostics),
     )

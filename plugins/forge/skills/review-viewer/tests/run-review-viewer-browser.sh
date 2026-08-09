@@ -6,7 +6,7 @@ SKILL_DIR="$(cd "$TEST_DIR/.." && pwd)"
 WRITING_SPECS="$(cd "$SKILL_DIR/../writing-specs" && pwd)"
 TEMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/forge-review-viewer-browser.XXXXXX")"
 DEPENDENCY_ROOT="$TEMP_ROOT/dependencies"
-BROWSER_ROOT="$TEMP_ROOT/browsers"
+BROWSER_ROOT="${FORGE_REVIEW_VIEWER_BROWSER_CACHE:-$TEMP_ROOT/browsers}"
 REPOSITORY_ROOT="$TEMP_ROOT/repository"
 SERVER_PID=""
 
@@ -24,6 +24,8 @@ cp "$WRITING_SPECS/tests/browser/package.json" "$DEPENDENCY_ROOT/package.json"
 cp "$WRITING_SPECS/tests/browser/package-lock.json" "$DEPENDENCY_ROOT/package-lock.json"
 cp "$TEST_DIR/browser/review-viewer.spec.mjs" "$DEPENDENCY_ROOT/review-viewer.spec.mjs"
 cp -R "$TEST_DIR/fixtures/repository" "$REPOSITORY_ROOT"
+cp -R "$REPOSITORY_ROOT/docs/specs/semantic-spec-bundles" \
+  "$REPOSITORY_ROOT/docs/specs/comparison-review-contract"
 
 (
   cd "$WRITING_SPECS/assets"
@@ -46,7 +48,8 @@ git -C "$REPOSITORY_ROOT" commit -qm fixture
 (
   cd "$REPOSITORY_ROOT"
   "$SKILL_DIR/scripts/build-review-viewer.sh" --mode spec \
-    --spec docs/specs/008-alpha/spec.md --comparison docs/specs/002-beta/spec.md \
+    --spec docs/specs/semantic-spec-bundles \
+    --comparison docs/specs/comparison-review-contract \
     --review-id spec-cdn --generated-at 2026-08-01T00:00:00Z
   "$SKILL_DIR/scripts/build-review-viewer.sh" --mode plan \
     --plan docs/plans/001-demo/plan.md --review-id plan-offline \

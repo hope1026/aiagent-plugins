@@ -15,12 +15,11 @@ import tempfile
 from typing import Mapping
 
 from review_freshness import CheckResult, check_review, find_repository_root
-from review_renderer import render_review
+from review_renderer import manifest_source_records, render_review
 from review_ir import build_semantic_ir
 from review_planner import ViewContext, select_presentation_plan, validate_presentation_plan
 from review_sources import (
     ReviewBundle,
-    ReviewSource,
     _collect_plan_sources,
     collect_spec_sources,
     repository_relative,
@@ -133,18 +132,6 @@ def _plain(value: object) -> object:
     return value
 
 
-def _source_record(source: ReviewSource) -> dict[str, object]:
-    return {
-        "role": source.role,
-        "path": source.path,
-        "namespace": source.namespace,
-        "sha256": source.sha256,
-        "requirements": list(source.requirements),
-        "acceptance": list(source.acceptance),
-        "status": source.status,
-    }
-
-
 def _normalized_rebuild_command(
     args: argparse.Namespace,
     bundle: ReviewBundle,
@@ -157,9 +144,12 @@ def _normalized_rebuild_command(
         bundle.mode,
     ]
     if bundle.mode == "spec":
-        command.extend(("--spec", bundle.primary[0].path))
-        for source in bundle.comparison:
-            command.extend(("--comparison", source.path))
+        command.extend(("--spec", bundle.primary[0].bundle_path))
+        comparison_paths = tuple(dict.fromkeys(
+            source.bundle_path for source in bundle.comparison
+        ))
+        for path in comparison_paths:
+            command.extend(("--comparison", path))
     else:
         command.extend(("--plan", bundle.primary[0].path))
         if args.progress is not None:
@@ -198,8 +188,8 @@ def _normalized_rebuild_command(
 
 
 def _context_and_plan(bundle: ReviewBundle, args: argparse.Namespace):
-    primary = bundle.primary[0].document
-    metadata = getattr(primary, "metadata", None)
+    primary = bundle.primary[0]
+    metadata = primary.spec_bundle.metadata if primary.spec_bundle is not None else None
     kind = getattr(metadata, "kind", "plan")
     subtype = getattr(metadata, "subtype", None)
     intent = args.intent or ("execution" if bundle.mode == "plan" else "review")
@@ -219,13 +209,12 @@ def _dry_run_payload(
     repo_root: Path,
 ) -> dict[str, object]:
     generated_at = _normalize_generated_at(parser, args.generated_at)
-    sources = (*bundle.primary, *bundle.comparison, *bundle.context)
     context, _, plan = _context_and_plan(bundle, args)
     return {
         "mode": bundle.mode,
         "locale": args.locale or "en",
         "review_id": args.review_id,
-        "sources": [_source_record(source) for source in sources],
+        **manifest_source_records(bundle),
         "generated_at": generated_at,
         "counts": _plain(bundle.counts),
         "freshness": "unverified",
@@ -343,9 +332,9 @@ def _collect_build_bundle(
             _error(parser, "--spec is required for spec mode")
         if any((args.plan, args.progress, args.tasks_dir)):
             _error(parser, "plan inputs are invalid for spec mode")
-        primary = _contained_file(parser, args.spec, repo_root, "spec")
+        primary = _contained_directory(parser, args.spec, repo_root, "Spec Bundle")
         comparisons = [
-            _contained_file(parser, value, repo_root, "comparison")
+            _contained_directory(parser, value, repo_root, "comparison Spec Bundle")
             for value in args.comparison
         ]
         try:

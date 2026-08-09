@@ -5,7 +5,9 @@ from html.parser import HTMLParser
 import json
 from pathlib import Path
 import re
+import shutil
 import sys
+from tempfile import TemporaryDirectory
 import unittest
 
 
@@ -27,8 +29,10 @@ class DocumentParser(HTMLParser):
         self.components: list[str] = []
         self.manifest_text: list[str] = []
         self.mermaid: list[str] = []
+        self.visible_text: list[str] = []
         self._manifest = False
         self._mermaid = False
+        self._hidden_depth = 0
 
     def handle_starttag(self, tag, attrs):
         values = dict(attrs)
@@ -36,6 +40,8 @@ class DocumentParser(HTMLParser):
             self.components.append(values["data-component"])
         if tag == "script" and values.get("id") == "forge-source-manifest":
             self._manifest = True
+        if tag in {"script", "style"}:
+            self._hidden_depth += 1
         if tag == "pre" and "mermaid" in (values.get("class") or "").split():
             self._mermaid = True
             self.mermaid.append("")
@@ -43,6 +49,8 @@ class DocumentParser(HTMLParser):
     def handle_endtag(self, tag):
         if tag == "script":
             self._manifest = False
+        if tag in {"script", "style"}:
+            self._hidden_depth -= 1
         if tag == "pre":
             self._mermaid = False
 
@@ -51,16 +59,24 @@ class DocumentParser(HTMLParser):
             self.manifest_text.append(data)
         if self._mermaid:
             self.mermaid[-1] += data
+        if self._hidden_depth == 0:
+            self.visible_text.append(data)
 
     @property
     def manifest(self):
         return json.loads("".join(self.manifest_text))
 
+    @property
+    def visible(self):
+        return " ".join(" ".join(self.visible_text).split())
+
 
 def spec_bundle(comparison: bool = False):
-    comparisons = (REPOSITORY / "docs/specs/002-beta/spec.md",) if comparison else ()
+    comparisons = (
+        (REPOSITORY / "docs/specs/supporting-policy",) if comparison else ()
+    )
     return collect_spec_sources(
-        REPOSITORY / "docs/specs/008-alpha/spec.md", comparisons, REPOSITORY
+        REPOSITORY / "docs/specs/semantic-spec-bundles", comparisons, REPOSITORY
     )
 
 
@@ -99,6 +115,72 @@ def render(bundle, *, intent=None, subtype=None, locale="en", offline=False):
 
 
 class ReviewRendererTest(unittest.TestCase):
+    def test_bundle_titles_paths_and_full_statements_are_visible_without_internal_ids(self) -> None:
+        with TemporaryDirectory() as temporary:
+            repository = Path(temporary)
+            source = REPOSITORY / "docs/specs/semantic-spec-bundles"
+            current = repository / "docs/specs/current-review-contract"
+            comparison = repository / "docs/specs/comparison-review-contract"
+            shutil.copytree(source, current)
+            shutil.copytree(source, comparison)
+            document = render(
+                collect_spec_sources(current, (comparison,), repository),
+                intent="comparison",
+                locale="ko",
+            )
+
+        parsed = DocumentParser()
+        parsed.feed(document)
+        self.assertIn("<h1>Semantic Spec Bundle Contract</h1>", document)
+        self.assertIn("Statement Traceability and Validation", parsed.visible)
+        self.assertIn("statement-traceability-and-validation.md", parsed.visible)
+        self.assertIn(
+            "Every declared member enters the review source set exactly once",
+            parsed.visible,
+        )
+        self.assertIn(
+            "Acceptance statements connect to requirements across member files",
+            parsed.visible,
+        )
+        self.assertIsNone(re.search(r"\b(?:R|AC)[0-9]+\b", parsed.visible))
+        self.assertNotIn("primary--", parsed.visible)
+        self.assertNotIn("primary_spec", parsed.visible)
+        self.assertNotIn("comparison_spec", parsed.visible)
+        self.assertIsNone(re.search(r"\b[0-9a-f]{64}\b", parsed.visible))
+
+        self.assertEqual(set(parsed.manifest), {
+            "bundles", "checkpoint", "commit", "counts", "freshness",
+            "generated_at", "locale", "mode", "offline", "plan_sources",
+            "presentation_plan", "rebuild_command", "review_id", "source_base",
+            "member_sources", "view_context",
+        })
+        self.assertEqual(len(parsed.manifest["bundles"]), 2)
+        self.assertEqual(len(parsed.manifest["member_sources"]), 10)
+        for bundle_row in parsed.manifest["bundles"]:
+            members = [
+                row for row in parsed.manifest["member_sources"]
+                if row["bundle_path"] == bundle_row["path"]
+            ]
+            self.assertTrue(members)
+            self.assertEqual(
+                {row["bundle_sha256"] for row in members},
+                {bundle_row["sha256"]},
+            )
+
+        requirement_targets = re.findall(
+            r'id="([^"]+)"[^>]*data-statement-kind="requirement"', document
+        )
+        acceptance_keys = re.findall(
+            r'data-statement-kind="acceptance"[^>]*data-storage-key="([^"]+)"',
+            document,
+        )
+        covered_targets = re.findall(
+            r'data-relation="covers" href="#([^"]+)"', document
+        )
+        self.assertEqual(len(requirement_targets), len(set(requirement_targets)))
+        self.assertEqual(len(acceptance_keys), len(set(acceptance_keys)))
+        self.assertEqual(covered_targets, requirement_targets)
+
     def test_adaptive_renderer_emits_component_navigation(self) -> None:
         document = render(spec_bundle(comparison=True))
         parsed = DocumentParser()
@@ -106,6 +188,8 @@ class ReviewRendererTest(unittest.TestCase):
         self.assertIn('class="review-navigation"', document)
         self.assertIn("source-detail", parsed.components)
         self.assertNotIn('class="tab-bar"', document)
+        self.assertNotIn(".orientation", parsed.visible)
+        self.assertIn("Trace each item to its source path.", parsed.visible)
         self.assertNotRegex(document, r"\{\{[A-Z][A-Z0-9_]*\}\}")
         self.assertEqual(parsed.manifest["freshness"], "unverified")
 
@@ -123,8 +207,11 @@ class ReviewRendererTest(unittest.TestCase):
         parsed = DocumentParser()
         parsed.feed(document)
         self.assertEqual(parsed.mermaid, [block.text for block in bundle.mermaid])
-        self.assertIn('data-source-path="docs/specs/008-alpha/spec.md"', document)
-        self.assertIn("current--008-alpha", document)
+        self.assertIn(
+            'data-source-path="docs/specs/semantic-spec-bundles/supporting-visual-map.md"',
+            document,
+        )
+        self.assertIn("Semantic Spec Bundle Contract", document)
 
     def test_plan_uses_execution_components_and_all_source_detail(self) -> None:
         document = render(plan_bundle(), intent="execution")

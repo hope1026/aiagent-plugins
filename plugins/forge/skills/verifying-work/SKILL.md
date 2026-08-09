@@ -97,7 +97,7 @@ Never change implementation and Canonical meaning silently in the same repair.
 ### 5. Complete the matching lifecycle
 
 - **Quick, plan-only, restoration:** report evidence without changing Canonical Spec status.
-- **Approved Spec Delta:** after the required Acceptance statement set and regression evidence pass, set the Canonical Spec lifecycle `status` to `implemented`, append the verification history entry, and run the writer transaction. A transaction failure blocks completion reporting.
+- **Approved Spec Delta:** after the required Acceptance statement set and regression evidence pass, set the Canonical Spec lifecycle `status` to `implemented`, update the current decision summary, and run the writer transaction. Git or validated transition evidence retains prior detail. A transaction failure blocks completion reporting.
 
 The report names work class, claim, command evidence, and required Acceptance statement verdicts:
 
@@ -117,7 +117,7 @@ After explicit user intent, one successful build of `.forge/reviews/<review-id>/
 ## Working Files
 
 - Reads: optional `.forge/work/<work-id>/brief.md` and `spec-delta.md`; Related Canonical Specs; optional Execution Plan, progress, and Task files.
-- Writes: Canonical Spec lifecycle `status: implemented` and history only after the required Acceptance evidence passes; evidence goes to the user, plan progress, or an explicitly durable evidence path.
+- Writes: Canonical Spec lifecycle `status: implemented` and current decision summary only after the required Acceptance evidence passes; evidence goes to the user, plan progress, or an explicitly durable evidence path.
 
 ## Red Flags
 

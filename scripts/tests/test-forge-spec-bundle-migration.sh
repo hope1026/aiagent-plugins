@@ -17,7 +17,6 @@ expected_roots=(
   "adaptive-execution-routing/adaptive-execution-routing-and-checkpoints.md"
   "cross-agent-extension-creation/cross-agent-extension-creation.md"
   "forge-ui-design-skill-separation/forge-ui-design-skill-separation.md"
-  "legacy-ui-design-skill-removal/legacy-ui-design-skill-removal.md"
   "semantic-spec-bundles/semantic-spec-bundle-contract.md"
   "canonical-spec-workflow/canonical-spec-and-work-artifact-boundaries.md"
 )

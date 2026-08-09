@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: approved
+status: implemented
 language: ko
 kind: policy
 subtype: workflow-lifecycle
@@ -17,7 +17,7 @@ relatedSpecs: [{"path":"docs/specs/semantic-spec-bundles/","relation":"refines"}
 - root: [Canonical Spec과 작업 산출물 경계](canonical-spec-and-work-artifact-boundaries.md)
 - contract: [라우팅과 Lifecycle Gate](routing-and-lifecycle-gates.md)
 - contract: [검증과 지속 권위](verification-and-durable-authority.md)
-- history: [결정과 변경 이력](decisions-and-change-history.md)
+- history: [현재 결정](decisions-and-change-history.md)
 
 ## Overview
 
@@ -31,14 +31,6 @@ Canonical Spec 필요 여부와 실행 계획 필요 여부는 같은 축이 아
 - 테스트, build, lint, 원래 재현 절차와 같은 fresh verification을 생략하지 않는다.
 - 보안·권한·결제·개인정보·데이터 migration·외부 interface 변경을 Quick 경로로 축소하지 않는다.
 - push, 배포 또는 Marketplace release authorization을 자동으로 부여하지 않는다.
-
-검토한 접근안:
-
-| 접근안 | 장점 | 단점 | 결정 |
-|---|---|---|---|
-| 정본 영향과 실행 복잡도를 독립 분류 | 작은 정본 변경과 복잡한 비정본 작업을 정확히 구분한다 | 라우터에 명시적인 분류 규칙이 필요하다 | 채택 |
-| 모든 작업 시작 문서를 `micro-spec`으로 명명 | 기존 lifecycle을 적게 바꾼다 | `spec`의 SOT 의미가 계속 희석된다 | 제외 |
-| 기존 ceremony floor 예외만 확대 | 구현이 단순하다 | 예외 목록이 커지고 정본 가치와 작업 크기를 혼동한다 | 제외 |
 
 ## Terminology & Authority
 
@@ -104,7 +96,7 @@ Spec Delta 승인 전에는 현재 `approved` 또는 `implemented` Canonical Spe
 
 Execution Plan은 실행 중 정확한 working source일 수 있지만 제품·시스템 계약의 권위를 갖지 않는다. Plan과 구현이 Canonical Spec에 충돌하면 Plan을 따르지 않고 Spec Delta 또는 drift repair 경로로 돌아간다.
 
-Quick 분류는 검증 면제가 아니다. 실행 전에 예상 범위를 기록하고, 실행 뒤 변경된 동작을 가장 직접적으로 증명하는 명령을 새로 실행한다. 분류 근거가 사라지면 R12에 따라 즉시 승격한다.
+Quick 분류는 검증 면제가 아니다. 실행 전에 예상 범위를 기록하고, 실행 뒤 변경된 동작을 가장 직접적으로 증명하는 명령을 새로 실행한다. 정본 영향이나 실행 복잡도의 분류 근거가 달라지면 다음 mutation 전에 해당 lifecycle 경로로 즉시 승격한다.
 
 Change Brief readiness는 질문 ceremony가 아니다. Agent는 repository 조사와 안전하고 가역적인 기본값으로 해소할 수 있는 내용을 스스로 처리하고, 사용자만 소유할 수 있는 blocking choice만 질문한다. Ready하지 않은 Brief는 Plan 또는 implementation mutation의 권위를 주지 않으며, 명확한 요청은 질문과 Brief 파일 생성 없이 선택된 route로 진행한다.
 

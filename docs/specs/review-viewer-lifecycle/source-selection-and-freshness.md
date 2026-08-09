@@ -12,7 +12,7 @@
 
 ### 집계 기준은 structured parser가 인식한 `### Task N` heading, `Step N` checkbox, Requirements와 Acceptance Criteria 아래의 unique full-statement H3, Mermaid fence 수로 고정해야 한다. plan primary set 안의 Task·Step은 중복 제거하고 context statement는 bundle path·member path·statement kind·exact heading에서 계산한 내부 namespace로 구분하되 이를 화면 label로 노출하지 않아야 한다.
 
-### scale fixture는 current bundle에 Requirement 190개, Acceptance Criterion 105개, member 5개와 Mermaid 9개를 두고 독립된 plan primary set에 Task 22개, Step 110개와 Related Specs context 0..N을 두며, 각 Review Viewer 집계는 source role별 실제 수와 정확히 일치해야 한다.
+### Scale fixture는 여러 member와 Mermaid를 가진 current bundle, 여러 Task와 Step을 가진 독립 plan primary set과 Related Specs context 0..N을 사용하며, 각 Review Viewer 집계는 source role별 실제 수와 정확히 일치해야 한다.
 
 ### current bundle과 comparison bundle의 Mermaid는 source text를 byte-for-byte 변경하지 않고 재사용하며 각각 `Current spec source` 또는 `Comparison source`, bundle·member H1과 path를 표시해야 한다.
 

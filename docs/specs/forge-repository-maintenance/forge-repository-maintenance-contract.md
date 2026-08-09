@@ -44,14 +44,6 @@ flowchart LR
   Version --> Release
 ```
 
-구조 선택:
-
-| 방식 | 장점 | 단점 | 결정 |
-|---|---|---|---|
-| `.agent-extensions/` canonical + manager-owned adapters | 한 정본, 세 agent discovery, hash 기반 drift 감지 | 기존 wrapper를 명시적으로 adopt해야 함 | 채택 |
-| `.agent-runbooks/` + 수동 wrapper | 단순한 파일 구조 | ownership·drift 판정이 없고 새 manager 계약과 중복됨 | superseded |
-| 별도 maintainer plugin | 독립 설치 가능 | Marketplace에 내부 유지보수 개념이 노출됨 | 제외 |
-
 ## Data & Interfaces
 
 | 역할 | 경로 | 책임 |
@@ -72,17 +64,17 @@ flowchart LR
 
 ### `.agents/skills/maintaining-forge/SKILL.md`와 `.claude/skills/maintaining-forge/SKILL.md`는 canonical skill을 가리키는 manager-rendered adapter여야 하며 독립 절차를 포함하거나 수동으로 수정해서는 안 된다.
 
-### MODIFIED: canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.
+### Canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.
 
 ### `scripts/validate.sh`는 plugin skills, canonical extension skills, native adapters를 lint하고 모든 repository extension에 manager `validate`를 실행해 collision, drift, parity 오류를 거부해야 한다.
 
 ### Marketplace와 `scripts/install.sh`는 `plugins/forge/`만 배포하며 `.agent-extensions/`, `.agents/skills/`, `.claude/skills/`의 repository-only 항목을 설치 사용자에게 복사하지 않아야 한다.
 
-### README와 현재 설계 문서는 repository-only workflow의 정본을 `.agent-extensions/`로 설명하고 legacy `.agent-runbooks/`를 현재 경로로 안내하지 않아야 한다.
+### README와 현재 설계 문서는 repository-only workflow의 정본을 `.agent-extensions/`로만 설명하고 지원하지 않는 `.agent-runbooks/`를 현재 경로로 안내하지 않아야 한다.
 
 ### canonical 또는 native same-name entry의 충돌·drift는 manager ownership state로 판정하며 암묵적으로 덮어쓰지 않아야 한다.
 
-### ADDED: push 대상 commit에 `plugins/forge/skills/` 변경이 포함되면 canonical skill은 push 전에 Claude plugin의 base version을 이전 release보다 올리고, Codex plugin은 동일한 base version과 새로운 UTC timestamp suffix로 갱신하도록 요구해야 한다. 두 manifest 중 하나라도 이 조건을 충족하지 않으면 push를 중단해야 한다.
+### Push 대상 commit에 `plugins/forge/skills/` 변경이 포함되면 canonical skill은 push 전에 Claude plugin의 base version을 현재 release보다 올리고, Codex plugin은 동일한 base version과 새로운 UTC timestamp suffix로 갱신하도록 요구해야 한다. 두 manifest 중 하나라도 이 조건을 충족하지 않으면 push를 중단해야 한다.
 
 ## Acceptance Criteria
 
@@ -98,7 +90,7 @@ flowchart LR
 검증하는 요구사항:
 
 - [`.agent-extensions/maintaining-forge/`는 `extension.json`, canonical `skills/maintaining-forge/SKILL.md`, portability reference, agent별 ownership state를 포함하는 repository-scope skill extension이어야 한다.](forge-repository-maintenance-contract.md#agent-extensionsmaintaining-forge는-extensionjson-canonical-skillsmaintaining-forgeskillmd-portability-reference-agent별-ownership-state를-포함하는-repository-scope-skill-extension이어야-한다)
-- [MODIFIED: canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#modified-canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
+- [Canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
 
 ### 두 native adapter가 동일한 canonical `SKILL.md`를 가리키고 별도 유지보수 절차를 복제하지 않는다.
 
@@ -123,16 +115,16 @@ flowchart LR
 
 검증하는 요구사항:
 
-- [README와 현재 설계 문서는 repository-only workflow의 정본을 `.agent-extensions/`로 설명하고 legacy `.agent-runbooks/`를 현재 경로로 안내하지 않아야 한다.](forge-repository-maintenance-contract.md#readme와-현재-설계-문서는-repository-only-workflow의-정본을-agent-extensions로-설명하고-legacy-agent-runbooks를-현재-경로로-안내하지-않아야-한다)
+- [README와 현재 설계 문서는 repository-only workflow의 정본을 `.agent-extensions/`로만 설명하고 지원하지 않는 `.agent-runbooks/`를 현재 경로로 안내하지 않아야 한다.](forge-repository-maintenance-contract.md#readme와-현재-설계-문서는-repository-only-workflow의-정본을-agent-extensions로만-설명하고-지원하지-않는-agent-runbooks를-현재-경로로-안내하지-않아야-한다)
 
 ### 현실적인 pressure scenario에서 agent가 canonical source만 수정하고 validation·pressure-test·version gate·push authorization gate를 유지한다.
 
 검증하는 요구사항:
 
-- [MODIFIED: canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#modified-canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
+- [Canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
 - [canonical 또는 native same-name entry의 충돌·drift는 manager ownership state로 판정하며 암묵적으로 덮어쓰지 않아야 한다.](forge-repository-maintenance-contract.md#canonical-또는-native-same-name-entry의-충돌drift는-manager-ownership-state로-판정하며-암묵적으로-덮어쓰지-않아야-한다)
 
-### legacy `.agent-runbooks/`가 제거되고 manager render를 다시 실행해도 collision이나 drift 없이 parity가 유지된다.
+### 지원하지 않는 `.agent-runbooks/`가 없는 상태에서 manager render를 다시 실행해도 collision이나 drift 없이 parity가 유지된다.
 
 검증하는 요구사항:
 
@@ -143,13 +135,9 @@ flowchart LR
 
 검증하는 요구사항:
 
-- [MODIFIED: canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#modified-canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
-- [ADDED: push 대상 commit에 `plugins/forge/skills/` 변경이 포함되면 canonical skill은 push 전에 Claude plugin의 base version을 이전 release보다 올리고, Codex plugin은 동일한 base version과 새로운 UTC timestamp suffix로 갱신하도록 요구해야 한다. 두 manifest 중 하나라도 이 조건을 충족하지 않으면 push를 중단해야 한다.](forge-repository-maintenance-contract.md#added-push-대상-commit에-pluginsforgeskills-변경이-포함되면-canonical-skill은-push-전에-claude-plugin의-base-version을-이전-release보다-올리고-codex-plugin은-동일한-base-version과-새로운-utc-timestamp-suffix로-갱신하도록-요구해야-한다-두-manifest-중-하나라도-이-조건을-충족하지-않으면-push를-중단해야-한다)
+- [Canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
+- [Push 대상 commit에 `plugins/forge/skills/` 변경이 포함되면 canonical skill은 push 전에 Claude plugin의 base version을 현재 release보다 올리고, Codex plugin은 동일한 base version과 새로운 UTC timestamp suffix로 갱신하도록 요구해야 한다. 두 manifest 중 하나라도 이 조건을 충족하지 않으면 push를 중단해야 한다.](forge-repository-maintenance-contract.md#push-대상-commit에-pluginsforgeskills-변경이-포함되면-canonical-skill은-push-전에-claude-plugin의-base-version을-현재-release보다-올리고-codex-plugin은-동일한-base-version과-새로운-utc-timestamp-suffix로-갱신하도록-요구해야-한다-두-manifest-중-하나라도-이-조건을-충족하지-않으면-push를-중단해야-한다)
 
 ## Decisions & History
 
-- 2026-07-12 [DECISION] Forge는 사용자 실행용 플러그인으로 한정하고 Forge 자체 개선 절차는 저장소 전용으로 분리한다.
-- 2026-07-12 [DECISION] `.agent-runbooks/` 공용 정본과 수동 thin wrapper 구조를 채택했다.
-- 2026-07-12 [CHANGE] 기존 배포 스킬 `maintaining-forge`를 사용자 플러그인에서 제거하고 repository-only workflow로 재분류했다.
-- 2026-07-14 [CHANGE] cross-agent ownership과 drift 검사를 제공하는 `.agent-extensions/` 구조가 기존 `.agent-runbooks/` 구조를 supersede한다.
-- 2026-08-09 [CHANGE] 의미 기반 Spec Bundle과 완전한 문장 추적성으로 현재 계약을 정리했다.
+- 2026-08-09 [CURRENT] Forge 자체 유지보수 절차는 `.agent-extensions/maintaining-forge/`를 정본으로 사용하며 사용자 설치용 플러그인과 분리한다.

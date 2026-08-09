@@ -12,6 +12,10 @@ export function sourceGroup(role) {
     : null;
 }
 
+export function manifestSources(manifest) {
+  return [...(manifest.member_sources || []), ...(manifest.plan_sources || [])];
+}
+
 export function aggregateByGroup(sources, states) {
   const grouped = { primary: [], comparison: [], context: [] };
   sources.forEach((source, index) => {
@@ -31,12 +35,62 @@ export async function sha256Hex(bytes) {
   return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
 }
 
+function frame(value) {
+  const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
+  const result = new Uint8Array(8 + bytes.byteLength);
+  new DataView(result.buffer).setBigUint64(0, BigInt(bytes.byteLength));
+  result.set(bytes, 8);
+  return result;
+}
+
+export async function bundleSha256(bundlePath, members) {
+  const encoder = new TextEncoder();
+  const relativePath = (member) => memberRelativePath({
+    ...member,
+    bundle_path: member.bundle_path || bundlePath,
+  });
+  const ordered = [...members].sort((left, right) => {
+    const leftPath = relativePath(left);
+    const rightPath = relativePath(right);
+    return leftPath < rightPath ? -1 : leftPath > rightPath ? 1 : 0;
+  });
+  const frames = [frame(encoder.encode(sourceMatchKey(bundlePath)))];
+  ordered.forEach((member) => {
+    frames.push(frame(encoder.encode(relativePath(member))));
+    frames.push(frame(member.bytes));
+  });
+  const length = frames.reduce((total, value) => total + value.byteLength, 0);
+  const payload = new Uint8Array(length);
+  let offset = 0;
+  frames.forEach((value) => {
+    payload.set(value, offset);
+    offset += value.byteLength;
+  });
+  return sha256Hex(payload);
+}
+
 export function sourceMatchKey(path) {
   return String(path).replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');
 }
 
 export function sourceKey(source) {
-  return `${String(source.namespace)}:${sourceMatchKey(source.path)}`;
+  return String(source.key);
+}
+
+export function memberRelativePath(source) {
+  const sourcePath = sourceMatchKey(source.path);
+  const bundlePath = sourceMatchKey(source.bundle_path || '');
+  const prefix = bundlePath ? `${bundlePath}/` : '';
+  return prefix && sourcePath.startsWith(prefix) ? sourcePath.slice(prefix.length) : sourcePath;
+}
+
+export function selectedFileMatchesSource(source, file) {
+  const selected = sourceMatchKey(file.webkitRelativePath || file.name || '');
+  const relative = memberRelativePath(source);
+  if (!selected || !relative) return false;
+  return selected === sourceMatchKey(source.path)
+    || selected === relative
+    || selected.endsWith(`/${relative}`);
 }
 
 export function shouldAutoFetch(protocol) {
@@ -48,11 +102,18 @@ export function sourceUrl(source, sourceBase, locationHref) {
 }
 
 export async function verifyLocalSource(source, file) {
+  if (!selectedFileMatchesSource(source, file)) {
+    return {
+      state: 'unverified',
+      error: `select ${memberRelativePath(source)}`,
+    };
+  }
   try {
-    const actual = await sha256Hex(await file.arrayBuffer());
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const actual = await sha256Hex(bytes);
     return actual === source.sha256
-      ? { state: 'current', actual }
-      : { state: 'stale', actual, error: 'selected file SHA-256 differs' };
+      ? { state: 'current', actual, bytes }
+      : { state: 'stale', actual, bytes, error: 'selected file SHA-256 differs' };
   } catch (error) {
     return { state: 'unverified', error: String(error && error.message || error) };
   }
@@ -69,10 +130,11 @@ export async function verifyFetchedSource(source, sourceBase, locationHref) {
     if (!response.ok) {
       return { state: 'unverified', error: `source fetch failed: HTTP ${response.status}` };
     }
-    const actual = await sha256Hex(await response.arrayBuffer());
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const actual = await sha256Hex(bytes);
     return actual === source.sha256
-      ? { state: 'current', actual }
-      : { state: 'stale', actual, error: 'source SHA-256 differs' };
+      ? { state: 'current', actual, bytes }
+      : { state: 'stale', actual, bytes, error: 'source SHA-256 differs' };
   } catch (error) {
     return { state: 'unverified', error: String(error && error.message || error) };
   }
@@ -102,9 +164,9 @@ function renderSource(source, result) {
   if (error) error.textContent = result.error || '';
 }
 
-function renderAggregates(manifest, results) {
+function renderAggregates(sources, results) {
   const states = results.map((result) => result.state);
-  const groups = aggregateByGroup(manifest.sources, states);
+  const groups = aggregateByGroup(sources, states);
   Object.entries(groups).forEach(([group, state]) => {
     const container = document.querySelector(`[data-freshness-group="${group}"]`);
     const target = container && container.querySelector('.freshness-state');
@@ -114,19 +176,39 @@ function renderAggregates(manifest, results) {
   if (overallTarget) setState(overallTarget, aggregateFreshness(states));
 }
 
-function installLocalPickers(manifest, results) {
+async function applyBundleFreshness(manifest, sources, results) {
+  for (const bundle of manifest.bundles || []) {
+    const indexes = sources
+      .map((source, index) => [source, index])
+      .filter(([source]) => source.bundle_path === bundle.path)
+      .map(([, index]) => index);
+    if (!indexes.length || indexes.some((index) => !results[index].bytes)) continue;
+    const members = indexes.map((index) => ({
+      ...sources[index],
+      bytes: results[index].bytes,
+    }));
+    if (await bundleSha256(bundle.path, members) !== bundle.sha256) {
+      indexes.forEach((index) => {
+        results[index] = { ...results[index], state: 'stale', error: 'bundle SHA-256 differs' };
+      });
+    }
+  }
+}
+
+function installLocalPickers(manifest, sources, results) {
   document.querySelectorAll('[data-source-picker]').forEach((picker) => {
     const key = picker.getAttribute('data-source-key');
-    const index = manifest.sources.findIndex((source) => sourceKey(source) === key);
+    const index = sources.findIndex((source) => sourceKey(source) === key);
     if (index < 0) return;
     picker.addEventListener('change', async () => {
       const file = picker.files && picker.files[0];
       const result = file
-        ? await verifyLocalSource(manifest.sources[index], file)
-        : { state: 'unverified', error: 'matching local file not selected' };
+        ? await verifyLocalSource(sources[index], file)
+        : { state: 'unverified', error: `select ${memberRelativePath(sources[index])}` };
       results[index] = result;
-      renderSource(manifest.sources[index], result);
-      renderAggregates(manifest, results);
+      await applyBundleFreshness(manifest, sources, results);
+      results.forEach((item, itemIndex) => renderSource(sources[itemIndex], item));
+      renderAggregates(sources, results);
     });
   });
 }
@@ -140,22 +222,18 @@ async function initFreshness() {
     if (target) setState(target, 'unverified');
     return;
   }
-  const results = manifest.sources.map(() => ({ state: 'unverified' }));
-  renderAggregates(manifest, results);
-  installLocalPickers(manifest, results);
+  const sources = manifestSources(manifest);
+  const results = sources.map(() => ({ state: 'unverified' }));
+  renderAggregates(sources, results);
+  installLocalPickers(manifest, sources, results);
   if (!shouldAutoFetch(location.protocol)) return;
   const fetched = await Promise.all(
-    manifest.sources.map((source) => verifyFetchedSource(
-      source,
-      manifest.source_base,
-      location.href,
-    )),
+    sources.map((source) => verifyFetchedSource(source, manifest.source_base, location.href)),
   );
-  fetched.forEach((result, index) => {
-    results[index] = result;
-    renderSource(manifest.sources[index], result);
-  });
-  renderAggregates(manifest, results);
+  fetched.forEach((result, index) => { results[index] = result; });
+  await applyBundleFreshness(manifest, sources, results);
+  results.forEach((result, index) => renderSource(sources[index], result));
+  renderAggregates(sources, results);
 }
 
 if (typeof document !== 'undefined') {

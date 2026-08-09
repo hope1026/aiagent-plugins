@@ -2,4 +2,4 @@
 
 ## Decisions & History
 
-- 2026-08-09 [APPROVED] Repository discovery uses semantic bundle paths and full statements.
+- 2026-08-09 [CURRENT] Repository discovery uses semantic bundle paths and full statements.

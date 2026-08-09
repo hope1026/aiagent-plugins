@@ -423,7 +423,7 @@ def _parse_tasks(
         task_id = f"Task{int(number)}"
         if trace:
             raise ValueError(
-                f"{task_id} uses a legacy parenthetical trace; use exact Governing statements links"
+                f"{task_id} uses an unsupported parenthetical trace; use exact Governing statements links"
             )
         task_governing = tuple(
             reference

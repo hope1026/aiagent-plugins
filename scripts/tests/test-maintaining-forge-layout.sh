@@ -21,7 +21,7 @@ done
 [[ ! -e "$ROOT_DIR/plugins/forge/skills/maintaining-forge" ]] || \
   fail "maintaining-forge must not ship in plugins/forge/skills"
 [[ ! -e "$ROOT_DIR/.agent-runbooks" ]] || \
-  fail "legacy .agent-runbooks must be removed after canonical adoption"
+  fail "unsupported .agent-runbooks must be absent after canonical adoption"
 
 cmp -s \
   "$ROOT_DIR/.agents/skills/maintaining-forge/SKILL.md" \

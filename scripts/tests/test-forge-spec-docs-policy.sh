@@ -68,7 +68,7 @@ if grep -Eq '(^|[,{[:space:]])(build|check)([]},[:space:]]|$)' <<<"$CLI_HELP"; t
   fail "spec-docs CLI still exposes Spec Pages commands"
 fi
 grep -q 'docs/specs/.bundle-transitions.json' "$WRITING_SPECS" || fail 'writing-specs misses bundle transition manifest'
-grep -q 'replacement.*Spec Delta.*before touching.*old source' "$WRITING_SPECS" || fail 'writing-specs misses approval-first replacement gate'
+grep -q 'replacement.*Spec Delta.*before touching.*current source' "$WRITING_SPECS" || fail 'writing-specs misses approval-first replacement gate'
 grep -q 'explicit approval' "$WRITING_SPECS" || fail 'writing-specs misses explicit supersession approval'
 grep -q 'registered isolated Git worktree' "$WRITING_SPECS" || fail 'writing-specs misses isolation gate'
 grep -q 'expected clean HEAD' "$WRITING_SPECS" || fail 'writing-specs misses exact root precondition'

@@ -33,15 +33,30 @@ for (const viewport of viewports) {
     });
     await page.goto(`${baseURL}/.forge/reviews/spec-cdn/view.html`);
     await expectReady(page);
+    await expect(page.locator('h1')).toHaveText('Semantic Spec Bundle Contract');
     await expect(page.locator('.review-navigation')).toBeVisible();
     await expect(page.locator('[data-component="source-detail"]')).toBeVisible();
     await expect(page.locator('[data-freshness-group="primary"] .freshness-state')).toHaveText('current');
     await expect(page.locator('[data-freshness-group="comparison"] .freshness-state')).toHaveText('current');
+    const requirements = page.locator('[data-statement-kind="requirement"]');
+    await expect(requirements).toHaveCount(2);
+    const requirementIds = await requirements.evaluateAll((elements) => elements.map((element) => element.id));
+    expect(new Set(requirementIds).size).toBe(2);
+    expect(await requirements.locator('h3 a').allTextContents()).toEqual([
+      'Every declared member enters the review source set exactly once',
+      'Every declared member enters the review source set exactly once',
+    ]);
+    const acceptanceChecks = page.locator('[data-statement-kind="acceptance"] [data-review-check]');
+    await expect(acceptanceChecks).toHaveCount(2);
+    await acceptanceChecks.first().check();
+    await page.reload();
+    await expect(acceptanceChecks.first()).toBeChecked();
+    await expect(acceptanceChecks.nth(1)).not.toBeChecked();
     const firstLink = page.locator('.review-navigation a').first();
     await firstLink.focus();
     const outline = await firstLink.evaluate((element) => getComputedStyle(element).outlineWidth);
     expect(Number.parseFloat(outline)).toBeGreaterThanOrEqual(3);
-    await expect(page.locator('.diagram-scroll svg')).toHaveCount(1);
+    await expect(page.locator('.diagram-scroll svg')).toHaveCount(2);
     await expectNoDocumentOverflow(page);
   });
 

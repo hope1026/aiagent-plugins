@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: approved
+status: implemented
 language: ko
 kind: system
 areas: ["forge","review"]
@@ -17,7 +17,7 @@ relatedSpecs: [{"path":"docs/specs/semantic-spec-bundles/","relation":"relatedTo
 - contract: [Source 선택과 Freshness](source-selection-and-freshness.md)
 - contract: [적응형 표현과 탐색](adaptive-presentation-and-navigation.md)
 - contract: [Plan Context와 문장 추적성](plan-context-and-statement-traceability.md)
-- history: [결정과 변경 이력](decisions-and-change-history.md)
+- history: [현재 결정](decisions-and-change-history.md)
 
 ## Overview
 
@@ -34,17 +34,6 @@ Review Viewer의 목적은 텍스트를 그림으로 치환하는 것이 아니�
 - 사용자의 명시적 요청 없이 spec·plan·checkpoint의 Review Viewer를 생성하거나 갱신하지 않는다.
 - spec과 plan이 항상 1:1로 대응한다고 가정하거나 두 문서의 내용을 하나의 combined Viewer에 병합하지 않는다.
 - spec·plan의 일반적인 작성·변경·승인·handoff에서 HTML을 자동 생성하지 않는다. Markdown-only lifecycle 경계는 `docs/specs/semantic-spec-bundles/`가 소유한다.
-
-검토한 접근안:
-
-| 접근안 | 장점 | 단점 | 결정 |
-|---|---|---|---|
-| `review-viewer`로 이름과 사용자 개념 통일 | spec·plan 검토라는 목적과 요청형 lifecycle이 이름에 드러남 | 기존 `spec-viewer` 참조 migration 필요 | 채택 |
-| 별도 `plan-viewer` 추가 | 역할 이름이 명확함 | shell, locale, mobile, 검증 로직이 중복됨 | 제외 |
-| spec과 plan의 combined Viewer 유지 | 하나의 화면에서 traceability를 볼 수 있음 | 독립 수명 주기와 `0..N` 관계를 1:1 lifecycle처럼 오해하게 만듦 | 제외 |
-| 외부 문서 사이트 또는 협업 문서 사용 | 공유와 댓글 기능이 강함 | 배포·권한·동기화 비용과 source drift 위험이 큼 | 제외 |
-| 고정 6-panel template | 구현과 탐색 위치가 단순함 | API·workflow·architecture·policy·migration과 plan의 핵심 질문을 같은 정보 순서에 강제함 | 제외 |
-| Semantic IR + Presentation Plan + component grammar | source fidelity를 유지하면서 문서 종류와 검토 목적에 맞는 구성을 재사용할 수 있음 | planner·profile·coverage validator가 필요함 | 채택 |
 
 ## Behavior & Flows
 
@@ -97,16 +86,6 @@ flowchart TD
     F -- set의 source 모두 일치 --> G[current]
     F -- set의 source 하나라도 불일치 --> H[stale]
     F -- set의 source 누락·오류·미선택 --> I[unverified]
-```
-
-사람이 정보를 읽는 순서:
-
-```mermaid
-flowchart LR
-    A[요약표<br/>무엇을 확인할까] --> B[시각 흐름<br/>Route·책임·의존성]
-    B --> C[상세 Task<br/>파일·Interface·Step]
-    C --> D[AC evidence<br/>검증 방법·상태]
-    D --> E[원문 source<br/>deep link]
 ```
 
 ## Data & Interfaces
@@ -252,7 +231,7 @@ Review Viewer shell의 inherited visual system:
 | `viewer-template.html` | 3단계 freshness UI, source fetch·파일 선택 검증, locale, mobile diagram·table wrapper, 접근성, favicon, 오류 표시 |
 | `build-review-viewer.sh` | `--mode spec|plan`, review ID·output naming, comparison·context sources, `--check`, offline 유지 |
 | `writing-specs` | Markdown 기본 source 검토, Review Viewer 효용 안내, 완료 후 생성 여부 질문 |
-| `writing-plans` | 독립 plan ID, 선택적 Related Specs, plan 디렉터리, 진행·Task 분리 기준 |
+| `writing-plans` | 독립 plan path, 선택적 Related Specs, plan 디렉터리, 진행·Task 분리 기준 |
 | `executing-plans` | plan 디렉터리의 상태·진행 기록과 요청이 있을 때만 plan mode Review Viewer 갱신 |
 | `web-app-design` | 개별 View 생성 제외와 Viewer tooling 변경 시 browser app UI 검증 |
 | `writing-tone` | 질문형 제목, 읽는 법, 요약 우선, locale copy |
@@ -294,7 +273,7 @@ Review Viewer shell의 inherited visual system:
 
 ### `writing-specs`와 `writing-plans`는 각각 Markdown source 작성과 자체 검토가 끝난 뒤 승인 또는 다음 lifecycle handoff를 요청할 때, Review Viewer가 검토에 도움이 되는 경우 사용자에게 생성 여부를 물어야 한다.
 
-### 기존 Review Viewer의 source가 변경되면 Forge는 그 Review Viewer가 stale임을 사용자에게 알릴 수 있지만, 명시적 요청 전에는 stale Review Viewer를 갱신하거나 현재 검토 화면으로 제시하지 않아야 한다.
+### 저장된 Review Viewer의 source가 변경되면 Forge는 그 Review Viewer가 stale임을 사용자에게 알릴 수 있지만, 명시적 요청 전에는 stale Review Viewer를 갱신하거나 현재 검토 화면으로 제시하지 않아야 한다.
 
 ### `.forge/`는 Review Viewer, build staging, 로컬 조사 기록처럼 공유하거나 영구 보존하지 않는 artifact에만 사용하고, `.forge/reviews/`를 포함한 로컬 artifact를 Git 비추적 상태로 유지해야 한다.
 
@@ -306,7 +285,7 @@ Review Viewer shell의 inherited visual system:
 
 ## Acceptance Criteria
 
-### 기존 spec mode Review Viewer가 있는 상태에서 spec을 변경해도 Forge는 Review Viewer를 자동 갱신하지 않고 stale 사실만 알리며, 사용자가 갱신을 명시적으로 요청한 뒤에만 같은 review-id의 `.forge/reviews/<review-id>/view.html`을 새 source hash와 내용으로 갱신하고 Git 비추적 상태를 유지한다.
+### 저장된 spec mode Review Viewer가 있는 상태에서 spec을 변경해도 Forge는 Review Viewer를 자동 갱신하지 않고 stale 사실만 알리며, 사용자가 갱신을 명시적으로 요청한 뒤에만 같은 review-id의 `.forge/reviews/<review-id>/view.html`을 새 source hash와 내용으로 갱신하고 Git 비추적 상태를 유지한다.
 
 검증하는 요구사항:
 
@@ -319,7 +298,7 @@ Review Viewer shell의 inherited visual system:
 - [`writing-specs`는 new·change·clarify·sync 과정에서 사용자의 명시적 요청이 없는 한 spec mode Review Viewer를 생성하거나 갱신하지 않아야 한다.](human-readable-review-viewer.md#writing-specs는-newchangeclarifysync-과정에서-사용자의-명시적-요청이-없는-한-spec-mode-review-viewer를-생성하거나-갱신하지-않아야-한다)
 - [`writing-plans`는 plan 저장 또는 실행 handoff 과정에서 사용자의 명시적 요청이 없는 한 plan mode Review Viewer를 생성하거나 갱신하지 않아야 한다.](human-readable-review-viewer.md#writing-plans는-plan-저장-또는-실행-handoff-과정에서-사용자의-명시적-요청이-없는-한-plan-mode-review-viewer를-생성하거나-갱신하지-않아야-한다)
 - [`executing-plans`는 Review Viewer가 이미 존재하더라도 사용자의 명시적 요청이 없는 한 Task checkpoint 후 plan mode Review Viewer를 갱신하지 않아야 한다.](human-readable-review-viewer.md#executing-plans는-review-viewer가-이미-존재하더라도-사용자의-명시적-요청이-없는-한-task-checkpoint-후-plan-mode-review-viewer를-갱신하지-않아야-한다)
-- [기존 Review Viewer의 source가 변경되면 Forge는 그 Review Viewer가 stale임을 사용자에게 알릴 수 있지만, 명시적 요청 전에는 stale Review Viewer를 갱신하거나 현재 검토 화면으로 제시하지 않아야 한다.](human-readable-review-viewer.md#기존-review-viewer의-source가-변경되면-forge는-그-review-viewer가-stale임을-사용자에게-알릴-수-있지만-명시적-요청-전에는-stale-review-viewer를-갱신하거나-현재-검토-화면으로-제시하지-않아야-한다)
+- [저장된 Review Viewer의 source가 변경되면 Forge는 그 Review Viewer가 stale임을 사용자에게 알릴 수 있지만, 명시적 요청 전에는 stale Review Viewer를 갱신하거나 현재 검토 화면으로 제시하지 않아야 한다.](human-readable-review-viewer.md#저장된-review-viewer의-source가-변경되면-forge는-그-review-viewer가-stale임을-사용자에게-알릴-수-있지만-명시적-요청-전에는-stale-review-viewer를-갱신하거나-현재-검토-화면으로-제시하지-않아야-한다)
 
 ### 고정 Review Viewer tooling으로 개별 View를 build하면 성공한 build에서 작업을 종료하고 별도 checker나 브라우저 검증을 실행하지 않으며 governing spec의 lifecycle status를 변경하지 않는다. Review Viewer tooling 자체를 변경하면 이 예외 없이 일반 구현 검증을 수행한다.
 

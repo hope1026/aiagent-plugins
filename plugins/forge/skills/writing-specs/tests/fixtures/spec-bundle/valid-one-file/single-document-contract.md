@@ -30,4 +30,4 @@ Verifies:
 
 ## Decisions & History
 
-- 2026-08-09 [APPROVED] The one-file boundary remains a valid Spec Bundle.
+- 2026-08-09 [CURRENT] The one-file boundary is a valid Spec Bundle.

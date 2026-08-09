@@ -25,7 +25,7 @@ Each bundle has exactly one `forge/spec@3` root document and one or more Markdow
 
 `Requirements`, `Acceptance Criteria`, and `Decisions & History` carry normative project authority. A Requirement or Acceptance statement is a complete `###` heading, not a short code. Acceptance statements include `Verifies:` or `검증하는 요구사항:` followed by Markdown links whose member path, anchor, and link text exactly identify the Requirement headings they verify. A Change Brief and a Spec Delta remain non-authoritative work inputs. Read `references/spec-delta-template.md` before proposing a new or changed bundle.
 
-Use EARS as a semantic discipline in the user's language. Each Requirement heading states the condition and required behavior. Each Acceptance heading states a precondition, action, and observable outcome. Keep `Decisions & History` append-only after approval.
+Use EARS as a semantic discipline in the user's language. Each Requirement heading states the condition and required behavior. Each Acceptance heading states a precondition, action, and observable outcome. Keep `Decisions & History` focused on the current adopted decision; Git and validated transition evidence retain superseded detail.
 
 ## When to Use / When NOT
 
@@ -52,15 +52,15 @@ Before starting a mode, create one checklist item per numbered step and keep it 
 4. Choose a semantic bundle directory and descriptive root and member filenames. Draft a Spec Delta containing the complete proposed Spec Bundle with lifecycle `status: approved`; keep it in the conversation or `.forge/work/<work-id>/spec-delta.md`. Do not create authoritative files under `docs/specs/` yet.
 5. Self-review language, EARS discipline, member boundaries, `Documents` completeness, full Requirement and Acceptance statement wording, exact statement links, ambiguity, and source-owned Mermaid.
 6. Validate the proposal in an isolated temporary repository, then ask the user to approve the exact proposal. The proposal remains non-authoritative while approval is pending.
-7. On explicit approval, create the approved bundle, append the approval history entry, and run the writer transaction. Mechanical fixes that preserve approved meaning may proceed; any semantic change returns for approval.
+7. On explicit approval, create the approved bundle, record the current adopted decision, and run the writer transaction. Remove completed migration detail and superseded contract text from the active bundle; retain audit detail in Git or validated transition evidence. Mechanical fixes that preserve approved meaning may proceed; any semantic change returns for approval.
 
 ### Change
 
 1. Locate and inspect the governing bundle directory. Require `forge/spec@3`, lifecycle `approved|implemented`, and zero diagnostics. Record its bundle path, root path, status, and bundle SHA-256.
-2. Leave the existing bundle bytes and authority unchanged. Draft a Spec Delta that names the baseline bundle SHA-256 and links every affected Requirement and Acceptance statement by member path and exact heading. State exact additions, modifications, removals, member moves, and the proposed history entry.
+2. Leave the existing bundle bytes and authority unchanged. Draft a Spec Delta that names the baseline bundle SHA-256 and links every affected Requirement and Acceptance statement by member path and exact heading. State exact additions, modifications, removals, member moves, and the proposed current decision summary.
 3. Self-review the Delta and ask for explicit approval. Do not set the authoritative bundle to `draft` while waiting.
 4. Immediately before applying an approved Delta, re-inspect the baseline. If its bundle SHA-256 changed, rebase the Delta and obtain approval for any semantic difference.
-5. Apply only the approved meaning. Preserve unaffected statement headings, leave removal reasons in history, set lifecycle `status: approved`, append the dated `[CHANGE]` and approval history, and run the writer transaction.
+5. Apply only the approved meaning. Preserve unaffected statement headings, remove superseded contract text, set lifecycle `status: approved`, replace the current decision summary, and run the writer transaction. Git or validated transition evidence retains the prior detail.
 6. A validation failure blocks implementation handoff. Fix mechanical defects and rerun; return for approval if the correction changes meaning.
 
 ### Clarify
@@ -78,11 +78,11 @@ Compare actual behavior with the authoritative Spec Bundle. Record each mismatch
 
 Use this subflow only when an `approved` or `implemented` source must move to a new semantic bundle path so active sources contain current facts rather than completed migration history. It does not authorize retirement, merge, a target already present in the baseline, or a same-diff transition chain.
 
-1. Write and present the complete replacement as a Spec Delta before touching the old source. Keep it outside the final bundle path. Preserve completed execution details in a plan, ADR, or evidence file.
-2. Obtain explicit approval. Then use the forge writing-plans skill to record the exact source path, target bundle path, SHA-256 of the old source bytes from the expected Git baseline, evidence path, reference updates, and release boundary.
+1. Write and present the complete replacement as a Spec Delta before touching the current source. Keep it outside the final bundle path. Preserve completed execution details in a plan, ADR, or evidence file.
+2. Obtain explicit approval. Then use the forge writing-plans skill to record the exact source path, target bundle path, SHA-256 of the baseline source bytes, evidence path, reference updates, and release boundary.
 3. Commit the approved Execution Plan and durable evidence first. Record the expected clean HEAD and a fingerprint of its HEAD, index, tracked, and untracked bytes. A dirty root blocks candidate creation; do not clean, stash, or overwrite user work.
 4. Create a registered isolated Git worktree detached at the expected HEAD. Perform all supersession mutations there, never in the production root.
-5. In that worktree, append exactly one one-to-one `superseded` record to `docs/specs/.bundle-transitions.json`; promote the replacement at its new semantic bundle path; remove the old source; update active relations and Markdown links; and preserve evidence. The transition uses `fromSourcePath`, `fromSourceSha256`, `toBundlePath`, `evidencePath`, and `reason`, never a document identifier.
+5. In that worktree, append exactly one one-to-one `superseded` record to `docs/specs/.bundle-transitions.json`; promote the replacement at its new semantic bundle path; remove the prior bundle; update active relations and Markdown links; and preserve evidence. The transition uses `fromSourcePath`, `fromSourceSha256`, `toBundlePath`, `evidencePath`, and `reason`, never a document identifier.
 6. Run baseline validation against the expected HEAD and exact expected-byte checks. Create one candidate commit only after every gate passes.
 7. On any validation, expected-byte, or commit failure, discard the candidate worktree and prove that the production fingerprint is unchanged. When the user did not explicitly request a Review Viewer, the Review Viewer output count stays exactly zero.
 8. Immediately before promotion, require the production root to remain at the expected clean HEAD with the exact recorded fingerprint. Apply only the verified candidate commit with a fast-forward operation. Any HEAD or byte drift refuses promotion without modifying the root.

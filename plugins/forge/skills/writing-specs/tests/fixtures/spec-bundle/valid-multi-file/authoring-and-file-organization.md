@@ -10,5 +10,4 @@ Verifies:
 
 ## Decisions & History
 
-- 2026-08-09 [APPROVED] The multi-file bundle fixture is approved for parser validation.
-
+- 2026-08-09 [CURRENT] The multi-file bundle fixture uses semantic paths for parser validation.

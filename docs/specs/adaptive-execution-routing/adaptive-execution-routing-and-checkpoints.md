@@ -28,14 +28,6 @@ Forge는 구현 계획의 Task 특성에 따라 적절한 LLM capability tier와
 - 파일이나 상태를 공유하는 Task를 무조건 병렬 실행하지 않는다.
 - 사용자 요청 없이 HTML Viewer를 생성하거나 갱신하지 않는다.
 
-검토한 접근안:
-
-| 접근안 | 장점 | 단점 | 결정 |
-|---|---|---|---|
-| Task마다 사용자 approval checkpoint | 진행 상태와 결과를 자주 검토할 수 있음 | 응답 대기 때문에 실행 흐름이 반복해서 끊김 | 제외 |
-| 중간 checkpoint 완전 제거 | 가장 빠르게 연속 실행 가능 | divergence와 외부 권한 경계를 늦게 발견할 수 있음 | 제외 |
-| 내부 checkpoint + 비차단 notify + 제한된 approval | 복구 가능성과 사용자 통제를 유지하면서 연속 실행 가능 | checkpoint 유형과 escalation 규칙이 필요함 | 채택 |
-
 ## Behavior & Flows
 
 Task 자동 라우팅과 연속 실행 흐름:
@@ -190,13 +182,13 @@ Platform mapping 예시:
 
 ### `writing-plans`는 각 Task에 정확한 dependency, Files, Interfaces, verification을 제공하고, 사용자 결정이 실제로 필요한 지점만 `approval` gate로 표시해야 한다.
 
-### `executing-plans`는 기존의 Task별 사용자 checkpoint를 제거하고, Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용해야 한다.
+### `executing-plans`는 Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용하고 사용자 결정을 요구하는 지점에서만 approval checkpoint를 열어야 한다.
 
 ### progress ledger는 Task별 capability tier, 실행 주체, 병렬 group, route 선택 이유, escalation, verification, commit 범위를 기록해야 한다.
 
 ### notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.
 
-### 기존 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.
+### 저장된 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.
 
 ### distributed Forge skill은 `fast`, `balanced`, `frontier`의 의미와 fallback 동작만 정의하고, 실제 model·agent role mapping은 platform adaptation reference 또는 사용자 설정에 두어야 한다.
 
@@ -266,7 +258,7 @@ Platform mapping 예시:
 - [Forge는 checkpoint를 `internal`, `notify`, `approval` 세 유형으로 구분해야 한다.](adaptive-execution-routing-and-checkpoints.md#forge는-checkpoint를-internal-notify-approval-세-유형으로-구분해야-한다)
 - [`internal` checkpoint는 각 Task가 끝날 때 verification 실행, plan checkbox 갱신, progress ledger 기록, 계획된 local commit을 수행해야 하며, 성공하면 사용자 응답을 기다리지 않고 다음 Task를 계속 실행해야 한다.](adaptive-execution-routing-and-checkpoints.md#internal-checkpoint는-각-task가-끝날-때-verification-실행-plan-checkbox-갱신-progress-ledger-기록-계획된-local-commit을-수행해야-하며-성공하면-사용자-응답을-기다리지-않고-다음-task를-계속-실행해야-한다)
 - [`notify` checkpoint는 Route 또는 Milestone 완료, `frontier` tier Task 완료, 자동 tier escalation 발생 시 진행 상황과 증거를 사용자에게 알리되, 응답을 기다리지 않고 다음 안전한 작업을 계속해야 한다.](adaptive-execution-routing-and-checkpoints.md#notify-checkpoint는-route-또는-milestone-완료-frontier-tier-task-완료-자동-tier-escalation-발생-시-진행-상황과-증거를-사용자에게-알리되-응답을-기다리지-않고-다음-안전한-작업을-계속해야-한다)
-- [`executing-plans`는 기존의 Task별 사용자 checkpoint를 제거하고, Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용해야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-기존의-task별-사용자-checkpoint를-제거하고-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용해야-한다)
+- [`executing-plans`는 Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용하고 사용자 결정을 요구하는 지점에서만 approval checkpoint를 열어야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용하고-사용자-결정을-요구하는-지점에서만-approval-checkpoint를-열어야-한다)
 
 ### 실행 중 spec과 현실의 충돌이 발견되면 완료 상태와 재개 지점이 ledger에 기록되고, spec delta 선택지를 제시한 뒤 사용자 결정을 기다리며 다음 Task는 시작되지 않는다.
 
@@ -282,7 +274,7 @@ Platform mapping 예시:
 - [`approval` checkpoint는 다음 경우에만 실행을 멈추고 사용자 결정을 기다려야 한다.](adaptive-execution-routing-and-checkpoints.md#approval-checkpoint는-다음-경우에만-실행을-멈추고-사용자-결정을-기다려야-한다)
 - [local file edit, test, 계획된 local commit, capability tier 선택, subagent 위임, 병렬 실행, internal checkpoint, notify checkpoint만으로는 사용자 approval을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#local-file-edit-test-계획된-local-commit-capability-tier-선택-subagent-위임-병렬-실행-internal-checkpoint-notify-checkpoint만으로는-사용자-approval을-요구하지-않아야-한다)
 
-### 모든 Task가 internal checkpoint를 통과하면 중간 사용자 승인을 추가로 요구하지 않고 the forge verifying-work skill로 이동해 AC별 fresh evidence를 수집한다.
+### 모든 Task가 internal checkpoint를 통과하면 중간 사용자 승인을 추가로 요구하지 않고 the forge verifying-work skill로 이동해 영향받는 Acceptance statement별 fresh evidence를 수집한다.
 
 검증하는 요구사항:
 
@@ -293,7 +285,7 @@ Platform mapping 예시:
 검증하는 요구사항:
 
 - [`writing-plans`는 각 Task에 정확한 dependency, Files, Interfaces, verification을 제공하고, 사용자 결정이 실제로 필요한 지점만 `approval` gate로 표시해야 한다.](adaptive-execution-routing-and-checkpoints.md#writing-plans는-각-task에-정확한-dependency-files-interfaces-verification을-제공하고-사용자-결정이-실제로-필요한-지점만-approval-gate로-표시해야-한다)
-- [`executing-plans`는 기존의 Task별 사용자 checkpoint를 제거하고, Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용해야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-기존의-task별-사용자-checkpoint를-제거하고-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용해야-한다)
+- [`executing-plans`는 Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용하고 사용자 결정을 요구하는 지점에서만 approval checkpoint를 열어야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용하고-사용자-결정을-요구하는-지점에서만-approval-checkpoint를-열어야-한다)
 - [progress ledger는 Task별 capability tier, 실행 주체, 병렬 group, route 선택 이유, escalation, verification, commit 범위를 기록해야 한다.](adaptive-execution-routing-and-checkpoints.md#progress-ledger는-task별-capability-tier-실행-주체-병렬-group-route-선택-이유-escalation-verification-commit-범위를-기록해야-한다)
 - [notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#notify와-최종-보고는-어떤-task가-어느-tier와-실행-방식으로-처리됐는지-요약해야-하며-model-slug나-내부-reasoning-전문을-요구하지-않아야-한다)
 
@@ -303,11 +295,11 @@ Platform mapping 예시:
 
 - [notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#notify와-최종-보고는-어떤-task가-어느-tier와-실행-방식으로-처리됐는지-요약해야-하며-model-slug나-내부-reasoning-전문을-요구하지-않아야-한다)
 
-### 기존 combined Viewer가 있는 plan을 internal·notify checkpoint까지 실행해도 HTML timestamp와 source hash가 바뀌지 않으며, 사용자가 갱신을 명시적으로 요청한 뒤에만 Viewer가 재생성된다.
+### 저장된 plan mode Review Viewer가 있는 plan을 internal·notify checkpoint까지 실행해도 HTML timestamp와 source hash가 바뀌지 않으며, 사용자가 갱신을 명시적으로 요청한 뒤에만 Viewer가 재생성된다.
 
 검증하는 요구사항:
 
-- [기존 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#기존-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
+- [저장된 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
 
 ### instruction pressure test에서 deadline과 병렬 실행 압력이 함께 주어져도 agent는 충돌 Task를 순차 처리하고, ordinary Task마다 사용자 응답을 기다리지 않으며, spec divergence와 release 경계에서는 멈춘다.
 
@@ -334,10 +326,10 @@ Platform mapping 예시:
 - [approval checkpoint에서 root agent는 완료된 작업을 progress ledger에 먼저 기록하고, 필요한 결정, 선택지, 영향, 응답 후 재개 지점을 사용자에게 명확히 제시한 뒤 멈춰야 한다.](adaptive-execution-routing-and-checkpoints.md#approval-checkpoint에서-root-agent는-완료된-작업을-progress-ledger에-먼저-기록하고-필요한-결정-선택지-영향-응답-후-재개-지점을-사용자에게-명확히-제시한-뒤-멈춰야-한다)
 - [모든 Task가 끝나면 Forge는 별도의 중간 approval 없이 the forge verifying-work skill로 이동하고, 최종 검증 결과를 사용자에게 보고해야 한다.](adaptive-execution-routing-and-checkpoints.md#모든-task가-끝나면-forge는-별도의-중간-approval-없이-the-forge-verifying-work-skill로-이동하고-최종-검증-결과를-사용자에게-보고해야-한다)
 - [`writing-plans`는 각 Task에 정확한 dependency, Files, Interfaces, verification을 제공하고, 사용자 결정이 실제로 필요한 지점만 `approval` gate로 표시해야 한다.](adaptive-execution-routing-and-checkpoints.md#writing-plans는-각-task에-정확한-dependency-files-interfaces-verification을-제공하고-사용자-결정이-실제로-필요한-지점만-approval-gate로-표시해야-한다)
-- [`executing-plans`는 기존의 Task별 사용자 checkpoint를 제거하고, Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용해야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-기존의-task별-사용자-checkpoint를-제거하고-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용해야-한다)
+- [`executing-plans`는 Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용하고 사용자 결정을 요구하는 지점에서만 approval checkpoint를 열어야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용하고-사용자-결정을-요구하는-지점에서만-approval-checkpoint를-열어야-한다)
 - [progress ledger는 Task별 capability tier, 실행 주체, 병렬 group, route 선택 이유, escalation, verification, commit 범위를 기록해야 한다.](adaptive-execution-routing-and-checkpoints.md#progress-ledger는-task별-capability-tier-실행-주체-병렬-group-route-선택-이유-escalation-verification-commit-범위를-기록해야-한다)
 - [notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#notify와-최종-보고는-어떤-task가-어느-tier와-실행-방식으로-처리됐는지-요약해야-하며-model-slug나-내부-reasoning-전문을-요구하지-않아야-한다)
-- [기존 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#기존-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
+- [저장된 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
 - [distributed Forge skill은 `fast`, `balanced`, `frontier`의 의미와 fallback 동작만 정의하고, 실제 model·agent role mapping은 platform adaptation reference 또는 사용자 설정에 두어야 한다.](adaptive-execution-routing-and-checkpoints.md#distributed-forge-skill은-fast-balanced-frontier의-의미와-fallback-동작만-정의하고-실제-modelagent-role-mapping은-platform-adaptation-reference-또는-사용자-설정에-두어야-한다)
 
 ### `bash scripts/validate.sh`와 관련 skill 검증을 실행하면 `validate: all checks passed`가 출력되고 distributed skill portability 규칙 위반이 없다.
@@ -365,10 +357,10 @@ Platform mapping 예시:
 - [approval checkpoint에서 root agent는 완료된 작업을 progress ledger에 먼저 기록하고, 필요한 결정, 선택지, 영향, 응답 후 재개 지점을 사용자에게 명확히 제시한 뒤 멈춰야 한다.](adaptive-execution-routing-and-checkpoints.md#approval-checkpoint에서-root-agent는-완료된-작업을-progress-ledger에-먼저-기록하고-필요한-결정-선택지-영향-응답-후-재개-지점을-사용자에게-명확히-제시한-뒤-멈춰야-한다)
 - [모든 Task가 끝나면 Forge는 별도의 중간 approval 없이 the forge verifying-work skill로 이동하고, 최종 검증 결과를 사용자에게 보고해야 한다.](adaptive-execution-routing-and-checkpoints.md#모든-task가-끝나면-forge는-별도의-중간-approval-없이-the-forge-verifying-work-skill로-이동하고-최종-검증-결과를-사용자에게-보고해야-한다)
 - [`writing-plans`는 각 Task에 정확한 dependency, Files, Interfaces, verification을 제공하고, 사용자 결정이 실제로 필요한 지점만 `approval` gate로 표시해야 한다.](adaptive-execution-routing-and-checkpoints.md#writing-plans는-각-task에-정확한-dependency-files-interfaces-verification을-제공하고-사용자-결정이-실제로-필요한-지점만-approval-gate로-표시해야-한다)
-- [`executing-plans`는 기존의 Task별 사용자 checkpoint를 제거하고, Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용해야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-기존의-task별-사용자-checkpoint를-제거하고-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용해야-한다)
+- [`executing-plans`는 Task별 internal checkpoint와 Route 또는 Milestone 단위 notify checkpoint를 사용하고 사용자 결정을 요구하는 지점에서만 approval checkpoint를 열어야 한다.](adaptive-execution-routing-and-checkpoints.md#executing-plans는-task별-internal-checkpoint와-route-또는-milestone-단위-notify-checkpoint를-사용하고-사용자-결정을-요구하는-지점에서만-approval-checkpoint를-열어야-한다)
 - [progress ledger는 Task별 capability tier, 실행 주체, 병렬 group, route 선택 이유, escalation, verification, commit 범위를 기록해야 한다.](adaptive-execution-routing-and-checkpoints.md#progress-ledger는-task별-capability-tier-실행-주체-병렬-group-route-선택-이유-escalation-verification-commit-범위를-기록해야-한다)
 - [notify와 최종 보고는 어떤 Task가 어느 tier와 실행 방식으로 처리됐는지 요약해야 하며, model slug나 내부 reasoning 전문을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#notify와-최종-보고는-어떤-task가-어느-tier와-실행-방식으로-처리됐는지-요약해야-하며-model-slug나-내부-reasoning-전문을-요구하지-않아야-한다)
-- [기존 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#기존-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
+- [저장된 Viewer가 있거나 checkpoint가 발생했다는 사실만으로 Viewer를 생성하거나 갱신하지 않아야 하며, Viewer 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](adaptive-execution-routing-and-checkpoints.md#저장된-viewer가-있거나-checkpoint가-발생했다는-사실만으로-viewer를-생성하거나-갱신하지-않아야-하며-viewer-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
 - [distributed Forge skill은 `fast`, `balanced`, `frontier`의 의미와 fallback 동작만 정의하고, 실제 model·agent role mapping은 platform adaptation reference 또는 사용자 설정에 두어야 한다.](adaptive-execution-routing-and-checkpoints.md#distributed-forge-skill은-fast-balanced-frontier의-의미와-fallback-동작만-정의하고-실제-modelagent-role-mapping은-platform-adaptation-reference-또는-사용자-설정에-두어야-한다)
 
 ### `frontier` escalation 후 같은 verification failure가 다시 발생하면 자동 재시도가 중단되고 the forge systematic-debugging skill로 전환되며, root cause가 spec divergence나 추가 권한으로 확인되지 않는 한 사용자 approval을 요구하지 않는다.
@@ -398,15 +390,4 @@ Platform mapping 예시:
 
 ## Decisions & History
 
-- 2026-07-12 [DECISION] Task별 사용자 checkpoint를 제거하고 `internal`, `notify`, `approval` 세 유형으로 분리한다.
-- 2026-07-12 [DECISION] internal checkpoint와 notify는 실행을 중단하지 않으며, spec delta·외부 권한·범위 확대·release에만 approval checkpoint를 사용한다.
-- 2026-07-12 [DECISION] Forge skill은 고정 model slug 대신 `fast`, `balanced`, `frontier` capability tier를 사용한다.
-- 2026-07-12 [DECISION] root agent가 Task 특성에 따라 tier, subagent 위임, 병렬 group을 자동 선택하고 사용자에게 매번 승인을 요청하지 않는다.
-- 2026-07-12 [DECISION] subagent 결과는 root review와 fresh verification을 통과한 뒤에만 완료로 인정한다.
-- 2026-07-12 [DECISION] 별도 설정이 없을 때 동시 subagent 수는 최대 3개로 제한한다.
-- 2026-07-12 [DECISION] model 선택을 지원하지 않아도 subagent가 가능하면 현재 model을 상속해 병렬 실행하고, subagent 기능이 없을 때만 순차 fallback을 사용한다.
-- 2026-07-12 [DECISION] `frontier` escalation 이후 같은 failure가 반복되면 자동 재시도를 중단하고 systematic debugging으로 전환한다.
-- 2026-07-12 [REJECTED] Task마다 approval checkpoint: 사용자 응답 대기가 연속 실행을 방해한다.
-- 2026-07-12 [REJECTED] 모든 checkpoint 제거: spec divergence와 외부 권한 경계를 안전하게 처리할 수 없다.
-- 2026-07-12 [DECISION] 사용자가 자동 capability-tier 라우팅과 비차단 checkpoint 스펙을 승인했다.
-- 2026-08-09 [CHANGE] 의미 기반 Spec Bundle과 완전한 문장 추적성으로 현재 계약을 정리했다.
+- 2026-08-09 [CURRENT] 실행은 capability tier와 위험에 따라 자동 라우팅하고 `internal`, `notify`, `approval` checkpoint를 구분하며, 서브에이전트 결과는 root 검토와 fresh verification 뒤에만 완료로 인정한다.

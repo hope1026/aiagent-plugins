@@ -54,14 +54,6 @@ flowchart TD
     L -->|통과| M[실제 scenario pressure test]
 ```
 
-검토한 구조:
-
-| 방식 | 장점 | 단점 | 결정 |
-|---|---|---|---|
-| agent별 skill·MCP 전체 복사 | 각 agent 경로에서 바로 보임 | 내용과 설정이 세 벌로 갈라지고 update drift가 발생함 | 제외 |
-| `.agent-extensions/` canonical source + 얇은 skill entry + 생성형 MCP adapter | 정본이 하나이며 agent별 native 형식을 정확히 지원함 | adapter render와 ownership validation이 필요함 | 채택 |
-| canonical source만 만들고 native 연결은 사용자에게 맡김 | 구현이 가장 단순함 | 실제 agent discovery와 MCP activation을 보장하지 못함 | 제외 |
-
 ## Data & Interfaces
 
 Canonical layout:
@@ -286,14 +278,4 @@ Manager interface:
 
 ## Decisions & History
 
-- 2026-07-14 [DECISION] Forge 사용자 스킬 이름을 `creating-agent-extensions`로 정하고, plugin distribution이 아니라 cross-agent authoring structure 생성을 책임지게 한다.
-- 2026-07-14 [DECISION] repository canonical root는 `.agent-extensions/`, user canonical root는 `~/.agent-extensions/`를 사용한다.
-- 2026-07-14 [DECISION] portable skill, MCP definition, 두 component의 bundle을 첫 version의 output profile로 지원한다.
-- 2026-07-14 [DECISION] skill은 canonical Agent Skill과 얇은 native entry를 사용하고, MCP는 canonical JSON에서 agent-native configuration으로 렌더링한다.
-- 2026-07-14 [DECISION] 상세 내용은 현재 agent의 공식·시스템 authoring capability를 우선 사용하되 특정 provider 이름을 필수 의존성으로 두지 않는다.
-- 2026-07-14 [DECISION] Codex와 Antigravity의 repository skill entry는 `.agents/skills/`를 공유하고, user skill entry는 각 agent의 global discovery root를 사용한다.
-- 2026-07-14 [DECISION] user native configuration write는 preview와 사용자 확인 뒤에만 수행한다.
-- 2026-07-14 [REJECTED] agent별 full copy는 정본 drift 때문에 채택하지 않는다.
-- 2026-07-14 [REJECTED] Marketplace와 배포 package 생성은 authoring structure 목적과 다른 lifecycle이므로 범위에서 제외한다.
-- 2026-07-14 [DECISION] 사용자가 본 스펙을 승인하여 구현 계획 수립을 시작한다.
-- 2026-08-09 [CHANGE] 의미 기반 Spec Bundle과 완전한 문장 추적성으로 현재 계약을 정리했다.
+- 2026-08-09 [CURRENT] `creating-agent-extensions`는 `.agent-extensions/` 정본에서 portable skill과 MCP adapter를 생성하고 각 에이전트의 native discovery 형식과 ownership을 검증한다.

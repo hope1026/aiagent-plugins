@@ -30,4 +30,4 @@ Verifies:
 
 ## Decisions & History
 
-- 2026-08-09 [IMPLEMENTED] This supporting contract is active.
+- 2026-08-09 [CURRENT] This supporting contract is active.

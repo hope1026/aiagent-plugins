@@ -30,4 +30,4 @@ Verifies:
 
 ## Decisions & History
 
-- 2026-08-09 [APPROVED] The review lifecycle uses bundle paths as human-readable identity.
+- 2026-08-09 [CURRENT] The review lifecycle uses bundle paths as human-readable identity.

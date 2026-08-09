@@ -128,9 +128,4 @@ Verifies:
 
 ## Decisions & History
 
-- 2026-07-04 [DECISION] Keep `writing-tone` as the single base natural writing skill instead of adding `natural-writing-tone`, because duplicate base tone skills would create ambiguous triggers.
-- 2026-07-04 [DECISION] Add `marketing-tone` and `operations-tone` as overlays on top of `writing-tone`, because the differences are purpose-specific rather than separate base writing systems.
-- 2026-07-04 [DECISION] Make `operations-tone` default to status, impact, action, customer action required, and next update criteria. Root cause detail is conditional, not the default.
-- 2026-07-04 [DECISION] Deduplicate `operations-private` only where guidance is generic tone guidance; preserve product-specific WEPPY procedures, links, private support safeguards, and existing uncommitted user edits.
-- 2026-07-04 [APPROVED] User approved the spec in chat with "승인".
-- 2026-08-09 [CHANGE] 의미 기반 Spec Bundle과 완전한 문장 추적성으로 현재 계약을 정리했다.
+- 2026-08-09 [CURRENT] `writing-tone`을 공통 기반으로 사용하고 `marketing-tone`과 `operations-tone`은 목적별 overlay로 적용한다.

@@ -10,4 +10,4 @@ Verifies:
 
 ## Decisions & History
 
-- 2026-08-09 [APPROVED] The plan trace fixture uses semantic bundle paths and statements.
+- 2026-08-09 [CURRENT] The plan trace fixture uses semantic bundle paths and statements.

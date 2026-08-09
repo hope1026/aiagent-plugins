@@ -111,7 +111,7 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
 
             self.assertTrue(result.ok, result.diagnostics)
 
-    def test_approved_v3_history_preserves_the_baseline_line_prefix(self) -> None:
+    def test_approved_v3_history_may_replace_baseline_entries_with_current_facts(self) -> None:
         temporary, repository = self._repository()
         with temporary:
             subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
@@ -132,18 +132,19 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
             )
             history = repository / HISTORY_MEMBER
             history.write_text(
-                history.read_text(encoding="utf-8").replace(
-                    "Repository discovery uses semantic bundle paths and full statements.",
-                    "The baseline history was rewritten.",
-                ),
+                "# Semantic Workflow Decisions\n\n"
+                "## Decisions & History\n\n"
+                "- 2026-08-09 [CURRENT] The active contract uses semantic bundle paths "
+                "and full statements.\n",
                 encoding="utf-8",
             )
 
             result = validate_repository(repository, baseline_ref="HEAD")
 
-            self.assertIn(
-                "SPEC_HISTORY_NOT_APPEND_ONLY",
-                {item.code for item in result.diagnostics},
+            self.assertTrue(result.ok, result.diagnostics)
+            self.assertNotIn(
+                "Repository discovery uses semantic bundle paths and full statements.",
+                history.read_text(encoding="utf-8"),
             )
 
     def test_transition_prefix_and_retired_bundle_cannot_be_rewritten(self) -> None:
@@ -204,6 +205,32 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
 
             self.assertIn("SPEC_TRANSITION_BASELINE_PREFIX", codes)
             self.assertIn("SPEC_TRANSITION_OLD_SOURCE", codes)
+
+    def test_approved_bundle_removal_requires_a_path_transition(self) -> None:
+        temporary, repository = self._repository()
+        with temporary:
+            subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
+            subprocess.run(["git", "add", "."], cwd=repository, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Forge Test",
+                    "-c",
+                    "user.email=forge@example.invalid",
+                    "commit",
+                    "-qm",
+                    "approved v3 baseline",
+                ],
+                cwd=repository,
+                check=True,
+            )
+            shutil.rmtree(repository / "docs/specs/semantic-workflows")
+
+            result = validate_repository(repository, baseline_ref="HEAD")
+            codes = {item.code for item in result.diagnostics}
+
+            self.assertIn("SPEC_TRANSITION_REQUIRED", codes)
 
     def test_discovers_direct_child_semantic_bundles_in_lexical_order(self) -> None:
         result = validate_repository(FIXTURE_REPOSITORY, Path("docs/specs"))
@@ -331,7 +358,7 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
             source = repository / CONTAINMENT_MEMBER
             source.write_text(
                 source.read_text()
-                + "\n## Decisions & History\n\n- 2026-08-09 [CHANGE] Duplicate history.\n",
+                + "\n## Decisions & History\n\n- 2026-08-09 [CURRENT] Duplicate history.\n",
                 encoding="utf-8",
             )
 

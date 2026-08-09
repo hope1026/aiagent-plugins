@@ -12,12 +12,12 @@ Canonical Specs record durable system intent, contracts, policy, and invariants.
 - Write each Requirement and Acceptance statement as a complete `###` heading that a reader can understand without a lookup table.
 - Use EARS as a semantic discipline in the user's language. Every Acceptance heading states a precondition, action, and observable outcome.
 - Under each Acceptance statement, add `Verifies:` for English or `검증하는 요구사항:` for Korean, then link exact Requirement heading text to its member path and anchor.
-- Preserve lifecycle values, history tags, code identifiers, commands, and established technical names.
+- Preserve lifecycle values, code identifiers, commands, and established technical names. Keep only the current adopted decision in the active history section.
 - Put source-owned Mermaid, tables, examples, and code in the member where a reader naturally needs them.
 
 ## Lifecycle
 
-Only `approved` and `implemented` bundles are project SOT. `approved` records accepted intent awaiting full implementation evidence; `implemented` records verified implementation alignment. `draft` is a proposal token for isolated candidate handling and never replaces existing approved authority. Only explicit user approval sets `approved`; only the forge verifying-work skill sets `implemented` after the required Acceptance evidence passes. Any authoritative body, metadata, layout, or status edit is incomplete until repository Markdown validation passes. It never implies HTML generation.
+Only `approved` and `implemented` bundles are project SOT. `approved` records accepted intent awaiting full implementation evidence; `implemented` records verified implementation alignment. `draft` is a proposal token for incomplete isolated candidate handling and never replaces existing approved authority. A complete Spec Delta shows the intended post-approval bundle with `status: approved`, but remains non-authoritative outside `docs/specs/` until explicit approval and the writer transaction. Only the forge verifying-work skill sets `implemented` after the required Acceptance evidence passes. Any authoritative body, metadata, layout, or status edit is incomplete until repository Markdown validation passes. It never implies HTML generation.
 
 ## Root template
 
@@ -25,7 +25,7 @@ Only `approved` and `implemented` bundles are project SOT. `approved` records ac
 ---
 schema: forge/spec@3
 role: root
-status: draft
+status: <draft|approved|implemented>
 language: ko
 kind: <feature|system|interface|policy>
 subtype: <optional-lowercase-kebab-case>
@@ -73,14 +73,14 @@ relatedSpecs: []
 ## History member template
 
 ````markdown
-# <bundle 결정과 이력을 표현하는 제목>
+# <bundle의 현재 결정을 표현하는 제목>
 
 ## Decisions & History
 
-- YYYY-MM-DD [DECISION] <결정과 이유>
+- YYYY-MM-DD [CURRENT] <현재 채택된 결정과 이유>
 ````
 
-The root may also own Requirements, Acceptance Criteria, or Decisions & History. Across the whole bundle, Requirements and Acceptance Criteria each appear at least once, while Decisions & History appears exactly once.
+The root may also own Requirements, Acceptance Criteria, or Decisions & History. Across the whole bundle, Requirements and Acceptance Criteria each appear at least once, while Decisions & History appears exactly once and contains current facts rather than completed migration history.
 
 ## Frontmatter fields
 
@@ -104,8 +104,8 @@ The root may also own Requirements, Acceptance Criteria, or Decisions & History.
 - Requirement headings are unique across the bundle after normalization. Acceptance headings follow the same rule.
 - Every Requirement is verified by at least one Acceptance statement. Every Acceptance statement links one or more Requirements in the same bundle using exact heading text, member path, and anchor.
 - `[NEEDS CLARIFICATION: ...]` is allowed only while `status` is `draft`.
-- Replacing an active path is the narrow exception: use one-to-one `superseded` in `docs/specs/.bundle-transitions.json` only after replacement approval and the isolated candidate workflow; never rewrite or silently delete baseline history.
+- Replacing an active path is the narrow exception: use one-to-one `superseded` in `docs/specs/.bundle-transitions.json` only after replacement approval and the isolated candidate workflow; never silently delete an approved bundle.
 
-## History tags
+## Current decision
 
-Use `[DECISION]`, `[CLARIFIED]`, `[CHANGE]`, `[DRIFT]`, `[REJECTED]`, `[APPROVED]`, and `[IMPLEMENTED]`. Describe changed statement headings and member paths in ordinary language.
+Use one dated `[CURRENT]` entry that explains the adopted contract in ordinary language. Keep completed migration detail, rejected options and superseded clauses in Git or validated transition evidence instead of the active bundle.

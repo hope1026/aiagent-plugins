@@ -28,9 +28,9 @@ Baseline:
 
 - MODIFIED: [<exact statement heading>](<member-path>#<exact-anchor>) → <Exact intended meaning after approval.>
 - ADDED: `<member-path>` → `### <complete statement heading>`
-- REMOVED: [<exact statement heading>](<member-path>#<exact-anchor>) → <Reason recorded in Decisions & History.>
+- REMOVED: [<exact statement heading>](<member-path>#<exact-anchor>) → <Reason retained in the proposal, Git history, or validated transition evidence.>
 - MOVED: `<old-member-path>` → `<new-member-path>` with unchanged statement text.
-- HISTORY: <Proposed dated change entry.>
+- CURRENT DECISION: <How the active bundle states the adopted contract after approval.>
 
 For a new Canonical Spec, include the complete proposed `forge/spec@3` bundle here. Show the bundle directory, every descriptive filename, and the full Markdown content of every member with lifecycle `status: approved` in the root.
 

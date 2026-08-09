@@ -11,7 +11,7 @@ Respond to the user in the user's language. This skill file stays in English. Wr
 
 ## Overview
 
-Create a work-scoped Execution Plan that an engineer with **zero context** for this codebase could execute: bite-sized tasks, exact file paths, complete code in every step, and explicit traceability to every Related Canonical Spec. The plan is authoritative for execution order while retained, but it is not the project's SOT. Plans have identifiers and lifetimes independent of Canonical Specs. Assume the implementer is skilled but knows nothing about this project's domain, toolset, or past decisions — and may see only their own task. DRY. YAGNI. Test-first. Frequent commits.
+Create a work-scoped Execution Plan that an engineer with **zero context** for this codebase could execute: bite-sized tasks, exact file paths, complete code in every step, and explicit traceability to every Related Canonical Spec. The plan is authoritative for execution order while retained, but it is not the project's SOT. Plan paths and lifetimes are independent of Canonical Specs. Assume the implementer is skilled but knows nothing about this project's domain, toolset, or past decisions — and may see only their own task. DRY. YAGNI. Test-first. Frequent commits.
 
 ## Plan Language
 

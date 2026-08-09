@@ -2,7 +2,7 @@
 
 Status: active
 
-**Related Specs:** None — browser fallback fixture changes no product behavior
+**Related Specs:** None — Canonical Spec impact: no; browser fallback fixture changes no product behavior
 
 **Goal:** Keep one invalid source diagram isolated from the other panels.
 

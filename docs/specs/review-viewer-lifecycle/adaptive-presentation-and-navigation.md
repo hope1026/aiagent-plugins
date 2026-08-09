@@ -6,7 +6,7 @@
 
 ### bundle 복잡도 점수가 2 이상이면 Forge는 Review Viewer가 검토에 도움이 될 수 있음을 사용자에게 알리고 필요하면 명시적으로 요청할 수 있다고 안내하되, Review Viewer를 자동 생성하지 않아야 한다.
 
-### build command는 기존 `--offline`과 함께 `--mode spec|plan`, `--locale en|ko`, `--review-id`를 지원해야 한다. spec mode는 current spec과 선택적인 comparison source를 받고, plan mode는 primary source set과 plan이 선언한 Related Specs context를 결정적으로 해석하며, 기본 locale은 `en`으로 유지해야 한다.
+### Build command는 `--offline`, `--mode spec|plan`, `--locale en|ko`, `--review-id`를 지원해야 한다. spec mode는 current spec과 선택적인 comparison source를 받고, plan mode는 primary source set과 plan이 선언한 Related Specs context를 결정적으로 해석하며, 기본 locale은 `en`으로 유지해야 한다.
 
 ### `--locale ko`에서는 tab을 `개요`, `요구사항`, `흐름`, `데이터와 인터페이스`, `승인 기준`, `변경 이력`으로 표시해야 한다.
 
@@ -113,7 +113,7 @@
 - [`spec` mode에서는 현재 valid Spec Bundle 전체를 primary source of truth로 사용하고, 사용자가 지정한 0개 이상의 comparison bundle을 비권위 비교 자료로 읽되 모든 내용에 bundle·member source role과 provenance를 표시해야 한다.](source-selection-and-freshness.md#spec-mode에서는-현재-valid-spec-bundle-전체를-primary-source-of-truth로-사용하고-사용자가-지정한-0개-이상의-comparison-bundle을-비권위-비교-자료로-읽되-모든-내용에-bundlemember-source-role과-provenance를-표시해야-한다)
 - [`plan` mode에서는 `plan.md`와 존재하는 경우 같은 디렉터리의 `progress.md`, `tasks/*.md`를 primary source set으로 사용하고, plan의 `Related Specs` bundle 0개 이상을 제품 요구사항을 설명하는 context source로 읽되 plan source와 병합하거나 동일한 ownership으로 표시하지 않아야 한다.](source-selection-and-freshness.md#plan-mode에서는-planmd와-존재하는-경우-같은-디렉터리의-progressmd-tasksmd를-primary-source-set으로-사용하고-plan의-related-specs-bundle-0개-이상을-제품-요구사항을-설명하는-context-source로-읽되-plan-source와-병합하거나-동일한-ownership으로-표시하지-않아야-한다)
 - [`spec`과 `plan` mode 출력은 모두 `.forge/reviews/<review-id>/view.html`을 사용하고, 동일한 `review-id`의 갱신은 사용자의 명시적 요청이 있을 때만 허용해야 한다.](human-readable-review-viewer.md#spec과-plan-mode-출력은-모두-forgereviewsreview-idviewhtml을-사용하고-동일한-review-id의-갱신은-사용자의-명시적-요청이-있을-때만-허용해야-한다)
-- [build command는 기존 `--offline`과 함께 `--mode spec|plan`, `--locale en|ko`, `--review-id`를 지원해야 한다. spec mode는 current spec과 선택적인 comparison source를 받고, plan mode는 primary source set과 plan이 선언한 Related Specs context를 결정적으로 해석하며, 기본 locale은 `en`으로 유지해야 한다.](adaptive-presentation-and-navigation.md#build-command는-기존-offline과-함께-mode-specplan-locale-enko-review-id를-지원해야-한다-spec-mode는-current-spec과-선택적인-comparison-source를-받고-plan-mode는-primary-source-set과-plan이-선언한-related-specs-context를-결정적으로-해석하며-기본-locale은-en으로-유지해야-한다)
+- [Build command는 `--offline`, `--mode spec|plan`, `--locale en|ko`, `--review-id`를 지원해야 한다. spec mode는 current spec과 선택적인 comparison source를 받고, plan mode는 primary source set과 plan이 선언한 Related Specs context를 결정적으로 해석하며, 기본 locale은 `en`으로 유지해야 한다.](adaptive-presentation-and-navigation.md#build-command는-offline-mode-specplan-locale-enko-review-id를-지원해야-한다-spec-mode는-current-spec과-선택적인-comparison-source를-받고-plan-mode는-primary-source-set과-plan이-선언한-related-specs-context를-결정적으로-해석하며-기본-locale은-en으로-유지해야-한다)
 - [`--locale ko`에서는 tab을 `개요`, `요구사항`, `흐름`, `데이터와 인터페이스`, `승인 기준`, `변경 이력`으로 표시해야 한다.](adaptive-presentation-and-navigation.md#locale-ko에서는-tab을-개요-요구사항-흐름-데이터와-인터페이스-승인-기준-변경-이력으로-표시해야-한다)
 
 ### spec mode와 plan mode에서 source Mermaid와 derived diagram을 표시하면 `Current spec source`, `Comparison source`, `Plan source`, `Related spec context`, `Derived view`가 해당 source가 존재하는 범위에서 구분되고 path가 표시되며 derived node·edge는 selected source에 명시된 관계만 포함한다.
@@ -183,7 +183,7 @@
 검증하는 요구사항:
 
 - [`spec`과 `plan` mode 출력은 모두 `.forge/reviews/<review-id>/view.html`을 사용하고, 동일한 `review-id`의 갱신은 사용자의 명시적 요청이 있을 때만 허용해야 한다.](human-readable-review-viewer.md#spec과-plan-mode-출력은-모두-forgereviewsreview-idviewhtml을-사용하고-동일한-review-id의-갱신은-사용자의-명시적-요청이-있을-때만-허용해야-한다)
-- [build command는 기존 `--offline`과 함께 `--mode spec|plan`, `--locale en|ko`, `--review-id`를 지원해야 한다. spec mode는 current spec과 선택적인 comparison source를 받고, plan mode는 primary source set과 plan이 선언한 Related Specs context를 결정적으로 해석하며, 기본 locale은 `en`으로 유지해야 한다.](adaptive-presentation-and-navigation.md#build-command는-기존-offline과-함께-mode-specplan-locale-enko-review-id를-지원해야-한다-spec-mode는-current-spec과-선택적인-comparison-source를-받고-plan-mode는-primary-source-set과-plan이-선언한-related-specs-context를-결정적으로-해석하며-기본-locale은-en으로-유지해야-한다)
+- [Build command는 `--offline`, `--mode spec|plan`, `--locale en|ko`, `--review-id`를 지원해야 한다. spec mode는 current spec과 선택적인 comparison source를 받고, plan mode는 primary source set과 plan이 선언한 Related Specs context를 결정적으로 해석하며, 기본 locale은 `en`으로 유지해야 한다.](adaptive-presentation-and-navigation.md#build-command는-offline-mode-specplan-locale-enko-review-id를-지원해야-한다-spec-mode는-current-spec과-선택적인-comparison-source를-받고-plan-mode는-primary-source-set과-plan이-선언한-related-specs-context를-결정적으로-해석하며-기본-locale은-en으로-유지해야-한다)
 
 ### plan mode의 execution과 status Viewer는 stable shell landmark와 source ownership을 공유하면서 서로 다른 primary component와 reading order를 가지며, 두 View 모두 plan source detail과 acceptance evidence로 이동할 수 있다.
 

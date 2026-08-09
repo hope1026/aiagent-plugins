@@ -30,4 +30,4 @@ Verifies:
 
 ## Decisions & History
 
-- 2026-08-09 [IMPLEMENTED] Repository containment is enforced before source loading.
+- 2026-08-09 [CURRENT] Repository containment is enforced before source loading.

@@ -478,31 +478,6 @@ def _validate_bundle_baseline(
         if root_count != 1 or root_status not in {"approved", "implemented"}:
             continue
         if bundle_path in bundle_index:
-            for member_path, source in member_sources:
-                try:
-                    baseline_text = source.decode("utf-8")
-                except UnicodeDecodeError:
-                    continue
-                baseline_history = _history_lines(baseline_text)
-                if baseline_history is None:
-                    continue
-                try:
-                    current_text = (repository / member_path).read_text(encoding="utf-8")
-                except (OSError, UnicodeDecodeError):
-                    current_text = ""
-                current_history = _history_lines(current_text)
-                if (
-                    current_history is None
-                    or current_history[: len(baseline_history)] != baseline_history
-                ):
-                    errors.append(
-                        _diagnostic(
-                            member_path,
-                            1,
-                            "SPEC_HISTORY_NOT_APPEND_ONLY",
-                            "Decisions & History must preserve the baseline line sequence as an exact prefix.",
-                        )
-                    )
             continue
 
         digest = hashlib.sha256()
@@ -522,8 +497,8 @@ def _validate_bundle_baseline(
                 _diagnostic(
                     bundle_path,
                     1,
-                    "SPEC_HISTORY_NOT_APPEND_ONLY",
-                    "An approved baseline Spec Bundle cannot be removed without a path transition.",
+                    "SPEC_TRANSITION_REQUIRED",
+                    "An approved baseline Spec Bundle cannot be removed without an exact path transition.",
                 )
             )
             continue
@@ -801,15 +776,6 @@ def _git_output(repo_root: Path, arguments: list[str]) -> subprocess.CompletedPr
         )
     except OSError:
         return None
-
-
-def _history_lines(text: str) -> tuple[str, ...] | None:
-    lines = text.splitlines()
-    try:
-        start = lines.index("## Decisions & History") + 1
-    except ValueError:
-        return None
-    return tuple(lines[start:])
 
 
 def _git_blob(repo_root: Path, baseline_ref: str, path: Path) -> bytes | None:
