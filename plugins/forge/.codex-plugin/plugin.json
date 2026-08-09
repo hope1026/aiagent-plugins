@@ -1,22 +1,24 @@
 {
   "name": "forge",
-  "version": "0.1.9+codex.20260804090327",
-  "description": "Spec-first development skills with flexible Markdown spec authoring, validation, request-only adaptive Review Viewer output, cross-agent authoring, verification, debugging, and interface design. Produces adapters for Codex, Claude Code, and Antigravity.",
+  "version": "0.1.10+codex.20260809001745",
+  "description": "Canonical Spec and complexity-aware execution skills with approved Spec Deltas for durable contracts, optional Execution Plans for complex work, Quick verified execution for bounded work, request-only Review Viewers, cross-agent authoring, debugging, and interface design.",
   "author": {
     "name": "Onestar Lee"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Forge",
-    "shortDescription": "Spec-first process skills for real projects.",
-    "longDescription": "Forge packages a complete spec-first workflow - flexible Markdown spec authoring and validation, planning, execution, and verified implementation - plus one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design, website design, tone overlays, systematic debugging, and TDD. The normal lifecycle creates Markdown only; adaptive Review Viewer HTML is generated only on explicit request.",
+    "shortDescription": "Canonical Specs with task-sized execution paths.",
+    "longDescription": "Forge separates permanent Canonical Specs from work-scoped Change Briefs, Spec Deltas, Execution Plans, and Verification Evidence. Durable contract changes require explicit approval; bounded local work can use a Quick verified route; complex work can use plan-only or full lifecycle execution. Forge also includes one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design, website design, tone overlays, systematic debugging, and TDD. Review Viewer HTML is generated only on explicit request.",
     "developerName": "Onestar Lee",
     "category": "Productivity",
     "capabilities": [
       "Skills"
     ],
     "defaultPrompt": [
-      "Write a spec for this feature before we code.",
+      "Fix this bounded local bug through the Quick route and show fresh focused evidence.",
+      "Propose a Spec Delta for this durable policy change before implementation.",
+      "Create a plan-only Execution Plan for this complex repository migration without inventing a Canonical Spec.",
       "Create one skill and MCP bundle for Codex, Claude Code, and Antigravity.",
       "Use web-app-design to improve this dashboard settings workflow.",
       "Use website-design to create this public product landing page.",

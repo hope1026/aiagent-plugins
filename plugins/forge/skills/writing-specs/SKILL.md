@@ -1,123 +1,134 @@
 ---
 name: writing-specs
-description: 'Use when creating features, changing behavior, starting a project, resolving spec clarifications, or syncing documented behavior with existing code. Triggers: "스펙", "스펙 작성", "기능 추가", "기능 변경", "요구사항", "설계", "brainstorm", "change request".'
+description: 'Use when creating or changing a durable Canonical Spec, proposing a Spec Delta, clarifying a proposed contract, or reconciling code with approved project authority. Triggers: "정본 스펙", "스펙 변경안", "영구 요구사항", "정책 변경", "설계 결정", "spec delta", "canonical spec", durable contract change.'
 ---
 
-# Writing Specs
+# Writing Canonical Specs
 
-Announce: "Using the forge writing-specs skill — mode: <new | change | clarify | sync>."
+Announce: "Using the forge writing-specs skill — Canonical Spec mode: <new | change | clarify | sync>."
 
-Respond in the user's language. Write human-readable spec content in that language while preserving canonical headings, traceability IDs, lifecycle values, code identifiers, commands, and established technical names.
+Respond in the user's language. Write human-readable Canonical Spec and Spec Delta content in that language while preserving canonical headings, traceability IDs, lifecycle values, code identifiers, commands, and established technical names.
 
 ## Iron Law
 
 ```text
-NO IMPLEMENTATION OR PLAN FOR PRODUCT BEHAVIOR WITHOUT AN APPROVED STRUCTURED SPEC.
-MARKDOWN IS THE ONLY LIFECYCLE ARTIFACT. REVIEW VIEWERS REQUIRE AN EXPLICIT REQUEST.
+ONLY APPROVED OR IMPLEMENTED CANONICAL SPECS ARE PROJECT SOT.
+NO CANONICAL CONTRACT MUTATION BEFORE EXPLICIT SPEC DELTA APPROVAL.
+NO IMPLEMENTATION HANDOFF UNTIL THE APPROVED CANONICAL SOURCE VALIDATES.
 ```
 
-## Contract
+## Authority Contract
 
-Read `references/spec-template.md` before writing. A spec lives at `docs/specs/NNN-<slug>/spec.md` and uses restricted `forge/spec@2` frontmatter. It may use any unique `##` sections and order that best fit the subject. `Requirements`, `Acceptance Criteria`, and `Decisions & History` are the only required semantic sections; optional lowercase kebab-case `subtype` is a presentation hint, never a schema branch.
+A Canonical Spec lives at `docs/specs/NNN-<slug>/spec.md` and records durable system intent, contracts, policy, and invariants. Read `references/spec-template.md` before authoring one. It uses restricted `forge/spec@2` frontmatter and reserves `Requirements`, `Acceptance Criteria`, and `Decisions & History` for normative project authority.
 
-Use EARS as a semantic discipline in the user's language. Each requirement names its condition and required behavior. Each AC cites explicit R IDs and states its precondition, action, and observable outcome. The machine validator checks structure and traceability; it does not claim to understand natural-language meaning. Keep `Decisions & History` append-only after approval.
+A Change Brief describes one work request with `Goal`, `Scope`, `Out of Scope`, and `Done Checks`. A Spec Delta proposes an exact Canonical Spec change before approval. Neither is SOT. Read `references/spec-delta-template.md` before proposing a new Canonical Spec or changing an existing one.
+
+The forge using-forge skill owns Brief clarification and work-input readiness before this skill starts. This skill's `clarify` mode owns only unresolved choices about durable Canonical authority. Inspect repository facts directly; do not turn a missing technical fact or ordinary implementation preference into a Spec clarification question.
+
+Use EARS as a semantic discipline in the user's language. Each Canonical Spec requirement names its condition and required behavior. Each AC cites explicit R IDs and states its precondition, action, and observable outcome. Keep `Decisions & History` append-only after approval.
+
+## When to Use / When NOT
+
+**Use when Canonical Spec impact is `yes`:** an existing R or AC changes; a durable interface, schema, workflow, state transition, error meaning, policy, cross-component responsibility, release contract, or user-designated permanent decision changes; or approved authority and implementation drift.
+
+**Do NOT use merely because:** code changes, a task starts, a bug is investigated, execution is complex, or a local behavior is fully expressed by code and tests without durable project authority. Those routes are owned by the forge using-forge skill.
 
 ## Modes
 
 | Situation | Mode |
 |---|---|
-| No governing spec | `new` |
-| User requests different behavior | `change` |
-| Clarification markers remain | `clarify` |
-| Code and spec disagree | `sync` |
+| No governing Canonical Spec exists for a new durable contract | `new` |
+| An approved or implemented Canonical Spec needs different normative meaning | `change` |
+| A proposed candidate or Delta contains unresolved choices | `clarify` |
+| Approved authority and implementation disagree | `sync` |
 
-The ceremony-floor exemptions are typo/comment/format-only edits, dependency bumps with no API change, CI/tooling config that changes no build output, and behavior-preserving refactors with existing tests. Nothing else is exempt.
+Before starting a mode, create one checklist item per numbered step in that mode and keep it current through approval, application, and validation.
 
 ### New
 
 1. Explore current product and repository context.
-2. Ask one clarifying question per message and mark unresolved decisions `[NEEDS CLARIFICATION: ...]`.
+2. Ask one clarification question per message only for choices that materially change durable authority. Mark unresolved choices in the proposal as `[NEEDS CLARIFICATION: ...]`.
 3. Present two or three approaches with trade-offs.
-4. Create the structured source with frontmatter `status: draft`.
+4. Draft a Spec Delta containing the complete proposed Canonical Spec Markdown with lifecycle `status: approved`; keep the proposal in the conversation or `.forge/work/<work-id>/spec-delta.md`. Do not create the authoritative `docs/specs/` source yet.
 5. Self-review language, EARS discipline, AC precondition/action/outcome, ambiguity, scope, placeholders, IDs, and source-owned Mermaid.
-6. Run the writer transaction below before asking for approval.
-7. Ask the user to review Markdown. Mention Review Viewer usefulness only when material; never generate it while waiting.
-8. On explicit approval, set frontmatter `status: approved`, append history, and run the writer transaction again before handoff.
+6. Ask the user to approve the exact proposal. The proposal remains non-authoritative while approval is pending.
+7. On explicit approval, create `docs/specs/NNN-<slug>/spec.md` from the approved content, append the approval history entry, and run the writer transaction. Mechanical fixes that preserve approved meaning may proceed; any semantic change returns for approval.
 
 ### Change
 
-1. Locate the governing structured spec.
-2. Return frontmatter `status` to `draft`; mark affected IDs modified or removed and add new IDs without renumbering.
-3. Append a dated `[CHANGE]` entry.
-4. Self-review and run the writer transaction before approval.
-5. After explicit approval, set `status: approved`, append approval history, and run the transaction again.
-6. Hand off to `writing-plans` only after the transaction passes.
+1. Locate and inspect the governing Canonical Spec. Require `forge/spec@2`, lifecycle `approved|implemented`, and zero diagnostics. Record its ID, path, status, and source SHA-256.
+2. Leave the existing Canonical Spec bytes and authority unchanged. Draft a Spec Delta in the conversation or `.forge/work/<work-id>/spec-delta.md` that names the baseline SHA-256, every affected R and AC, exact additions, modifications or tombstones, and the proposed history entry.
+3. Self-review the Delta and ask for explicit approval. Do not set the Canonical Spec to `draft` while waiting.
+4. Immediately before applying an approved Delta, re-inspect the baseline. If its SHA-256 changed, rebase the Delta and obtain approval for any semantic difference.
+5. Apply only the approved meaning. Preserve IDs without renumbering, keep removed IDs as tombstones, set lifecycle `status: approved`, append the dated `[CHANGE]` and approval history, and run the writer transaction.
+6. A validation failure blocks implementation handoff. Fix mechanical defects and rerun; return for approval if the correction changes meaning.
 
 ### Clarify
 
-Resolve every marker one question at a time, rewrite the affected requirement, and append `[CLARIFIED]`. Zero markers is required for `approved`. Run the writer transaction after each source change and again after the approved status change. A failure blocks approval, handoff, and completion reporting.
+Resolve one unresolved durable choice at a time in the proposed Spec Delta or new Canonical Spec candidate. Rewrite the affected proposed contract, record the clarification in the proposal, and require zero `[NEEDS CLARIFICATION]` markers before approval. Do not add clarification markers to an authoritative `approved` or `implemented` source.
 
 ### Sync
 
-Compare actual behavior with every requirement. Append each mismatch as `[DRIFT]`, let the user choose spec change or code repair, apply the approved result, and run the writer transaction. Code repairs continue through `writing-plans`; spec changes return through the approval gate.
+Compare actual behavior with the authoritative Canonical Spec. Record each mismatch in a Change Brief or Spec Delta, not by mutating the approved source first. Let the user choose one of two routes:
 
-## Current-state supersession
+- **Code repair:** retain the Canonical Spec and route the affected implementation through the forge systematic-debugging or test-driven-development skill.
+- **Contract change:** enter `change` mode, approve the Spec Delta, update the Canonical Spec, then execute through the selected direct or planned route.
 
-Use this subflow only when an `approved` or `implemented` spec must be replaced by one new identity so active specs contain current facts rather than completed migration history. It does not authorize retirement, merge, a target already present in the baseline, or a same-diff transition chain.
+## Current-state Supersession
 
-1. Write and present the current-state replacement as `draft` before touching the old source. Keep this approval copy outside the final `toPath`, such as under `.forge/scratch/spec-supersession/`, so it cannot become a baseline-existing target. Preserve completed execution details in a plan, ADR, or evidence file.
-2. Obtain explicit approval of the replacement Markdown. Then use `writing-plans` to record the exact source and target identities, the SHA-256 of the old source bytes from the expected Git baseline, the evidence path, all reference updates, and the release boundary.
-3. Commit the approved plan and durable evidence first. Record the expected clean HEAD and a fingerprint of its HEAD, index, tracked, and untracked bytes. A dirty root blocks candidate creation; do not clean, stash, or overwrite user work.
+Use this subflow only when an `approved` or `implemented` Canonical Spec must be replaced by one new identity so active specs contain current facts rather than completed migration history. It does not authorize retirement, merge, a target already present in the baseline, or a same-diff transition chain.
+
+1. Write and present the complete replacement as a Spec Delta before touching the old source. Keep it outside the final `toPath`, such as `.forge/work/<work-id>/spec-delta.md`. Preserve completed execution details in a plan, ADR, or evidence file.
+2. Obtain explicit approval. Then use the forge writing-plans skill to record the exact source and target identities, the SHA-256 of the old source bytes from the expected Git baseline, the evidence path, all reference updates, and the release boundary.
+3. Commit the approved Execution Plan and durable evidence first. Record the expected clean HEAD and a fingerprint of its HEAD, index, tracked, and untracked bytes. A dirty root blocks candidate creation; do not clean, stash, or overwrite user work.
 4. Create a registered isolated Git worktree detached at the expected HEAD. Perform all supersession mutations there, never in the production root.
 5. In that worktree, append exactly one one-to-one `superseded` record to `docs/specs/.transitions.json`; promote the approved replacement at its new `docs/specs/NNN-<slug>/spec.md` identity; remove the old source; update active relations and Markdown links; and preserve evidence. Use the old SHA-256 from Git object bytes, not current filesystem bytes.
 6. Run baseline validation against the expected HEAD and exact expected-byte checks. Create one candidate commit only after every gate passes.
 7. On any validation, expected-byte, or commit failure, discard the candidate worktree and prove that the production fingerprint is unchanged. When the user did not explicitly request a Review Viewer, the Review Viewer output count stays exactly zero.
 8. Immediately before promotion, require the production root to remain at the expected clean HEAD with the exact recorded fingerprint. Apply only the verified candidate commit with a fast-forward operation. Any HEAD or byte drift refuses promotion without modifying the root.
 
-The transition manifest is durable audit data, but the replacement spec remains the active source of truth. Existing transition records stay in canonical order as an exact prefix; a prior record never authorizes another deletion.
+The transition manifest is durable audit data, but the replacement Canonical Spec remains the active source of truth. Existing transition records stay in canonical order as an exact prefix; a prior record never authorizes another deletion.
 
-## Writer transaction
+## Writer Transaction
 
-Every body, metadata, or frontmatter status change uses the same sequence from the repository root. Existing sources include the explicit Git baseline:
+Every approved Canonical Spec body, metadata, or lifecycle change uses this sequence from the repository root:
 
 ```bash
 bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . validate --root docs/specs --baseline-ref HEAD
 ```
 
-For a new source not present in `HEAD`, validation still uses the repository baseline so approved/implemented peers retain append-only protection. Any nonzero result blocks approval requests, lifecycle handoff, and completion claims.
+Any nonzero result blocks implementation handoff and completion claims. The transaction validates Markdown only and creates no HTML. `scripts/validate.sh` repeats repository validation; it never repairs sources or creates Review Viewers.
 
-The transaction validates Markdown only and creates no HTML. `scripts/validate.sh` repeats this repository validation; it never repairs sources or creates Review Viewers.
+## Review Viewer Request Boundary
 
-## Review Viewer request boundary
+Markdown is the default review path. A Spec Delta is not a Review Viewer source and does not authorize HTML generation. Only an explicit user request to create, refresh, present, or freshness-check a Canonical Spec or Execution Plan Review Viewer permits one handoff to the forge review-viewer skill.
 
-Markdown is the default review path. Review Viewer is a separate untracked snapshot at `.forge/reviews/<review-id>/view.html`.
+Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an existing Viewer are not generation requests. Report possible staleness without reading or updating the Viewer.
 
-- Source edits, frontmatter status changes, complexity, checkpoints, or an existing Review Viewer are not an explicit generation request.
-- Never assume an existing Review Viewer is current. Report possible staleness without reading, creating, or refreshing it.
-- Explicit Review Viewer intent is sufficient—for example, “현재 스펙 Review Viewer 만들어줘.” The agent resolves the current source, `spec` or `plan` mode, and a valid review-id from context during handoff; ask only when context is genuinely ambiguous.
-- Only an explicit create or refresh request permits exactly one handoff to `review-viewer`. The successful build ends generation.
-- The negative pressure “기존 Viewer는 알아서 최신일 것이라 가정하고 status만 변경” still requires the source/status Markdown validation transaction and permits zero Review Viewer builds.
-
-## Working files
+## Working Files
 
 | Artifact | Path | Git policy |
 |---|---|---|
-| Structured spec | `docs/specs/NNN-<slug>/spec.md` | tracked source |
-| Review Viewer | `.forge/reviews/<review-id>/view.html` | untracked, explicit request only |
-| Supersession approval draft | `.forge/scratch/spec-supersession/<id>/spec.md` | local only until approved candidate |
-| Investigation notes | `.forge/research/` | local only; promote durable findings to `docs/research/` |
+| Canonical Spec | `docs/specs/NNN-<slug>/spec.md` | Tracked, permanent SOT when approved or implemented |
+| Optional Change Brief | `.forge/work/<work-id>/brief.md` | Local work input |
+| Optional Spec Delta | `.forge/work/<work-id>/spec-delta.md` | Local approval proposal; retain through verification, then remove or promote only as non-authoritative evidence |
+| Supersession evidence | `docs/plans/`, `docs/adr/`, or `docs/evidence/` | Tracked when the transition requires it |
+| Investigation notes | `.forge/research/` | Local only; promote durable findings to `docs/research/` |
 
 ## Red Flags
 
 | Excuse | Reality |
 |---|---|
-| "The request is clear, so approval is implied." | Only the user can approve the reviewed Markdown. |
-| "The validator passed, so the prose is good." | Self-review owns EARS and observable AC meaning. |
-| "Status is only metadata." | Frontmatter status changes Markdown source bytes and require validation. |
-| "The old Viewer is probably fresh." | Its existence proves nothing and grants no build permission. |
-| "The deadline makes HTML regeneration safer." | The lifecycle remains Markdown-only; Review Viewer still requires explicit create or refresh intent. |
-| "One failed check can be fixed after handoff." | Any failure blocks the approval, handoff, and completion claim. |
+| "The task changes code, so it needs a spec." | Code change and Canonical Spec impact are independent axes. |
+| "Returning the current source to draft is harmless." | It removes the authority token from the current SOT before the proposal is approved. Keep the Delta separate. |
+| "The request is clear, so approval is implied." | Only explicit approval promotes proposed contract meaning. |
+| "The Delta is effectively the SOT now." | A proposal has no project authority until applied to validated Canonical source. |
+| "The validator passed, so the prose is good." | Self-review owns EARS meaning, scope, and observable ACs. |
+| "The baseline changed only a little." | Re-inspect and rebase before applying; silent merge can change approved meaning. |
+| "The bug proves the spec is wrong." | First establish whether implementation drift or contract change owns the mismatch. |
+| "A Viewer would make approval safer." | Markdown is sufficient; HTML still requires explicit Viewer intent. |
+| "The work request is vague, so Spec clarification should decide its scope." | Brief clarification owns the current work outcome. Spec clarification starts only after the durable contract question is identified. |
 
 ## Handoff
 
-After explicit approval and a passing writer transaction, use `writing-plans`. On an explicit Review Viewer create or refresh request, resolve handoff options and hand off once to `review-viewer`, then return to the owning lifecycle.
+**After approval and a passing writer transaction, return to the forge using-forge route: low-complexity work executes directly with the relevant implementation skill; high-complexity work continues through the forge writing-plans skill.**

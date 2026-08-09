@@ -50,7 +50,7 @@ if grep -Eq '(^|[,{[:space:]])(build|check)([]},[:space:]]|$)' <<<"$CLI_HELP"; t
   fail "spec-docs CLI still exposes Spec Pages commands"
 fi
 grep -q 'docs/specs/.transitions.json' "$WRITING_SPECS" || fail 'writing-specs misses transition manifest'
-grep -q 'replacement.*draft.*before.*old source' "$WRITING_SPECS" || fail 'writing-specs misses approval-first replacement gate'
+grep -q 'replacement.*Spec Delta.*before touching.*old source' "$WRITING_SPECS" || fail 'writing-specs misses approval-first replacement gate'
 grep -q 'explicit approval' "$WRITING_SPECS" || fail 'writing-specs misses explicit supersession approval'
 grep -q 'registered isolated Git worktree' "$WRITING_SPECS" || fail 'writing-specs misses isolation gate'
 grep -q 'expected clean HEAD' "$WRITING_SPECS" || fail 'writing-specs misses exact root precondition'
@@ -62,8 +62,8 @@ grep -q 'schema.*status.*diagnostics' "$WRITING_PLANS" || fail "writing-plans do
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$WRITING_PLANS" || fail "writing-plans misses inspect CLI"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$EXECUTING_PLANS" || fail "executing-plans misses inspect CLI"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$VERIFYING_WORK" || fail "verifying-work misses inspect CLI"
-grep -q 'frontmatter.*status' "$VERIFYING_WORK" || fail "verifying-work misses frontmatter status transition"
-grep -q 'validate --root docs/specs --baseline-ref HEAD' "$VERIFYING_WORK" || fail "verifying-work misses validation after implemented"
+grep -q 'Canonical Spec lifecycle.*status.*implemented' "$VERIFYING_WORK" || fail "verifying-work misses Canonical lifecycle status transition"
+grep -q 'run the writer transaction' "$VERIFYING_WORK" || fail "verifying-work misses validation after implemented"
 if rg -n 'set (the )?spec.*`?Status: implemented|set .*Status: implemented' \
   "$ROOT/plugins/forge/skills" --glob 'SKILL.md' >/dev/null; then
   fail "active lifecycle imperative still writes body Status"

@@ -25,7 +25,7 @@ Wrote implementation before its test? Delete it and restart from the test. Not "
 
 ## When to Use / When NOT
 
-**Use for:** new features, bugfixes, behavior changes, refactoring untested code, and every implementation step of a plan task (the forge executing-plans skill requires this skill per task).
+**Use for:** Quick direct implementation, spec-backed direct implementation, new features, bugfixes, behavior changes, refactoring untested code, and every implementation step of an Execution Plan Task.
 
 **Exempt (closed list):**
 
@@ -91,7 +91,7 @@ Write the simplest implementation that makes this one test pass. No extra option
 
 ### 4. Verify GREEN — watch it pass
 
-Run again in the shell: the new test passes, the whole suite still passes, output is clean (no new warnings or errors). A test fails? Fix the code, not the test — unless the test contradicts the spec in `docs/specs/`, in which case the spec decides and a wrong test gets corrected explicitly.
+Run again in the shell: the new test passes, the whole suite still passes, output is clean (no new warnings or errors). A test fails? Fix the code, not the test — unless the test contradicts an approved or implemented Canonical Spec in `docs/specs/`, in which case the Canonical Spec decides. Changing that contract requires an approved Spec Delta.
 
 ### 5. REFACTOR — clean up, stay green
 
@@ -109,9 +109,10 @@ A bug is a missing test. First reproduce the bug as a failing test (root cause e
 
 This skill adds tests to the project's own test tree; it creates no forge files by itself. Related paths:
 
-- Plan work: the current task lives in `docs/plans/PPP-<slug>/plan.md` or its optional `tasks/*.md`; plan-local progress is maintained by the forge executing-plans skill, not here.
+- Direct work: Quick and spec-backed direct cycles need no Execution Plan. Keep only the tests and implementation; use optional `.forge/work/` input only when the work needs an independent brief or Delta.
+- Planned work: the current Task lives in `docs/plans/PPP-<slug>/plan.md` or its optional `tasks/*.md`; plan-local progress is maintained by the forge executing-plans skill, not here.
 - Bugfix work: keep local investigation in `.forge/scratch/`; promote a durable root-cause record to `docs/debug/YYYY-MM-DD-<slug>.md` per the forge systematic-debugging skill.
-- Traceability: when a spec exists at `docs/specs/NNN-<slug>/spec.md`, name tests so they map to its R-IDs / AC-IDs (for example, mention the AC in the test description).
+- Traceability: when a Canonical Spec governs the work, name tests so they map to its affected R-IDs and AC-IDs. Local Quick work names observable behavior without inventing R or AC IDs.
 
 ## Red Flags
 

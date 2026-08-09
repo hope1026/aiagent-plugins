@@ -11,15 +11,15 @@ Respond to the user in the user's language. This skill file stays in English.
 
 ## Overview
 
-A plan in `docs/plans/PPP-<slug>/plan.md` is an independently identified work contract: bite-sized tasks, exact paths, verification per task, and zero or more related specs. This skill routes each Task by `fast`, `balanced`, or `frontier` capability, chooses root, subagent, or parallel execution, and keeps durable progress with the plan. It uses `internal checkpoint`, `notify checkpoint`, and `approval checkpoint` as distinct states so safe work continues without waiting for the user.
+An Execution Plan in `docs/plans/PPP-<slug>/plan.md` is an independently identified work contract: bite-sized tasks, exact paths, verification per task, and zero or more Related Canonical Specs. It is the work-scoped execution source, not project SOT. This skill routes each Task by `fast`, `balanced`, or `frontier` capability, chooses root, subagent, or parallel execution, and keeps durable progress with the plan. It uses `internal checkpoint`, `notify checkpoint`, and `approval checkpoint` as distinct states so safe work continues without waiting for the user.
 
 ## Iron Law
 
 ```
-FOLLOW THE PLAN. WHEN REALITY DIVERGES FROM A RELATED SPEC, STOP AND PROPOSE A SPEC DELTA — NEVER SILENTLY ADAPT.
+FOLLOW THE EXECUTION PLAN. WHEN REALITY DIVERGES FROM A RELATED CANONICAL SPEC, STOP AND PROPOSE A SPEC DELTA — NEVER SILENTLY ADAPT.
 ```
 
-When execution reveals a wrong or missing requirement in a related spec: pause the current task, propose a spec delta via the forge writing-specs skill in change mode, get the user's approval, update the plan if the delta requires it, then continue. For a spec-free operational, research, or ceremony-floor plan, a material scope change is a user-owned scope decision rather than an invented spec divergence.
+When execution reveals a wrong or missing requirement in a Related Canonical Spec: pause the current Task, propose a Spec Delta via the forge writing-specs skill in change mode, get the user's approval, update the plan if the Delta changes execution, then continue. For a plan-only route, continue while scope stays `Canonical Spec impact: no`; durable contract discovery promotes the work before the next mutation.
 
 ## When to Use / When NOT
 
@@ -28,7 +28,7 @@ When execution reveals a wrong or missing requirement in a related spec: pause t
 - Resuming interrupted plan work — new session, after compaction, "다음 태스크".
 
 **Do NOT use when:**
-- No plan exists → the forge writing-plans skill first.
+- No plan exists → return to the forge using-forge route; only high-complexity work goes to the forge writing-plans skill.
 - A bug outside any plan → the forge systematic-debugging skill.
 - The request is a question or investigation, not plan execution.
 
@@ -38,7 +38,7 @@ The startup checklist and every plan task become todos — create one todo per i
 
 ### Phase 1: Startup
 
-1. **Read the plan** in `docs/plans/` end to end. For every canonical Related Specs entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json`. Require `schema` = `forge/spec@2`, `status` in `approved|implemented`, and empty `diagnostics`; historical execution may continue from either approved lifecycle state. Review unclear instructions, contradictions, and missing preconditions before execution.
+1. **Read the plan** in `docs/plans/` end to end. For every Related Canonical Spec entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json`. Require `schema` = `forge/spec@2`, `status` in `approved|implemented`, and empty `diagnostics`; an approved source governs new contract work and an approved or implemented source may govern preservation or restoration. Review unclear instructions, contradictions, and missing preconditions before execution. Resolve repository-discoverable facts directly. If the Goal, scope, or observable Done Checks still depend on a user-owned choice, do not mutate; return to Brief clarification through the forge using-forge skill.
 2. **Open progress state.** The default source is Task checkboxes plus `Progress History` in `plan.md`. When `progress.md` exists beside the plan, use it for detailed routing and checkpoint evidence. When `tasks/*.md` exists, confirm each Task ID appears once in the plan index and once in its owned Task file.
 3. **Skip completed work.** Tasks the plan-local progress state marks complete are DONE — do not redo them. Resume at the first task not marked complete. After any compaction or resume, trust plan-local progress and commit history over recollection.
 4. **Create one todo per remaining task.**
@@ -62,7 +62,7 @@ For each task, in plan order:
 
 Use an **approval checkpoint** only for one of these boundaries. Persist completed work and the exact resume point in the ledger, then state the decision, options, and impact and wait for the user:
 
-- **Spec divergence:** a requirement in a Related Spec is wrong, missing, or cannot work as approved → propose a delta via the forge writing-specs skill in change mode.
+- **Canonical Spec divergence:** a requirement in a Related Canonical Spec is wrong, missing, or cannot work as approved → propose a Spec Delta via the forge writing-specs skill in change mode.
 - **New authority:** a destructive action, external write, purchase, paid resource, or agreed cost-limit increase is required.
 - **Scope or product decision:** execution would materially expand the approved scope or needs a user-owned product or design choice.
 - **Release boundary:** push, publish, deploy, or release would expose the result outside the local repository.
@@ -82,15 +82,16 @@ Do not dispatch one fresh subagent mechanically for every Task. Delegate only bo
 | `docs/plans/PPP-<slug>/plan.md` | Plan index, Task checkboxes, and Progress History | Yes |
 | `docs/plans/PPP-<slug>/progress.md` | Optional detailed route and checkpoint evidence | Yes |
 | `docs/plans/PPP-<slug>/tasks/*.md` | Optional independently owned Task details | Yes |
-| Related `docs/specs/NNN-<slug>/spec.md` files | Product source of truth, when present | Yes |
+| Related `docs/specs/NNN-<slug>/spec.md` files | Canonical project SOT, when present | Yes |
 | `.forge/reviews/<review-id>/view.html` | Optional requested Review Viewer snapshot | No |
 
 ## Red Flags
 
 | Excuse | Reality |
 |---|---|
-| "This task is obviously wrong, I'll just fix it inline" | If the spec is wrong, that is a spec delta with user approval. Silent adaptation turns the spec into a lie and every later task inherits the lie. |
-| "Spec delta is overkill for this" | A delta can be three lines and one approval. It is always cheaper than code that quietly disagrees with the document everyone trusts. |
+| "This task is obviously wrong, I'll just fix it inline" | If Canonical authority is wrong, that is a Spec Delta with user approval. Silent adaptation makes every later Task inherit a false contract. |
+| "Spec Delta is overkill for this" | Durable authority changes through an approved Delta even when the implementation step is small. |
+| "This plan has no spec, so scope can expand freely" | Plan-only means Canonical Spec impact remains `no`. Durable contract discovery promotes the route before the next mutation. |
 | "I remember finishing that task" | Memory does not survive compaction; plan-local progress and commit history do. Re-executing done work is the single most expensive failure mode. |
 | "I'll update Progress History after a few tasks" | A crash between tasks erases everything unwritten. One line per task, immediately after it completes. |
 | "This step is too small for the TDD cycle" | Implementation steps require the forge test-driven-development skill. Small steps are exactly where untested regressions hide. |
@@ -101,9 +102,10 @@ Do not dispatch one fresh subagent mechanically for every Task. Delegate only bo
 | "Subagents are available, so every Task gets one." | Dispatch has context and review cost. Use root for tightly coupled work and delegate only Tasks that pass the adaptive routing gate. |
 | "I should ask which execution mode the user wants for each Task." | Apply the tier default and report the route. Execution mode is not an approval boundary. |
 | "The model role is missing, so parallel work is impossible." | Model mapping and subagent availability are independent. Inherit the current model and keep safe parallelism when workers remain available. |
+| "The plan exists, so its missing outcome is an implementation detail." | Plan existence does not prove work-input readiness. A user-owned outcome or material scope gap returns to Brief clarification before mutation. |
 
 ## Handoff
 
 When every task is complete, verified, and recorded in the ledger:
 
-**All tasks complete. Continue directly to the forge verifying-work skill against every Related Spec's acceptance criteria, or against plan verification evidence when no spec is related.**
+**All Tasks complete. Continue directly to the forge verifying-work skill against the affected Related Canonical Spec criteria, or against plan Verification Evidence when Canonical Spec impact is `no`.**

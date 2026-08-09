@@ -42,19 +42,24 @@ commands. Install paths differ across harnesses and install modes.
 - Put executables in `scripts/` and static resources in `assets/`.
 - Keep skill support directories one level deep.
 
-## 6. Working-directory Contract
+## 6. Working-directory and Authority Contract
 
 | Artifact | Path | Committed |
 |---|---|---|
-| Specs | `docs/specs/NNN-<slug>/spec.md` | yes |
-| Plans | `docs/plans/PPP-<slug>/plan.md` | yes |
-| Optional plan progress and task detail | `docs/plans/PPP-<slug>/progress.md`, `docs/plans/PPP-<slug>/tasks/*.md` | yes while the plan is retained |
+| Canonical Spec — permanent project SOT when approved or implemented | `docs/specs/NNN-<slug>/spec.md` | yes |
+| Optional Change Brief and Spec Delta — work input and approval proposal, never SOT | `.forge/work/<work-id>/brief.md`, `.forge/work/<work-id>/spec-delta.md` | no |
+| Execution Plan — high-complexity work source, never project SOT | `docs/plans/PPP-<slug>/plan.md` | yes while retained |
+| Optional plan progress and Task detail | `docs/plans/PPP-<slug>/progress.md`, `docs/plans/PPP-<slug>/tasks/*.md` | yes while the plan is retained |
 | Review Viewer, when explicitly requested | `.forge/reviews/<review-id>/view.html` | no |
 | Promoted debug notes | `docs/debug/YYYY-MM-DD-<slug>.md` | yes |
 | Promoted research notes | `docs/research/` | yes |
 | Local scratch, research, reviews, ledgers, and build intermediates | `.forge/` | no |
 
-The ordinary spec and plan lifecycle is Markdown-only. Review Viewer is a separate request-only snapshot and never becomes a permanent spec or plan page. Promote durable `.forge/research/` findings to `docs/research/`. Before deleting a plan, promote permanent decisions; its `progress.md` and `tasks/*.md` do not remain as independent artifacts.
+Forge routes work on two portable axes: `Canonical Spec impact: yes|no` and `Execution complexity: low|high`. These produce Quick direct, plan-only, spec-backed direct, and full-lifecycle paths on every supported agent. Platform invocation, worker availability, or model mapping changes execution mechanics, never route meaning or artifact authority.
+
+Change Brief readiness is portable too. Every supported agent drafts `Goal`, `Scope`, `Out of Scope`, and observable `Done Checks` in the conversation, inspects repository-discoverable facts, and asks at most one currently blocking user-owned choice before rechecking readiness. A clear request or local reversible default needs no question and no Brief file. Keep Brief clarification (current work outcome), Canonical classification (permanent authority), and Spec clarification (exact durable contract meaning) distinct. Invocation UI and worker availability do not change this boundary.
+
+The ordinary Canonical Spec and Execution Plan lifecycle is Markdown-only. Review Viewer is a separate request-only snapshot and never becomes project SOT. Promote durable `.forge/research/` findings to `docs/research/`. Retain an applied Spec Delta through verification, then remove it or promote it only as non-authoritative evidence. Before deleting a plan, promote permanent decisions; its `progress.md` and `tasks/*.md` do not remain as independent artifacts.
 
 ## 7. Process-skill Structure
 
