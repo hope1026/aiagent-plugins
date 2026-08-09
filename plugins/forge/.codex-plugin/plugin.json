@@ -1,6 +1,6 @@
 {
   "name": "forge",
-  "version": "0.1.9+codex.20260804090327",
+  "version": "0.1.10+codex.20260809001745",
   "description": "Canonical Spec and complexity-aware execution skills with approved Spec Deltas for durable contracts, optional Execution Plans for complex work, Quick verified execution for bounded work, request-only Review Viewers, cross-agent authoring, debugging, and interface design.",
   "author": {
     "name": "Onestar Lee"
