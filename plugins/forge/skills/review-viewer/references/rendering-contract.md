@@ -1,6 +1,6 @@
 # Review Viewer rendering contract
 
-`review_renderer.render_review()` turns one validated source bundle into a read-only HTML snapshot. Markdown and the lossless Semantic IR own every statement in the snapshot.
+`review_renderer.render_review()` turns one validated review source set into a read-only HTML snapshot. Markdown and the lossless Semantic IR own every statement in the snapshot.
 
 ## Pipeline and output
 
@@ -21,7 +21,7 @@ The build never writes selected Markdown or source-adjacent HTML. Document-speci
 
 ## Semantic IR
 
-Every selected source records its exact UTF-8 source text, repository-relative path, role, namespace, metadata, outline, entities, explicit relations, and ordered blocks. Prose, lists, tables, code, Mermaid, and unrecognized Markdown use distinct block kinds; unknown structures fall back to `generic`. Every source line with content is covered by a block so unusual documents remain readable without inventing a schema-specific renderer.
+Every selected source records its exact UTF-8 source text, repository-relative bundle path, member path, H1 title, role, metadata, outline, full-statement entities, explicit relations, and ordered blocks. Prose, lists, tables, code, Mermaid, and unrecognized Markdown use distinct block kinds; unknown structures fall back to `generic`. Every source line with content is covered by a block so unusual documents remain readable without inventing a schema-specific renderer.
 
 ## View Context and profiles
 
@@ -39,22 +39,13 @@ Before rendering, the planner must reject a plan when:
 - selected references omit source content;
 - authored labels or descriptions introduce copy not present in the source or fixed UI vocabulary.
 
-The valid plan may order and group source-backed components. It may derive only explicit Route membership, dependency edges, source-qualified R·AC coverage, Task membership, Steps, and verification evidence.
+The valid plan may order and group source-backed components. It may derive only explicit Route membership, dependency edges, Requirement-to-Acceptance links, Task `Governing statements:` links, Task membership, Steps, and verification evidence.
 
 ## Component grammar
 
 The shared registry may render summary, narrative, requirements, traceability, flow, interface, task, status, comparison, provenance, and generic components. Each component receives IR references rather than parsing Markdown itself. Unknown kind or subtype uses the generic profile, which exposes every block in source order.
 
-DOM targets use the selected source namespace:
-
-```text
-<spec-namespace>-R1
-<spec-namespace>-AC1
-<plan-namespace>-Task1
-<plan-namespace>-Task1-Step1
-```
-
-Equal local IDs from different sources remain independent. Relations to unselected targets stay visible as plain text marked `unselected`; the renderer never emits a dangling link.
+DOM targets and visible provenance use the repository-relative member path plus the authored heading anchor. Visible labels use the member H1 and exact Requirement or Acceptance heading. Equal heading text in different members remains distinct because the member paths differ. Relations to unselected targets stay visible as plain text marked `unselected`; the renderer never emits a dangling link.
 
 ## Mermaid delivery
 
@@ -70,7 +61,7 @@ Offline mode inlines the sibling `writing-specs/assets/mermaid.min.js` only afte
 
 ## Manifest and freshness
 
-The embedded `forge-source-manifest` includes review metadata, View Context, validated Presentation Plan, source-set counts, `freshness: unverified`, and ordered source rows with role, namespace, repository-relative path, SHA-256, selected entities, and status.
+The embedded `forge-source-manifest` includes review metadata, View Context, validated Presentation Plan, source-set counts, `freshness: unverified`, and ordered source rows with role, bundle path, member path, H1, SHA-256, selected full statements, and status.
 
 HTTP views resolve source URLs through `source_base` and fetch same-origin bytes with `cache: no-store`. File views keep each source `unverified` until its row picker hashes a local file with Web Crypto. Selected bytes stay in the browser.
 

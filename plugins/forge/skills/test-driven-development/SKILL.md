@@ -112,7 +112,7 @@ This skill adds tests to the project's own test tree; it creates no forge files 
 - Direct work: Quick and spec-backed direct cycles need no Execution Plan. Keep only the tests and implementation; use optional `.forge/work/` input only when the work needs an independent brief or Delta.
 - Planned work: the current Task lives in `docs/plans/PPP-<slug>/plan.md` or its optional `tasks/*.md`; plan-local progress is maintained by the forge executing-plans skill, not here.
 - Bugfix work: keep local investigation in `.forge/scratch/`; promote a durable root-cause record to `docs/debug/YYYY-MM-DD-<slug>.md` per the forge systematic-debugging skill.
-- Traceability: when a Canonical Spec governs the work, name tests so they map to its affected R-IDs and AC-IDs. Local Quick work names observable behavior without inventing R or AC IDs.
+- Traceability: when a Canonical Spec governs the work, name tests for the observable behavior in the affected full Requirement or Acceptance statement. Record the exact bundle member path and heading link in plan or verification evidence. Local Quick work names observable behavior without inventing shorthand codes.
 
 ## Red Flags
 

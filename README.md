@@ -19,7 +19,7 @@ plugins/<name>/
 .claude/skills/                # generated Claude Code repository adapters
 .claude-plugin/marketplace.json    # this repo is a Claude Code marketplace
 .agents/plugins/marketplace.json   # ...and a Codex marketplace
-docs/specs/                    # permanent Canonical Specs for this repo
+docs/specs/                    # permanent semantic Canonical Spec Bundles for this repo
 docs/plans/                    # optional, work-scoped Execution Plans
 docs/research/                 # promoted research worth sharing
 docs/debug/                    # promoted root-cause records
@@ -62,8 +62,8 @@ bash scripts/install.sh --agent codex --plugin forge
 | Skill | One line |
 |---|---|
 | `using-forge` | Classifies Canonical Spec impact and execution complexity, then selects Quick, plan-only, spec-backed direct, or full lifecycle |
-| `writing-specs` | Proposes approved Spec Deltas and maintains permanent `forge/spec@2` Canonical Specs without generating HTML |
-| `writing-plans` | Creates an optional Execution Plan for high-complexity work with 0..N Related Canonical Specs |
+| `writing-specs` | Proposes approved Spec Deltas and maintains permanent `forge/spec@3` Canonical Spec Bundles without generating HTML |
+| `writing-plans` | Creates an optional Execution Plan for high-complexity work with 0..N Related Spec Bundle paths and Task-level full-statement links |
 | `executing-plans` | Executes plan Tasks with checkpoints while keeping the plan a work source rather than project SOT |
 | `test-driven-development` | RED → GREEN → REFACTOR; no implementation without a failing test |
 | `systematic-debugging` | Reproduce → isolate → root-cause → fix; no fix without an understood cause |
@@ -107,7 +107,7 @@ Forge decides two things independently:
 
 Before routing, Forge drafts `Goal`, `Scope`, `Out of Scope`, and observable `Done Checks` in the conversation and inspects repository-discoverable facts. It asks one user-owned blocking choice only when ambiguity changes the outcome, scope, authority, safety, or destructive or external effects. Clear requests and safe reversible defaults proceed without a question or Brief file. Brief clarification defines the current work, Canonical classification decides whether a choice belongs in permanent authority, and Spec clarification resolves the exact meaning of that durable contract.
 
-Per-project artifacts: authoritative Canonical Specs live in `docs/specs/NNN-<slug>/spec.md` with lifecycle `approved → implemented`. Optional work input lives at `.forge/work/<work-id>/brief.md` and `spec-delta.md` and stays untracked. High-complexity Execution Plans live at `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay only while the plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html`, require an explicit request, and remain untracked. Promote lasting decisions, research, and root-cause findings before removing work artifacts.
+Per-project artifacts: authoritative Canonical Specs live as `forge/spec@3` bundles under `docs/specs/<semantic-bundle-name>/` with lifecycle `approved → implemented`. The bundle path is the human-facing identity. Its root and member filenames describe their content, and one durable contract may use several members listed by the root `Documents` section. Requirement and Acceptance statements are complete headings linked by exact member path and anchor. Optional work input lives at `.forge/work/<work-id>/brief.md` and `spec-delta.md` and stays untracked. High-complexity Execution Plans live at `docs/plans/PPP-<slug>/plan.md`; their `Related Specs` list bundle paths and each governed Task uses `Governing statements:` links. Optional `progress.md` and `tasks/*.md` stay only while the plan is retained. Review Viewer snapshots live at `.forge/reviews/<review-id>/view.html`, require an explicit request, and remain untracked. Promote lasting decisions, research, and root-cause findings before removing work artifacts.
 
 ## Validate
 

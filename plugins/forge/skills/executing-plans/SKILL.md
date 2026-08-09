@@ -11,7 +11,7 @@ Respond to the user in the user's language. This skill file stays in English.
 
 ## Overview
 
-An Execution Plan in `docs/plans/PPP-<slug>/plan.md` is an independently identified work contract: bite-sized tasks, exact paths, verification per task, and zero or more Related Canonical Specs. It is the work-scoped execution source, not project SOT. This skill routes each Task by `fast`, `balanced`, or `frontier` capability, chooses root, subagent, or parallel execution, and keeps durable progress with the plan. It uses `internal checkpoint`, `notify checkpoint`, and `approval checkpoint` as distinct states so safe work continues without waiting for the user.
+An Execution Plan in `docs/plans/PPP-<slug>/plan.md` is an independently identified work contract: bite-sized tasks, exact paths, verification per task, and zero or more Related Canonical Spec Bundles. It is the work-scoped execution source, not project SOT. This skill routes each Task by `fast`, `balanced`, or `frontier` capability, chooses root, subagent, or parallel execution, and keeps durable progress with the plan. It uses `internal checkpoint`, `notify checkpoint`, and `approval checkpoint` as distinct states so safe work continues without waiting for the user.
 
 ## Iron Law
 
@@ -38,7 +38,7 @@ The startup checklist and every plan task become todos — create one todo per i
 
 ### Phase 1: Startup
 
-1. **Read the plan** in `docs/plans/` end to end. For every Related Canonical Spec entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json`. Require `schema` = `forge/spec@2`, `status` in `approved|implemented`, and empty `diagnostics`; an approved source governs new contract work and an approved or implemented source may govern preservation or restoration. Review unclear instructions, contradictions, and missing preconditions before execution. Resolve repository-discoverable facts directly. If the Goal, scope, or observable Done Checks still depend on a user-owned choice, do not mutate; return to Brief clarification through the forge using-forge skill.
+1. **Read the plan** in `docs/plans/` end to end. For every Related Canonical Spec Bundle entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <bundle-directory> --format json`. Require `schema` = `forge/spec@3`, `status` in `approved|implemented`, and empty `diagnostics`; an approved bundle governs new contract work and an approved or implemented bundle may govern preservation or restoration. Confirm every Task's `Governing statements:` links resolve to exact Requirement and Acceptance headings in declared bundles. Review unclear instructions, contradictions, and missing preconditions before execution. Resolve repository-discoverable facts directly. If the Goal, scope, or observable Done Checks still depend on a user-owned choice, do not mutate; return to Brief clarification through the forge using-forge skill.
 2. **Open progress state.** The default source is Task checkboxes plus `Progress History` in `plan.md`. When `progress.md` exists beside the plan, use it for detailed routing and checkpoint evidence. When `tasks/*.md` exists, confirm each Task ID appears once in the plan index and once in its owned Task file.
 3. **Skip completed work.** Tasks the plan-local progress state marks complete are DONE — do not redo them. Resume at the first task not marked complete. After any compaction or resume, trust plan-local progress and commit history over recollection.
 4. **Create one todo per remaining task.**
@@ -82,7 +82,7 @@ Do not dispatch one fresh subagent mechanically for every Task. Delegate only bo
 | `docs/plans/PPP-<slug>/plan.md` | Plan index, Task checkboxes, and Progress History | Yes |
 | `docs/plans/PPP-<slug>/progress.md` | Optional detailed route and checkpoint evidence | Yes |
 | `docs/plans/PPP-<slug>/tasks/*.md` | Optional independently owned Task details | Yes |
-| Related `docs/specs/NNN-<slug>/spec.md` files | Canonical project SOT, when present | Yes |
+| Related `docs/specs/<semantic-bundle-name>/` directories | Canonical project SOT, when present | Yes |
 | `.forge/reviews/<review-id>/view.html` | Optional requested Review Viewer snapshot | No |
 
 ## Red Flags
@@ -108,4 +108,4 @@ Do not dispatch one fresh subagent mechanically for every Task. Delegate only bo
 
 When every task is complete, verified, and recorded in the ledger:
 
-**All Tasks complete. Continue directly to the forge verifying-work skill against the affected Related Canonical Spec criteria, or against plan Verification Evidence when Canonical Spec impact is `no`.**
+**All Tasks complete. Continue directly to the forge verifying-work skill against the affected Related Canonical Spec statements, or against plan Verification Evidence when Canonical Spec impact is `no`.**

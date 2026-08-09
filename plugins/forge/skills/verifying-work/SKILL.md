@@ -11,13 +11,13 @@ Respond in the user's language. The discipline below applies in every language.
 
 ## Overview
 
-Verification depth follows project authority, not artifact count. Quick work still needs fresh focused evidence. Restoring an existing Canonical contract needs the original reproduction and affected contract observation. Implementing an approved Spec Delta needs the affected AC walk, and a new Canonical Spec needs every AC walked. An Execution Plan adds recovery and Task evidence but does not by itself raise or lower Canonical verification.
+Verification depth follows project authority, not artifact count. Quick work still needs fresh focused evidence. Restoring an existing Canonical contract needs the original reproduction and affected contract observation. Implementing an approved Spec Delta needs the affected Acceptance statement walk, and a new Canonical Spec needs every Acceptance statement walked. An Execution Plan adds recovery and Task evidence but does not by itself raise or lower Canonical verification.
 
 ## Iron Law
 
 ```text
 NO COMPLETION CLAIM WITHOUT FRESH EVIDENCE MATCHED TO THE WORK CLASS.
-NO CANONICAL SPEC STATUS CHANGE WITHOUT THE REQUIRED AC EVIDENCE.
+NO CANONICAL SPEC STATUS CHANGE WITHOUT THE REQUIRED ACCEPTANCE EVIDENCE.
 ```
 
 ## When to Use / When NOT
@@ -37,14 +37,14 @@ NO CANONICAL SPEC STATUS CHANGE WITHOUT THE REQUIRED AC EVIDENCE.
 | Quick | focused test, build, lint, type check, real run, or observation that directly proves the claim | none |
 | Plan-only | every plan verification command and goal-level Done Check | none |
 | Existing-contract restoration | original reproduction now passes, affected Canonical contract observation matches, regression command passes | none |
-| Approved Spec Delta against an implemented baseline | every affected AC passes plus regression command for unchanged behavior | `approved → implemented` after validation |
-| New Canonical Spec or Delta against a never-implemented approved baseline | every AC passes plus the full relevant suite | `approved → implemented` after validation |
+| Approved Spec Delta against an implemented baseline | every affected Acceptance statement passes plus regression command for unchanged behavior | `approved → implemented` after validation |
+| New Canonical Spec or Delta against a never-implemented approved baseline | every Acceptance statement passes plus the full relevant suite | `approved → implemented` after validation |
 
-Keep an applied Spec Delta through verification so its baseline lifecycle and affected R and AC IDs remain available. Remove it after evidence is recorded or promote it only as explicitly non-authoritative evidence.
+Keep an applied Spec Delta through verification so its baseline lifecycle and affected statement links remain available. Remove it after evidence is recorded or promote it only as explicitly non-authoritative evidence.
 
 ## The Process
 
-Create one checklist item per applicable numbered stage below, plus one item per required Canonical AC. Do not collapse several ACs into one memory-only judgment.
+Create one checklist item per applicable numbered stage below, plus one item per required Canonical Acceptance statement. Do not collapse several statements into one memory-only judgment.
 
 ### 1. Identify the claim and work class
 
@@ -73,16 +73,16 @@ Plan existence does not determine the class. A plan-only route can have no Canon
 
 For existing-contract restoration or approved Spec Delta work:
 
-1. Inspect each governing source with `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <path> --format json`. Require `forge/spec@2`, lifecycle `approved|implemented` appropriate to the class, and empty diagnostics.
-2. Determine the AC set from the work class:
-   - restoration: the ACs whose approved behavior the fix restores;
-   - Delta against an implemented baseline: the affected ACs named in the approved Delta, plus any AC whose observable outcome the change touches;
-   - new Canonical Spec or never-implemented approved baseline: every AC.
-3. Create one checklist item per required AC.
-4. Walk each required AC in order: establish its precondition, perform its action, observe its expected outcome, and record `PASS` or `FAIL` with exact evidence. Code reading alone is not an observation.
+1. Inspect each governing bundle with `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <bundle-directory> --format json`. Require `forge/spec@3`, lifecycle `approved|implemented` appropriate to the class, and empty diagnostics.
+2. Determine the Acceptance statement set from the work class:
+   - restoration: the statements whose approved behavior the fix restores;
+   - Delta against an implemented baseline: the affected statements linked in the approved Delta, plus any statement whose observable outcome the change touches;
+   - new Canonical Spec or never-implemented approved baseline: every Acceptance statement in every bundle member.
+3. Create one checklist item per required Acceptance statement, labeled with its member path and exact heading.
+4. Walk each required statement in order: establish its precondition, perform its action, observe its expected outcome, and record `PASS` or `FAIL` with exact evidence. Code reading alone is not an observation.
 5. When an Execution Plan exists, confirm its Related Specs coverage, completed Task verification, route evidence, and goal-level Done Checks agree with the actual implementation.
 
-Unchanged ACs from an implemented baseline retain their prior implementation evidence only when the approved Delta names every affected R and AC and a fresh regression command covers unchanged behavior. Any uncertainty expands the fresh AC set; it never shrinks it.
+Unchanged Acceptance statements from an implemented baseline retain their prior implementation evidence only when the approved Delta links every affected Requirement and Acceptance statement and a fresh regression command covers unchanged behavior. Any uncertainty expands the fresh statement set; it never shrinks it.
 
 ### 4. Handle failures
 
@@ -97,17 +97,17 @@ Never change implementation and Canonical meaning silently in the same repair.
 ### 5. Complete the matching lifecycle
 
 - **Quick, plan-only, restoration:** report evidence without changing Canonical Spec status.
-- **Approved Spec Delta:** after the required AC set and regression evidence pass, set the Canonical Spec to `implemented`, append the verification history entry, and run the writer transaction. A transaction failure blocks completion reporting.
+- **Approved Spec Delta:** after the required Acceptance statement set and regression evidence pass, set the Canonical Spec lifecycle `status` to `implemented`, append the verification history entry, and run the writer transaction. A transaction failure blocks completion reporting.
 
-The report names work class, claim, command evidence, and required AC verdicts:
+The report names work class, claim, command evidence, and required Acceptance statement verdicts:
 
 ```markdown
 Work class: Existing-contract restoration
 Claim: Refresh retries no longer duplicate writes.
 
-| AC | Verdict | Evidence |
-|---|---|---|
-| AC3 | PASS | `pytest tests/test_refresh.py -q` → 7 passed, exit 0 |
+| Acceptance statement | Member | Verdict | Evidence |
+|---|---|---|---|
+| Given one expired session, refresh returns one usable session | `session-verification.md` | PASS | `pytest tests/test_refresh.py -q` → 7 passed, exit 0 |
 ```
 
 ## Fixed Review Viewer Exception
@@ -117,7 +117,7 @@ After explicit user intent, one successful build of `.forge/reviews/<review-id>/
 ## Working Files
 
 - Reads: optional `.forge/work/<work-id>/brief.md` and `spec-delta.md`; Related Canonical Specs; optional Execution Plan, progress, and Task files.
-- Writes: Canonical Spec lifecycle `status: implemented` and history only after the required AC evidence passes; evidence goes to the user, plan progress, or an explicitly durable evidence path.
+- Writes: Canonical Spec lifecycle `status: implemented` and history only after the required Acceptance evidence passes; evidence goes to the user, plan progress, or an explicitly durable evidence path.
 
 ## Red Flags
 
@@ -126,14 +126,14 @@ After explicit user intent, one successful build of `.forge/reviews/<review-id>/
 | "Quick means no tests." | Quick removes formal artifacts, not fresh proof. |
 | "There is no spec, so verification is impossible." | Focused commands and plan Done Checks verify non-SOT work. |
 | "The Brief says done, so the evidence can be inferred." | A ready Brief defines the claim. Only fresh commands and observations prove it. |
-| "Every spec AC must run for this one restored branch." | Restoration verifies the affected contract and regression behavior without changing lifecycle status. |
-| "The Delta names one AC, so indirect effects do not count." | Any touched observable outcome joins the required AC set. |
-| "The baseline was implemented, so no fresh AC is needed." | Changed contract meaning requires fresh affected-AC evidence. |
-| "The plan passed, so the Canonical Spec is implemented." | Plan evidence and Canonical AC evidence have different authority. |
+| "Every Acceptance statement must run for this one restored branch." | Restoration verifies the affected contract and regression behavior without changing lifecycle status. |
+| "The Delta links one statement, so indirect effects do not count." | Any touched observable outcome joins the required statement set. |
+| "The baseline was implemented, so no fresh Acceptance evidence is needed." | Changed contract meaning requires fresh affected-statement evidence. |
+| "The plan passed, so the Canonical Spec is implemented." | Plan evidence and Canonical Acceptance evidence have different authority. |
 | "The worker reported success." | Root review and fresh root evidence remain mandatory. |
 | "The deadline makes schema work Quick." | Misclassification is a routing failure, not a verification shortcut. |
 | "I can say it should work." | Confidence and code reading are not execution evidence. |
 
 ## Handoff
 
-**If evidence fails, route the named implementation, Canonical Spec, or plan defect and restart verification. If it passes, report only the claims the evidence proves; change Canonical lifecycle only for an approved Spec Delta with the required AC set complete.**
+**If evidence fails, route the named implementation, Canonical Spec, or plan defect and restart verification. If it passes, report only the claims the evidence proves; change Canonical lifecycle only for an approved Spec Delta with the required Acceptance statement set complete.**

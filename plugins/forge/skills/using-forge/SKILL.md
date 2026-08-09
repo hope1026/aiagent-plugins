@@ -32,7 +32,7 @@ NO COMPLETION CLAIM WITHOUT FRESH VERIFICATION EVIDENCE.
 
 | Artifact | Purpose | Default location | Authority and lifetime |
 |---|---|---|---|
-| Canonical Spec | Approved system intent, contract, policy, and invariants | `docs/specs/NNN-<slug>/spec.md` | Permanent project SOT; only `approved` or `implemented` is authoritative |
+| Canonical Spec | Approved system intent, contract, policy, and invariants | `docs/specs/<semantic-bundle-name>/` | Permanent project SOT; only `approved` or `implemented` is authoritative |
 | Change Brief | Goal, Scope, Out of Scope, and Done Checks for current work | Conversation or `.forge/work/<work-id>/brief.md` | Optional work input; not SOT |
 | Spec Delta | Proposed exact change to a Canonical Spec | Conversation or `.forge/work/<work-id>/spec-delta.md` | Approval proposal; not SOT before application |
 | Execution Plan | Dependencies, Tasks, Steps, checkpoints, and verification | `docs/plans/PPP-<slug>/plan.md` | Work-scoped execution source; not project SOT |
@@ -66,7 +66,7 @@ Keep these question types separate:
 
 Classify `yes` when the work adds, changes, or removes any of these:
 
-- an existing Canonical Spec R or AC;
+- an existing Requirement or Acceptance statement in a Canonical Spec;
 - an external interface, persisted data or schema, user workflow or state transition, or error meaning;
 - security, authorization, privacy, billing, compliance, or another durable policy;
 - a cross-component responsibility or integration contract;
@@ -107,7 +107,7 @@ When the selected route or specialist skill has a checklist, create one checklis
 3. **Route to the owning process.** Quick work goes directly to the relevant debugging, TDD, design, tone, or other execution skill. Plan-only work goes to the forge writing-plans skill. Canonical Spec impact goes to the forge writing-specs skill before implementation.
 4. **Apply specialist skills inside the route.** Bugs use the forge systematic-debugging skill before their fix class is final. Implementation code uses the forge test-driven-development skill. Browser application and public website work use their respective design skills. Human-readable prose uses the forge writing-tone skill.
 5. **Promote before the next mutation.** If Quick or plan-only work reveals Canonical Spec impact, a user-owned product decision, cross-component dependency, migration or release ordering, or meaningful rollback risk, stop the next mutation and reclassify. Add only the newly required Spec Delta or Execution Plan.
-6. **Verify at the matching level.** Quick work needs fresh focused command evidence. Existing-contract restoration needs the original reproduction, the affected contract observation, and a regression command. Approved Spec Delta work needs the affected AC walk and regression evidence; a new Canonical Spec needs every AC walked.
+6. **Verify at the matching level.** Quick work needs fresh focused command evidence. Existing-contract restoration needs the original reproduction, the affected contract observation, and a regression command. Approved Spec Delta work needs the affected Acceptance statement walk and regression evidence; a new Canonical Spec needs every Acceptance statement walked.
 7. **Promote durable outcomes.** Move lasting decisions or findings to a Canonical Spec, ADR, `docs/research/`, `docs/debug/`, or explicit evidence file. Do not leave a Change Brief, Spec Delta, or execution log as accidental SOT.
 
 ### Specialist routing
@@ -139,7 +139,7 @@ When UI context does not reveal whether the surface is a stateful browser applic
 
 | Artifact | Path | Git policy |
 |---|---|---|
-| Canonical Spec | `docs/specs/NNN-<slug>/spec.md` | Tracked, permanent |
+| Canonical Spec Bundle | `docs/specs/<semantic-bundle-name>/` | Tracked, permanent; root and member filenames describe their content |
 | Execution Plan | `docs/plans/PPP-<slug>/plan.md` | Tracked while retained |
 | Optional plan progress and Task detail | `docs/plans/PPP-<slug>/progress.md`, `docs/plans/PPP-<slug>/tasks/*.md` | Tracked while the plan is retained |
 | Optional Change Brief and Spec Delta | `.forge/work/<work-id>/brief.md`, `.forge/work/<work-id>/spec-delta.md` | Local only until durable meaning is promoted |

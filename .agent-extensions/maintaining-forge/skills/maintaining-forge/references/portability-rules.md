@@ -46,7 +46,7 @@ commands. Install paths differ across harnesses and install modes.
 
 | Artifact | Path | Committed |
 |---|---|---|
-| Canonical Spec — permanent project SOT when approved or implemented | `docs/specs/NNN-<slug>/spec.md` | yes |
+| Canonical Spec Bundle — permanent project SOT when approved or implemented | `docs/specs/<semantic-bundle-name>/` with descriptive root and member filenames | yes |
 | Optional Change Brief and Spec Delta — work input and approval proposal, never SOT | `.forge/work/<work-id>/brief.md`, `.forge/work/<work-id>/spec-delta.md` | no |
 | Execution Plan — high-complexity work source, never project SOT | `docs/plans/PPP-<slug>/plan.md` | yes while retained |
 | Optional plan progress and Task detail | `docs/plans/PPP-<slug>/progress.md`, `docs/plans/PPP-<slug>/tasks/*.md` | yes while the plan is retained |
@@ -59,7 +59,7 @@ Forge routes work on two portable axes: `Canonical Spec impact: yes|no` and `Exe
 
 Change Brief readiness is portable too. Every supported agent drafts `Goal`, `Scope`, `Out of Scope`, and observable `Done Checks` in the conversation, inspects repository-discoverable facts, and asks at most one currently blocking user-owned choice before rechecking readiness. A clear request or local reversible default needs no question and no Brief file. Keep Brief clarification (current work outcome), Canonical classification (permanent authority), and Spec clarification (exact durable contract meaning) distinct. Invocation UI and worker availability do not change this boundary.
 
-The ordinary Canonical Spec and Execution Plan lifecycle is Markdown-only. Review Viewer is a separate request-only snapshot and never becomes project SOT. Promote durable `.forge/research/` findings to `docs/research/`. Retain an applied Spec Delta through verification, then remove it or promote it only as non-authoritative evidence. Before deleting a plan, promote permanent decisions; its `progress.md` and `tasks/*.md` do not remain as independent artifacts.
+The ordinary Canonical Spec and Execution Plan lifecycle is Markdown-only. A Spec Bundle is identified by its normalized directory path, and its root `Documents` inventory links every member by descriptive filename and H1. Requirements and Acceptance Criteria use complete statement headings; plans trace work with exact `Governing statements:` links, never short document or statement codes. Review Viewer is a separate request-only snapshot and never becomes project SOT. Promote durable `.forge/research/` findings to `docs/research/`. Retain an applied Spec Delta through verification, then remove it or promote it only as non-authoritative evidence. Before deleting a plan, promote permanent decisions; its `progress.md` and `tasks/*.md` do not remain as independent artifacts.
 
 ## 7. Process-skill Structure
 

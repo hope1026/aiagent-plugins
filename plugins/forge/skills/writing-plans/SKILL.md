@@ -18,7 +18,7 @@ Create a work-scoped Execution Plan that an engineer with **zero context** for t
 - Use the governing Canonical Spec's human-readable language when one exists. With no Related Canonical Spec, use the user's language. If the user explicitly requests another plan language, follow that request and keep the plan internally consistent.
 - Write all human-readable plan content in that language: the title, goal, architecture, constraints, task names, file responsibilities, interface explanations, step instructions, expected-result explanations, and handoff notes.
 - Preserve proper nouns, product and framework names, API and protocol names, code identifiers, type and function signatures, file paths, commands, exact output, and established domain terms in their original form. Follow the project's convention for code, comments, and commit messages.
-- Keep only the plan's canonical `##` headings, `Task N` and `Step N` structural tokens, R-IDs, AC-IDs, checkbox syntax, and exact command or output tokens unchanged. Localize ordinary labels such as Spec, Goal, Architecture, Tech Stack, Tasks, Files, Interfaces, Create, Modify, Test, Consumes, Produces, Run, and Expected.
+- Keep only the plan's canonical `##` headings, `Task N` and `Step N` structural tokens, checkbox syntax, exact statement link text, and exact command or output tokens unchanged. Localize ordinary labels such as Spec, Goal, Architecture, Tech Stack, Tasks, Files, Interfaces, Create, Modify, Test, Consumes, Produces, Run, and Expected.
 - Do not translate or paraphrase values copied verbatim from a Canonical Spec, including user-facing copy, version constraints, protocol values, and named decisions.
 
 ## Iron Law
@@ -27,7 +27,7 @@ Create a work-scoped Execution Plan that an engineer with **zero context** for t
 NO EXECUTION PLAN UNLESS EXECUTION COMPLEXITY IS HIGH.
 NO DURABLE CONTRACT CHANGE WITHOUT AN APPROVED CANONICAL SPEC OR SPEC DELTA.
 NO STEP WITHOUT ITS COMPLETE CONTENT.
-EVERY RELATED CANONICAL ACCEPTANCE CRITERION MAPS TO A TASK.
+EVERY RELATED CANONICAL ACCEPTANCE STATEMENT MAPS TO A TASK.
 ```
 
 ## Precondition Gate
@@ -37,9 +37,9 @@ Require a ready work input from the forge using-forge skill before drafting. The
 Before drafting anything, prove both routing axes:
 
 1. **Execution complexity:** name the multiple dependencies or components, parallel ownership, migration or release ordering, meaningful rollback risk, zero-context handoff, or interruption-recovery need that makes complexity `high`. If none exists, STOP and return to the forge using-forge skill's selected direct route. Do not create a plan merely because code will change.
-2. **Canonical Spec impact:** use the forge using-forge predicate. When impact is `yes`, require an explicitly approved Canonical Spec or Spec Delta before drafting. Run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <repo-relative-path> --format json` for every governing source. Require `schema` = `forge/spec@2`, `status` = `approved`, and an empty `diagnostics` array.
-3. **Preservation and restoration:** when impact is `no` but an existing Canonical Spec supplies context, `approved` or `implemented` is valid. The plan must not claim to change its R or AC meaning.
-4. **Canonical Related Specs:** require entry `id` == inspect `id`, repository-contained relative paths, unique IDs, and every listed R and AC ID to exist. With no Related Canonical Spec, use `None — Canonical Spec impact: no; <high-complexity reason>`.
+2. **Canonical Spec impact:** use the forge using-forge predicate. When impact is `yes`, require an explicitly approved Canonical Spec or Spec Delta before drafting. Run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <bundle-directory> --format json` for every governing bundle. Require `schema` = `forge/spec@3`, `status` = `approved`, and an empty `diagnostics` array.
+3. **Preservation and restoration:** when impact is `no` but an existing Canonical Spec supplies context, `approved` or `implemented` is valid. The plan must not claim to change its Requirement or Acceptance statement meaning.
+4. **Canonical Related Specs:** require repository-contained bundle paths, unique normalized bundle paths, and every exact linked Requirement and Acceptance statement to resolve inside a declared bundle. With no Related Canonical Spec, use `None — Canonical Spec impact: no; <high-complexity reason>`.
 
 If Canonical Spec impact is `yes` and no approved source exists, STOP. Use the forge writing-specs skill, then return here. If execution complexity is `low`, STOP. Use the selected direct route instead of authoring an unnecessary plan.
 
@@ -61,11 +61,11 @@ If Canonical Spec impact is `yes` and no approved source exists, STOP. Use the f
 
 Create one todo per numbered step below and work through them in order.
 
-1. **Read every Related Canonical Spec end to end.** List every referenced R-ID and AC-ID. With no related source, record `Canonical Spec impact: no`, the exact high-complexity reason, and the Verification Evidence the plan must produce.
+1. **Read every Related Canonical Spec Bundle end to end.** Start with the root `Documents` inventory, then read every member and collect the exact statement links needed by each Task. With no related source, record `Canonical Spec impact: no`, the exact high-complexity reason, and the Verification Evidence the plan must produce.
 2. **Map the file structure.** Before defining tasks, decide which files will be created or modified and what each is responsible for. One clear responsibility per file; prefer small focused files; follow the codebase's established patterns rather than restructuring unilaterally.
 3. **Draw task boundaries.** A task is the smallest unit that carries its own test cycle and is worth a fresh reviewer's gate. Fold setup, configuration, and docs into the task whose deliverable needs them; split only where a reviewer could reject one task while approving its neighbor. Each task ends with an independently testable deliverable.
 4. **Design the implementation Routes and review structure.** Read `references/plan-visual-structure.md`. Group Tasks into 6–10 Routes or Milestones before drawing dependencies; use fewer only when the plan genuinely has fewer independent phases.
-5. **Write the plan header** (template below), including the AC coverage table.
+5. **Write the plan header** (template below), including the statement coverage table.
 6. **Write each task** (template below) with bite-sized steps and full traceability.
 7. **Self-review** (section below), fixing issues inline.
 8. **Save** to `docs/plans/PPP-<slug>/plan.md`, where `PPP` is the next unused three-digit plan number independent of every spec number.
@@ -83,7 +83,7 @@ A complex plan includes these human-review sections before its detailed Tasks:
 - Runtime responsibility;
 - major data flow;
 - Place, platform, or subsystem extension points;
-- Task-level R and AC mapping;
+- Task-level Requirement and Acceptance statement mapping;
 - internal checkpoint, notify checkpoint, and real approval gate boundaries.
 
 Include three diagram perspectives when the source has the relationships needed to draw them:
@@ -92,31 +92,28 @@ Include three diagram perspectives when the source has the relationships needed 
 2. Runtime responsibility or transaction flow;
 3. extension structure or multi-Place flow.
 
-Do not flatten 22 Tasks into one graph. Group them into Routes first, then show Task detail inside each Route. Each diagram includes a question-shaped title, what to confirm, a one-sentence reading guide, and a source-derived mobile summary table. Plan Mermaid belongs to the plan source; Viewer-derived Route and coverage diagrams may only calculate explicit Task numbers, membership, dependencies, and R·AC mappings.
+Do not flatten 22 Tasks into one graph. Group them into Routes first, then show Task detail inside each Route. Each diagram includes a question-shaped title, what to confirm, a one-sentence reading guide, and a source-derived mobile summary table. Plan Mermaid belongs to the plan source; Viewer-derived Route and coverage diagrams may only calculate explicit Task numbers, membership, dependencies, and full-statement mappings.
 
 ## Traceability Rule
 
 This is the forge addition on top of ordinary planning discipline:
 
-- **Every task governed by a spec uses a source-qualified clause even when one spec is related**, e.g. `### Task 3: Login endpoint (008 R2, R4, AC2)`.
-- Multiple spec clauses use ` ·`, for example `### Task 3: ... (008 R2, R4, AC2 · 002 R7, AC3)`. A unique three-digit spec prefix owns every clause and range; mixed-prefix or descending ranges are forbidden.
-- Canonical Related Specs contains exactly `id`, `path`, `requirements`, and `acceptance`. Its arrays list individual IDs only; range tokens are forbidden. Task headings may compact only ascending same-prefix ranges. Unknown or ambiguous prefixes, mixed-prefix ranges, and descending ranges are errors.
-- **Every referenced AC-ID appears in at least one task.** An AC no task covers means the plan is incomplete — add the task.
-- **The plan starts with a coverage table** so gaps are visible at a glance:
-
-Multi-spec AC Coverage is always source-qualified: use `008 AC1`, not bare `AC1`, so duplicate IDs remain unambiguous. A single-spec plan may keep the compact AC column only when its one Related Canonical Spec is explicit immediately above.
+- `Related Specs` contains only normalized bundle directory paths. It never copies statement lists into metadata.
+- Every governed Task has a `Governing statements:` block with repository-contained Markdown links to the exact Requirement and Acceptance headings it implements or preserves.
+- Link text equals the exact heading text. The link target includes the member path and generated heading anchor. A short label or path to the bundle root alone is not traceability.
+- Every referenced Acceptance statement appears under at least one Task. An uncovered statement makes the plan incomplete.
+- The plan starts with a statement coverage table so gaps remain visible without decoding shorthand.
 
 ```markdown
-## AC Coverage
+## Statement Coverage
 
-| AC | <Localized Tasks label> |
-|---|---|
-| AC1 | 1, 2 |
-| AC2 | 3 |
-| AC3 | 3, 4 |
+| Statement | Kind | <Localized Tasks label> |
+|---|---|---|
+| [When a signed-in session expires, renewal preserves one active session](../../specs/session-renewal/session-lifecycle.md#when-a-signed-in-session-expires-renewal-preserves-one-active-session) | Requirement | 1, 2 |
+| [Given an expired session, one renewal returns one usable session](../../specs/session-renewal/session-verification.md#given-an-expired-session-one-renewal-returns-one-usable-session) | Acceptance | 3 |
 ```
 
-A task that cites no R-ID needs a stated reason to exist. In a spec-free plan, every task instead cites the plan goal and its exact verification evidence.
+A task with no Governing statements needs a stated reason to exist. In a spec-free plan, every task instead cites the plan goal and its exact verification evidence.
 
 ## Plan Header Template
 
@@ -131,10 +128,7 @@ Every plan MUST start with this header:
 Status: active
 
 **Related Specs:**
-- id: NNN-<slug>
-  path: docs/specs/NNN-<slug>/spec.md
-  requirements: [R1, R2]
-  acceptance: [AC1]
+- bundle: docs/specs/<semantic-bundle-name>/
 
 With no related source, use the exact one-line form `**Related Specs:** None — Canonical Spec impact: no; <high-complexity reason>` and omit the list.
 
@@ -151,16 +145,20 @@ dependency limits, naming and copy rules, platform requirements — one line eac
 verbatim from the Canonical Spec. Every task's requirements implicitly include this
 section.]
 
-## AC Coverage
+## Statement Coverage
 
-| AC | <Localized Tasks label> |
-|---|---|
+| Statement | Kind | <Localized Tasks label> |
+|---|---|---|
 ```
 
 ## Task Structure Template
 
 ````markdown
-### Task N: <Component name in the plan language> (NNN R-IDs, AC-IDs)
+### Task N: <Component name in the plan language>
+
+**Governing statements:**
+- [<exact Requirement heading text>](../../specs/<semantic-bundle-name>/<descriptive-member-name>.md#<exact-heading-anchor>)
+- [<exact Acceptance heading text>](../../specs/<semantic-bundle-name>/<descriptive-acceptance-name>.md#<exact-heading-anchor>)
 
 **<Localized Files label>:**
 - <Localized Create label>: `exact/path/to/file.py`
@@ -236,14 +234,14 @@ Every step must contain the actual content the implementer needs. These are **pl
 
 After writing the complete plan, reread every Related Canonical Spec with fresh eyes and check the plan against it. Create one todo per check:
 
-1. **Canonical coverage:** walk every referenced R-ID and AC-ID; point to the task that implements or preserves each. Verify the coverage table matches the task headers. With no Related Canonical Spec, verify every task maps to the plan goal and evidence. List and fix any gap.
+1. **Canonical coverage:** walk every linked Requirement and Acceptance statement; point to the Task that implements or preserves it. Verify the coverage table matches each `Governing statements:` block. With no Related Canonical Spec, verify every Task maps to the plan goal and evidence. List and fix any gap.
 2. **Placeholder scan:** search the plan for every pattern in "No Placeholders" above. Fix them.
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 4. **Language consistency:** confirm all human-readable prose uses the governing Canonical Spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim Canonical Spec values remain intact.
-5. **Review structure:** confirm complex plans include Routes, dependency, Runtime responsibility, data flow, extension points, R·AC mapping, internal and notify checkpoints, real approval gates, and the three required diagram perspectives when their source relationships exist. Local edits, tests, planned local commits, tier selection, subagents, and parallel groups are not approval gates.
+5. **Review structure:** confirm complex plans include Routes, dependency, Runtime responsibility, data flow, extension points, full-statement mapping, internal and notify checkpoints, real approval gates, and the three required diagram perspectives when their source relationships exist. Local edits, tests, planned local commits, tier selection, subagents, and parallel groups are not approval gates.
 6. **Review Viewer request boundary:** confirm no snapshot was created or updated without explicit create or refresh intent. Resolve source, mode, and review-id at handoff. If requested, hand off once to `review-viewer`; fixed generation receives no extra browser or layout QA.
 7. **Plan artifact lifetime:** confirm `progress.md` and `tasks/*.md` meet their closed creation gates. Before deleting a plan, verify every permanent decision is promoted to a spec, research record, ADR, or another durable source.
-8. **Canonical Related Specs:** re-run inspect for each entry and confirm entry id equality, repository containment, unique Canonical Spec IDs, allowed lifecycle for the selected impact class, and existence of every listed R/AC ID before handoff. Review Viewer presence is irrelevant to this gate.
+8. **Canonical Related Specs:** re-run inspect for each bundle entry and confirm repository containment, unique normalized bundle paths, allowed lifecycle for the selected impact class, and exact resolution of every linked Requirement and Acceptance statement before handoff. Review Viewer presence is irrelevant to this gate.
 
 Fix issues inline and move on — no re-review loop.
 
@@ -251,7 +249,7 @@ Fix issues inline and move on — no re-review loop.
 
 | Path | Role |
 |---|---|
-| `docs/specs/NNN-<slug>/spec.md` | Read: each Related Canonical Spec whose inspect JSON satisfies the impact-class lifecycle gate |
+| `docs/specs/<semantic-bundle-name>/` | Read: each Related Canonical Spec Bundle whose inspect JSON satisfies the impact-class lifecycle gate |
 | `docs/plans/PPP-<slug>/plan.md` | Write: independently identified Execution Plan; committed while retained |
 | `docs/plans/PPP-<slug>/progress.md` | Optional long or multi-writer progress history; committed |
 | `docs/plans/PPP-<slug>/tasks/*.md` | Optional independently owned Task details; committed |
@@ -265,7 +263,7 @@ Fix issues inline and move on — no re-review loop.
 | "The durable requirements are all in this conversation — effectively SOT" | A conversation or Spec Delta is a proposal. Promote approved meaning to the validated Canonical Spec first. |
 | "I'll fill in this step's code during execution" | The executor may be a fresh context with zero knowledge. A step without content is a placeholder, and placeholders are plan failures. |
 | "Similar to Task 2 — no need to repeat" | Implementers read tasks in isolation. Repeat the code. |
-| "This coverage table is just bookkeeping" | The table is how uncovered related ACs become visible. Skipping it is how requirements silently drop. |
+| "This coverage table is just bookkeeping" | The table makes uncovered Acceptance statements visible. Skipping it is how requirements silently drop. |
 | "Every implementation deserves a plan" | Low-complexity work follows a direct route. Plans exist for execution complexity, not ceremony. |
 | "The migration is not product behavior, so it needs no route" | Canonical Spec impact may be `no` while complexity is `high`; use a plan-only route. |
 | "This plan is the source of truth" | It is the execution source. Durable project authority remains in Canonical Specs and other promoted records. |

@@ -10,7 +10,7 @@ Use this reference for Execution Plans that need a human review view. The plan r
 4. Runtime responsibility
 5. Major data flow
 6. Place, platform, or subsystem extension points
-7. Verification coverage and, when Related Canonical Specs exist, Task-level R·AC mapping
+7. Verification coverage and, when Related Canonical Specs exist, Task-level full-statement mapping
 8. Detailed Tasks and Steps
 9. Internal checkpoints, notify checkpoints, and approval boundaries
 
@@ -25,7 +25,7 @@ This order lets a reviewer move from scope to flow to implementation detail to e
 | Route 2 — Review | 4–6 | Review tooling shell | approval only before release |
 ```
 
-When a plan has any Related Canonical Spec, label every coverage and provenance reference with the explicit spec id or unique three-digit prefix, including single-spec plans. Do not merge same-numbered R/AC IDs across sources, infer cross-source links, or encode an unqualified range. The canonical Related Specs block owns exact `id`, `path`, `requirements`, and `acceptance` arrays; diagrams only visualize those declared mappings.
+When a plan has any Related Canonical Spec, label every coverage and provenance reference with its bundle path and member path. Keep exact heading text visible. Do not infer cross-bundle links or merge statements with similar wording. The canonical Related Specs block owns normalized bundle paths, while each Task owns its exact `Governing statements:` links; diagrams only visualize those declared mappings.
 
 Use 6–10 Routes for a large plan. Every Task has one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
 
@@ -56,7 +56,7 @@ Each diagram has:
 The plan review path uses one of these source-owned link shapes:
 
 ```text
-Related Canonical Spec present: R → AC → Task → Step → verification method
+Related Canonical Spec present: Requirement → Acceptance Criterion → Task → Step → verification method
 no Related Canonical Spec: Task → Step → verification method
 ```
 

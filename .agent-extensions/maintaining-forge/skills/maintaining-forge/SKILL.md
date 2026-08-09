@@ -174,8 +174,8 @@ The distributed Forge plugin contains user-execution skills only:
 | Skill | Responsibility |
 |---|---|
 | `using-forge` | Route user project work into the spec-first lifecycle |
-| `writing-specs` | Create, approve, inspect, and validate Markdown structured source |
-| `writing-plans` | Create independently identified plans with optional Related Specs |
+| `writing-specs` | Create, approve, inspect, and validate semantic Spec Bundles with full-statement links |
+| `writing-plans` | Create independently identified plans with optional Related Spec Bundle paths and Task-level governing statement links |
 | `executing-plans` | Execute tasks with plan-local progress and checkpoints |
 | `test-driven-development` | Enforce red, green, refactor |
 | `systematic-debugging` | Reproduce, isolate, and establish root cause |
@@ -205,7 +205,7 @@ distributed catalog.
 | Validator | `scripts/validate.sh` |
 | Dev install script | `scripts/install.sh` |
 | Pressure-test notes | `.forge/scratch/` |
-| Repository specs | `docs/specs/NNN-<slug>/spec.md` |
+| Repository Spec Bundles | `docs/specs/<semantic-bundle-name>/` with descriptive root and member filenames |
 | Repository plans | `docs/plans/PPP-<slug>/plan.md` |
 | Requested Review Viewer | `.forge/reviews/<review-id>/view.html` |
 | Shared research and debug records | `docs/research/`, `docs/debug/` |

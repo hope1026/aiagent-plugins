@@ -6,17 +6,25 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 
 WRITING_SPECS="$ROOT/plugins/forge/skills/writing-specs/SKILL.md"
 SPEC_TEMPLATE="$ROOT/plugins/forge/skills/writing-specs/references/spec-template.md"
+DELTA_TEMPLATE="$ROOT/plugins/forge/skills/writing-specs/references/spec-delta-template.md"
 WRITING_PLANS="$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
 EXECUTING_PLANS="$ROOT/plugins/forge/skills/executing-plans/SKILL.md"
 VERIFYING_WORK="$ROOT/plugins/forge/skills/verifying-work/SKILL.md"
 USING_FORGE="$ROOT/plugins/forge/skills/using-forge/SKILL.md"
+REVIEW_VIEWER="$ROOT/plugins/forge/skills/review-viewer/SKILL.md"
+RENDERING_CONTRACT="$ROOT/plugins/forge/skills/review-viewer/references/rendering-contract.md"
 VALIDATE="$ROOT/scripts/validate.sh"
 MAINTAINER="$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/SKILL.md"
+PORTABILITY="$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
+README="$ROOT/README.md"
 
-grep -q 'schema: forge/spec@2' "$SPEC_TEMPLATE" || fail "template misses forge/spec@2"
-for field in schema id status language kind areas components relatedSpecs; do
+grep -q 'schema: forge/spec@3' "$SPEC_TEMPLATE" || fail "template misses forge/spec@3"
+for field in schema role status language kind areas components relatedSpecs; do
   grep -q "^$field:" "$SPEC_TEMPLATE" || fail "template misses $field frontmatter"
 done
+if grep -q '^id:' "$SPEC_TEMPLATE"; then
+  fail "template still declares a document id"
+fi
 grep -q 'Markdown-only' "$MAINTAINER" || fail "maintainer misses Markdown-only lifecycle"
 for heading in 'Requirements' 'Acceptance Criteria' 'Decisions & History'; do
   grep -q "^## $heading$" "$SPEC_TEMPLATE" || fail "template misses required semantic heading: $heading"
@@ -25,21 +33,31 @@ grep -q '^subtype: <optional-lowercase-kebab-case>$' "$SPEC_TEMPLATE" || fail "t
 grep -q '^kind: <feature|system|interface|policy>$' "$SPEC_TEMPLATE" || fail "template misses exact kind enum"
 grep -q '^areas: \["<area>"\]$' "$SPEC_TEMPLATE" || fail "template areas are not JSON strings"
 grep -q '^components: \["<component>"\]$' "$SPEC_TEMPLATE" || fail "template components are not JSON strings"
+grep -q '^## Documents$' "$SPEC_TEMPLATE" || fail "template misses bundle document inventory"
+grep -q 'docs/specs/<semantic-bundle-name>/' "$WRITING_SPECS" || fail "writing-specs misses semantic bundle path"
+grep -q 'full Requirement and Acceptance statement' "$WRITING_SPECS" || fail "writing-specs misses full-statement trace contract"
+grep -q 'member path' "$WRITING_SPECS" || fail "writing-specs misses member-path contract"
 
-# The production parser, not grep alone, must accept the canonical template-shaped fixture.
+if rg -n 'docs/specs/(NNN|OOO|[0-9]{3})-|docs/specs/[^` ]+/spec\.md|forge/spec@2|\.transitions\.json|R·AC|R/AC|R-ID|AC-ID|R and AC IDs|\bR[0-9]+\b|\bAC[0-9]+\b|requirements: \[R|acceptance: \[AC|Canonical Spec ID|Spec ID|spec ID' \
+  "$ROOT/plugins/forge/skills" "$ROOT/.agent-extensions/maintaining-forge" "$README" \
+  --glob 'SKILL.md' --glob '**/references/*.md' --glob '!**/tests/**' --glob '!**/fixtures/**' >/dev/null; then
+  fail "active Forge instructions still contain legacy spec identity or trace syntax"
+fi
+
+# The production parser, not grep alone, must accept the canonical bundle fixture.
 PYTHONPATH="$ROOT/plugins/forge/skills/writing-specs/scripts" python3 - \
-  "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/spec-model/001-valid-ko/spec.md" <<'PY'
+  "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/spec-bundle/valid-multi-file" <<'PY'
 from pathlib import Path
 import sys
-from spec_model import load_spec
+from spec_model import load_spec_bundle
 
 path = Path(sys.argv[1])
-document, diagnostics = load_spec(path, path.parents[1])
+bundle, diagnostics = load_spec_bundle(path, path.parents[3])
 assert diagnostics == (), diagnostics
-assert document is not None
-assert document.metadata.schema == "forge/spec@2"
-assert document.metadata.kind in {"feature", "system", "interface", "policy"}
-assert "Data & Interfaces" in document.sections
+assert bundle is not None
+assert bundle.metadata.schema == "forge/spec@3"
+assert bundle.metadata.kind in {"feature", "system", "interface", "policy"}
+assert len(bundle.members) == 2
 PY
 
 grep -q 'validate --root docs/specs --baseline-ref HEAD' "$WRITING_SPECS" || fail "writing-specs misses validation transaction"
@@ -49,7 +67,7 @@ grep -q 'inspect' <<<"$CLI_HELP" || fail "spec-docs CLI misses inspect"
 if grep -Eq '(^|[,{[:space:]])(build|check)([]},[:space:]]|$)' <<<"$CLI_HELP"; then
   fail "spec-docs CLI still exposes Spec Pages commands"
 fi
-grep -q 'docs/specs/.transitions.json' "$WRITING_SPECS" || fail 'writing-specs misses transition manifest'
+grep -q 'docs/specs/.bundle-transitions.json' "$WRITING_SPECS" || fail 'writing-specs misses bundle transition manifest'
 grep -q 'replacement.*Spec Delta.*before touching.*old source' "$WRITING_SPECS" || fail 'writing-specs misses approval-first replacement gate'
 grep -q 'explicit approval' "$WRITING_SPECS" || fail 'writing-specs misses explicit supersession approval'
 grep -q 'registered isolated Git worktree' "$WRITING_SPECS" || fail 'writing-specs misses isolation gate'
@@ -57,7 +75,7 @@ grep -q 'expected clean HEAD' "$WRITING_SPECS" || fail 'writing-specs misses exa
 grep -q 'candidate commit' "$WRITING_SPECS" || fail 'writing-specs misses candidate commit gate'
 grep -q 'HEAD.*index.*tracked.*untracked bytes' "$WRITING_SPECS" || fail 'writing-specs misses root byte fingerprint'
 grep -q 'Review Viewer output count.*exactly zero' "$WRITING_SPECS" || fail 'writing-specs misses request-only zero gate'
-grep -q 'one-to-one.*superseded.*docs/specs/.transitions.json' "$SPEC_TEMPLATE" || fail 'template misses identity supersession exception'
+grep -q 'one-to-one.*superseded.*docs/specs/.bundle-transitions.json' "$SPEC_TEMPLATE" || fail 'template misses bundle supersession exception'
 grep -q 'schema.*status.*diagnostics' "$WRITING_PLANS" || fail "writing-plans does not inspect typed lifecycle fields"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$WRITING_PLANS" || fail "writing-plans misses inspect CLI"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$EXECUTING_PLANS" || fail "executing-plans misses inspect CLI"

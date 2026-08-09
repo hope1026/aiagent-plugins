@@ -24,8 +24,8 @@ Use `--check` instead of a build only when the user asks to inspect freshness. A
 
 | Mode | Primary set | Non-primary set |
 |---|---|---|
-| `spec` | one structured `docs/specs/NNN-<slug>/spec.md` | zero or more user-selected comparison specs |
-| `plan` | one `plan.md`; existing sibling `progress.md` and lexical `tasks/*.md` by default | the plan's canonical `Related Specs` as context |
+| `spec` | one structured `docs/specs/<semantic-bundle-name>/` with every declared member | zero or more user-selected comparison bundles |
+| `plan` | one `plan.md`; existing sibling `progress.md` and lexical `tasks/*.md` by default | the plan's canonical Related Spec Bundles as context |
 
 Keep source roles distinct. Comparison specs are non-authoritative. Related Specs explain product context but do not become plan-owned requirements. Do not infer relationships missing from the selected Markdown.
 
@@ -53,8 +53,8 @@ Spec mode:
 ```bash
 bash <review-viewer-skill>/scripts/build-review-viewer.sh \
   --mode spec \
-  --spec docs/specs/NNN-<slug>/spec.md \
-  --comparison docs/specs/OOO-<slug>/spec.md \
+  --spec docs/specs/<semantic-bundle-name>/ \
+  --comparison docs/specs/<comparison-bundle-name>/ \
   --review-id <review-id> \
   --locale en \
   --intent comparison \
@@ -76,7 +76,7 @@ bash <review-viewer-skill>/scripts/build-review-viewer.sh \
 
 Use `--locale ko` for Korean viewer labels. Use `--offline` when the snapshot must open without external Mermaid requests. Use `--generated-at <RFC3339>` only for a repeatable fixture or an explicitly fixed timestamp.
 
-The deterministic builder reads selected Markdown directly, preserves source blocks and Mermaid with provenance, derives only explicit Route, dependency, and coverage relationships, validates component references and content coverage, and writes exactly:
+The deterministic builder reads every selected bundle member directly, preserves H1 titles, member paths, full Requirement and Acceptance headings, source blocks, and Mermaid with provenance, derives only explicit statement links, Route, dependency, and coverage relationships, validates component references and content coverage, and writes exactly:
 
 ```text
 .forge/reviews/<review-id>/view.html
@@ -100,7 +100,7 @@ Exit `0` means every recorded source is current. Exit `1` means stale, missing, 
 
 | Path | Role | Git policy |
 |---|---|---|
-| `docs/specs/NNN-<slug>/spec.md` | permanent requirement source | tracked |
+| `docs/specs/<semantic-bundle-name>/` | permanent bundle source, including root and declared members | tracked |
 | `docs/plans/PPP-<slug>/plan.md` | work-scoped execution source | tracked while retained |
 | `docs/plans/PPP-<slug>/progress.md` | optional long progress source | tracked while retained |
 | `docs/plans/PPP-<slug>/tasks/*.md` | optional independently owned Task source | tracked while retained |

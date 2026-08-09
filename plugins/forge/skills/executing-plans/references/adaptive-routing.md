@@ -13,7 +13,7 @@ Record four signals before dispatch:
 | `context_coupling` | `low`, `medium`, `high` | How many files, subsystems, decisions, or actors must stay consistent? |
 | `verification_clarity` | `strong`, `partial`, `weak` | How decisively can fresh evidence prove completion? |
 
-Use the current Task text, its Files and Interfaces blocks, dependency diagram, governing R and AC IDs, and repository state. Do not guess missing independence or file ownership.
+Use the current Task text, its Files and Interfaces blocks, dependency diagram, exact `Governing statements:` member-path and full-heading links, and repository state. Do not guess missing independence or file ownership.
 
 ## Capability Tiers
 

@@ -9,7 +9,7 @@
     {
       "name": "forge",
       "source": "./plugins/forge",
-      "description": "Spec-first development process skills for Claude Code and Codex.",
+      "description": "Semantic Spec Bundle and verified execution skills for Claude Code and Codex.",
       "category": "productivity"
     }
   ]

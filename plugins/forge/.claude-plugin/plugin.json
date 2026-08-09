@@ -2,7 +2,7 @@
   "name": "forge",
   "displayName": "Forge",
   "version": "0.1.10",
-  "description": "Canonical Spec and complexity-aware execution skills with approved Spec Deltas for durable contracts, optional Execution Plans for complex work, Quick verified execution for bounded work, request-only Review Viewers, cross-agent authoring, debugging, and interface design.",
+  "description": "Semantic Canonical Spec Bundles and complexity-aware execution skills with approved Spec Deltas, full-statement plan traceability, Quick verified execution, request-only Review Viewers, cross-agent authoring, debugging, and interface design.",
   "author": { "name": "Onestar Lee" },
   "skills": "./skills/",
   "keywords": ["spec-first", "process", "tdd", "debugging", "agent-skills", "mcp", "web-app-design", "website-design", "tone", "marketing", "operations", "customer-support", "korean", "codex", "claude-code", "antigravity"]
