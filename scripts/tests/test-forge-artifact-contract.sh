@@ -5,25 +5,6 @@ ROOT="${FORGE_ARTIFACT_TEST_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." &&
 ROOT="$(cd "$ROOT" && pwd -P)"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
-assert_migration_artifact() {
-  local promoted="$ROOT/docs/research/2026-07-04-forge-plugin-design.md"
-  local legacy="$ROOT/docs/specs/2026-07-04-forge-plugin-design.md"
-  local expected_sha="fde1f774ce36fcb29e6daa6956526cc0eeb6f47a5b09c0bbd1d8876d91c92f2e"
-  local actual_sha
-  [[ -f "$promoted" ]] || fail "promoted Forge design record is missing"
-  [[ ! -e "$legacy" ]] || fail "legacy Forge design record remains under docs/specs"
-  actual_sha="$(shasum -a 256 "$promoted" | awk '{print $1}')"
-  [[ "$actual_sha" == "$expected_sha" ]] || fail "promoted Forge design bytes differ from the immutable baseline"
-  grep -Fq '> Artifact paths and Viewer lifecycle in this dated design are superseded by docs/specs/002-lifecycle-review-viewer/spec.md.' \
-    "$promoted" || fail "promoted Forge design provenance is missing"
-}
-
-if [[ "${FORGE_ARTIFACT_MIGRATION_ASSERT_ONLY:-0}" == "1" ]]; then
-  assert_migration_artifact
-  printf 'test-forge-artifact-contract: migration assertion passed\n'
-  exit 0
-fi
-
 USING_FORGE="$ROOT/plugins/forge/skills/using-forge/SKILL.md"
 PORTABILITY="$ROOT/.agent-extensions/maintaining-forge/skills/maintaining-forge/references/portability-rules.md"
 WRITING_PLANS="$ROOT/plugins/forge/skills/writing-plans/SKILL.md"
@@ -56,7 +37,7 @@ grep -q 'python3 "$MANAGER" --help' "$ROOT/scripts/validate.sh"
 grep -q 'docs/debug/' "$ROOT/plugins/forge/skills/systematic-debugging/SKILL.md"
 
 [[ -f "$REVIEW_VIEWER" ]] || fail "review-viewer is missing"
-[[ ! -e "$ROOT/plugins/forge/skills/spec-viewer" ]] || fail "legacy spec-viewer remains"
+[[ ! -e "$ROOT/plugins/forge/skills/spec-viewer" ]] || fail "removed spec-viewer skill remains"
 grep -q 'explicit request' "$REVIEW_VIEWER" || fail "review-viewer request gate missing"
 grep -q '.forge/reviews/<review-id>/view.html' "$REVIEW_VIEWER" || fail "review-viewer output path missing"
 grep -q 'Run one build command' "$REVIEW_VIEWER" || fail "review-viewer build-once contract missing"
@@ -68,7 +49,7 @@ grep -q 'test-forge-spec-docs-policy.sh' "$ROOT/.github/workflows/validate.yml" 
 # Default structured-spec tooling validates Markdown without writing HTML.
 TEMP_ROOT="$(mktemp -d)"
 trap 'rm -rf "$TEMP_ROOT"' EXIT
-cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/repository/valid-repository/." "$TEMP_ROOT/"
+cp -R "$ROOT/plugins/forge/skills/writing-specs/tests/fixtures/spec-bundle-repository/valid-multi-bundle/." "$TEMP_ROOT/"
 mkdir -p "$TEMP_ROOT/.forge/reviews/sentinel"
 printf 'review-sentinel\n' > "$TEMP_ROOT/.forge/reviews/sentinel/view.html"
 SENTINEL_BEFORE="$(shasum -a 256 "$TEMP_ROOT/.forge/reviews/sentinel/view.html" | awk '{print $1}')"
@@ -86,7 +67,5 @@ grep -q 'inspect' <<<"$CLI_HELP" || fail "structured-spec CLI misses inspect"
 if grep -Eq '(^|[,{[:space:]])(build|check)([]},[:space:]]|$)' <<<"$CLI_HELP"; then
   fail "structured-spec CLI still exposes HTML page commands"
 fi
-
-assert_migration_artifact
 
 printf 'test-forge-artifact-contract: all checks passed\n'

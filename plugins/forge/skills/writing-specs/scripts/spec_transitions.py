@@ -212,17 +212,9 @@ def _parse_path(
         return None
 
     if field == "fromSourcePath":
-        legacy_or_member_source = (
-            len(path.parts) == len(spec_root.parts) + 2
-            and path.suffix == ".md"
-            and path.name != ".md"
-        )
-        bundle_source = (
+        allowed = _has_prefix(path, spec_root) and (
             len(path.parts) == len(spec_root.parts) + 1
             and _SEMANTIC_NAME_RE.fullmatch(path.name) is not None
-        )
-        allowed = _has_prefix(path, spec_root) and (
-            legacy_or_member_source or bundle_source
         )
     elif field == "toBundlePath":
         allowed = (

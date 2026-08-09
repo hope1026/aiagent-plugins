@@ -42,21 +42,17 @@ function extractMermaid(path) {
 }
 
 const diagrams = [
-  ...extractMermaid(resolve(repoRoot, "docs/specs/004-adaptive-execution-routing/spec.md")),
-  ...extractMermaid(resolve(repoRoot, "docs/specs/006-ui-design-skill-split/spec.md")),
+  ...extractMermaid(resolve(repoRoot, "docs/specs/adaptive-execution-routing/adaptive-execution-routing-and-checkpoints.md")),
+  ...extractMermaid(resolve(repoRoot, "docs/specs/forge-ui-design-skill-separation/forge-ui-design-skill-separation.md")),
 ];
-assert.equal(diagrams.length, 4, "004/006 must provide the four acceptance diagrams");
+assert.equal(diagrams.length, 4, "the two governing bundles must provide four diagrams");
 for (const diagram of diagrams) {
   const { status, payload } = validate(diagram);
   assert.equal(status, 0);
   assert.deepEqual(payload, { valid: true, diagnostics: [] });
 }
 
-const malformedPath = resolve(
-  testDir,
-  "fixtures/spec-model/invalid/malformed-mermaid/001-valid-ko/spec.md",
-);
-const [malformed] = extractMermaid(malformedPath);
+const malformed = "flowchart TD\n    A[broken";
 const first = validate(malformed);
 const second = validate(malformed);
 assert.notEqual(first.status, 0);

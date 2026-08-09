@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import shutil
 import subprocess
@@ -59,71 +58,6 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
         with temporary:
             mutation(repository)
             self.assertIn(code, self._codes(repository))
-
-    def _migration_repository(self, source_hash: str | None = None) -> tuple[TemporaryDirectory[str], Path]:
-        temporary = TemporaryDirectory()
-        repository = Path(temporary.name) / "repo"
-        legacy = repository / "docs/specs/001-history/spec.md"
-        legacy.parent.mkdir(parents=True)
-        source = (
-            TEST_DIR
-            / "fixtures/repository/baseline-template/spec.md"
-        ).read_bytes()
-        legacy.write_bytes(source)
-        subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
-        subprocess.run(["git", "add", "."], cwd=repository, check=True)
-        subprocess.run(
-            [
-                "git",
-                "-c",
-                "user.name=Forge Test",
-                "-c",
-                "user.email=forge@example.invalid",
-                "commit",
-                "-qm",
-                "legacy baseline",
-            ],
-            cwd=repository,
-            check=True,
-        )
-        legacy.unlink()
-        legacy.parent.rmdir()
-        shutil.copytree(FIXTURE_REPOSITORY / "docs/specs", repository / "docs/specs", dirs_exist_ok=True)
-        evidence = repository / "docs/evidence/semantic-bundle-migration.md"
-        evidence.parent.mkdir(parents=True)
-        evidence.write_text("Migration evidence.\n", encoding="utf-8")
-        manifest = {
-            "schema": "forge/spec-bundle-transitions@1",
-            "transitions": [
-                {
-                    "fromSourcePath": "docs/specs/001-history/spec.md",
-                    "fromSourceSha256": source_hash or hashlib.sha256(source).hexdigest(),
-                    "disposition": "superseded",
-                    "toBundlePath": "docs/specs/semantic-workflows",
-                    "evidencePath": "docs/evidence/semantic-bundle-migration.md",
-                    "reason": "Replace the numeric legacy document with a semantic Spec Bundle.",
-                }
-            ],
-        }
-        (repository / "docs/specs/.bundle-transitions.json").write_text(
-            json.dumps(manifest), encoding="utf-8"
-        )
-        return temporary, repository
-
-    def test_path_transition_authorizes_exact_legacy_baseline_migration(self) -> None:
-        temporary, repository = self._migration_repository()
-        with temporary:
-            result = validate_repository(repository, baseline_ref="HEAD")
-            self.assertTrue(result.ok, result.diagnostics)
-
-    def test_path_transition_rejects_wrong_legacy_source_hash(self) -> None:
-        temporary, repository = self._migration_repository("0" * 64)
-        with temporary:
-            result = validate_repository(repository, baseline_ref="HEAD")
-            self.assertIn(
-                "SPEC_TRANSITION_FROM_BINDING",
-                {item.code for item in result.diagnostics},
-            )
 
     def test_path_transition_authorizes_exact_v3_bundle_replacement(self) -> None:
         temporary, repository = self._repository()
@@ -212,19 +146,19 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
                 {item.code for item in result.diagnostics},
             )
 
-    def test_historical_transition_prefix_and_old_source_cannot_be_rewritten(self) -> None:
+    def test_transition_prefix_and_retired_bundle_cannot_be_rewritten(self) -> None:
         temporary, repository = self._repository()
         with temporary:
             evidence = repository / "docs/evidence/historical-transition.md"
             evidence.parent.mkdir(parents=True)
             evidence.write_text("Historical evidence.\n", encoding="utf-8")
             record = {
-                "fromSourcePath": "docs/specs/old-contract/spec.md",
+                "fromSourcePath": "docs/specs/retired-workflows",
                 "fromSourceSha256": "a" * 64,
                 "disposition": "superseded",
                 "toBundlePath": "docs/specs/semantic-workflows",
                 "evidencePath": "docs/evidence/historical-transition.md",
-                "reason": "The historical source was already superseded.",
+                "reason": "The prior bundle was superseded by the current workflow contract.",
             }
             manifest_path = repository / "docs/specs/.bundle-transitions.json"
             manifest_path.write_text(
@@ -262,9 +196,8 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            resurrected = repository / "docs/specs/old-contract/spec.md"
-            resurrected.parent.mkdir(parents=True)
-            resurrected.write_text("historical bytes", encoding="utf-8")
+            resurrected = repository / "docs/specs/retired-workflows"
+            resurrected.mkdir(parents=True)
 
             result = validate_repository(repository, baseline_ref="HEAD")
             codes = {item.code for item in result.diagnostics}
@@ -274,7 +207,7 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
 
     def test_discovers_direct_child_semantic_bundles_in_lexical_order(self) -> None:
         result = validate_repository(FIXTURE_REPOSITORY, Path("docs/specs"))
-        bundles = getattr(result, "bundles", result.documents)
+        bundles = result.bundles
 
         self.assertTrue(result.ok, result.diagnostics)
         self.assertEqual(

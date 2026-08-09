@@ -180,6 +180,35 @@ class SpecBundleModelTest(unittest.TestCase):
                 bundle.path / "single-document-contract.md",
             )
 
+    def test_preserves_balanced_brackets_in_exact_statement_link_text(self) -> None:
+        source = TEST_DIR / "fixtures/spec-bundle/valid-one-file"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture = root / "docs/specs/bracketed-statement"
+            shutil.copytree(source, fixture)
+            root_file = fixture / "single-document-contract.md"
+            text = root_file.read_text(encoding="utf-8").replace(
+                "A single-file bundle is a valid bundle",
+                "A bundle rejects [unfinished] markers",
+            ).replace(
+                "a-single-file-bundle-is-a-valid-bundle",
+                "a-bundle-rejects-unfinished-markers",
+            )
+            root_file.write_text(text, encoding="utf-8")
+
+            bundle, diagnostics = spec_model.load_spec_bundle(fixture, root)
+
+            self.assertEqual(diagnostics, ())
+            self.assertIsNotNone(bundle)
+            assert bundle is not None
+            acceptance = next(
+                statement for statement in bundle.statements if statement.kind == "acceptance"
+            )
+            self.assertEqual(
+                acceptance.references[0].heading,
+                "A bundle rejects [unfinished] markers",
+            )
+
     def test_inventory_declares_every_markdown_member_exactly_once(self) -> None:
         source = TEST_DIR / "fixtures/spec-bundle/valid-multi-file"
         with tempfile.TemporaryDirectory() as directory:

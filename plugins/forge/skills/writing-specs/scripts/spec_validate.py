@@ -1,4 +1,4 @@
-"""Repository-wide validation for ``forge/spec@2`` sources and plan references."""
+"""Repository-wide validation for semantic Spec Bundles and plan references."""
 
 from __future__ import annotations
 
@@ -14,9 +14,8 @@ from spec_model import (
     BUNDLE_SCHEMA,
     Diagnostic,
     SpecBundle,
-    SpecDocument,
+    SpecMember,
     SpecStatement,
-    load_spec,
     load_spec_bundle,
     parse_frontmatter,
     statement_anchor,
@@ -65,9 +64,8 @@ class PlanStatementRef:
 
 @dataclass(frozen=True)
 class ValidationResult:
-    documents: tuple[SpecDocument, ...]
+    bundles: tuple[SpecBundle, ...]
     diagnostics: tuple[Diagnostic, ...]
-    bundles: tuple[SpecBundle, ...] = ()
 
     @property
     def ok(self) -> bool:
@@ -76,27 +74,6 @@ class ValidationResult:
 
 def _normalized_statement_heading(heading: str) -> str:
     return " ".join(unicodedata.normalize("NFC", heading).casefold().split())
-
-
-def _bundle_repository_mode(spec_root: Path) -> bool:
-    if not spec_root.is_dir():
-        return False
-    for directory in sorted(spec_root.iterdir(), key=lambda item: item.name):
-        if directory.is_symlink() or not directory.is_dir():
-            continue
-        for member in sorted(directory.glob("*.md"), key=lambda item: item.name):
-            if member.is_symlink():
-                continue
-            try:
-                text = member.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
-                continue
-            if not text.startswith("---\n") and not text.startswith("---\r\n"):
-                continue
-            values, _, diagnostics = parse_frontmatter(text, member)
-            if not diagnostics and values.get("schema") == BUNDLE_SCHEMA:
-                return True
-    return False
 
 
 def _mapped_bundle_diagnostic(
@@ -580,52 +557,6 @@ def _validate_bundle_baseline(
                 )
             )
 
-    for path in baseline_paths:
-        if path.name != "spec.md":
-            continue
-        source = _git_blob(repository, baseline_ref, path)
-        if source is None:
-            continue
-        try:
-            text = source.decode("utf-8")
-        except UnicodeDecodeError:
-            continue
-        schema, _, status = _baseline_metadata(text, path)
-        if schema != "forge/spec@2" or status not in {"approved", "implemented"}:
-            continue
-        if (repository / path).is_file():
-            continue
-
-        transition = authorizations.get(path)
-        if transition is None:
-            errors.append(
-                _diagnostic(
-                    path,
-                    1,
-                    "SPEC_HISTORY_NOT_APPEND_ONLY",
-                    "An approved baseline source cannot be removed without a path transition.",
-                )
-            )
-            continue
-        used_authorizations.add(path)
-        target = bundle_index.get(transition.to_bundle_path)
-        binding_valid = (
-            hashlib.sha256(source).hexdigest() == transition.from_source_sha256
-            and target is not None
-            and target.metadata.status in {"approved", "implemented"}
-            and transition.to_bundle_path not in baseline_bundle_paths
-            and not (repository / transition.from_source_path).exists()
-        )
-        if not binding_valid:
-            errors.append(
-                _diagnostic(
-                    manifest_path,
-                    1,
-                    "SPEC_TRANSITION_FROM_BINDING",
-                    "Transition source path, exact baseline SHA-256, and active target bundle must match.",
-                )
-            )
-
     for transition in appended:
         if transition.from_source_path not in used_authorizations:
             errors.append(
@@ -698,7 +629,7 @@ def _validate_bundle_repository(
             manifest,
             errors,
         )
-    return ValidationResult((), tuple(sorted(set(errors))), ordered_bundles)
+    return ValidationResult(ordered_bundles, tuple(sorted(set(errors))))
 
 
 def _diagnostic(path: Path | str, line: int, code: str, message: str) -> Diagnostic:
@@ -723,89 +654,8 @@ def _resolved_spec_root(repo_root: Path, spec_root: Path) -> tuple[Path | None, 
     return candidate, relative
 
 
-def _validate_relations(
-    documents: tuple[SpecDocument, ...], errors: list[Diagnostic]
-) -> None:
-    by_id: dict[str, list[SpecDocument]] = {}
-    for document in documents:
-        by_id.setdefault(document.metadata.id, []).append(document)
-
-    for spec_id, matches in sorted(by_id.items()):
-        if len(matches) > 1:
-            for document in matches:
-                errors.append(
-                    _diagnostic(
-                        document.path,
-                        3,
-                        "SPEC_DUPLICATE_ID",
-                        f"Spec id '{spec_id}' appears more than once in the repository.",
-                    )
-                )
-
-    known_ids = set(by_id)
-    for document in documents:
-        for relation in document.metadata.related_specs:
-            if relation.id == document.metadata.id:
-                errors.append(
-                    _diagnostic(
-                        document.path,
-                        9,
-                        "SPEC_RELATED_SELF",
-                        f"Spec '{relation.id}' cannot relate to itself.",
-                    )
-                )
-            elif relation.id not in known_ids:
-                errors.append(
-                    _diagnostic(
-                        document.path,
-                        9,
-                        "SPEC_RELATED_MISSING",
-                        f"Related spec '{relation.id}' does not exist.",
-                    )
-                )
-
-
-def _validate_coverage(document: SpecDocument, errors: list[Diagnostic]) -> None:
-    requirements = {item.id: item for item in document.requirements}
-    covered: set[str] = set()
-    for criterion in document.acceptance:
-        for requirement_id in criterion.requirements:
-            requirement = requirements.get(requirement_id)
-            if requirement is None:
-                errors.append(
-                    _diagnostic(
-                        document.path,
-                        criterion.line,
-                        "SPEC_AC_REFERENCE_MISSING",
-                        f"Acceptance criterion '{criterion.id}' references missing '{requirement_id}'.",
-                    )
-                )
-            elif requirement.removed:
-                errors.append(
-                    _diagnostic(
-                        document.path,
-                        criterion.line,
-                        "SPEC_AC_REFERENCE_REMOVED",
-                        f"Acceptance criterion '{criterion.id}' references removed '{requirement_id}'.",
-                    )
-                )
-            else:
-                covered.add(requirement_id)
-
-    for requirement in document.requirements:
-        if not requirement.removed and requirement.id not in covered:
-            errors.append(
-                _diagnostic(
-                    document.path,
-                    requirement.line,
-                    "SPEC_REQUIREMENT_UNCOVERED",
-                    f"Active requirement '{requirement.id}' is not covered by an acceptance criterion.",
-                )
-            )
-
-
 def _validate_links(
-    document: SpecDocument, repo_root: Path, errors: list[Diagnostic]
+    document: SpecMember, repo_root: Path, errors: list[Diagnostic]
 ) -> None:
     source_path = repo_root / document.path
     try:
@@ -851,7 +701,7 @@ def _validate_links(
                 )
 
 
-def _validate_mermaid(document: SpecDocument, errors: list[Diagnostic]) -> None:
+def _validate_mermaid(document: SpecMember, errors: list[Diagnostic]) -> None:
     for block in document.mermaid:
         if not MERMAID_VALIDATOR_BUNDLE.is_file():
             errors.append(
@@ -953,21 +803,6 @@ def _git_output(repo_root: Path, arguments: list[str]) -> subprocess.CompletedPr
         return None
 
 
-def _baseline_metadata(
-    text: str, path: Path
-) -> tuple[str | None, str | None, str | None]:
-    values, _, errors = parse_frontmatter(text, path)
-    if errors or values.get("schema") != "forge/spec@2":
-        return None, None, None
-    spec_id = values.get("id")
-    status = values.get("status")
-    return (
-        "forge/spec@2",
-        spec_id if isinstance(spec_id, str) else None,
-        status if isinstance(status, str) else None,
-    )
-
-
 def _history_lines(text: str) -> tuple[str, ...] | None:
     lines = text.splitlines()
     try:
@@ -984,350 +819,12 @@ def _git_blob(repo_root: Path, baseline_ref: str, path: Path) -> bytes | None:
     return result.stdout
 
 
-def _transition_structure_diagnostics(
-    manifest: TransitionManifest,
-    manifest_path: Path,
-    errors: list[Diagnostic],
-) -> None:
-    source_ids: set[str] = set()
-    source_paths: set[Path] = set()
-    target_ids: set[str] = set()
-    target_paths: set[Path] = set()
-    for transition in manifest.transitions:
-        if transition.from_id in source_ids or transition.from_path in source_paths:
-            errors.append(
-                _diagnostic(
-                    manifest_path,
-                    1,
-                    "SPEC_TRANSITION_DUPLICATE_SOURCE",
-                    "Transition source identities and paths must be unique.",
-                )
-            )
-        if transition.to_id in target_ids or transition.to_path in target_paths:
-            errors.append(
-                _diagnostic(
-                    manifest_path,
-                    1,
-                    "SPEC_TRANSITION_DUPLICATE_TARGET",
-                    "Transition target identities and paths must be unique.",
-                )
-            )
-        source_ids.add(transition.from_id)
-        source_paths.add(transition.from_path)
-        target_ids.add(transition.to_id)
-        target_paths.add(transition.to_path)
-
-def _old_identity_references(
-    repo_root: Path,
-    documents: tuple[SpecDocument, ...],
-    transition: SpecTransition,
-) -> tuple[Path, ...]:
-    references: set[Path] = set()
-    old_directory = transition.from_path.parent.as_posix()
-    for document in documents:
-        if document.metadata.status not in {"approved", "implemented"}:
-            continue
-        if any(
-            relation.id == transition.from_id
-            for relation in document.metadata.related_specs
-        ):
-            references.add(document.path)
-        try:
-            source = (repo_root / document.path).read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
-            continue
-        for match in _MARKDOWN_LINK_RE.finditer(source):
-            raw_target = match.group(1).strip().strip("<>")
-            target = raw_target.split("#", 1)[0].split("?", 1)[0]
-            if transition.from_id in target or old_directory in target:
-                references.add(document.path)
-                break
-    return tuple(sorted(references))
-
-
-def _validate_baseline(
-    repo_root: Path,
-    spec_root: Path,
-    baseline_ref: str,
-    documents: tuple[SpecDocument, ...],
-    current_manifest: TransitionManifest | None,
-    errors: list[Diagnostic],
-) -> None:
-    if not (repo_root / ".git").exists():
-        errors.append(
-            _diagnostic(
-                spec_root,
-                1,
-                "SPEC_BASELINE_UNAVAILABLE",
-                "A Git repository is required for baseline validation.",
-            )
-        )
-        return
-    listing = _git_output(
-        repo_root,
-        ["ls-tree", "-r", "--name-only", baseline_ref, "--", spec_root.as_posix()],
-    )
-    if listing is None or listing.returncode != 0:
-        errors.append(
-            _diagnostic(
-                spec_root,
-                1,
-                "SPEC_BASELINE_UNAVAILABLE",
-                "The requested Git baseline cannot be read.",
-            )
-        )
-        return
-
-    baseline_paths = sorted(
-        Path(item.decode("utf-8"))
-        for item in listing.stdout.splitlines()
-        if item.decode("utf-8").endswith("/spec.md")
-    )
-    manifest_path = spec_root / ".transitions.json"
-    baseline_manifest_source = _git_blob(repo_root, baseline_ref, manifest_path)
-    if baseline_manifest_source is None:
-        baseline_manifest = TransitionManifest(())
-        baseline_manifest_ok = True
-    else:
-        baseline_manifest, manifest_diagnostics = load_transition_manifest(
-            repo_root,
-            spec_root,
-            source=baseline_manifest_source,
-        )
-        errors.extend(manifest_diagnostics)
-        baseline_manifest_ok = baseline_manifest is not None
-        if baseline_manifest is None:
-            baseline_manifest = TransitionManifest(())
-
-    if current_manifest is None:
-        current_transitions: tuple[SpecTransition, ...] = ()
-    else:
-        current_transitions = current_manifest.transitions
-
-    prefix_ok = (
-        baseline_manifest_ok
-        and current_transitions[: len(baseline_manifest.transitions)]
-        == baseline_manifest.transitions
-    )
-    if not prefix_ok:
-        errors.append(
-            _diagnostic(
-                manifest_path,
-                1,
-                "SPEC_TRANSITION_BASELINE_PREFIX",
-                "Current transitions must preserve the canonical baseline sequence as an exact prefix.",
-            )
-        )
-        appended: tuple[SpecTransition, ...] = ()
-    else:
-        appended = current_transitions[len(baseline_manifest.transitions) :]
-    if len(appended) > 1:
-        errors.append(
-            _diagnostic(
-                manifest_path,
-                1,
-                "SPEC_TRANSITION_APPEND",
-                "A change may append at most one spec transition record.",
-            )
-        )
-
-    appended_source_ids = {transition.from_id for transition in appended}
-    appended_source_paths = {transition.from_path for transition in appended}
-    if any(
-        transition.to_id in appended_source_ids
-        or transition.to_path in appended_source_paths
-        for transition in appended
-    ):
-        errors.append(
-            _diagnostic(
-                manifest_path,
-                1,
-                "SPEC_TRANSITION_CHAIN",
-                "Transition records appended in the same change cannot form a multi-hop chain.",
-            )
-        )
-
-    baseline_path_set = set(baseline_paths)
-    documents_by_path = {document.path: document for document in documents}
-    newly_authorized = appended if len(appended) == 1 else ()
-    valid_authorizations: set[Path] = set()
-
-    for transition in baseline_manifest.transitions:
-        if (repo_root / transition.from_path).is_file():
-            errors.append(
-                _diagnostic(
-                    transition.from_path,
-                    1,
-                    "SPEC_TRANSITION_OLD_SOURCE",
-                    f"Superseded source '{transition.from_id}' cannot reappear in the current tree.",
-                )
-            )
-        for reference in _old_identity_references(repo_root, documents, transition):
-            errors.append(
-                _diagnostic(
-                    reference,
-                    1,
-                    "SPEC_TRANSITION_OLD_REFERENCE",
-                    f"Active spec references superseded identity '{transition.from_id}'.",
-                )
-            )
-
-    for transition in newly_authorized:
-        transition_valid = True
-        from_source = _git_blob(repo_root, baseline_ref, transition.from_path)
-        if from_source is None:
-            transition_valid = False
-            errors.append(
-                _diagnostic(
-                    manifest_path,
-                    1,
-                    "SPEC_TRANSITION_FROM_BINDING",
-                    "Transition fromPath must identify an exact baseline spec source.",
-                )
-            )
-        else:
-            try:
-                from_text = from_source.decode("utf-8")
-            except UnicodeDecodeError:
-                from_text = ""
-            from_schema, from_id, from_status = _baseline_metadata(
-                from_text, transition.from_path
-            )
-            if (
-                from_schema != "forge/spec@2"
-                or from_status not in {"approved", "implemented"}
-                or from_id != transition.from_id
-                or transition.from_path.parent.name != transition.from_id
-                or hashlib.sha256(from_source).hexdigest()
-                != transition.from_source_sha256
-            ):
-                transition_valid = False
-                errors.append(
-                    _diagnostic(
-                        manifest_path,
-                        1,
-                        "SPEC_TRANSITION_FROM_BINDING",
-                        "Transition source ID, path, status, and SHA-256 must match the exact baseline bytes.",
-                    )
-                )
-
-        if (repo_root / transition.from_path).is_file():
-            transition_valid = False
-            errors.append(
-                _diagnostic(
-                    manifest_path,
-                    1,
-                    "SPEC_TRANSITION_FROM_BINDING",
-                    "A superseded source must be absent from the current tree.",
-                )
-            )
-
-        if transition.to_path in baseline_path_set:
-            transition_valid = False
-            errors.append(
-                _diagnostic(
-                    manifest_path,
-                    1,
-                    "SPEC_TRANSITION_TARGET_BASELINE",
-                    "A supersession target must not already exist in the baseline.",
-                )
-            )
-
-        target = documents_by_path.get(transition.to_path)
-        if (
-            target is None
-            or target.metadata.id != transition.to_id
-            or transition.to_path.parent.name != transition.to_id
-            or target.metadata.status not in {"approved", "implemented"}
-        ):
-            transition_valid = False
-            errors.append(
-                _diagnostic(
-                    manifest_path,
-                    1,
-                    "SPEC_TRANSITION_TO_BINDING",
-                    "Transition target ID, path, directory, and active status must match the current source.",
-                )
-            )
-
-        old_references = _old_identity_references(repo_root, documents, transition)
-        for reference in old_references:
-            transition_valid = False
-            errors.append(
-                _diagnostic(
-                    reference,
-                    1,
-                    "SPEC_TRANSITION_OLD_REFERENCE",
-                    f"Active spec references superseded identity '{transition.from_id}'.",
-                )
-            )
-
-        if transition_valid:
-            valid_authorizations.add(transition.from_path)
-
-    for path in baseline_paths:
-        baseline_source = _git_blob(repo_root, baseline_ref, path)
-        if baseline_source is None:
-            continue
-        try:
-            baseline_text = baseline_source.decode("utf-8")
-        except UnicodeDecodeError:
-            continue
-        schema, baseline_id, status = _baseline_metadata(baseline_text, path)
-        if schema != "forge/spec@2" or status not in {"approved", "implemented"}:
-            continue
-        current_path = repo_root / path
-        if not current_path.is_file():
-            if path in valid_authorizations:
-                continue
-            if any(
-                transition.from_path == path
-                for transition in baseline_manifest.transitions
-            ):
-                errors.append(
-                    _diagnostic(
-                        manifest_path,
-                        1,
-                        "SPEC_TRANSITION_REPLAY",
-                        "A baseline transition record cannot be reused to authorize a new deletion.",
-                    )
-                )
-            errors.append(
-                _diagnostic(
-                    path,
-                    1,
-                    "SPEC_HISTORY_NOT_APPEND_ONLY",
-                    "An approved or implemented baseline spec cannot be deleted or renamed.",
-                )
-            )
-            continue
-        try:
-            current_text = current_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
-            continue
-        baseline_history = _history_lines(baseline_text)
-        current_history = _history_lines(current_text)
-        if (
-            baseline_history is None
-            or current_history is None
-            or current_history[: len(baseline_history)] != baseline_history
-        ):
-            errors.append(
-                _diagnostic(
-                    path,
-                    1,
-                    "SPEC_HISTORY_NOT_APPEND_ONLY",
-                    "Decisions & History must preserve the baseline line sequence as an exact prefix.",
-                )
-            )
-
-
 def validate_repository(
     repo_root: Path,
     spec_root: Path = Path("docs/specs"),
     baseline_ref: str | None = None,
 ) -> ValidationResult:
-    """Validate every structured spec below ``spec_root`` in ``repo_root``."""
+    """Validate every semantic Spec Bundle below ``spec_root``."""
 
     repository = repo_root.resolve()
     resolved_root, relative_root = _resolved_spec_root(repository, spec_root)
@@ -1339,76 +836,12 @@ def validate_repository(
             "The spec root must remain inside the repository root.",
         )
         return ValidationResult((), (diagnostic,))
-
-    if _bundle_repository_mode(resolved_root):
-        return _validate_bundle_repository(
-            repository,
-            resolved_root,
-            relative_root,
-            baseline_ref,
-        )
-
-    documents: list[SpecDocument] = []
-    errors: list[Diagnostic] = []
-    if resolved_root.is_dir():
-        for path in sorted(resolved_root.rglob("spec.md")):
-            lexical_path = relative_root / path.relative_to(resolved_root)
-            try:
-                path.resolve().relative_to(repository)
-                path.resolve().relative_to(resolved_root)
-            except ValueError:
-                errors.append(
-                    _diagnostic(
-                        lexical_path,
-                        1,
-                        "SPEC_SOURCE_PATH_ESCAPE",
-                        "A structured spec source must resolve inside its repository spec root.",
-                    )
-                )
-                continue
-            document, parse_errors = load_spec(path, repository)
-            errors.extend(parse_errors)
-            if document is not None:
-                documents.append(document)
-                relative_to_spec_root = path.resolve().relative_to(resolved_root)
-                if len(relative_to_spec_root.parts) != 2:
-                    errors.append(
-                        _diagnostic(
-                            document.path,
-                            1,
-                            "SPEC_PATH_LAYOUT",
-                            "A structured spec must be located directly at NNN-slug/spec.md below the spec root.",
-                        )
-                    )
-
-    ordered_documents = tuple(sorted(documents, key=lambda item: item.path.as_posix()))
-    current_manifest, transition_diagnostics = load_transition_manifest(
-        repository, relative_root
+    return _validate_bundle_repository(
+        repository,
+        resolved_root,
+        relative_root,
+        baseline_ref,
     )
-    errors.extend(transition_diagnostics)
-    if current_manifest is not None:
-        _transition_structure_diagnostics(
-            current_manifest,
-            relative_root / ".transitions.json",
-            errors,
-        )
-    _validate_relations(ordered_documents, errors)
-    for document in ordered_documents:
-        _validate_coverage(document, errors)
-        _validate_links(document, repository, errors)
-        _validate_mermaid(document, errors)
-
-    if baseline_ref is not None:
-        _validate_baseline(
-            repository,
-            relative_root,
-            baseline_ref,
-            ordered_documents,
-            current_manifest,
-            errors,
-        )
-
-    return ValidationResult(ordered_documents, tuple(sorted(errors)))
 
 
 def _plan_path(plan: Path, repo_root: Path) -> Path:

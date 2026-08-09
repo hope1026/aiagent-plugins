@@ -26,7 +26,7 @@ jobs:
           bash scripts/tests/test-maintaining-forge-layout.sh
           bash scripts/tests/test-validator-skill-roots.sh
           bash scripts/tests/test-forge-spec-docs-policy.sh
-          bash scripts/tests/test-forge-spec-supersession.sh
+          bash scripts/tests/test-forge-spec-bundle-migration.sh
           bash scripts/tests/test-forge-artifact-contract.sh
           bash scripts/tests/test-forge-lifecycle-policy.sh
           bash scripts/tests/test-ui-design-skill-routing.sh
@@ -35,7 +35,7 @@ jobs:
           bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
             validate --root docs/specs --baseline-ref HEAD
           bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
-            inspect --spec docs/specs/008-structured-spec-pages/spec.md --format json
+            inspect --spec docs/specs/semantic-spec-bundles/ --format json
           bash scripts/validate.sh
 
   browser:

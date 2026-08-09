@@ -6,10 +6,9 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-import subprocess
 import sys
 
-from spec_model import Diagnostic, SpecBundle, load_spec_bundle, parse_frontmatter
+from spec_model import Diagnostic, SpecBundle, load_spec_bundle
 from spec_validate import validate_repository
 
 
@@ -73,121 +72,32 @@ def _print_diagnostics(diagnostics: tuple[Diagnostic, ...]) -> None:
         print(f"{item.path}:{item.line}: {item.code} {item.message}")
 
 
-def _baseline_contains_legacy_source(
-    repo_root: Path, spec_root: Path, baseline_ref: str
-) -> bool:
-    listing = subprocess.run(
-        [
-            "git",
-            "-C",
-            str(repo_root),
-            "ls-tree",
-            "-r",
-            "--name-only",
-            baseline_ref,
-            "--",
-            spec_root.as_posix(),
-        ],
-        capture_output=True,
-        check=False,
-    )
-    if listing.returncode != 0:
-        return False
-    for encoded_path in listing.stdout.splitlines():
-        try:
-            path_text = encoded_path.decode("utf-8")
-        except UnicodeDecodeError:
-            return True
-        if not path_text.endswith("/spec.md"):
-            continue
-        shown = subprocess.run(
-            ["git", "-C", str(repo_root), "show", f"{baseline_ref}:{path_text}"],
-            capture_output=True,
-            check=False,
-        )
-        if shown.returncode != 0:
-            continue
-        try:
-            source = shown.stdout.decode("utf-8")
-        except UnicodeDecodeError:
-            return True
-        values, _, diagnostics = parse_frontmatter(source, Path(path_text))
-        if diagnostics or values.get("schema") != "forge/spec@2":
-            return True
-    return False
-
-
 def _inspect_payload(
     repo_root: Path,
     spec_path: Path,
     relative_spec: Path,
 ) -> tuple[dict[str, object], int]:
-    if spec_path.is_dir():
-        bundle, bundle_diagnostics = load_spec_bundle(spec_path, repo_root)
-        repository_result = validate_repository(repo_root, Path("docs/specs"))
-        bundle_prefix = relative_spec.as_posix().rstrip("/") + "/"
-        repository_diagnostics = tuple(
-            item
-            for item in repository_result.diagnostics
-            if item.path == relative_spec.as_posix() or item.path.startswith(bundle_prefix)
-        )
-        diagnostics = tuple(sorted(set(bundle_diagnostics + repository_diagnostics)))
-        return _inspect_bundle_payload(relative_spec, bundle, diagnostics)
-
-    result = validate_repository(repo_root, Path("docs/specs"))
-    document = next((item for item in result.documents if item.path == relative_spec), None)
-    diagnostics = tuple(item for item in result.diagnostics if item.path == relative_spec.as_posix())
-    if document is None and not diagnostics:
+    if not spec_path.is_dir():
         diagnostics = (
             Diagnostic(
                 relative_spec.as_posix(),
                 1,
-                "SPEC_SOURCE_READ",
-                "The requested spec does not exist or is not a structured source.",
+                "BUNDLE_SOURCE_PATH",
+                "--spec must identify a semantic Spec Bundle directory.",
             ),
         )
+        return _inspect_bundle_payload(relative_spec, None, diagnostics)
 
-    payload: dict[str, object] = {
-        "schema": document.metadata.schema if document else None,
-        "id": document.metadata.id if document else None,
-        "status": document.metadata.status if document else None,
-        "language": document.metadata.language if document else None,
-        "kind": document.metadata.kind if document else None,
-        "path": relative_spec.as_posix(),
-        "sourceSha256": document.source_sha256 if document else None,
-        "requirements": [
-            {
-                "id": item.id,
-                "text": item.text,
-                "line": item.line,
-                "removed": item.removed,
-            }
-            for item in document.requirements
-        ]
-        if document
-        else [],
-        "acceptance": [
-            {
-                "id": item.id,
-                "requirements": list(item.requirements),
-                "text": item.text,
-                "line": item.line,
-            }
-            for item in document.acceptance
-        ]
-        if document
-        else [],
-        "diagnostics": [
-            {
-                "path": item.path,
-                "line": item.line,
-                "code": item.code,
-                "message": item.message,
-            }
-            for item in diagnostics
-        ],
-    }
-    return payload, 0 if document is not None and not diagnostics else 1
+    bundle, bundle_diagnostics = load_spec_bundle(spec_path, repo_root)
+    repository_result = validate_repository(repo_root, Path("docs/specs"))
+    bundle_prefix = relative_spec.as_posix().rstrip("/") + "/"
+    repository_diagnostics = tuple(
+        item
+        for item in repository_result.diagnostics
+        if item.path == relative_spec.as_posix() or item.path.startswith(bundle_prefix)
+    )
+    diagnostics = tuple(sorted(set(bundle_diagnostics + repository_diagnostics)))
+    return _inspect_bundle_payload(relative_spec, bundle, diagnostics)
 
 
 def _inspect_bundle_payload(

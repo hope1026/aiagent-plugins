@@ -2,9 +2,9 @@
 
 **Related Specs:**
 
-- id: rejected-reference
+- source: docs/specs/semantic-spec-bundles/
 
-### Task 1: Demonstrate rejection
+### Task: Demonstrate rejection
 
 Governing statements:
 

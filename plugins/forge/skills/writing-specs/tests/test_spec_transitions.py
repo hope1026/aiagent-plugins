@@ -30,12 +30,12 @@ class TransitionManifestTest(unittest.TestCase):
 
     def record(self, **overrides: object) -> dict[str, object]:
         record: dict[str, object] = {
-            "fromSourcePath": "docs/specs/legacy-contract/spec.md",
+            "fromSourcePath": "docs/specs/prior-contract",
             "fromSourceSha256": "a" * 64,
             "disposition": "superseded",
             "toBundlePath": "docs/specs/current-contract",
             "evidencePath": "docs/evidence/semantic-bundle-migration.md",
-            "reason": "Replace the legacy source with a semantic spec bundle.",
+            "reason": "Replace the prior bundle with the current contract boundary.",
         }
         record.update(overrides)
         return record
@@ -74,14 +74,14 @@ class TransitionManifestTest(unittest.TestCase):
             TransitionManifest(
                 transitions=(
                     SpecBundleTransition(
-                        from_source_path=Path("docs/specs/legacy-contract/spec.md"),
+                        from_source_path=Path("docs/specs/prior-contract"),
                         from_source_sha256="a" * 64,
                         disposition="superseded",
                         to_bundle_path=Path("docs/specs/current-contract"),
                         evidence_path=Path(
                             "docs/evidence/semantic-bundle-migration.md"
                         ),
-                        reason="Replace the legacy source with a semantic spec bundle.",
+                        reason="Replace the prior bundle with the current contract boundary.",
                     ),
                 )
             ),
@@ -104,9 +104,9 @@ class TransitionManifestTest(unittest.TestCase):
     def test_manifest_rejects_invalid_json_duplicate_unknown_missing_and_types(self) -> None:
         valid_json = self.source().decode("utf-8")
         duplicate_record_key = valid_json.replace(
-            '"fromSourcePath":"docs/specs/legacy-contract/spec.md"',
-            '"fromSourcePath":"docs/specs/legacy-contract/spec.md",'
-            '"fromSourcePath":"docs/specs/other-contract/other.md"',
+            '"fromSourcePath":"docs/specs/prior-contract"',
+            '"fromSourcePath":"docs/specs/prior-contract",'
+            '"fromSourcePath":"docs/specs/other-contract"',
         ).encode("utf-8")
         missing_reason = {
             key: value for key, value in self.record().items() if key != "reason"
@@ -139,21 +139,21 @@ class TransitionManifestTest(unittest.TestCase):
             with self.subTest(code=code, source=source):
                 self.assertIn(code, self.codes(source))
 
-    def test_legacy_id_fields_are_unknown_and_missing_path_fields(self) -> None:
-        legacy = {
-            "fromId": "001-old",
-            "fromPath": "docs/specs/001-old/spec.md",
+    def test_unknown_identity_fields_are_rejected_and_path_fields_are_required(self) -> None:
+        invalid = {
+            "sourceIdentity": "prior-contract",
+            "source": "docs/specs/prior-contract",
             "fromSourceSha256": "a" * 64,
             "disposition": "superseded",
-            "toId": "001-current",
-            "toPath": "docs/specs/001-current/spec.md",
+            "targetIdentity": "current-contract",
+            "target": "docs/specs/current-contract",
             "evidencePath": "docs/evidence/semantic-bundle-migration.md",
-            "reason": "legacy",
+            "reason": "invalid key shape",
         }
-        diagnostics = self.diagnostics(self.source(legacy))
+        diagnostics = self.diagnostics(self.source(invalid))
         messages = "\n".join(item.message for item in diagnostics)
-        self.assertIn("fromId", messages)
-        self.assertIn("toId", messages)
+        self.assertIn("sourceIdentity", messages)
+        self.assertIn("targetIdentity", messages)
         self.assertIn("fromSourcePath", messages)
         self.assertIn("toBundlePath", messages)
 
@@ -191,15 +191,15 @@ class TransitionManifestTest(unittest.TestCase):
 
     def test_record_paths_must_be_normalized_repository_relative_posix_paths(self) -> None:
         invalid_paths = (
-            "/docs/specs/legacy-contract/spec.md",
-            "C:/docs/specs/legacy-contract/spec.md",
-            "//server/docs/specs/legacy-contract/spec.md",
-            r"docs\specs\legacy-contract\spec.md",
-            "docs/specs//legacy-contract/spec.md",
-            "docs/specs/./legacy-contract/spec.md",
-            "docs/specs/../legacy-contract/spec.md",
-            "docs/specs/legacy-contract/spec.md/",
-            "docs/specs/legacy-\x00contract/spec.md",
+            "/docs/specs/prior-contract",
+            "C:/docs/specs/prior-contract",
+            "//server/docs/specs/prior-contract",
+            r"docs\specs\prior-contract",
+            "docs/specs//prior-contract",
+            "docs/specs/./prior-contract",
+            "docs/specs/../prior-contract",
+            "docs/specs/prior-contract/",
+            "docs/specs/prior-\x00contract",
         )
         for path in invalid_paths:
             with self.subTest(path=path):
@@ -212,9 +212,9 @@ class TransitionManifestTest(unittest.TestCase):
 
     def test_source_and_target_paths_have_exact_semantic_bundle_layouts(self) -> None:
         invalid_cases = (
-            {"fromSourcePath": "docs/specs/legacy-contract/nested/contract.md"},
-            {"fromSourcePath": "docs/specs/legacy-contract/contract.txt"},
-            {"fromSourcePath": "docs/plans/legacy-contract/contract.md"},
+            {"fromSourcePath": "docs/specs/prior-contract/nested"},
+            {"fromSourcePath": "docs/specs/prior_contract"},
+            {"fromSourcePath": "docs/plans/prior-contract"},
             {"toBundlePath": "docs/specs/current-contract/current-contract.md"},
             {"toBundlePath": "docs/specs/current-contract/nested"},
             {"toBundlePath": "docs/plans/current-contract"},
@@ -231,29 +231,29 @@ class TransitionManifestTest(unittest.TestCase):
                     self.codes(self.source(self.record(**override))),
                 )
 
-    def test_source_path_accepts_a_v3_bundle_directory_after_initial_migration(self) -> None:
+    def test_source_path_accepts_a_semantic_bundle_directory(self) -> None:
         manifest, diagnostics = load_transition_manifest(
             self.repo,
             self.spec_root,
             source=self.source(
-                self.record(fromSourcePath="docs/specs/legacy-contract")
+                self.record(fromSourcePath="docs/specs/prior-contract")
             ),
         )
 
         self.assertEqual(diagnostics, ())
         self.assertEqual(
             manifest.transitions[0].from_source_path,
-            Path("docs/specs/legacy-contract"),
+            Path("docs/specs/prior-contract"),
         )
 
     def test_duplicate_sources_and_targets_are_rejected(self) -> None:
         other = self.record(
-            fromSourcePath="docs/specs/another-legacy/another.md",
+            fromSourcePath="docs/specs/another-prior",
             toBundlePath="docs/specs/another-current",
         )
         duplicate_source = dict(
             other,
-            fromSourcePath="docs/specs/legacy-contract/spec.md",
+            fromSourcePath="docs/specs/prior-contract",
         )
         duplicate_target = dict(other, toBundlePath="docs/specs/current-contract")
 
@@ -278,9 +278,7 @@ class TransitionManifestTest(unittest.TestCase):
             "SPEC_TRANSITION_PATH_SYMLINK",
             self.codes(
                 self.source(
-                    self.record(
-                        fromSourcePath="docs/specs/linked-contract/contract.md"
-                    )
+                    self.record(fromSourcePath="docs/specs/linked-contract")
                 )
             ),
         )
@@ -346,7 +344,7 @@ class TransitionManifestTest(unittest.TestCase):
     def test_diagnostics_are_deterministically_sorted(self) -> None:
         source = self.source(
             self.record(
-                fromSourcePath="docs/specs/../old/spec.md",
+                fromSourcePath="docs/specs/../prior-contract",
                 fromSourceSha256="BAD",
                 disposition="retired",
                 reason="",

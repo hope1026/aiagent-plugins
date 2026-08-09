@@ -13,7 +13,6 @@ import unicodedata
 from urllib.parse import unquote
 
 
-SCHEMA = "forge/spec@2"
 BUNDLE_SCHEMA = "forge/spec@3"
 BUNDLE_REQUIRED_FRONTMATTER_KEYS = (
     "schema",
@@ -30,28 +29,10 @@ BUNDLE_MEMBER_ROLES = frozenset(("root", "contract", "acceptance", "history", "r
 BUNDLE_SEMANTIC_SECTIONS = frozenset(
     ("Documents", "Requirements", "Acceptance Criteria", "Decisions & History")
 )
-REQUIRED_FRONTMATTER_KEYS = (
-    "schema",
-    "id",
-    "status",
-    "language",
-    "kind",
-    "areas",
-    "components",
-    "relatedSpecs",
-)
-OPTIONAL_FRONTMATTER_KEYS = ("subtype",)
 STATUSES = frozenset(("draft", "approved", "implemented"))
 LANGUAGES = frozenset(("en", "ko"))
 KINDS = frozenset(("feature", "system", "interface", "policy"))
 RELATIONS = frozenset(("dependsOn", "refines", "supersedes", "relatedTo"))
-REQUIRED_SEMANTIC_SECTIONS = (
-    "Requirements",
-    "Acceptance Criteria",
-    "Decisions & History",
-)
-
-_ID_RE = re.compile(r"^[0-9]{3}-[a-z0-9]+(?:-[a-z0-9]+)*$")
 _SUBTYPE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _FRONTMATTER_LINE_RE = re.compile(r"^([A-Za-z][A-Za-z0-9]*): (.+)$")
 _IMPLICIT_SCALAR_RE = re.compile(
@@ -63,14 +44,10 @@ _H1_RE = re.compile(r"^# (\S.*)$")
 _H2_RE = re.compile(r"^## (\S.*)$")
 _H3_RE = re.compile(r"^### (\S.*)$")
 _FENCE_RE = re.compile(r"^\s*(```|~~~)")
-_REQUIREMENT_RE = re.compile(r"^- R([0-9]+)\. (\S.*)$")
-_AC_RE = re.compile(r"^- AC([0-9]+) \(([^)]+)\): (\S.*)$")
-_REFERENCE_RE = re.compile(r"^R([0-9]+)$")
-_REFERENCE_RANGE_RE = re.compile(r"^R([0-9]+)–R?([0-9]+)$")
 _DOCUMENT_RE = re.compile(
     r"^- (root|contract|acceptance|history|reference): \[([^\]]+)\]\(([^)]+\.md)\)$"
 )
-_STATEMENT_LINK_RE = re.compile(r"^- \[([^\]]+)\]\(([^)#]+\.md)#([^)]+)\)$")
+_STATEMENT_LINK_RE = re.compile(r"^- \[(.+)\]\(([^)#]+\.md)#([^)]+)\)$")
 
 
 @dataclass(frozen=True, order=True)
@@ -82,58 +59,10 @@ class Diagnostic:
 
 
 @dataclass(frozen=True)
-class RelatedSpec:
-    id: str
-    relation: str
-
-
-@dataclass(frozen=True)
-class SpecMetadata:
-    schema: str
-    id: str
-    status: str
-    language: str
-    kind: str
-    subtype: str | None
-    areas: tuple[str, ...]
-    components: tuple[str, ...]
-    related_specs: tuple[RelatedSpec, ...]
-
-
-@dataclass(frozen=True)
-class Requirement:
-    id: str
-    text: str
-    line: int
-    removed: bool
-
-
-@dataclass(frozen=True)
-class AcceptanceCriterion:
-    id: str
-    requirements: tuple[str, ...]
-    text: str
-    line: int
-
-
-@dataclass(frozen=True)
 class MermaidBlock:
     text: str
     line: int
     section: str
-
-
-@dataclass(frozen=True)
-class SpecDocument:
-    path: Path
-    metadata: SpecMetadata
-    title: str
-    sections: Mapping[str, str]
-    section_order: tuple[str, ...]
-    requirements: tuple[Requirement, ...]
-    acceptance: tuple[AcceptanceCriterion, ...]
-    mermaid: tuple[MermaidBlock, ...]
-    source_sha256: str
 
 
 @dataclass(frozen=True)
@@ -306,59 +235,6 @@ def _string_list(
         )
         return ()
     return tuple(value)
-
-
-def _related_specs(
-    values: dict[str, object], path: Path, errors: list[Diagnostic]
-) -> tuple[RelatedSpec, ...]:
-    value = values.get("relatedSpecs")
-    if not isinstance(value, list):
-        errors.append(
-            _diagnostic(
-                path,
-                1,
-                "SPEC_RELATED_TYPE",
-                "Frontmatter 'relatedSpecs' must be a JSON array.",
-            )
-        )
-        return ()
-
-    result: list[RelatedSpec] = []
-    for item in value:
-        if not isinstance(item, dict) or set(item) != {"id", "relation"}:
-            errors.append(
-                _diagnostic(
-                    path,
-                    1,
-                    "SPEC_RELATED_TYPE",
-                    "Each relatedSpecs entry must contain only string id and relation fields.",
-                )
-            )
-            continue
-        spec_id = item.get("id")
-        relation = item.get("relation")
-        if not isinstance(spec_id, str) or _ID_RE.fullmatch(spec_id) is None:
-            errors.append(
-                _diagnostic(
-                    path,
-                    1,
-                    "SPEC_RELATED_ID",
-                    "A related spec id must use NNN-slug form.",
-                )
-            )
-            continue
-        if not isinstance(relation, str) or relation not in RELATIONS:
-            errors.append(
-                _diagnostic(
-                    path,
-                    1,
-                    "SPEC_RELATED_RELATION",
-                    "A related spec relation must be dependsOn, refines, supersedes, or relatedTo.",
-                )
-            )
-            continue
-        result.append(RelatedSpec(spec_id, relation))
-    return tuple(result)
 
 
 def _related_bundles(
@@ -666,6 +542,40 @@ def _bundle_statements(
     return tuple(sorted(result, key=lambda statement: statement.line))
 
 
+def _mermaid_blocks(
+    lines: list[str], body_start: int, path: Path, errors: list[Diagnostic]
+) -> tuple[MermaidBlock, ...]:
+    result: list[MermaidBlock] = []
+    section = ""
+    index = body_start
+    while index < len(lines):
+        line = lines[index]
+        if match := _H2_RE.fullmatch(line):
+            section = match.group(1)
+        if line.strip() != "```mermaid":
+            index += 1
+            continue
+        opening = index
+        index += 1
+        content: list[str] = []
+        while index < len(lines) and lines[index].strip() != "```":
+            content.append(lines[index])
+            index += 1
+        if index == len(lines):
+            errors.append(
+                _diagnostic(
+                    path,
+                    opening + 1,
+                    "SPEC_MERMAID_FENCE",
+                    "The Mermaid fence is not closed.",
+                )
+            )
+            break
+        result.append(MermaidBlock("\n".join(content), opening + 1, section))
+        index += 1
+    return tuple(result)
+
+
 def bundle_sha256(bundle_path: Path, members: tuple[SpecMember, ...]) -> str:
     """Hash normalized bundle identity and exact member bytes deterministically."""
 
@@ -707,479 +617,6 @@ def bundle_sha256(bundle_path: Path, members: tuple[SpecMember, ...]) -> str:
         add_frame(relative_member.encode("utf-8"))
         add_frame(member.source_bytes)
     return digest.hexdigest()
-
-
-def _headings(
-    lines: list[str], body_start: int, path: Path, errors: list[Diagnostic]
-) -> tuple[str, dict[str, tuple[int, int]], tuple[str, ...]]:
-    h1: list[tuple[int, str]] = []
-    h2: list[tuple[int, str]] = []
-    fence: str | None = None
-    for index in range(body_start, len(lines)):
-        line = lines[index]
-        fence_match = _FENCE_RE.match(line)
-        if fence_match:
-            marker = fence_match.group(1)
-            if fence is None:
-                fence = marker
-            elif marker == fence:
-                fence = None
-            continue
-        if fence is not None:
-            continue
-        if match := _H1_RE.fullmatch(line):
-            h1.append((index, match.group(1)))
-        elif match := _H2_RE.fullmatch(line):
-            h2.append((index, match.group(1)))
-
-    if not h1:
-        errors.append(_diagnostic(path, body_start + 1, "SPEC_TITLE_MISSING", "One H1 title is required."))
-        title = ""
-    else:
-        title = h1[0][1]
-        for index, _ in h1[1:]:
-            errors.append(
-                _diagnostic(path, index + 1, "SPEC_TITLE_DUPLICATE", "Only one H1 title is allowed.")
-            )
-
-    positions: dict[str, int] = {}
-    section_order: list[str] = []
-    for index, heading in h2:
-        if heading in positions:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_SECTION_DUPLICATE",
-                    f"H2 section '{heading}' is duplicated.",
-                )
-            )
-        else:
-            positions[heading] = index
-            section_order.append(heading)
-
-    for heading in REQUIRED_SEMANTIC_SECTIONS:
-        if heading not in positions:
-            errors.append(
-                _diagnostic(
-                    path,
-                    body_start + 1,
-                    "SPEC_SECTION_MISSING",
-                    f"Required semantic H2 section '{heading}' is missing.",
-                )
-            )
-
-    spans: dict[str, tuple[int, int]] = {}
-    for offset, heading in enumerate(section_order):
-        start = positions[heading] + 1
-        end = positions[section_order[offset + 1]] if offset + 1 < len(section_order) else len(lines)
-        spans[heading] = (start, end)
-    return title, spans, tuple(section_order)
-
-
-def _requirements(
-    lines: list[str], span: tuple[int, int], path: Path, errors: list[Diagnostic]
-) -> tuple[Requirement, ...]:
-    result: list[Requirement] = []
-    seen: set[str] = set()
-    expected_number = 1
-    for index in range(*span):
-        line = lines[index]
-        if not line.startswith("- R"):
-            continue
-        match = _REQUIREMENT_RE.fullmatch(line)
-        if match is None:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_REQUIREMENT_FORMAT",
-                    "Requirement lines must use '- R<number>. <text>'.",
-                )
-            )
-            continue
-        number, text = match.groups()
-        requirement_id = f"R{number}"
-        if requirement_id in seen:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_REQUIREMENT_DUPLICATE",
-                    f"Requirement '{requirement_id}' is duplicated.",
-                )
-            )
-            continue
-        seen.add(requirement_id)
-        parsed_number = int(number)
-        if parsed_number != expected_number:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_REQUIREMENT_SEQUENCE",
-                    f"Requirement '{requirement_id}' must be R{expected_number} at this position.",
-                )
-            )
-        expected_number = parsed_number + 1
-        removed = text.startswith("REMOVED")
-        if removed and re.fullmatch(r"REMOVED — \S.*", text) is None:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_REQUIREMENT_TOMBSTONE",
-                    "A removed requirement must use 'REMOVED — <reason>'.",
-                )
-            )
-        result.append(Requirement(requirement_id, text, index + 1, removed))
-    return tuple(result)
-
-
-def _expand_references(
-    raw: str, path: Path, line: int, errors: list[Diagnostic]
-) -> tuple[str, ...]:
-    result: list[str] = []
-    for token in raw.split(","):
-        token = token.strip()
-        if match := _REFERENCE_RE.fullmatch(token):
-            result.append(f"R{int(match.group(1))}")
-            continue
-        if match := _REFERENCE_RANGE_RE.fullmatch(token):
-            first, last = (int(value) for value in match.groups())
-            if first <= last:
-                result.extend(f"R{number}" for number in range(first, last + 1))
-                continue
-        errors.append(
-            _diagnostic(
-                path,
-                line,
-                "SPEC_AC_REFERENCE_FORMAT",
-                "AC references must be comma-separated R IDs or ascending R-ID ranges.",
-            )
-        )
-        return ()
-    if not result:
-        errors.append(
-            _diagnostic(
-                path,
-                line,
-                "SPEC_AC_REFERENCE_FORMAT",
-                "An AC must reference at least one requirement.",
-            )
-        )
-    return tuple(result)
-
-
-def _acceptance(
-    lines: list[str], span: tuple[int, int], path: Path, errors: list[Diagnostic]
-) -> tuple[AcceptanceCriterion, ...]:
-    result: list[AcceptanceCriterion] = []
-    seen: set[str] = set()
-    expected_number = 1
-    for index in range(*span):
-        line = lines[index]
-        if not line.startswith("- AC"):
-            continue
-        match = _AC_RE.fullmatch(line)
-        if match is None:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_AC_FORMAT",
-                    "Acceptance criteria must use '- AC<number> (<R references>): <text>'.",
-                )
-            )
-            continue
-        number, raw_references, criterion_text = match.groups()
-        criterion_id = f"AC{number}"
-        if criterion_id in seen:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_AC_DUPLICATE",
-                    f"Acceptance criterion '{criterion_id}' is duplicated.",
-                )
-            )
-            continue
-        seen.add(criterion_id)
-        parsed_number = int(number)
-        if parsed_number != expected_number:
-            errors.append(
-                _diagnostic(
-                    path,
-                    index + 1,
-                    "SPEC_AC_SEQUENCE",
-                    f"Acceptance criterion '{criterion_id}' must be AC{expected_number} at this position.",
-                )
-            )
-        expected_number = parsed_number + 1
-        references = _expand_references(raw_references, path, index + 1, errors)
-        result.append(
-            AcceptanceCriterion(criterion_id, references, criterion_text, index + 1)
-        )
-    return tuple(result)
-
-
-def _mermaid_blocks(
-    lines: list[str], body_start: int, path: Path, errors: list[Diagnostic]
-) -> tuple[MermaidBlock, ...]:
-    result: list[MermaidBlock] = []
-    section = ""
-    index = body_start
-    while index < len(lines):
-        line = lines[index]
-        if match := _H2_RE.fullmatch(line):
-            section = match.group(1)
-        if line.strip() != "```mermaid":
-            index += 1
-            continue
-        opening = index
-        index += 1
-        content: list[str] = []
-        while index < len(lines) and lines[index].strip() != "```":
-            content.append(lines[index])
-            index += 1
-        if index == len(lines):
-            errors.append(
-                _diagnostic(
-                    path,
-                    opening + 1,
-                    "SPEC_MERMAID_FENCE",
-                    "The Mermaid fence is not closed.",
-                )
-            )
-            break
-        result.append(MermaidBlock("\n".join(content), opening + 1, section))
-        index += 1
-    return tuple(result)
-
-
-def load_spec(path: Path, root: Path) -> tuple[SpecDocument | None, tuple[Diagnostic, ...]]:
-    """Load and validate one structured spec without repository-wide inference."""
-
-    try:
-        relative_path = path.resolve().relative_to(root.resolve())
-    except ValueError:
-        relative_path = path
-
-    try:
-        source = path.read_bytes()
-        text = source.decode("utf-8")
-    except (OSError, UnicodeDecodeError) as error:
-        diagnostic = _diagnostic(
-            relative_path,
-            1,
-            "SPEC_SOURCE_READ",
-            f"The spec must be readable UTF-8: {error.__class__.__name__}.",
-        )
-        return None, (diagnostic,)
-
-    values, body_start, frontmatter_errors = parse_frontmatter(text, relative_path)
-    if frontmatter_errors:
-        return None, frontmatter_errors
-
-    errors: list[Diagnostic] = []
-    keys = set(values)
-    for key in REQUIRED_FRONTMATTER_KEYS:
-        if key not in keys:
-            errors.append(
-                _diagnostic(
-                    relative_path,
-                    1,
-                    "SPEC_FRONTMATTER_KEY",
-                    f"Required frontmatter key '{key}' is missing.",
-                )
-            )
-    allowed_keys = set(REQUIRED_FRONTMATTER_KEYS) | set(OPTIONAL_FRONTMATTER_KEYS)
-    for key in sorted(keys - allowed_keys):
-        errors.append(
-            _diagnostic(
-                relative_path,
-                1,
-                "SPEC_FRONTMATTER_KEY",
-                f"Unexpected frontmatter key '{key}'.",
-            )
-        )
-    if errors:
-        return None, tuple(sorted(errors))
-
-    schema = values["schema"]
-    spec_id = values["id"]
-    status = values["status"]
-    language = values["language"]
-    kind = values["kind"]
-    subtype = values.get("subtype")
-
-    metadata_lines: dict[str, int] = {}
-    for index in range(1, body_start):
-        match = _FRONTMATTER_LINE_RE.fullmatch(text.splitlines()[index])
-        if match is not None:
-            metadata_lines[match.group(1)] = index + 1
-
-    scalar_values = {
-        "schema": schema,
-        "id": spec_id,
-        "status": status,
-        "language": language,
-        "kind": kind,
-    }
-    if subtype is not None:
-        scalar_values["subtype"] = subtype
-    invalid_scalar_keys = {
-        key for key, value in scalar_values.items() if not isinstance(value, str)
-    }
-    for key in sorted(invalid_scalar_keys):
-        errors.append(
-            _diagnostic(
-                relative_path,
-                metadata_lines.get(key, 1),
-                "SPEC_FRONTMATTER_TYPE",
-                f"Frontmatter '{key}' must be a scalar string.",
-            )
-        )
-
-    if "schema" not in invalid_scalar_keys and schema != SCHEMA:
-        errors.append(
-            _diagnostic(
-                relative_path,
-                metadata_lines.get("schema", 1),
-                "SPEC_SCHEMA",
-                f"Schema must be '{SCHEMA}'.",
-            )
-        )
-    if "id" not in invalid_scalar_keys and _ID_RE.fullmatch(spec_id) is None:
-        errors.append(
-            _diagnostic(
-                relative_path,
-                metadata_lines.get("id", 1),
-                "SPEC_ID",
-                "Spec id must use NNN-slug form.",
-            )
-        )
-    elif "id" not in invalid_scalar_keys and path.parent.name != spec_id:
-        errors.append(
-            _diagnostic(
-                relative_path,
-                metadata_lines.get("id", 1),
-                "SPEC_ID_PATH",
-                "Spec id must match its enclosing directory.",
-            )
-        )
-    if "status" not in invalid_scalar_keys and status not in STATUSES:
-        errors.append(
-            _diagnostic(
-                relative_path,
-                metadata_lines.get("status", 1),
-                "SPEC_STATUS",
-                "Status must be draft, approved, or implemented.",
-            )
-        )
-    if "language" not in invalid_scalar_keys and language not in LANGUAGES:
-        errors.append(
-            _diagnostic(
-                relative_path,
-                metadata_lines.get("language", 1),
-                "SPEC_LANGUAGE",
-                "Language must be en or ko.",
-            )
-        )
-    if "kind" not in invalid_scalar_keys and kind not in KINDS:
-        errors.append(
-            _diagnostic(
-                relative_path,
-                metadata_lines.get("kind", 1),
-                "SPEC_KIND",
-                "Kind must be feature, system, interface, or policy.",
-            )
-        )
-    if (
-        subtype is not None
-        and "subtype" not in invalid_scalar_keys
-        and _SUBTYPE_RE.fullmatch(subtype) is None
-    ):
-        errors.append(
-            _diagnostic(
-                relative_path,
-                metadata_lines.get("subtype", 1),
-                "SPEC_SUBTYPE",
-                "Subtype must use lowercase kebab-case.",
-            )
-        )
-    areas = _string_list(values, "areas", relative_path, errors)
-    components = _string_list(values, "components", relative_path, errors)
-    related_specs = _related_specs(values, relative_path, errors)
-
-    lines = text.splitlines()
-    title, spans, section_order = _headings(lines, body_start, relative_path, errors)
-
-    for index in range(body_start, len(lines)):
-        if re.fullmatch(r"Status:\s*.*", lines[index]):
-            errors.append(
-                _diagnostic(
-                    relative_path,
-                    index + 1,
-                    "SPEC_STATUS_BODY",
-                    "Lifecycle status must exist only in frontmatter.",
-                )
-            )
-        if (
-            isinstance(status, str)
-            and status in {"approved", "implemented"}
-            and "[NEEDS CLARIFICATION:" in lines[index]
-        ):
-            errors.append(
-                _diagnostic(
-                    relative_path,
-                    index + 1,
-                    "SPEC_CLARIFICATION_STATUS",
-                    "Approved or implemented specs cannot contain unresolved clarification markers.",
-                )
-            )
-
-    requirements: tuple[Requirement, ...] = ()
-    acceptance: tuple[AcceptanceCriterion, ...] = ()
-    if "Requirements" in spans:
-        requirements = _requirements(lines, spans["Requirements"], relative_path, errors)
-    if "Acceptance Criteria" in spans:
-        acceptance = _acceptance(lines, spans["Acceptance Criteria"], relative_path, errors)
-    mermaid = _mermaid_blocks(lines, body_start, relative_path, errors)
-
-    sorted_errors = tuple(sorted(errors))
-    if sorted_errors:
-        return None, sorted_errors
-
-    metadata = SpecMetadata(
-        schema=str(schema),
-        id=str(spec_id),
-        status=str(status),
-        language=str(language),
-        kind=str(kind),
-        subtype=str(subtype) if subtype is not None else None,
-        areas=areas,
-        components=components,
-        related_specs=related_specs,
-    )
-    sections = MappingProxyType(
-        {
-            heading: "\n".join(lines[start:end]).strip("\n")
-            for heading, (start, end) in spans.items()
-        }
-    )
-    document = SpecDocument(
-        path=relative_path,
-        metadata=metadata,
-        title=title,
-        sections=sections,
-        section_order=section_order,
-        requirements=requirements,
-        acceptance=acceptance,
-        mermaid=mermaid,
-        source_sha256=hashlib.sha256(source).hexdigest(),
-    )
-    return document, ()
 
 
 def load_spec_bundle(path: Path, root: Path) -> tuple[SpecBundle | None, tuple[Diagnostic, ...]]:
