@@ -184,7 +184,7 @@ flowchart TD
 - 병렬 안전성: sequential; 이후 모든 consumer interface를 고정한다.
 - Approval gate: 없음
 
-- [ ] **Step 1: 새 public model과 multi-file parse expectation을 검증하는 failing test를 작성한다.**
+- [x] **Step 1: 새 public model과 multi-file parse expectation을 검증하는 failing test를 작성한다.**
 
 ```python
 import unittest
@@ -205,13 +205,13 @@ class SpecBundleModelTest(unittest.TestCase):
         self.assertRegex(bundle.bundle_sha256, r"^[0-9a-f]{64}$")
 ```
 
-- [ ] **Step 2: focused test를 실행해 `load_spec_bundle must exist` assertion failure를 확인한다.**
+- [x] **Step 2: focused test를 실행해 `load_spec_bundle must exist` assertion failure를 확인한다.**
 
 실행: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts python3 -m unittest plugins/forge/skills/writing-specs/tests/test_spec_bundle_model.py -v`
 
 예상: `FAIL`이고 message에 `load_spec_bundle must exist`가 포함된다.
 
-- [ ] **Step 3: frozen dataclass와 parser를 구현한다.**
+- [x] **Step 3: frozen dataclass와 parser를 구현한다.**
 
 ```python
 @dataclass(frozen=True)
@@ -235,13 +235,13 @@ class SpecBundle:
 
 `load_spec_bundle`은 root frontmatter, `Documents` 목록, member H1, Requirements·Acceptance Criteria H3, `검증하는 요구사항:`·`Verifies:` link와 Mermaid를 원문 line과 함께 보존한다. Hash input은 normalized bundle path와 lexicographically 정렬한 member path·byte length·exact bytes를 length-prefix로 encode한 bytes다.
 
-- [ ] **Step 4: focused model suite와 기존 parser suite를 실행해 PASS를 확인한다.**
+- [x] **Step 4: focused model suite와 기존 parser suite를 실행해 PASS를 확인한다.**
 
 실행: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts python3 -m unittest plugins/forge/skills/writing-specs/tests/test_spec_bundle_model.py plugins/forge/skills/writing-specs/tests/test_spec_model.py -v`
 
 예상: 모든 test `OK`, warning과 traceback 0개.
 
-- [ ] **Step 5: model 변경을 commit한다.**
+- [x] **Step 5: model 변경을 commit한다.**
 
 실행: `git add plugins/forge/skills/writing-specs/scripts/spec_model.py plugins/forge/skills/writing-specs/tests/fixtures/spec-bundle plugins/forge/skills/writing-specs/tests/test_spec_bundle_model.py && git commit -m "feat(forge): add semantic spec bundle model"`
 
@@ -710,6 +710,7 @@ Counter text: `A deadline, prior implementation, or reviewer request never autho
 
 - 2026-08-09: exact Spec Delta 승인, bootstrap governing source 3개 approved 전환과 writer transaction PASS.
 - Task 1: routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="모든 lifecycle consumer가 의존하는 durable schema model과 hash contract를 소유한다")
+- Task 1: complete (commits 3a359a7..3a359a7; verification="bundle model RED 2회 확인 후 writing-specs Python 61 tests PASS")
 
 ## Completion State
 
