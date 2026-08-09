@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@2
 id: 009-canonical-spec-work-artifacts
-status: approved
+status: implemented
 language: ko
 kind: policy
 subtype: workflow-lifecycle
@@ -150,3 +150,4 @@ AC(Acceptance Criterion)는 연결된 R을 충족했음을 관찰 가능한 증�
 - 2026-08-08 [DECISION] 사용자가 Canonical Spec과 작업 산출물 분리, 두 축 라우팅과 Quick 경로를 승인했다.
 - 2026-08-08 [DECISION] AC1–AC12가 repository validation, manager parity, static authority 검사와 보강 후 fresh-agent pressure test에서 모두 PASS하여 구현 일치를 확인했다.
 - 2026-08-09 [CHANGE] Change Brief는 repository 조사로 사실을 먼저 해소하고 실행 결과를 바꾸는 user-owned blocking ambiguity만 질문한 뒤 readiness 기준을 통과하도록 했다.
+- 2026-08-09 [DECISION] AC1–AC13이 repository·writer·manager validation과 두 차례 fresh-agent readiness·route pressure test에서 모두 PASS하여 Change Brief Readiness Gate의 구현 일치를 확인했다.

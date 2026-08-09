@@ -2,7 +2,7 @@
 
 > 이 계획은 forge `executing-plans` 스킬로 Task별 실행하며, 각 Route의 internal checkpoint와 notify checkpoint를 기록하고 release 경계에서만 사용자 승인을 기다린다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - id: 009-canonical-spec-work-artifacts
@@ -264,45 +264,68 @@ Brief clarification은 이번 작업의 결과, Canonical classification은 정�
 - 병렬 안전성: root가 final judgment를 소유하며 fresh agent는 read-only behavioral probe만 수행한다.
 - 승인 gate: version bump와 push는 별도 release authorization이 필요하다.
 
-- [ ] **Step 1: 여섯 pressure scenario를 작성한다.**
+- [x] **Step 1: 여섯 pressure scenario를 작성한다.**
 
 Scenario는 clear local request, repository-discoverable framework detail, ambiguous desired outcome, 여러 user-owned choices, 별도 Canonical classification, deadline+sunk-cost assumption pressure를 포함한다.
 
-- [ ] **Step 2: Fresh agent live pressure test를 실행한다.**
+- [x] **Step 2: Fresh agent live pressure test를 실행한다.**
 
 PASS 조건은 clear·discoverable fixture에 질문하지 않고 ambiguous fixture에는 필요한 질문 하나만 하며, readiness 전 mutation을 막고 세 clarification 유형을 구분하는 것이다. Rationalization이 나오면 exact quote를 scratch note에 기록하고 Red Flag를 보강한 뒤 새 agent로 반복한다.
 
-- [ ] **Step 3: Adversarial self-read와 banned-token scan을 실행한다.**
+- [x] **Step 3: Adversarial self-read와 banned-token scan을 실행한다.**
 
 실행: `rg -n "TodoWrite|Task tool|Bash tool|Edit tool|Write tool|@\.|@/|@skills/" plugins/forge/skills .agent-extensions/maintaining-forge || true`
 
 예상: 허용된 validator literal 또는 historical fixture를 제외한 active instruction에서 0건이다.
 
-- [ ] **Step 4: Repository·writer·manager validation을 fresh 실행한다.**
+- [x] **Step 4: Repository·writer·manager validation을 fresh 실행한다.**
 
 실행: `bash scripts/validate.sh && bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh --repo-root . inspect --spec docs/specs/009-canonical-spec-work-artifacts/spec.md --format json && python3 plugins/forge/skills/creating-agent-extensions/scripts/manage_extension.py validate --extension .agent-extensions/maintaining-forge && git diff --check`
 
 예상: repository validator와 manager가 PASS하고 spec status가 `approved`, diagnostics가 `[]`, R=17, AC=13이다.
 
-- [ ] **Step 5: Affected AC를 실제 source와 pressure evidence로 판정한다.**
+- [x] **Step 5: AC1–AC13 전체를 실제 source와 pressure evidence로 판정한다.**
 
-009 AC1, AC3, AC7, AC10, AC11, AC12, AC13 각각에 `PASS|FAIL`, exact command 또는 pressure observation을 기록한다. FAIL이 instruction bug이면 수정·재검증하고 approved meaning이 잘못됐으면 새 Spec Delta로 돌아간다.
+현재 실행 환경의 stricter `verifying-work` gate에 따라 009 AC1–AC13 각각에 `PASS|FAIL`, exact command 또는 pressure observation을 기록한다. 이번 Delta의 affected AC와 함께 네 route, scope promotion과 verification matrix도 fresh regression으로 확인한다. FAIL이 instruction bug이면 수정·재검증하고 approved meaning이 잘못됐으면 새 Spec Delta로 돌아간다.
 
-- [ ] **Step 6: 모든 affected AC PASS 뒤 lifecycle을 완료한다.**
+- [x] **Step 6: 모든 affected AC PASS 뒤 lifecycle을 완료한다.**
 
 `verifying-work`로 `status: implemented`를 복원하고 history에 검증 결정을 append한다. Writer transaction, repository validator, manager validate와 `git diff --check`를 다시 실행한다.
 
-- [ ] **Step 7: Release 전 상태와 final checkpoint를 기록한다.**
+- [x] **Step 7: Release 전 상태와 final checkpoint를 기록한다.**
 
 Outgoing range에 distributed skill 변경이 있으므로 push 전 두 manifest base version bump와 fresh Codex UTC suffix가 필요하다고 기록한다. 사용자 release 승인 전에는 version bump와 push를 실행하지 않는다.
+
+## Acceptance Evidence
+
+| AC | 판정 | Fresh evidence |
+|---|---|---|
+| 009 AC1 | PASS | Terminology scan에서 다섯 artifact authority가 유지되고 readiness는 Change Brief를 작업 입력으로만 소비했다. Plan은 SOT로 표현되지 않았다. |
+| 009 AC2 | PASS | 두 번째 fresh agent가 no/low→Quick, no/high→plan-only, yes/low→spec-backed direct, yes/high→full lifecycle 네 route를 불필요한 artifact 없이 선택했다. |
+| 009 AC3 | PASS | Clear local bug regression은 질문·Brief file·Spec·Plan 없이 reproduction과 focused test를 요구하는 Quick으로 판정됐다. |
+| 009 AC4 | PASS | Small durable rule regression은 repository에서 governing source를 찾고 exact proposal 승인·validation 뒤 Plan 없이 구현하며 affected AC를 검증하도록 판정됐다. |
+| 009 AC5 | PASS | Complex repository migration regression은 persisted Brief와 Execution Plan만 사용하고 Canonical Spec을 만들지 않도록 판정됐다. |
+| 009 AC6 | PASS | API+schema regression은 approved Canonical change, Execution Plan, migration·rollout·rollback과 AC/command evidence를 모두 요구했다. |
+| 009 AC7 | PASS | UI copy fixture는 Brief outcome과 분리된 Canonical classification 질문 하나를 mutation 전에 요구했다. |
+| 009 AC8 | PASS | Quick scope-expansion regression은 조사 결과를 conversation draft에 반영하고 다음 mutation 전 full lifecycle로 승격했다. |
+| 009 AC9 | PASS | Fresh regressions이 Quick focused evidence, existing-contract reproduction+AC observation+regression, approved-Delta affected/all AC 경계를 구분했다. |
+| 009 AC10 | PASS | `git ls-files '.forge/**'`가 빈 결과였고 Brief·pressure artifact는 local-only였다. Canonical source에는 현재형 contract와 history만 남았다. |
+| 009 AC11 | PASS | README와 portability source가 세 agent의 동일 readiness·route 의미를 고정했고 manager validation이 canonical hash `3cde513f...`로 PASS했다. |
+| 009 AC12 | PASS | `bash scripts/validate.sh`가 성공했다. Deadline·sunk cost·quoted authority fixture에서 agent는 missing checkout outcome을 추정하거나 Brief file을 readiness로 취급하지 않았다. |
+| 009 AC13 | PASS | 여섯 readiness fixture에서 clear·repository-discoverable 요청에는 질문하지 않았고, user-owned ambiguity에는 현재 blocking choice 하나만 질문하며 ready 전 route·mutation을 차단했다. |
+
+Release evidence: `git diff --name-only origin/main...HEAD -- plugins/forge/skills`에 distributed skill 변경이 존재한다. 현재 Claude/Codex version은 각각 `0.1.9`, `0.1.9+codex.20260804090327`로 upstream과 같으므로 push 전 동시 base-version bump와 fresh Codex UTC suffix가 필요하다. 이번 실행에는 release 승인이 없으므로 version bump와 push를 수행하지 않았다.
 
 ## Progress History
 
 - 2026-08-09: Exact Spec Delta approved by the user and applied to `009-canonical-spec-work-artifacts`; writer validation passed with status `approved`, R=17, AC=13, diagnostics `[]` (commit 60a9116).
 - 2026-08-09: Plan created; execution not started.
 - 2026-08-09: Task 1 routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="router owns the durable readiness predicate consumed by every downstream lifecycle skill").
-- 2026-08-09: Task 1 complete (verification="readiness terminology and boundary scan passed; using-forge is 178 lines; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-09: Task 1 complete (commit 50e399e; verification="readiness terminology and boundary scan passed; using-forge is 178 lines; bash scripts/validate.sh printed validate: all checks passed").
 - 2026-08-09: Task 2 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="five lifecycle consumers must preserve one clarification boundary without creating new question or authority paths").
-- 2026-08-09: Task 2 complete (verification="consumer boundary scan passed across five lifecycle skills; every SKILL.md remains under 500 lines; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-09: Task 2 complete (commit 0d68f72; verification="consumer boundary scan passed across five lifecycle skills; every SKILL.md remains under 500 lines; bash scripts/validate.sh printed validate: all checks passed").
 - 2026-08-09: Task 3 routed (impact=medium, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="README and canonical portability reference share stable terminology, while manager-owned state requires root integration and validation").
-- 2026-08-09: Task 3 complete (verification="README and portability readiness scan passed; manager render updated owned state with canonical hash 3cde513f; extension validate PASS; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-09: Task 3 complete (commit cfe3396; verification="README and portability readiness scan passed; manager render updated owned state with canonical hash 3cde513f; extension validate PASS; bash scripts/validate.sh printed validate: all checks passed").
+- 2026-08-09: Task 4 routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root with one read-only fresh-agent behavioral probe, parallel_group=none, reason="root owns affected-AC judgment while an independent reader must demonstrate the instructions hold under ambiguity and deadline pressure").
+- 2026-08-09: Mechanical plan correction expanded final verification from affected ACs to AC1–AC13 because the active verifying-work gate requires a full Canonical acceptance walk before restoring `implemented`.
+- 2026-08-09: Task 4 complete (verification="two read-only fresh agents passed six readiness and eight full-route scenarios; AC1–AC13 PASS; writer, repository, and manager validation PASS; release boundary recorded without version bump or push").
