@@ -32,7 +32,7 @@ Identity and explanation are separate layers. The HTML preserves exact paths, co
 
 Reader-facing headings, orientation lines, summaries, captions, and descriptions use familiar words and complete sentences in the selected locale. They answer what the item does, why it exists, what it owns, or what the reader should confirm. The renderer localizes only fixed UI vocabulary; it does not generate freeform paraphrases of source meaning.
 
-When both layers are useful, the plain-language explanation leads and the exact identifier follows as code or subordinate provenance. Raw profile names, internal keys, namespaces, hashes, and manifest field names do not become primary headings. They remain in source provenance or collapsed Developer information unless the review is specifically about that identifier.
+When both layers are useful, the plain-language explanation leads and the exact identifier follows as code or subordinate provenance. Raw profile names, internal keys, namespaces, hashes, and manifest field names do not become primary headings. They remain in the selected item's Source & verification detail unless the review is specifically about that identifier.
 
 Normative source statements remain verbatim. Human-readable orientation may frame those statements, but it must not weaken, expand, or reinterpret them. Brief and Project Map descriptive prose should already be written for a reader who does not know the repository internals.
 
@@ -50,9 +50,15 @@ Profiles compose reusable component IDs. They do not own document-specific templ
 
 ## Project Handbook information architecture
 
-Primary navigation is limited to Project at a glance, Spec, and Structure. The Overview presents Project Map content without repeating detailed Spec statements. Structure cards present Purpose, Owns, and Entry Points before derived file evidence.
+Project Handbook uses a fixed master/detail information architecture. The left tree starts with Overview, Design criteria, and Project structure. Design criteria expands as bundle → member → section; Project structure expands as declared Structure entries. The tree supports search, selected state, deep links, roving focus, Arrow keys, Home, End, Enter, and Space. The right pane contains addressable details for each node.
 
-Runtime mirror, validation, drift, hashes, source rows, and lifecycle counts are developer evidence. They remain in collapsed Developer information and never become primary navigation.
+Desktop working widths keep tree and detail side by side. Narrow viewports show the contents or selected detail as separate states and provide an explicit back action. One global `Complete Spec details` disclosure is forbidden.
+
+The Overview presents Project Map content without repeating detailed Spec statements. Structure details present Role, Responsibilities, and Key files in that order. Role explains why the area exists; Responsibilities prevents ambiguous ownership; neither may be inferred from file evidence.
+
+Korean reader-facing labels use `개요`, `설계 기준`, `필수 사항`, `완료 기준`, `동작과 흐름`, `출시 기준`, `역할`, `담당 범위`, `주요 파일`, and `출처·검증`. Exact normative statements, paths, schema names, and code identifiers remain unchanged in source content and provenance.
+
+Runtime mirror, validation, drift, hashes, source rows, and lifecycle counts are source and verification evidence. They remain in the selected item's `출처·검증` detail or disclosure and never become primary navigation.
 
 ## Presentation Plan validation
 

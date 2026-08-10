@@ -18,7 +18,7 @@ Use this skill only after an explicit request from the user to create, refresh, 
 | `brief` | `.forge/work/<work-id>/brief.md` | Work View for Goal, Scope, Out of Scope, and Done Checks | local, untracked |
 | `plan` | `docs/plans/<plan-id>/plan.md` | Work View for execution routes, tasks, status, and evidence | local, untracked |
 | `spec` | one structured Canonical Spec Bundle | independent Spec View with full statements, diagrams, and provenance | local, untracked |
-| `project` | `docs/project/project-map.md` | Project Handbook with project overview, Spec, and structure | tracked derived document |
+| `project` | `docs/project/project-map.md` | Project Handbook with overview, design criteria, and project structure | tracked derived document |
 
 There is no combined kind and no separate Spec Guide. Project Handbook Spec detail and independent Spec View must reuse the same normalized Spec entities and renderer.
 
@@ -38,7 +38,7 @@ Identity and explanation are separate layers. Keep every identifier exact, inclu
 
 Write reader-facing headings, orientation lines, summaries, and descriptions in the selected locale with familiar words and complete sentences. Explain what something does, why it exists, what it owns, or what the reader should confirm. Do not use raw internal tokens as reader-facing headings when a plain-language label exists. For example, show “File evidence” instead of `repository_evidence`, “Where this document is stored” instead of `output_lifecycle`, and “Spec details” instead of `project.spec-detail`.
 
-When the reader needs both, lead with the plain-language explanation and place the exact identifier beside or below it, such as “프로젝트 구조 설명 (`docs/project/project-map.md`)”. Keep hashes, namespaces, internal keys, and renderer profile names in provenance or collapsed Developer information unless they are the subject of the review.
+When the reader needs both, lead with the plain-language explanation and place the exact identifier beside or below it, such as “프로젝트 구조 설명 (`docs/project/project-map.md`)”. Keep hashes, namespaces, internal keys, and renderer profile names in the selected item's Source & verification detail unless they are the subject of the review.
 
 Do not paraphrase normative source statements or invent easier-sounding meaning. Preserve the source statement verbatim and use concise fixed UI vocabulary around it to explain how to read it. When authoring a requested Brief or Project Map source, write its descriptive prose for a person who does not already know the repository internals.
 
@@ -97,7 +97,13 @@ Use `--comparison <bundle>` only with `spec`. Use `--progress` and `--tasks-dir`
 
 Local outputs are disposable and untracked. Project Handbook is the only tracked generated exception, remains reproducible from Project Map, declared Canonical Specs, and repository evidence, and must not be hand-edited.
 
-The Project Handbook's primary navigation is limited to Project at a glance, Spec, and Structure. Purpose and Owns appear before file evidence. Runtime mirror, validation, drift, hashes, source records, and lifecycle counts belong only in collapsed Developer information.
+The Project Handbook is a master/detail explorer. Its fixed left tree starts with Overview, Design criteria, and Project structure, then expands Design criteria as bundle → member → section and Project structure as declared Structure entries. Search, current selection, deep links, Arrow key tree navigation, Home, End, Enter, and Space must work. The right pane shows only the selected detail. Desktop keeps both panes side by side; narrow viewports show either the tree or the detail and provide an explicit back-to-contents action.
+
+Use familiar locale-specific UI terms. In Korean Project Handbooks, use `개요`, `설계 기준`, `필수 사항`, `완료 기준`, `동작과 흐름`, `출시 기준`, `역할`, `담당 범위`, `주요 파일`, and `출처·검증` instead of `프로젝트 한눈에`, `Spec`, `Requirement`, `Acceptance Criteria`, `Behavior & Flows`, `Launch Baseline`, `Purpose`, `Owns`, `Entry Points`, and `Developer information`. Preserve the exact source statement and identifier inside the selected detail.
+
+`역할` explains why a Structure area exists. `담당 범위` explains which responsibility belongs there so ownership is not ambiguous. Show both before `주요 파일`; file evidence does not define either one. `출처·검증` exists to prove where the selected information came from and whether its source is current. Keep runtime mirror, validation, drift, hashes, source records, and lifecycle counts there rather than in primary navigation or the first reading path.
+
+Do not add one `Complete Spec details` disclosure. Every declared Spec must remain reachable through bundle, member, and section nodes in the left tree, with the full source-backed content in its selected right-hand detail.
 
 ## Check freshness
 

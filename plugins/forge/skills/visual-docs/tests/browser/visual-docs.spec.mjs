@@ -31,14 +31,29 @@ for (const viewport of viewports) {
     await page.goto(`${baseURL}/docs/project-viewer/index.html`);
     await expectReady(page);
     await expect(page.locator('h1')).toHaveText('Demo Project');
-    await expect(page.locator('.review-navigation a')).toHaveText([
-      '프로젝트 한눈에', 'Spec', '구조',
+    await expect(page.locator('[data-project-root="true"] .project-tree-label')).toHaveText([
+      '개요', '설계 기준', '프로젝트 구조',
     ]);
-    await expect(page.locator('.structure-card')).toHaveCount(1);
-    await expect(page.locator('.structure-ownership dt')).toHaveText(['Purpose', 'Owns']);
-    const ownershipBeforeEvidence = await page.locator('.structure-card').evaluate((card) => {
-      const ownership = card.querySelector('.structure-ownership');
-      const evidence = card.querySelector('.derived-evidence');
+    await expect(page.locator('[role="tree"]')).toBeVisible();
+    await expect(page.locator('[data-node-kind="spec-bundle"]')).toHaveCount(1);
+    await expect(page.locator('[data-node-kind="spec-member"]')).toHaveCount(5);
+    await expect(page.locator('[data-node-kind="spec-section"]')).not.toHaveCount(0);
+    if (viewport.name === 'mobile') {
+      await expect(page.locator('.project-master')).toBeVisible();
+      await expect(page.locator('.project-detail-pane')).toBeHidden();
+    } else {
+      await expect(page.locator('[data-project-detail][data-route="project-overview"]')).toBeVisible();
+    }
+
+    const structureItem = page.locator('[data-node-kind="structure-entry"]').first();
+    await structureItem.click();
+    const structureDetail = page.locator('[data-project-detail].is-active');
+    await expect(structureDetail).toContainText('역할');
+    await expect(structureDetail).toContainText('담당 범위');
+    await expect(structureDetail).toContainText('주요 파일');
+    const ownershipBeforeEvidence = await structureDetail.evaluate((detail) => {
+      const ownership = detail.querySelector('.structure-ownership');
+      const evidence = detail.querySelector('.project-evidence');
       return Boolean(
         ownership
         && evidence
@@ -46,15 +61,46 @@ for (const viewport of viewports) {
       );
     });
     expect(ownershipBeforeEvidence).toBe(true);
-    await expect(page.locator('.developer-disclosure')).not.toHaveAttribute('open', '');
-    await expect(page.locator('.derived-evidence')).not.toHaveAttribute('open', '');
-    await expect(page.locator('[data-freshness-group="primary"] .freshness-state')).toHaveText('current');
-    await expect(page.locator('[data-freshness-group="context"] .freshness-state')).toHaveText('current');
-    await page.locator('.developer-disclosure > summary').focus();
-    const outline = await page.locator('.developer-disclosure > summary').evaluate(
+    await expect(structureDetail.locator('.project-evidence')).not.toHaveAttribute('open', '');
+    if (viewport.name === 'mobile') {
+      await page.locator('.project-back').click();
+      await expect(page.locator('.project-master')).toBeVisible();
+    }
+
+    const treeItem = page.locator('[role="treeitem"]:visible').first();
+    await treeItem.focus();
+    await treeItem.press('ArrowDown');
+    await expect(page.locator('[role="treeitem"]:focus')).not.toHaveCount(0);
+    const focusedOutline = await page.locator('[role="treeitem"]:focus').evaluate(
       (element) => getComputedStyle(element).outlineWidth,
     );
-    expect(Number.parseFloat(outline)).toBeGreaterThanOrEqual(3);
+    expect(Number.parseFloat(focusedOutline)).toBeGreaterThanOrEqual(3);
+    await page.locator('#project-search').fill('Statement Traceability');
+    await expect(page.locator('[data-node-kind="spec-member"]:visible')).toHaveCount(1);
+    await page.locator('#project-search').fill('nothing-matches-this');
+    await expect(page.locator('.project-search-empty')).toBeVisible();
+    await page.locator('#project-search').fill('');
+    await expect(page.locator('.project-search-empty')).toBeHidden();
+
+    const memberItem = page.locator('[data-node-kind="spec-member"]').filter({ hasText: 'Statement Traceability' });
+    await memberItem.click();
+    await expect(page).toHaveURL(/#spec-member-/);
+    await page.reload();
+    await expect(page.locator('[data-project-detail].is-active')).toContainText('Statement Traceability');
+
+    if (viewport.name === 'mobile') {
+      await expect(page.locator('.project-master')).toBeHidden();
+      await expect(page.locator('.project-detail-pane')).toBeVisible();
+      await page.locator('.project-back').click();
+      await expect(page.locator('.project-master')).toBeVisible();
+      await expect(page.locator('.project-detail-pane')).toBeHidden();
+    } else {
+      await expect(page.locator('.project-master')).toBeVisible();
+      await expect(page.locator('.project-detail-pane')).toBeVisible();
+    }
+
+    await expect(page.locator('[data-freshness-group="primary"] .freshness-state')).toHaveText('current');
+    await expect(page.locator('[data-freshness-group="context"] .freshness-state')).toHaveText('current');
     await expectNoDocumentOverflow(page);
   });
 

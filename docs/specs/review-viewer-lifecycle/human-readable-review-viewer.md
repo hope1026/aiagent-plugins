@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: system
 areas: ["forge","visual-docs"]
@@ -318,7 +318,7 @@ Visual Docs shell의 inherited visual system:
 - [Brief가 conversation에만 존재하고 사용자가 시각화를 요청한 경우 Forge는 현재 작업의 Goal, Scope, Out of Scope와 Done Checks를 `.forge/work/<work-id>/brief.md`에 비권위 source로 저장한 뒤 brief kind를 생성해야 한다.](human-readable-review-viewer.md#brief가-conversation에만-존재하고-사용자가-시각화를-요청한-경우-forge는-현재-작업의-goal-scope-out-of-scope와-done-checks를-forgeworkwork-idbriefmd에-비권위-source로-저장한-뒤-brief-kind를-생성해야-한다)
 - [Brief, Plan과 Spec의 독립 View는 `.forge/visual-docs/<view-id>/view.html`에 저장하고 Git 비추적 상태로 유지해야 한다.](human-readable-review-viewer.md#brief-plan과-spec의-독립-view는-forgevisual-docsview-idviewhtml에-저장하고-git-비추적-상태로-유지해야-한다)
 
-### valid `forge/project-map@1`, 존재하는 Structure path와 approved 또는 implemented Spec Bundle을 가진 fixture를 `project` kind로 build하면 `docs/project-viewer/index.html`이 생성되고 프로젝트 한눈에, Spec, 구조만 primary navigation에 나타나며 freshness check와 repository validation이 통과한다.
+### valid `forge/project-map@1`, 존재하는 Structure path와 approved 또는 implemented Spec Bundle을 가진 fixture를 `project` kind로 build하면 `docs/project-viewer/index.html`이 생성되고 개요, 설계 기준, 프로젝트 구조의 좌측 탐색과 선택한 우측 상세가 나타나며 freshness check와 repository validation이 통과한다.
 
 검증하는 요구사항:
 

@@ -17,6 +17,7 @@ REPOSITORY = TEST_DIR / "fixtures" / "repository"
 sys.path.insert(0, str(SCRIPTS))
 
 import review_renderer  # noqa: E402
+import review_components  # noqa: E402
 from review_ir import build_semantic_ir  # noqa: E402
 from review_planner import ViewContext  # noqa: E402
 from review_renderer import render_review  # noqa: E402
@@ -134,24 +135,36 @@ class ReviewRendererTest(unittest.TestCase):
         spec_parsed = DocumentParser()
         spec_parsed.feed(spec)
 
-        navigation = re.search(
-            r'<nav class="review-navigation"[^>]*>(.*?)</nav>', handbook, re.DOTALL
-        )
-        assert navigation is not None
+        self.assertIn('class="project-workspace"', handbook)
+        self.assertIn('id="project-search"', handbook)
+        self.assertIn('role="tree"', handbook)
+        self.assertIn('class="project-detail-pane"', handbook)
+        self.assertIn('class="project-back"', handbook)
         self.assertEqual(
-            re.findall(r">([^<]+)</a>", navigation.group(1)),
-            ["프로젝트 한눈에", "Spec", "구조"],
+            re.findall(
+                r'data-project-root="true"[^>]*>.*?'
+                r'<span class="project-tree-label">([^<]+)</span>',
+                handbook,
+                re.DOTALL,
+            ),
+            ["개요", "설계 기준", "프로젝트 구조"],
         )
-        self.assertLess(handbook.index("Purpose"), handbook.index("Derived file evidence"))
-        self.assertLess(handbook.index("Purpose"), handbook.index("Owns"))
-        self.assertIn('class="developer-disclosure"', handbook)
-        self.assertLess(
-            handbook.index('class="developer-disclosure"'),
-            handbook.index('class="source-summary"'),
-        )
-        self.assertNotIn("Runtime Atlas", navigation.group(1))
-        self.assertNotIn("Validation", navigation.group(1))
-        self.assertNotIn("Drift", navigation.group(1))
+        self.assertIn('data-node-kind="spec-bundle"', handbook)
+        self.assertIn('data-node-kind="spec-member"', handbook)
+        self.assertIn('data-node-kind="spec-section"', handbook)
+        self.assertIn('data-node-kind="structure-entry"', handbook)
+        self.assertIn('data-project-detail data-route="project-overview"', handbook)
+        self.assertIn("역할", project_parsed.visible)
+        self.assertIn("담당 범위", project_parsed.visible)
+        self.assertIn("주요 파일", project_parsed.visible)
+        self.assertIn("출처·검증", project_parsed.visible)
+        self.assertLess(handbook.index("역할"), handbook.index("담당 범위"))
+        self.assertLess(handbook.index("담당 범위"), handbook.index("주요 파일"))
+        self.assertNotIn("Complete Spec details", handbook)
+        self.assertNotIn("Developer information", project_parsed.visible)
+        self.assertNotIn("개발자 정보", project_parsed.visible)
+        self.assertEqual(review_components._project_term("Launch Baseline", True), "출시 기준")
+        self.assertEqual(review_components._project_term("Behaviour & Flows", True), "동작과 흐름")
 
         project_members = {
             (row["path"], row["sha256"])
@@ -180,7 +193,7 @@ class ReviewRendererTest(unittest.TestCase):
         self.assertIn("forge", project_parsed.visible)
         self.assertRegex(
             handbook,
-            r'Governing Statements.*href="#statement-[0-9a-f]{20}"',
+            r'근거 문장.*href="#statement-[0-9a-f]{20}"',
         )
 
     def test_bundle_titles_paths_and_full_statements_are_visible_without_internal_ids(self) -> None:

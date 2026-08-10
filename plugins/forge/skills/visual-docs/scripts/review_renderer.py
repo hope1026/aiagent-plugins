@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 from typing import Mapping
 
-from review_components import render_components
+from review_components import render_components, render_project_workspace
 from review_ir import SemanticIR, build_semantic_ir
 from review_planner import (
     PresentationPlan,
@@ -229,15 +229,28 @@ def _source_label(source: ReviewSource) -> str:
     return " · ".join(value for value in (source.title, source.path) if value)
 
 
-def _source_summary(bundle: ReviewBundle, labels: Mapping[str, str]) -> str:
+def _source_summary(
+    bundle: ReviewBundle,
+    labels: Mapping[str, str],
+    *,
+    roles: frozenset[str] | None = None,
+    groups: tuple[str, ...] = ("primary", "comparison", "context"),
+    collapsed: bool = True,
+    include_overall: bool = True,
+) -> str:
+    sources = tuple(
+        source
+        for source in _source_sequence(bundle)
+        if roles is None or source.role in roles
+    )
     aggregates = "".join(
         '<span class="freshness-aggregate" '
         f'data-freshness-group="{group}">{html.escape(group)} '
         '<strong class="freshness-state freshness-unverified">unverified</strong></span>'
-        for group in ("primary", "comparison", "context")
+        for group in groups
     )
     rows: list[str] = []
-    for source in _source_sequence(bundle):
+    for source in sources:
         key = _internal_source_key(source)
         rows.append(
             '<li class="source-row" '
@@ -251,12 +264,24 @@ def _source_summary(bundle: ReviewBundle, labels: Mapping[str, str]) -> str:
             f'<input type="file" accept=".md,text/markdown" data-source-picker data-source-key="{key}"></label>'
             "</li>"
         )
+    aggregate_markup = f'<div class="freshness-aggregates">{aggregates}</div>' if aggregates else ""
+    rows_markup = f'<ul>{"".join(rows)}</ul>'
+    if collapsed:
+        overall = (
+            ': <span class="freshness-state freshness-unverified" '
+            'data-freshness-overall>unverified</span>'
+            if include_overall
+            else ""
+        )
+        return (
+            '<details class="source-summary">'
+            f'<summary>{html.escape(labels["freshness"])}{overall}</summary>'
+            f'{aggregate_markup}{rows_markup}</details>'
+        )
     return (
-        '<details class="source-summary">'
-        f'<summary>{html.escape(labels["freshness"])}: '
-        '<span class="freshness-state freshness-unverified" data-freshness-overall>unverified</span></summary>'
-        f'<div class="freshness-aggregates">{aggregates}</div>'
-        f'<ul>{"".join(rows)}</ul></details>'
+        '<div class="source-summary source-summary-open">'
+        f'<p class="source-summary-heading">{html.escape(labels["freshness"])}</p>'
+        f'{aggregate_markup}{rows_markup}</div>'
     )
 
 
@@ -375,37 +400,70 @@ def render_review(
         raise ValueError(
             "invalid Presentation Plan: " + "; ".join(item.code for item in diagnostics)
         )
-    components = render_components(ir, plan, context, review_id)
-    navigation = "".join(
-        f'<a href="#{html.escape(component.component_id, quote=True)}">{html.escape(component.title)}</a>'
-        for index, component in enumerate(components)
-        if plan.components[index].disclosure != "collapsed"
-    )
-    sections: list[str] = []
-    for index, component in enumerate(components):
-        component_plan = plan.components[index]
-        component_markup = component.markup
-        if bundle.kind == "project" and component_plan.component == "developer-information":
-            component_markup = _source_summary(bundle, labels) + component_markup
-        body = (
-            '<details class="developer-disclosure">'
-            f'<summary>{html.escape(component.title)}</summary>'
-            f'<p class="panel-orientation">{html.escape(component.orientation)}</p>'
-            f"{component_markup}</details>"
-            if component_plan.disclosure == "collapsed"
-            else (
-                f'<h2>{html.escape(component.title)}</h2>'
+    if bundle.kind == "project":
+        navigation = ""
+        content = render_project_workspace(
+            ir,
+            plan,
+            context,
+            review_id,
+            {
+                "overview": _source_summary(
+                    bundle,
+                    labels,
+                    roles=frozenset(("project_map",)),
+                    groups=("primary",),
+                    collapsed=False,
+                    include_overall=False,
+                ),
+                "specs": _source_summary(
+                    bundle,
+                    labels,
+                    roles=frozenset(("declared_spec",)),
+                    groups=("context",),
+                    collapsed=False,
+                    include_overall=False,
+                ),
+                "structure": _source_summary(
+                    bundle,
+                    labels,
+                    roles=frozenset(("repository_evidence",)),
+                    groups=(),
+                    collapsed=False,
+                    include_overall=False,
+                ),
+            },
+        )
+    else:
+        components = render_components(ir, plan, context, review_id)
+        navigation = "".join(
+            f'<a href="#{html.escape(component.component_id, quote=True)}">{html.escape(component.title)}</a>'
+            for index, component in enumerate(components)
+            if plan.components[index].disclosure != "collapsed"
+        )
+        sections: list[str] = []
+        for index, component in enumerate(components):
+            component_plan = plan.components[index]
+            component_markup = component.markup
+            body = (
+                '<details class="developer-disclosure">'
+                f'<summary>{html.escape(component.title)}</summary>'
                 f'<p class="panel-orientation">{html.escape(component.orientation)}</p>'
-                f"{component_markup}"
+                f"{component_markup}</details>"
+                if component_plan.disclosure == "collapsed"
+                else (
+                    f'<h2>{html.escape(component.title)}</h2>'
+                    f'<p class="panel-orientation">{html.escape(component.orientation)}</p>'
+                    f"{component_markup}"
+                )
             )
-        )
-        sections.append(
-            '<section class="review-component" '
-            f'id="{html.escape(component.component_id, quote=True)}" '
-            f'data-component="{html.escape(component_plan.component, quote=True)}">'
-            f"{body}</section>"
-        )
-    content = "\n".join(sections)
+            sections.append(
+                '<section class="review-component" '
+                f'id="{html.escape(component.component_id, quote=True)}" '
+                f'data-component="{html.escape(component_plan.component, quote=True)}">'
+                f"{body}</section>"
+            )
+        content = "\n".join(sections)
     manifest = _manifest(
         bundle,
         review_id=review_id,

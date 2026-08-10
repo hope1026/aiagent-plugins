@@ -39,11 +39,11 @@ TITLES = {
     "brief-overview": ("At a glance", "한눈에 보기"),
     "brief-scope": ("Scope", "범위"),
     "brief-done": ("Done checks", "완료 조건"),
-    "project-overview": ("Project at a glance", "프로젝트 한눈에"),
+    "project-overview": ("Overview", "개요"),
     "capability-map": ("Capabilities", "핵심 기능"),
-    "spec-index": ("Spec", "Spec"),
-    "structure-responsibility": ("Structure", "구조"),
-    "developer-information": ("Developer information", "개발자 정보"),
+    "spec-index": ("Design criteria", "설계 기준"),
+    "structure-responsibility": ("Project structure", "프로젝트 구조"),
+    "developer-information": ("Source & verification", "출처·검증"),
 }
 
 
@@ -53,6 +53,14 @@ class RenderedComponent:
     title: str
     orientation: str
     markup: str
+
+
+@dataclass(frozen=True)
+class ProjectNavNode:
+    route: str
+    kind: str
+    label: str
+    children: tuple["ProjectNavNode", ...] = ()
 
 
 DOCUMENT_ROLE_LABELS = {
@@ -313,7 +321,104 @@ def _project_overview(ir: SemanticIR, refs: tuple[str, ...]) -> str:
     )
 
 
-def _project_structure(ir: SemanticIR, refs: tuple[str, ...]) -> str:
+def _project_term(value: str, korean: bool) -> str:
+    if not korean:
+        return {
+            "Requirements": "Required behavior",
+            "Acceptance Criteria": "Completion criteria",
+            "Behavior & Flows": "Behavior and flows",
+            "Behaviour & Flows": "Behavior and flows",
+            "Launch Baseline": "Release baseline",
+            "Purpose": "Role",
+            "Owns": "Responsibilities",
+            "Entry Points": "Key files",
+            "Developer information": "Source & verification",
+        }.get(value, value)
+    return {
+        "Overview": "개요",
+        "Documents": "문서 구성",
+        "Requirements": "필수 사항",
+        "Acceptance Criteria": "완료 기준",
+        "Behavior & Flows": "동작과 흐름",
+        "Behaviour & Flows": "동작과 흐름",
+        "Launch Baseline": "출시 기준",
+        "Purpose": "역할",
+        "Owns": "담당 범위",
+        "Entry Points": "주요 파일",
+        "Depends On": "의존 대상",
+        "Related Specs": "관련 설계 기준",
+        "Governing Statements": "근거 문장",
+        "Derived file evidence": "계산된 파일 근거",
+        "Developer information": "출처·검증",
+    }.get(value, value)
+
+
+def _project_route(kind: str, identity: str) -> str:
+    return _internal_id(kind, identity)
+
+
+def _project_detail(
+    route: str,
+    kind: str,
+    title: str,
+    body: str,
+    *,
+    active: bool = False,
+) -> str:
+    classes = "project-detail is-active" if active else "project-detail"
+    hidden = "" if active else " hidden"
+    return (
+        f'<article class="{classes}" id="{html.escape(route, quote=True)}" '
+        f'data-project-detail data-route="{html.escape(route, quote=True)}" '
+        f'data-detail-kind="{html.escape(kind, quote=True)}"{hidden}>'
+        f'<h2>{html.escape(title)}</h2>{body}</article>'
+    )
+
+
+def _project_tree_node(
+    node: ProjectNavNode,
+    *,
+    level: int,
+    root: bool = False,
+    first: bool = False,
+) -> str:
+    expandable = bool(node.children)
+    expanded = root or node.kind == "spec-bundle"
+    item_attributes = (
+        f'role="treeitem" aria-level="{level}" '
+        f'aria-selected="{"true" if first else "false"}" '
+        f'tabindex="{0 if first else -1}" '
+        f'data-route="{html.escape(node.route, quote=True)}" '
+        f'data-node-kind="{html.escape(node.kind, quote=True)}" '
+        + ('data-project-root="true" ' if root else "")
+        + (f'aria-expanded="{"true" if expanded else "false"}" ' if expandable else "")
+    )
+    children = ""
+    if expandable:
+        children = (
+            f'<div class="project-tree-group" role="group" '
+            f'data-parent-route="{html.escape(node.route, quote=True)}">'
+            + "".join(
+                _project_tree_node(child, level=level + 1)
+                for child in node.children
+            )
+            + "</div>"
+        )
+    return (
+        '<div class="project-tree-branch" role="none" data-tree-branch>'
+        f'<a class="project-tree-item" href="#{html.escape(node.route, quote=True)}" '
+        f'{item_attributes}>'
+        f'<span class="project-tree-label">{html.escape(node.label)}</span></a>'
+        f"{children}</div>"
+    )
+
+
+def _project_structure_parts(
+    ir: SemanticIR,
+    refs: tuple[str, ...],
+    *,
+    korean: bool,
+) -> tuple[tuple[ProjectNavNode, ...], tuple[str, ...], str]:
     entities = tuple(
         entity
         for entity in _entities_for_refs(ir, refs)
@@ -337,7 +442,9 @@ def _project_structure(ir: SemanticIR, refs: tuple[str, ...]) -> str:
         for entity in document.entities
         if entity.entity_type in {"requirement", "acceptance"}
     }
-    cards: list[str] = []
+    nodes: list[ProjectNavNode] = []
+    details: list[str] = []
+    overview_rows: list[str] = []
     for entity in entities:
         path = str(entity.attributes.get("path", entity.entity_id))
         purpose = str(entity.attributes.get("purpose", ""))
@@ -352,77 +459,370 @@ def _project_structure(ir: SemanticIR, refs: tuple[str, ...]) -> str:
         evidence = tuple(
             item for item in evidence_files if item == path or item.startswith(prefix)
         )
-        cards.append(
-            '<article class="structure-card">'
-            f'<h3><code>{html.escape(path)}</code></h3>'
-            '<dl class="structure-ownership">'
-            f'<div><dt>Purpose</dt><dd>{html.escape(purpose)}</dd></div>'
-            f'<div><dt>Owns</dt><dd>{html.escape(owns)}</dd></div>'
-            '</dl>'
-            + '<details class="structure-support"><summary>Entry points and evidence</summary>'
-            + (
-                '<div class="structure-links"><h4>Entry Points</h4><ul>'
-                + "".join(f"<li><code>{html.escape(str(item))}</code></li>" for item in entry_points)
-                + "</ul></div>"
-                if entry_points
-                else ""
-            )
-            + (
-                '<div class="structure-links"><h4>Depends On</h4><ul>'
-                + "".join(f"<li><code>{html.escape(str(item))}</code></li>" for item in depends_on)
-                + "</ul></div>"
-                if depends_on
-                else ""
-            )
-            + (
-                '<div class="structure-links"><h4>Related Specs</h4><ul>'
-                + "".join(f"<li><code>{html.escape(str(item))}</code></li>" for item in related_specs)
-                + "</ul></div>"
-                if related_specs
-                else ""
-            )
-            + (
-                '<div class="structure-links"><h4>Governing Statements</h4><ul>'
-                + "".join(
-                    (
-                        '<li><a href="#'
-                        + _internal_id(
-                            "statement",
-                            statement_targets[
-                                (
-                                    str(item["member_path"]),
-                                    str(item["heading"]),
-                                    str(item["anchor"]),
-                                )
-                            ].key,
-                        )
-                        + '">'
-                        + html.escape(str(item["heading"]))
-                        + "</a></li>"
-                    )
-                    for item in governing_statements
-                    if (
-                        str(item["member_path"]),
-                        str(item["heading"]),
-                        str(item["anchor"]),
-                    )
-                    in statement_targets
-                )
-                + "</ul></div>"
-                if governing_statements
-                else ""
-            )
-            + (
-                '<details class="derived-evidence"><summary>Derived file evidence</summary><ul>'
-                + "".join(f"<li><code>{html.escape(item)}</code></li>" for item in evidence)
-                + "</ul></details>"
-                if evidence
-                else ""
-            )
-            + "</details>"
-            + "</article>"
+        route = _project_route("structure-entry", path)
+        nodes.append(ProjectNavNode(route, "structure-entry", path))
+        overview_rows.append(
+            f'<li><a href="#{route}"><code>{html.escape(path)}</code></a>'
+            f'<span>{html.escape(purpose)}</span></li>'
         )
-    return '<div class="structure-grid">' + "".join(cards) + "</div>"
+        details.append(
+            _project_detail(
+                route,
+                "structure-entry",
+                path,
+                ('<p class="project-detail-kicker">프로젝트 구조</p>' if korean else '<p class="project-detail-kicker">Project structure</p>')
+                + '<dl class="structure-ownership">'
+                f'<div><dt>{html.escape(_project_term("Purpose", korean))}</dt><dd>{html.escape(purpose)}</dd></div>'
+                f'<div><dt>{html.escape(_project_term("Owns", korean))}</dt><dd>{html.escape(owns)}</dd></div>'
+                '</dl>'
+                + (
+                    '<section class="structure-key-files">'
+                    f'<h3>{html.escape(_project_term("Entry Points", korean))}</h3><ul>'
+                    + "".join(f"<li><code>{html.escape(str(item))}</code></li>" for item in entry_points)
+                    + "</ul></section>"
+                    if entry_points
+                    else ""
+                )
+                + '<details class="project-evidence"><summary>'
+                + html.escape(_project_term("Developer information", korean))
+                + "</summary>"
+                + (
+                    '<div class="structure-links"><h3>'
+                    + html.escape(_project_term("Depends On", korean))
+                    + "</h3><ul>"
+                    + "".join(f"<li><code>{html.escape(str(item))}</code></li>" for item in depends_on)
+                    + "</ul></div>"
+                    if depends_on
+                    else ""
+                )
+                + (
+                    '<div class="structure-links"><h3>'
+                    + html.escape(_project_term("Related Specs", korean))
+                    + "</h3><ul>"
+                    + "".join(f"<li><code>{html.escape(str(item))}</code></li>" for item in related_specs)
+                    + "</ul></div>"
+                    if related_specs
+                    else ""
+                )
+                + (
+                    '<div class="structure-links"><h3>'
+                    + html.escape(_project_term("Governing Statements", korean))
+                    + "</h3><ul>"
+                    + "".join(
+                        (
+                            '<li><a href="#'
+                            + _internal_id(
+                                "statement",
+                                statement_targets[
+                                    (
+                                        str(item["member_path"]),
+                                        str(item["heading"]),
+                                        str(item["anchor"]),
+                                    )
+                                ].key,
+                            )
+                            + '">'
+                            + html.escape(str(item["heading"]))
+                            + "</a></li>"
+                        )
+                        for item in governing_statements
+                        if (
+                            str(item["member_path"]),
+                            str(item["heading"]),
+                            str(item["anchor"]),
+                        )
+                        in statement_targets
+                    )
+                    + "</ul></div>"
+                    if governing_statements
+                    else ""
+                )
+                + (
+                    '<div class="derived-evidence"><h3>'
+                    + html.escape(_project_term("Derived file evidence", korean))
+                    + "</h3><ul>"
+                    + "".join(f"<li><code>{html.escape(item)}</code></li>" for item in evidence)
+                    + "</ul></div>"
+                    if evidence
+                    else ""
+                )
+                + "</details>",
+            )
+        )
+    overview = (
+        '<p class="project-section-lede">'
+        + ("상위 영역을 선택하면 역할과 담당 범위를 먼저 확인할 수 있습니다." if korean else "Select an area to see its role and responsibilities first.")
+        + '</p><ul class="project-index-list">'
+        + "".join(overview_rows)
+        + "</ul>"
+    )
+    return tuple(nodes), tuple(details), overview
+
+
+def _section_for_block(
+    block: SemanticBlock,
+    entities: tuple[SemanticEntity, ...],
+) -> str:
+    if any(entity.entity_type == "requirement" for entity in entities):
+        return "Requirements"
+    if any(entity.entity_type == "acceptance" for entity in entities):
+        return "Acceptance Criteria"
+    return block.heading
+
+
+def _project_spec_parts(
+    ir: SemanticIR,
+    refs: tuple[str, ...],
+    review_id: str,
+    rendered_entities: set[str],
+    coverage_targets: Mapping[str, tuple[SemanticEntity, ...]],
+    *,
+    korean: bool,
+) -> tuple[tuple[ProjectNavNode, ...], tuple[str, ...], str]:
+    allowed_blocks = {
+        block.key
+        for block, _, _ in _referenced_blocks(ir, refs)
+    }
+    entities_by_block: dict[str, tuple[SemanticEntity, ...]] = {}
+    for document in ir.documents:
+        for entity in document.entities:
+            entities_by_block.setdefault(entity.block_key, ())
+            entities_by_block[entity.block_key] = (*entities_by_block[entity.block_key], entity)
+    bundles: dict[str, list[SemanticDocument]] = {}
+    for document in ir.documents:
+        if document.role != "declared_spec":
+            continue
+        bundle_path = document.metadata.get("bundle_path")
+        if isinstance(bundle_path, str):
+            bundles.setdefault(bundle_path, []).append(document)
+
+    bundle_nodes: list[ProjectNavNode] = []
+    details: list[str] = []
+    overview_rows: list[str] = []
+    for bundle_path, documents in bundles.items():
+        root = documents[0]
+        bundle_title = str(root.metadata.get("bundle_title", bundle_path))
+        bundle_route = _project_route("spec-bundle", bundle_path)
+        overview_rows.append(
+            f'<li><a href="#{bundle_route}">{html.escape(bundle_title)}</a>'
+            f'<code>{html.escape(bundle_path)}</code></li>'
+        )
+        member_nodes: list[ProjectNavNode] = []
+        member_links: list[str] = []
+        for document in documents:
+            member_title = str(document.metadata.get("member_title", document.path))
+            member_route = _project_route("spec-member", document.path)
+            sections: dict[str, list[SemanticBlock]] = {}
+            for block in document.blocks:
+                if block.key not in allowed_blocks:
+                    continue
+                section = _section_for_block(block, entities_by_block.get(block.key, ()))
+                sections.setdefault(section, []).append(block)
+            section_nodes: list[ProjectNavNode] = []
+            section_links: list[str] = []
+            for section, blocks in sections.items():
+                section_route = _project_route("spec-section", f"{document.path}\0{section}")
+                section_label = _project_term(section, korean)
+                section_nodes.append(ProjectNavNode(section_route, "spec-section", section_label))
+                section_links.append(f'<li><a href="#{section_route}">{html.escape(section_label)}</a></li>')
+                block_markup = "".join(
+                    _block_markup(
+                        block,
+                        document,
+                        entities_by_block.get(block.key, ()),
+                        review_id,
+                        rendered_entities,
+                        coverage_targets,
+                    )
+                    for block in blocks
+                )
+                line_start = min(block.line for block in blocks)
+                line_end = max(block.end_line for block in blocks)
+                details.append(
+                    _project_detail(
+                        section_route,
+                        "spec-section",
+                        section_label,
+                        f'<p class="project-detail-kicker">{html.escape(member_title)}</p>'
+                        + block_markup
+                        + '<details class="project-evidence"><summary>'
+                        + html.escape(_project_term("Developer information", korean))
+                        + '</summary><p class="provenance"><code>'
+                        + html.escape(document.path)
+                        + f"</code> · lines {line_start}–{line_end}</p></details>",
+                    )
+                )
+            member_nodes.append(ProjectNavNode(member_route, "spec-member", member_title, tuple(section_nodes)))
+            member_links.append(f'<li><a href="#{member_route}">{html.escape(member_title)}</a><code>{html.escape(document.path)}</code></li>')
+            details.append(
+                _project_detail(
+                    member_route,
+                    "spec-member",
+                    member_title,
+                    '<p class="project-detail-kicker">'
+                    + ("설계 기준 문서" if korean else "Design criteria document")
+                    + '</p><p class="provenance"><code>'
+                    + html.escape(document.path)
+                    + '</code></p><ul class="project-index-list">'
+                    + "".join(section_links)
+                    + "</ul>",
+                )
+            )
+        bundle_nodes.append(ProjectNavNode(bundle_route, "spec-bundle", bundle_title, tuple(member_nodes)))
+        overview = str(root.metadata.get("overview", "")).strip()
+        areas = tuple(root.metadata.get("areas", ()))
+        related_specs = tuple(root.metadata.get("related_specs", ()))
+        details.append(
+            _project_detail(
+                bundle_route,
+                "spec-bundle",
+                bundle_title,
+                f'<p class="provenance"><code>{html.escape(bundle_path)}</code></p>'
+                + (f'<p class="project-section-lede">{html.escape(overview)}</p>' if overview else "")
+                + (
+                    '<p><strong>' + ("담당 영역" if korean else "Areas") + ':</strong> '
+                    + ", ".join(html.escape(str(area)) for area in areas) + "</p>"
+                    if areas else ""
+                )
+                + (
+                    '<div><strong>' + ("관련 설계 기준" if korean else "Related design criteria") + ':</strong><ul>'
+                    + "".join(
+                        f'<li><code>{html.escape(str(item.get("path", "")))}</code> · '
+                        f'{html.escape(str(item.get("relation", "")))}</li>'
+                        for item in related_specs
+                    )
+                    + "</ul></div>"
+                    if related_specs else ""
+                )
+                + '<h3>' + ("문서" if korean else "Documents") + '</h3><ul class="project-index-list">'
+                + "".join(member_links)
+                + "</ul>",
+            )
+        )
+    overview = (
+        '<p class="project-section-lede">'
+        + ("설계 기준을 묶음, 문서, 섹션 순서로 선택해 확인합니다." if korean else "Browse design criteria by bundle, document, and section.")
+        + '</p><ul class="project-index-list">'
+        + "".join(overview_rows)
+        + "</ul>"
+    )
+    return tuple(bundle_nodes), tuple(details), overview
+
+
+def render_project_workspace(
+    ir: SemanticIR,
+    plan: PresentationPlan,
+    context: ViewContext,
+    review_id: str,
+    source_panels: Mapping[str, str],
+) -> str:
+    """Render the Project Handbook as a semantic tree and addressable details."""
+
+    korean = context.locale == "ko"
+    components = {component.component: component for component in plan.components}
+    rendered_entities: set[str] = set()
+    coverage_targets = _coverage_targets(ir)
+
+    overview_component = components.get("project-overview")
+    overview_markup = _project_overview(ir, overview_component.refs if overview_component else ())
+    structure_component = components.get("structure-responsibility")
+    structure_nodes, structure_details, structure_overview = _project_structure_parts(
+        ir,
+        structure_component.refs if structure_component else (),
+        korean=korean,
+    )
+    spec_component = components.get("spec-index")
+    spec_nodes, spec_details, spec_overview = _project_spec_parts(
+        ir,
+        spec_component.refs if spec_component else (),
+        review_id,
+        rendered_entities,
+        coverage_targets,
+        korean=korean,
+    )
+    evidence_component = components.get("developer-information")
+    source_detail = _details(
+        ir,
+        evidence_component.refs if evidence_component else (),
+        review_id,
+        rendered_entities,
+        coverage_targets,
+    )
+
+    overview_route = "project-overview"
+    specs_route = "project-design-criteria"
+    structure_route = "project-structure"
+    overview_evidence_route = "project-overview-evidence"
+    specs_evidence_route = "project-design-evidence"
+    structure_evidence_route = "project-structure-evidence"
+    source_label = _project_term("Developer information", korean)
+    roots = (
+        ProjectNavNode(
+            overview_route,
+            "project-overview",
+            "개요" if korean else "Overview",
+            (ProjectNavNode(overview_evidence_route, "source-evidence", source_label),),
+        ),
+        ProjectNavNode(
+            specs_route,
+            "design-criteria",
+            "설계 기준" if korean else "Design criteria",
+            (*spec_nodes, ProjectNavNode(specs_evidence_route, "source-evidence", source_label)),
+        ),
+        ProjectNavNode(
+            structure_route,
+            "project-structure",
+            "프로젝트 구조" if korean else "Project structure",
+            (*structure_nodes, ProjectNavNode(structure_evidence_route, "source-evidence", source_label)),
+        ),
+    )
+    tree = "".join(
+        _project_tree_node(node, level=1, root=True, first=index == 0)
+        for index, node in enumerate(roots)
+    )
+    details = [
+        _project_detail(overview_route, "project-overview", roots[0].label, overview_markup, active=True),
+        _project_detail(
+            overview_evidence_route,
+            "source-evidence",
+            source_label,
+            source_panels.get("overview", "")
+            + ('<details class="project-evidence"><summary>' + ("원문 근거" if korean else "Source details") + "</summary>" + source_detail + "</details>" if source_detail else ""),
+        ),
+        _project_detail(specs_route, "design-criteria", roots[1].label, spec_overview),
+        *spec_details,
+        _project_detail(specs_evidence_route, "source-evidence", source_label, source_panels.get("specs", "")),
+        _project_detail(structure_route, "project-structure", roots[2].label, structure_overview),
+        *structure_details,
+        _project_detail(structure_evidence_route, "source-evidence", source_label, source_panels.get("structure", "")),
+    ]
+    return (
+        '<div class="project-workspace" data-project-workspace data-component="project-workspace">'
+        '<aside class="project-master">'
+        '<label class="project-search-label" for="project-search">'
+        + ("목차 검색" if korean else "Search contents")
+        + '</label><input id="project-search" class="project-search" type="search" '
+        + ('placeholder="설계 기준, 문서, 경로 검색"' if korean else 'placeholder="Search criteria, documents, or paths"')
+        + ' autocomplete="off"><p class="project-search-empty" role="status" hidden>'
+        + ("검색 결과가 없습니다." if korean else "No matching contents.")
+        + "</p>"
+        '<nav class="project-tree-navigation" aria-label="'
+        + ("프로젝트 목차" if korean else "Project contents")
+        + '"><div role="tree">'
+        + tree
+        + "</div></nav></aside>"
+        '<section class="project-detail-pane" aria-live="polite">'
+        '<button class="project-back" type="button">'
+        + ("목록으로" if korean else "Back to contents")
+        + "</button>"
+        + "".join(details)
+        + "</section></div>"
+    )
+
+
+def _project_structure(ir: SemanticIR, refs: tuple[str, ...]) -> str:
+    _, details, overview = _project_structure_parts(ir, refs, korean=False)
+    return overview + "".join(details)
 
 
 def _project_specs(
@@ -432,58 +832,15 @@ def _project_specs(
     rendered_entities: set[str],
     coverage_targets: Mapping[str, tuple[SemanticEntity, ...]],
 ) -> str:
-    bundles: dict[str, SemanticDocument] = {}
-    for document in ir.documents:
-        if document.role != "declared_spec":
-            continue
-        bundle_path = document.metadata.get("bundle_path")
-        if isinstance(bundle_path, str):
-            bundles.setdefault(bundle_path, document)
-    index_cards: list[str] = []
-    for bundle_path, document in bundles.items():
-        title = str(document.metadata.get("bundle_title", bundle_path))
-        overview = str(document.metadata.get("overview", "")).strip()
-        areas = tuple(document.metadata.get("areas", ()))
-        related_specs = tuple(document.metadata.get("related_specs", ()))
-        index_cards.append(
-            '<article class="spec-index-card">'
-            f'<h3>{html.escape(title)}</h3>'
-            f'<p class="provenance"><code>{html.escape(bundle_path)}</code></p>'
-            + (f'<p>{html.escape(overview)}</p>' if overview else "")
-            + (
-                '<p><strong>Areas:</strong> '
-                + ", ".join(html.escape(str(area)) for area in areas)
-                + "</p>"
-                if areas
-                else ""
-            )
-            + (
-                '<div><strong>Related Specs:</strong><ul>'
-                + "".join(
-                    f'<li><code>{html.escape(str(item.get("path", "")))}</code> · '
-                    f'{html.escape(str(item.get("relation", "")))}</li>'
-                    for item in related_specs
-                )
-                + "</ul></div>"
-                if related_specs
-                else ""
-            )
-            + "</article>"
-        )
-    detail = _details(
+    _, details, overview = _project_spec_parts(
         ir,
         refs,
         review_id,
         rendered_entities,
         coverage_targets,
+        korean=False,
     )
-    return (
-        '<div class="spec-index">'
-        + "".join(index_cards)
-        + '</div><details class="spec-detail"><summary>Complete Spec details</summary>'
-        + detail
-        + "</details>"
-    )
+    return overview + "".join(details)
 
 
 def _coverage_targets(ir: SemanticIR) -> Mapping[str, tuple[SemanticEntity, ...]]:
