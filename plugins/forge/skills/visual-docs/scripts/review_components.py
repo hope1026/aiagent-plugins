@@ -379,34 +379,49 @@ def _project_tree_node(
     node: ProjectNavNode,
     *,
     level: int,
+    korean: bool,
     root: bool = False,
     first: bool = False,
 ) -> str:
     expandable = bool(node.children)
-    expanded = root or node.kind == "spec-bundle"
+    expanded = first
+    route = html.escape(node.route, quote=True)
     item_attributes = (
         f'role="treeitem" aria-level="{level}" '
         f'aria-selected="{"true" if first else "false"}" '
         f'tabindex="{0 if first else -1}" '
-        f'data-route="{html.escape(node.route, quote=True)}" '
+        f'data-route="{route}" '
         f'data-node-kind="{html.escape(node.kind, quote=True)}" '
         + ('data-project-root="true" ' if root else "")
         + (f'aria-expanded="{"true" if expanded else "false"}" ' if expandable else "")
     )
     children = ""
+    toggle = ""
     if expandable:
+        action = "접기" if expanded and korean else "펼치기" if korean else "Collapse" if expanded else "Expand"
+        expand_label = f"{node.label} 펼치기" if korean else f"Expand {node.label}"
+        collapse_label = f"{node.label} 접기" if korean else f"Collapse {node.label}"
+        toggle = (
+            '<button class="project-tree-toggle" type="button" '
+            f'data-tree-toggle data-route="{route}" '
+            f'aria-controls="project-tree-group-{route}" '
+            f'aria-expanded="{"true" if expanded else "false"}" '
+            f'aria-label="{html.escape(node.label + " " + action, quote=True)}" '
+            f'data-expand-label="{html.escape(expand_label, quote=True)}" '
+            f'data-collapse-label="{html.escape(collapse_label, quote=True)}"></button>'
+        )
         children = (
-            f'<div class="project-tree-group" role="group" '
-            f'data-parent-route="{html.escape(node.route, quote=True)}">'
+            f'<div class="project-tree-group" id="project-tree-group-{route}" role="group" '
+            f'data-parent-route="{route}">'
             + "".join(
-                _project_tree_node(child, level=level + 1)
+                _project_tree_node(child, level=level + 1, korean=korean)
                 for child in node.children
             )
             + "</div>"
         )
     return (
         '<div class="project-tree-branch" role="none" data-tree-branch>'
-        f'<a class="project-tree-item" href="#{html.escape(node.route, quote=True)}" '
+        f'{toggle}<a class="project-tree-item" href="#{route}" '
         f'{item_attributes}>'
         f'<span class="project-tree-label">{html.escape(node.label)}</span></a>'
         f"{children}</div>"
@@ -777,7 +792,7 @@ def render_project_workspace(
         ),
     )
     tree = "".join(
-        _project_tree_node(node, level=1, root=True, first=index == 0)
+        _project_tree_node(node, level=1, korean=korean, root=True, first=index == 0)
         for index, node in enumerate(roots)
     )
     details = [
@@ -799,13 +814,16 @@ def render_project_workspace(
     return (
         '<div class="project-workspace" data-project-workspace data-component="project-workspace">'
         '<aside class="project-master">'
+        '<div class="project-master-header"><p class="project-master-title">'
+        + ("프로젝트 목차" if korean else "Project contents")
+        + "</p>"
         '<label class="project-search-label" for="project-search">'
         + ("목차 검색" if korean else "Search contents")
         + '</label><input id="project-search" class="project-search" type="search" '
         + ('placeholder="설계 기준, 문서, 경로 검색"' if korean else 'placeholder="Search criteria, documents, or paths"')
         + ' autocomplete="off"><p class="project-search-empty" role="status" hidden>'
         + ("검색 결과가 없습니다." if korean else "No matching contents.")
-        + "</p>"
+        + "</p></div>"
         '<nav class="project-tree-navigation" aria-label="'
         + ("프로젝트 목차" if korean else "Project contents")
         + '"><div role="tree">'

@@ -152,9 +152,11 @@
   }
   .project-master {
     position: sticky; top: 1rem; max-height: calc(100vh - 2rem); min-width: 0;
-    display: flex; flex-direction: column; padding: 1rem; border: 1px solid var(--border);
-    background: var(--surface);
+    display: flex; flex-direction: column; overflow: hidden;
+    border: 1px solid var(--border); border-radius: 4px; background: var(--surface);
   }
+  .project-master-header { flex: none; padding: 1rem; border-bottom: 1px solid var(--border); }
+  .project-master-title { margin: 0 0 0.75rem; font-size: 1rem; font-weight: 750; }
   .project-search-label {
     display: block; margin-bottom: 0.35rem; color: var(--text-muted);
     font-size: 0.8rem; font-weight: 700;
@@ -165,25 +167,45 @@
     background: var(--bg); color: var(--text); font: inherit;
   }
   .project-search-empty { margin: 0.65rem 0 0; color: var(--text-muted); font-size: 0.85rem; }
-  .project-tree-navigation { min-height: 0; margin-top: 0.75rem; overflow: auto; }
+  .project-tree-navigation {
+    flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
+    padding: 0.5rem 0.35rem 0.75rem 0.5rem; overscroll-behavior: contain;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  .project-tree-navigation::-webkit-scrollbar { width: 8px; }
+  .project-tree-navigation::-webkit-scrollbar-track { background: transparent; }
+  .project-tree-navigation::-webkit-scrollbar-thumb {
+    border: 2px solid transparent; border-radius: 999px;
+    background: var(--border); background-clip: padding-box;
+  }
   .project-tree-branch[hidden] { display: none; }
+  .project-tree-branch {
+    position: relative; display: grid; grid-template-columns: 2rem minmax(0, 1fr); align-items: start;
+  }
   .project-tree-group {
+    grid-column: 1 / -1;
     margin-left: 0.75rem; padding-left: 0.45rem; border-left: 1px solid var(--border);
   }
+  .project-tree-toggle {
+    position: relative; z-index: 1; grid-column: 1; grid-row: 1;
+    width: 2rem; min-height: 44px; padding: 0; border: 0; border-radius: 4px;
+    background: transparent; color: var(--text-muted); cursor: pointer;
+  }
+  .project-tree-toggle:hover { background: var(--accent-soft); color: var(--text); }
+  .project-tree-toggle::before {
+    display: inline-block; content: "▸"; transition: transform 120ms ease;
+  }
+  .project-tree-toggle[aria-expanded="true"]::before { transform: rotate(90deg); }
   .project-tree-item {
-    position: relative; display: flex; align-items: center; min-height: 44px; min-width: 0;
-    padding: 0.45rem 0.6rem 0.45rem 1.5rem; border-left: 3px solid transparent;
+    position: relative; z-index: 0; grid-column: 1 / -1; grid-row: 1;
+    display: flex; align-items: center; min-height: 44px; min-width: 0;
+    padding: 0.45rem 0.6rem 0.45rem 2.15rem; border-left: 3px solid transparent;
     color: var(--text-muted); text-decoration: none; font-size: 0.88rem; line-height: 1.3;
   }
   .project-tree-item:hover { color: var(--text); background: var(--accent-soft); }
   .project-tree-item[aria-selected="true"] {
     border-left-color: var(--accent); background: var(--accent-soft); color: var(--text); font-weight: 700;
   }
-  .project-tree-item[aria-expanded]::before {
-    position: absolute; left: 0.45rem; content: "▸"; color: var(--text-muted);
-    transition: transform 120ms ease;
-  }
-  .project-tree-item[aria-expanded="true"]::before { transform: rotate(90deg); }
   .project-tree-item[aria-expanded="false"] + .project-tree-group { display: none; }
   .project-tree-label { min-width: 0; overflow-wrap: anywhere; }
   .project-detail-pane { min-width: 0; }
@@ -223,7 +245,8 @@
     .source-row > code { grid-column: 1 / -1; }
     .source-error, .source-picker-label { grid-column: 1 / -1; }
     .project-workspace { display: block; }
-    .project-master { position: static; max-height: none; }
+    .project-master { position: static; max-height: none; overflow: visible; }
+    .project-tree-navigation { overflow: visible; }
     .project-detail-pane { display: none; }
     .project-workspace.is-detail .project-master { display: none; }
     .project-workspace.is-detail .project-detail-pane { display: block; }
@@ -350,6 +373,7 @@
     var workspace = document.querySelector('[data-project-workspace]');
     if (!workspace) { return; }
     var items = Array.from(workspace.querySelectorAll('[role="treeitem"]'));
+    var toggles = Array.from(workspace.querySelectorAll('[data-tree-toggle]'));
     var details = Array.from(workspace.querySelectorAll('[data-project-detail]'));
     var search = workspace.querySelector('#project-search');
     var searchEmpty = workspace.querySelector('.project-search-empty');
@@ -369,12 +393,27 @@
       return items.find(function (item) { return item.dataset.route === route; }) || null;
     }
 
+    function toggleForRoute(route) {
+      return toggles.find(function (toggle) { return toggle.dataset.route === route; }) || null;
+    }
+
+    function setExpanded(item, expanded) {
+      if (!item || !item.hasAttribute('aria-expanded')) { return; }
+      var value = expanded ? 'true' : 'false';
+      item.setAttribute('aria-expanded', value);
+      var toggle = toggleForRoute(item.dataset.route);
+      if (toggle) {
+        toggle.setAttribute('aria-expanded', value);
+        toggle.setAttribute('aria-label', expanded ? toggle.dataset.collapseLabel : toggle.dataset.expandLabel);
+      }
+    }
+
     function expandAncestors(item) {
       var group = item && item.closest('[role="group"]');
       while (group) {
         var parentRoute = group.getAttribute('data-parent-route');
         var parent = itemForRoute(parentRoute);
-        if (parent) { parent.setAttribute('aria-expanded', 'true'); }
+        if (parent) { setExpanded(parent, true); }
         group = parent && parent.closest('[role="group"]');
       }
     }
@@ -430,7 +469,7 @@
         if (event.key === 'End') { target = visible[visible.length - 1]; }
         if (event.key === 'ArrowRight' && item.hasAttribute('aria-expanded')) {
           if (item.getAttribute('aria-expanded') === 'false') {
-            item.setAttribute('aria-expanded', 'true');
+            setExpanded(item, true);
           } else {
             var branch = item.closest('[data-tree-branch]');
             target = branch && branch.querySelector('[role="group"] [role="treeitem"]');
@@ -438,7 +477,7 @@
         }
         if (event.key === 'ArrowLeft') {
           if (item.getAttribute('aria-expanded') === 'true') {
-            item.setAttribute('aria-expanded', 'false');
+            setExpanded(item, false);
           } else {
             var group = item.closest('[role="group"]');
             target = group && itemForRoute(group.getAttribute('data-parent-route'));
@@ -454,6 +493,13 @@
           target.focus();
           event.preventDefault();
         }
+      });
+    });
+
+    toggles.forEach(function (toggle) {
+      toggle.addEventListener('click', function () {
+        var item = itemForRoute(toggle.dataset.route);
+        setExpanded(item, toggle.getAttribute('aria-expanded') !== 'true');
       });
     });
 
@@ -473,7 +519,7 @@
             if (matchedChild) {
               branch.hidden = false;
               var item = branch.querySelector(':scope > [role="treeitem"]');
-              if (item) { item.setAttribute('aria-expanded', 'true'); }
+              if (item) { setExpanded(item, true); }
             }
           });
         }

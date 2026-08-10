@@ -45,6 +45,23 @@ for (const viewport of viewports) {
       await expect(page.locator('[data-project-detail][data-route="project-overview"]')).toBeVisible();
     }
 
+    const designRoot = page.locator('[data-route="project-design-criteria"][role="treeitem"]');
+    const designToggle = page.locator('[data-tree-toggle][data-route="project-design-criteria"]');
+    const designGroup = page.locator('[role="group"][data-parent-route="project-design-criteria"]');
+    await expect(designRoot).toHaveAttribute('aria-expanded', 'false');
+    await expect(designToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(designGroup).toBeHidden();
+    await designToggle.click();
+    await expect(designRoot).toHaveAttribute('aria-expanded', 'true');
+    await expect(designToggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(designGroup).toBeVisible();
+    await designToggle.click();
+    await expect(designRoot).toHaveAttribute('aria-expanded', 'false');
+    await expect(designGroup).toBeHidden();
+
+    const structureToggle = page.locator('[data-tree-toggle][data-route="project-structure"]');
+    await structureToggle.click();
+
     const structureItem = page.locator('[data-node-kind="structure-entry"]').first();
     await structureItem.click();
     const structureDetail = page.locator('[data-project-detail].is-active');
@@ -65,6 +82,14 @@ for (const viewport of viewports) {
     if (viewport.name === 'mobile') {
       await page.locator('.project-back').click();
       await expect(page.locator('.project-master')).toBeVisible();
+    } else {
+      const scrollGeometry = await page.locator('.project-master').evaluate((master) => {
+        const nav = master.querySelector('.project-tree-navigation');
+        const masterRight = master.getBoundingClientRect().right;
+        const navRight = nav.getBoundingClientRect().right;
+        return { edgeOffset: Math.abs(masterRight - navRight) };
+      });
+      expect(scrollGeometry.edgeOffset).toBeLessThanOrEqual(1);
     }
 
     const treeItem = page.locator('[role="treeitem"]:visible').first();

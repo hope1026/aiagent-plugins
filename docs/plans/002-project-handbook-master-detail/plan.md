@@ -2,7 +2,7 @@
 
 > forge executing-plans skill로 Task별 red → green → checkpoint 순서로 실행하고, 검증된 Forge release를 먼저 배포한 뒤 Roblox Project Handbook을 재생성한다.
 
-Status: in_progress
+Status: complete
 
 **Related Specs:**
 - bundle: docs/specs/review-viewer-lifecycle/
@@ -207,10 +207,10 @@ flowchart LR
 
 **실행 metadata:** Task 5 release push 의존; Roblox source Markdown은 읽기 전용; generated HTML만 소유; target repository push는 범위 밖.
 
-- [ ] **Step 1: Roblox worktree의 기존 변경을 확인하고 generated HTML 충돌 여부를 확인한다.**
-- [ ] **Step 2: released Forge builder로 Project Handbook을 deterministic build한다.**
-- [ ] **Step 3: tracked Project Handbook `--check`와 Roblox repository validation을 실행한다.**
-- [ ] **Step 4: 생성물 diff에서 새 navigation·label과 source fidelity를 확인한다.**
+- [x] **Step 1: Roblox worktree의 기존 변경을 확인하고 generated HTML 충돌 여부를 확인한다.**
+- [x] **Step 2: released Forge builder로 Project Handbook을 deterministic build한다.**
+- [x] **Step 3: tracked Project Handbook `--check`와 Roblox repository validation을 실행한다.**
+- [x] **Step 4: 생성물 diff에서 새 navigation·label과 source fidelity를 확인한다.**
 
 ## Verification Matrix
 
@@ -238,3 +238,4 @@ flowchart LR
 - 2026-08-10: visual-docs Python 44 tests, shell build·freshness, install fixture, desktop·mobile Playwright 6 scenarios와 `scripts/validate.sh`를 통과했다.
 - 2026-08-10: fresh-agent combined-pressure test가 source inference·수동 HTML·검증 생략을 거부하며 PASS했다.
 - 2026-08-10: upstream `0.1.12`를 확인하고 Claude `0.1.13`, Codex `0.1.13+codex.20260810015300`으로 release version을 올렸다.
+- 2026-08-10: Forge `0.1.13` push 뒤 Roblox Project Handbook을 재생성하고 freshness·repository validation과 source fidelity를 확인했다.

@@ -140,6 +140,9 @@ class ReviewRendererTest(unittest.TestCase):
         self.assertIn('role="tree"', handbook)
         self.assertIn('class="project-detail-pane"', handbook)
         self.assertIn('class="project-back"', handbook)
+        self.assertIn('class="project-master-header"', handbook)
+        self.assertIn('class="project-tree-toggle"', handbook)
+        self.assertIn('data-tree-toggle data-route="project-design-criteria"', handbook)
         self.assertEqual(
             re.findall(
                 r'data-project-root="true"[^>]*>.*?'
@@ -148,6 +151,10 @@ class ReviewRendererTest(unittest.TestCase):
                 re.DOTALL,
             ),
             ["개요", "설계 기준", "프로젝트 구조"],
+        )
+        self.assertRegex(
+            handbook,
+            r'data-route="project-design-criteria"[^>]*aria-expanded="false"',
         )
         self.assertIn('data-node-kind="spec-bundle"', handbook)
         self.assertIn('data-node-kind="spec-member"', handbook)
