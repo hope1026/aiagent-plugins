@@ -193,8 +193,8 @@ flowchart LR
 - [x] **Step 1: visual-docs unit·shell·browser suites와 canonical spec validation을 실행한다.**
 - [x] **Step 2: updated skill을 대상으로 결합 압력 scenario fresh-agent test를 실행한다.**
 - [x] **Step 3: `bash scripts/validate.sh`를 실행하고 failure를 0으로 만든다.**
-- [ ] **Step 4: upstream version을 다시 확인하고 Claude·Codex manifest version을 올린다.**
-- [ ] **Step 5: release commit을 만들고 `main`을 `origin/main`에 push한다.**
+- [x] **Step 4: upstream version을 다시 확인하고 Claude·Codex manifest version을 올린다.**
+- [x] **Step 5: release commit을 만들고 `main`을 `origin/main`에 push한다.**
 
 ### Task 6: Roblox Project Handbook 재생성
 
@@ -237,3 +237,4 @@ flowchart LR
 - 2026-08-10: 기존 renderer가 master/detail contract 부재로 실패하는 RED를 확인한 뒤 semantic tree와 addressable detail을 구현했다.
 - 2026-08-10: visual-docs Python 44 tests, shell build·freshness, install fixture, desktop·mobile Playwright 6 scenarios와 `scripts/validate.sh`를 통과했다.
 - 2026-08-10: fresh-agent combined-pressure test가 source inference·수동 HTML·검증 생략을 거부하며 PASS했다.
+- 2026-08-10: upstream `0.1.12`를 확인하고 Claude `0.1.13`, Codex `0.1.13+codex.20260810015300`으로 release version을 올렸다.
