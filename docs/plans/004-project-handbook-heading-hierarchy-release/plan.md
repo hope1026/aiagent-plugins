@@ -161,7 +161,7 @@ flowchart LR
 - [x] **Step 1: Python 전체 test와 deterministic build·freshness shell suite를 실행한다.**
 - [x] **Step 2: Playwright를 desktop 1440px·mobile 390px에서 실행해 nested disclosure, selection, keyboard, deep link와 Mermaid detail을 확인한다.**
 - [x] **Step 3: install fixture와 `bash scripts/validate.sh`를 실행해 failure 0을 확인한다.**
-- [ ] **Step 4: diff를 검토하고 implementation·tests·plan을 `fix(forge): preserve project handbook heading hierarchy`로 commit한다.**
+- [x] **Step 4: diff를 검토하고 implementation·tests·plan을 `fix(forge): preserve project handbook heading hierarchy`로 commit한다.**
 
 ### Task 4: Forge `0.1.15`를 release한다
 
@@ -174,9 +174,9 @@ flowchart LR
 
 **실행 metadata:** Task 3 의존; manifest·release 소유; sequential; user release approval 획득.
 
-- [ ] **Step 1: `origin/main`을 fetch하고 upstream `0.1.14`보다 큰 base version을 확인한다.**
-- [ ] **Step 2: 두 manifest version을 올리고 `bash scripts/validate.sh`를 다시 통과시킨다.**
-- [ ] **Step 3: `chore(forge): release 0.1.15` commit을 만들고 outgoing commit·file 범위를 검토한다.**
+- [x] **Step 1: `origin/main`을 fetch하고 upstream `0.1.14`보다 큰 base version을 확인한다.**
+- [x] **Step 2: 두 manifest version을 올리고 `bash scripts/validate.sh`를 다시 통과시킨다.**
+- [x] **Step 3: `chore(forge): release 0.1.15` commit을 만들고 outgoing commit·file 범위를 검토한다.**
 - [ ] **Step 4: `main`을 push하고 local·remote SHA 일치와 clean worktree를 확인한다.**
 
 ### Task 5: 현재 머신의 Forge 설치를 갱신한다
