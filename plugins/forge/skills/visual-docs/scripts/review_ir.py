@@ -34,6 +34,7 @@ class SemanticBlock:
     source_path: str
     kind: str
     heading: str
+    heading_path: tuple[str, ...]
     body: str
     line: int
     end_line: int
@@ -124,6 +125,7 @@ def _source_blocks(source: ReviewSource) -> tuple[tuple[str, ...], tuple[Semanti
     blocks: list[SemanticBlock] = []
     counters: dict[str, int] = {}
     section = "Document"
+    heading_stack: list[tuple[int, str]] = []
     index = _frontmatter_end(lines)
 
     def append(
@@ -133,7 +135,10 @@ def _source_blocks(source: ReviewSource) -> tuple[tuple[str, ...], tuple[Semanti
         body: str,
         heading: str | None = None,
     ) -> None:
-        block_heading = heading or section
+        block_heading = heading or (heading_stack[-1][1] if heading_stack else section)
+        block_heading_path = tuple(title for _, title in heading_stack) or (
+            block_heading,
+        )
         section_slug = _slug(block_heading)
         offset = counters.get(section_slug, 0)
         counters[section_slug] = offset + 1
@@ -144,6 +149,7 @@ def _source_blocks(source: ReviewSource) -> tuple[tuple[str, ...], tuple[Semanti
                 source_path=source.path,
                 kind=kind,
                 heading=block_heading,
+                heading_path=block_heading_path,
                 body=body,
                 line=start + 1,
                 end_line=end,
@@ -157,10 +163,17 @@ def _source_blocks(source: ReviewSource) -> tuple[tuple[str, ...], tuple[Semanti
             continue
         if heading := _HEADING_RE.fullmatch(line):
             level, title = heading.groups()
+            heading_level = len(level)
             outline.append(title)
-            if len(level) == 2:
+            if heading_level == 1:
+                heading_stack.clear()
+            else:
+                while heading_stack and heading_stack[-1][0] >= heading_level:
+                    heading_stack.pop()
+                heading_stack.append((heading_level, title))
+            if heading_level == 2:
                 section = title
-            elif len(level) == 3:
+            elif heading_level == 3:
                 append("heading", index, index + 1, line, title)
             index += 1
             continue

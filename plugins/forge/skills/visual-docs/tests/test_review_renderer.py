@@ -173,6 +173,29 @@ class ReviewRendererTest(unittest.TestCase):
         self.assertEqual(review_components._project_term("Launch Baseline", True), "출시 기준")
         self.assertEqual(review_components._project_term("Behaviour & Flows", True), "동작과 흐름")
 
+        visual_map = (
+            "docs/specs/semantic-spec-bundles/supporting-visual-map.md"
+        )
+        parent_route = review_components._project_route(
+            "spec-section", f"{visual_map}\0Runtime Map"
+        )
+        child_route = review_components._project_route(
+            "spec-section", f"{visual_map}\0Runtime Map\0Source intake"
+        )
+        self.assertIn(f'data-route="{parent_route}"', handbook)
+        self.assertRegex(
+            handbook,
+            rf'data-route="{parent_route}"[^>]*aria-expanded="false".*?'
+            rf'data-parent-route="{parent_route}".*?data-route="{child_route}"',
+        )
+        child_start = handbook.index(
+            f'data-project-detail data-route="{child_route}"'
+        )
+        child_end = handbook.find('<article class="project-detail', child_start + 1)
+        child_detail = handbook[child_start:child_end if child_end >= 0 else None]
+        self.assertIn('class="diagram-card"', child_detail)
+        self.assertIn("flowchart LR", child_detail)
+
         project_members = {
             (row["path"], row["sha256"])
             for row in project_parsed.manifest["member_sources"]

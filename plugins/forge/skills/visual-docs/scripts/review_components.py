@@ -574,15 +574,15 @@ def _project_structure_parts(
     return tuple(nodes), tuple(details), overview
 
 
-def _section_for_block(
+def _section_path_for_block(
     block: SemanticBlock,
     entities: tuple[SemanticEntity, ...],
-) -> str:
+) -> tuple[str, ...]:
     if any(entity.entity_type == "requirement" for entity in entities):
-        return "Requirements"
+        return ("Requirements",)
     if any(entity.entity_type == "acceptance" for entity in entities):
-        return "Acceptance Criteria"
-    return block.heading
+        return ("Acceptance Criteria",)
+    return block.heading_path or (block.heading,)
 
 
 def _project_spec_parts(
@@ -627,19 +627,67 @@ def _project_spec_parts(
         for document in documents:
             member_title = str(document.metadata.get("member_title", document.path))
             member_route = _project_route("spec-member", document.path)
-            sections: dict[str, list[SemanticBlock]] = {}
+            sections: dict[tuple[str, ...], list[SemanticBlock]] = {}
+            section_order: list[tuple[str, ...]] = []
             for block in document.blocks:
                 if block.key not in allowed_blocks:
                     continue
-                section = _section_for_block(block, entities_by_block.get(block.key, ()))
-                sections.setdefault(section, []).append(block)
-            section_nodes: list[ProjectNavNode] = []
+                path = _section_path_for_block(
+                    block, entities_by_block.get(block.key, ())
+                )
+                for depth in range(1, len(path) + 1):
+                    prefix = path[:depth]
+                    if prefix not in sections:
+                        sections[prefix] = []
+                        section_order.append(prefix)
+                sections[path].append(block)
+            children_by_path: dict[
+                tuple[str, ...], list[tuple[str, ...]]
+            ] = {path: [] for path in section_order}
+            root_paths: list[tuple[str, ...]] = []
+            for path in section_order:
+                parent = path[:-1]
+                if parent and parent in children_by_path:
+                    children_by_path[parent].append(path)
+                else:
+                    root_paths.append(path)
+
+            def section_route(path: tuple[str, ...]) -> str:
+                return _project_route(
+                    "spec-section", f"{document.path}\0" + "\0".join(path)
+                )
+
+            def section_node(path: tuple[str, ...]) -> ProjectNavNode:
+                return ProjectNavNode(
+                    section_route(path),
+                    "spec-section",
+                    _project_term(path[-1], korean),
+                    tuple(
+                        section_node(child) for child in children_by_path[path]
+                    ),
+                )
+
+            section_nodes = [section_node(path) for path in root_paths]
             section_links: list[str] = []
-            for section, blocks in sections.items():
-                section_route = _project_route("spec-section", f"{document.path}\0{section}")
-                section_label = _project_term(section, korean)
-                section_nodes.append(ProjectNavNode(section_route, "spec-section", section_label))
-                section_links.append(f'<li><a href="#{section_route}">{html.escape(section_label)}</a></li>')
+            for path in root_paths:
+                route = section_route(path)
+                label = _project_term(path[-1], korean)
+                section_links.append(
+                    f'<li><a href="#{route}">{html.escape(label)}</a></li>'
+                )
+            for path in section_order:
+                blocks = sections[path]
+                route = section_route(path)
+                section_label = _project_term(path[-1], korean)
+                visible_blocks = [
+                    block
+                    for block in blocks
+                    if block.kind != "heading"
+                    or any(
+                        entity.entity_type in {"requirement", "acceptance"}
+                        for entity in entities_by_block.get(block.key, ())
+                    )
+                ]
                 block_markup = "".join(
                     _block_markup(
                         block,
@@ -649,17 +697,51 @@ def _project_spec_parts(
                         rendered_entities,
                         coverage_targets,
                     )
-                    for block in blocks
+                    for block in visible_blocks
                 )
-                line_start = min(block.line for block in blocks)
-                line_end = max(block.end_line for block in blocks)
+                child_paths = children_by_path[path]
+                child_index = (
+                    '<h3>'
+                    + ("하위 항목" if korean else "Topics")
+                    + '</h3><ul class="project-index-list">'
+                    + "".join(
+                        '<li><a href="#'
+                        + section_route(child)
+                        + '">'
+                        + html.escape(_project_term(child[-1], korean))
+                        + "</a></li>"
+                        for child in child_paths
+                    )
+                    + "</ul>"
+                    if child_paths
+                    else ""
+                )
+                if not block_markup and not child_index:
+                    block_markup = (
+                        '<p class="project-section-lede">'
+                        + (
+                            "이 항목에는 별도 본문이 없습니다."
+                            if korean
+                            else "This topic has no separate body content."
+                        )
+                        + "</p>"
+                    )
+                subtree_blocks = [
+                    block
+                    for candidate, candidate_blocks in sections.items()
+                    if candidate[: len(path)] == path
+                    for block in candidate_blocks
+                ]
+                line_start = min(block.line for block in subtree_blocks)
+                line_end = max(block.end_line for block in subtree_blocks)
                 details.append(
                     _project_detail(
-                        section_route,
+                        route,
                         "spec-section",
                         section_label,
                         f'<p class="project-detail-kicker">{html.escape(member_title)}</p>'
                         + block_markup
+                        + child_index
                         + '<details class="project-evidence"><summary>'
                         + html.escape(_project_term("Developer information", korean))
                         + '</summary><p class="provenance"><code>'

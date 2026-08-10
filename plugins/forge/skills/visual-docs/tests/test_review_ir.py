@@ -199,6 +199,25 @@ class ReviewIRTest(unittest.TestCase):
             )
         )
 
+    def test_nested_heading_path_owns_following_content(self) -> None:
+        bundle = collect_spec_sources(
+            REPOSITORY / "docs/specs/semantic-spec-bundles", (), REPOSITORY
+        )
+
+        ir = build_semantic_ir(bundle)
+
+        document = next(
+            item
+            for item in ir.documents
+            if item.path.endswith("supporting-visual-map.md")
+        )
+        mermaid = next(block for block in document.blocks if block.kind == "mermaid")
+        self.assertEqual(
+            getattr(mermaid, "heading_path", ()),
+            ("Runtime Map", "Source intake"),
+        )
+        self.assertEqual(mermaid.heading, "Source intake")
+
     def test_acceptance_relations_reference_existing_entities(self) -> None:
         bundle = collect_spec_sources(
             REPOSITORY / "docs/specs/semantic-spec-bundles", (), REPOSITORY

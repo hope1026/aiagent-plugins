@@ -55,6 +55,30 @@ for (const viewport of viewports) {
     await expect(designRoot).toHaveAttribute('aria-expanded', 'true');
     await expect(designToggle).toHaveAttribute('aria-expanded', 'true');
     await expect(designGroup).toBeVisible();
+
+    const bundleItem = page.locator('[data-node-kind="spec-bundle"]').first();
+    const bundleRoute = await bundleItem.getAttribute('data-route');
+    await page.locator(`[data-tree-toggle][data-route="${bundleRoute}"]`).click();
+    const visualMapItem = page.locator('[data-node-kind="spec-member"]')
+      .filter({ hasText: 'Supporting Visual Map' });
+    const visualMapRoute = await visualMapItem.getAttribute('data-route');
+    await page.locator(`[data-tree-toggle][data-route="${visualMapRoute}"]`).click();
+    const runtimeItem = page.locator('[data-node-kind="spec-section"]')
+      .filter({ hasText: 'Runtime Map' });
+    await expect(runtimeItem).toHaveAttribute('aria-expanded', 'false');
+    const runtimeRoute = await runtimeItem.getAttribute('data-route');
+    await page.locator(`[data-tree-toggle][data-route="${runtimeRoute}"]`).click();
+    const sourceIntakeItem = page.locator('[data-node-kind="spec-section"]')
+      .filter({ hasText: 'Source intake' });
+    await sourceIntakeItem.click();
+    const sourceIntakeDetail = page.locator('[data-project-detail].is-active');
+    await expect(sourceIntakeDetail).toContainText('Source intake');
+    await expect(sourceIntakeDetail.locator('.diagram-card')).toHaveCount(1);
+    if (viewport.name === 'mobile') {
+      await page.locator('.project-back').click();
+      await expect(page.locator('.project-master')).toBeVisible();
+    }
+
     await designToggle.click();
     await expect(designRoot).toHaveAttribute('aria-expanded', 'false');
     await expect(designGroup).toBeHidden();
