@@ -2,7 +2,7 @@
 
 > forge executing-plans skill로 기존 Project Handbook 탐색 보완을 재검증하고 Forge `0.1.14`로 배포한다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - bundle: docs/specs/review-viewer-lifecycle/
@@ -70,7 +70,7 @@ flowchart LR
 - [x] **Step 1: unit test에서 disclosure button·초기 compact tree·desktop과 mobile scroll contract를 확인한다.**
 - [x] **Step 2: desktop 1440px과 mobile 390px browser suite에서 click·keyboard·deep link·overflow를 확인한다.**
 - [x] **Step 3: Python 전체 test, build·freshness, install fixture와 `bash scripts/validate.sh`를 통과시킨다.**
-- [ ] **Step 4: 구현·테스트·계획을 `fix(forge): repair project handbook navigation controls`로 commit한다.**
+- [x] **Step 4: 구현·테스트·계획을 `fix(forge): repair project handbook navigation controls`로 commit한다.**
 
 ### Task 2: Forge `0.1.14`를 release한다
 
@@ -83,10 +83,10 @@ flowchart LR
 
 **실행 metadata:** Task 1 의존; manifest·release 소유; user approval 획득.
 
-- [ ] **Step 1: `origin/main`을 fetch하고 local base가 upstream보다 큰지 확인한다.**
-- [ ] **Step 2: 두 manifest version을 올리고 전체 validation을 다시 실행한다.**
-- [ ] **Step 3: `chore(forge): release 0.1.14` commit을 만들고 outgoing commits와 파일 범위를 검토한다.**
-- [ ] **Step 4: `main`을 `origin/main`에 push하고 remote HEAD 일치와 clean worktree를 확인한다.**
+- [x] **Step 1: `origin/main`을 fetch하고 local base가 upstream보다 큰지 확인한다.**
+- [x] **Step 2: 두 manifest version을 올리고 전체 validation을 다시 실행한다.**
+- [x] **Step 3: `chore(forge): release 0.1.14` commit을 만들고 outgoing commits와 파일 범위를 검토한다.**
+- [x] **Step 4: `main`을 `origin/main`에 push하고 remote HEAD 일치와 clean worktree를 확인한다.**
 
 ## Verification Matrix
 
@@ -106,3 +106,5 @@ flowchart LR
 - 2026-08-10: unit·browser RED를 먼저 확인하고 disclosure control, compact default tree, aligned scrollbar와 mobile document scroll을 구현했다.
 - 2026-08-10: Canonical bundle inspect에서 `forge/spec@3`, `approved`, diagnostics 0, bundle SHA `87f599407d84af4fe8fbc5b1a17b7f683efdbe461e9137c8fe583d6554262b0e`를 확인했다.
 - 2026-08-10: Python 44 tests, desktop·mobile Playwright 6 scenarios, build·freshness와 install fixture가 통과했다.
+- 2026-08-10: 구현을 `a4ba0df`로 commit하고 upstream `0.1.13`보다 큰 Claude `0.1.14`, Codex `0.1.14+codex.20260810023652`를 설정했다.
+- 2026-08-10: version 변경 뒤 `scripts/validate.sh`를 다시 통과하고 release commit과 `origin/main` push를 승인된 경계에서 실행했다.
