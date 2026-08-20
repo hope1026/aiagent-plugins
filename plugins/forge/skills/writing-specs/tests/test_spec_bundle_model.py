@@ -17,6 +17,24 @@ import spec_model  # noqa: E402
 
 
 class SpecBundleModelTest(unittest.TestCase):
+    def test_loads_requirement_only_bundle_without_acceptance_statements(self) -> None:
+        fixture = TEST_DIR / "fixtures/spec-bundle/valid-requirement-only"
+
+        bundle, diagnostics = spec_model.load_spec_bundle(fixture, TEST_DIR)
+
+        self.assertEqual(diagnostics, ())
+        self.assertIsNotNone(bundle)
+        assert bundle is not None
+        self.assertEqual(
+            [(statement.kind, statement.heading) for statement in bundle.statements],
+            [
+                (
+                    "requirement",
+                    "Requirement-only bundles preserve one directly inspectable policy",
+                )
+            ],
+        )
+
     def test_loads_root_members_statements_and_deterministic_hash(self) -> None:
         fixture = TEST_DIR / "fixtures/spec-bundle/valid-multi-file"
         loader = getattr(spec_model, "load_spec_bundle", None)

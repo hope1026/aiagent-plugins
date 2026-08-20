@@ -2,13 +2,13 @@
 
 ## Requirements
 
-### Requirement와 Acceptance Criterion은 각각 `Requirements`와 `Acceptance Criteria` 아래 H3의 완전한 문장이어야 하며 bundle path, member path와 exact heading이 사람이 읽는 identity여야 한다. 각 Acceptance Criterion은 같은 bundle의 Requirement를 member path, heading anchor와 exact link text로 하나 이상 참조해야 하고 모든 활성 Requirement는 하나 이상의 Acceptance Criterion으로 coverage되어야 한다.
+### Requirement는 `Requirements` 아래 H3의 완전한 문장이어야 하고, Acceptance Criterion은 bundle이 `Acceptance Criteria`를 사용할 때 그 section 아래 H3의 완전한 문장이어야 하며, bundle path, member path와 exact heading이 사람이 읽는 identity여야 한다. `Acceptance Criteria` section이 있으면 하나 이상의 Acceptance statement를 포함해야 한다. Acceptance Criterion이 하나라도 있으면 각 Acceptance Criterion은 같은 bundle의 Requirement를 member path, heading anchor와 exact link text로 하나 이상 참조하고 모든 Requirement를 coverage해야 한다. Acceptance Criterion이 없으면 missing Acceptance나 coverage diagnostic을 만들지 않아야 한다.
 
 ### `writing-specs`는 new, change, clarify, sync 모든 mode에서 `forge/spec@3` Spec Bundle을 작성하고 approval request 전에 repository 전체 bundle validation을 실행해야 한다.
 
-### validator는 root metadata, bundle·member layout, `Documents` 목록의 완전성, H1과 필수 semantic section, statement uniqueness·reference·coverage, clarification gate, related bundle resolution, internal Markdown link, Mermaid syntax와 deterministic bundle hash를 검사해야 한다. 임의 서술 section의 이름이나 순서는 오류로 처리하지 않아야 한다.
+### validator는 root metadata, bundle·member layout, `Documents` 목록의 완전성, H1, 필수 `Requirements`와 `Decisions & History`, 선택적인 `Acceptance Criteria`의 section 일관성, statement uniqueness·reference·조건부 coverage, clarification gate, related bundle resolution, internal Markdown link, Mermaid syntax와 deterministic bundle hash를 검사해야 한다. 임의 서술 section의 이름이나 순서는 오류로 처리하지 않아야 한다.
 
-### `approved` 또는 `implemented` bundle에 `[NEEDS CLARIFICATION]`가 하나라도 있거나 Requirement·Acceptance Criterion coverage가 불완전하면 validation은 실패해야 한다.
+### `approved` 또는 `implemented` bundle에 `[NEEDS CLARIFICATION]`가 하나라도 있거나 Requirement가 없거나 빈 `Acceptance Criteria` section이 있거나 Acceptance Criterion이 존재하는데 coverage가 불완전하면 validation은 실패해야 한다.
 
 ### validation 실패는 spec 작성·변경 완료, approval request와 plan handoff를 차단하고 bundle path, member path와 사람이 수정할 수 있는 오류 원인을 반환해야 한다. Validation 성공 또는 실패는 HTML 생성 trigger가 아니어야 한다.
 
@@ -24,13 +24,13 @@
 
 ## Acceptance Criteria
 
-### missing·duplicate root, undeclared·missing member, 숫자 prefix, 범용 filename, symlink·escape, duplicate statement, broken anchor, link text mismatch, missing coverage, invalid relation·Mermaid와 approved clarification fixture를 validate하면 정렬된 deterministic 진단과 non-zero exit가 나오고 approval과 plan handoff가 중단되지만 HTML은 생성되지 않는다.
+### `Acceptance Criteria` section이 없는 Requirement-only fixture와 완전한 coverage를 가진 acceptance-bearing fixture를 validate하면 둘 다 성공한다. missing·duplicate root, undeclared·missing member, 숫자 prefix, 범용 filename, symlink·escape, missing Requirement, 빈 `Acceptance Criteria` section, duplicate statement, broken anchor, link text mismatch, acceptance-bearing missing coverage, invalid relation·Mermaid와 approved clarification fixture를 validate하면 정렬된 deterministic 진단과 non-zero exit가 나오고 approval과 plan handoff가 중단되지만 HTML은 생성되지 않는다.
 
 검증하는 요구사항:
 
 - [`writing-specs`는 new, change, clarify, sync 모든 mode에서 `forge/spec@3` Spec Bundle을 작성하고 approval request 전에 repository 전체 bundle validation을 실행해야 한다.](statement-traceability-and-validation.md#writing-specs는-new-change-clarify-sync-모든-mode에서-forgespec3-spec-bundle을-작성하고-approval-request-전에-repository-전체-bundle-validation을-실행해야-한다)
-- [validator는 root metadata, bundle·member layout, `Documents` 목록의 완전성, H1과 필수 semantic section, statement uniqueness·reference·coverage, clarification gate, related bundle resolution, internal Markdown link, Mermaid syntax와 deterministic bundle hash를 검사해야 한다. 임의 서술 section의 이름이나 순서는 오류로 처리하지 않아야 한다.](statement-traceability-and-validation.md#validator는-root-metadata-bundlemember-layout-documents-목록의-완전성-h1과-필수-semantic-section-statement-uniquenessreferencecoverage-clarification-gate-related-bundle-resolution-internal-markdown-link-mermaid-syntax와-deterministic-bundle-hash를-검사해야-한다-임의-서술-section의-이름이나-순서는-오류로-처리하지-않아야-한다)
-- [`approved` 또는 `implemented` bundle에 `[NEEDS CLARIFICATION]`가 하나라도 있거나 Requirement·Acceptance Criterion coverage가 불완전하면 validation은 실패해야 한다.](statement-traceability-and-validation.md#approved-또는-implemented-bundle에-needs-clarification가-하나라도-있거나-requirementacceptance-criterion-coverage가-불완전하면-validation은-실패해야-한다)
+- [validator는 root metadata, bundle·member layout, `Documents` 목록의 완전성, H1, 필수 `Requirements`와 `Decisions & History`, 선택적인 `Acceptance Criteria`의 section 일관성, statement uniqueness·reference·조건부 coverage, clarification gate, related bundle resolution, internal Markdown link, Mermaid syntax와 deterministic bundle hash를 검사해야 한다. 임의 서술 section의 이름이나 순서는 오류로 처리하지 않아야 한다.](statement-traceability-and-validation.md#validator는-root-metadata-bundlemember-layout-documents-목록의-완전성-h1-필수-requirements와-decisions-history-선택적인-acceptance-criteria의-section-일관성-statement-uniquenessreference조건부-coverage-clarification-gate-related-bundle-resolution-internal-markdown-link-mermaid-syntax와-deterministic-bundle-hash를-검사해야-한다-임의-서술-section의-이름이나-순서는-오류로-처리하지-않아야-한다)
+- [`approved` 또는 `implemented` bundle에 `[NEEDS CLARIFICATION]`가 하나라도 있거나 Requirement가 없거나 빈 `Acceptance Criteria` section이 있거나 Acceptance Criterion이 존재하는데 coverage가 불완전하면 validation은 실패해야 한다.](statement-traceability-and-validation.md#approved-또는-implemented-bundle에-needs-clarification가-하나라도-있거나-requirement가-없거나-빈-acceptance-criteria-section이-있거나-acceptance-criterion이-존재하는데-coverage가-불완전하면-validation은-실패해야-한다)
 - [validation 실패는 spec 작성·변경 완료, approval request와 plan handoff를 차단하고 bundle path, member path와 사람이 수정할 수 있는 오류 원인을 반환해야 한다. Validation 성공 또는 실패는 HTML 생성 trigger가 아니어야 한다.](statement-traceability-and-validation.md#validation-실패는-spec-작성변경-완료-approval-request와-plan-handoff를-차단하고-bundle-path-member-path와-사람이-수정할-수-있는-오류-원인을-반환해야-한다-validation-성공-또는-실패는-html-생성-trigger가-아니어야-한다)
 - [`writing-plans`, `executing-plans`, `verifying-work`와 다른 Forge lifecycle skill은 공통 bundle parser가 반환한 root metadata, member 목록, statement와 status를 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#writing-plans-executing-plans-verifying-work와-다른-forge-lifecycle-skill은-공통-bundle-parser가-반환한-root-metadata-member-목록-statement와-status를-사용해야-한다)
 - [validator와 parser는 같은 bundle bytes에서 같은 결과를 반환하고 진단을 `(bundle path, member path, line, code)` 순서로 정렬하며 외부 network, machine locale 또는 agent 추론에 의존하지 않아야 한다.](statement-traceability-and-validation.md#validator와-parser는-같은-bundle-bytes에서-같은-결과를-반환하고-진단을-bundle-path-member-path-line-code-순서로-정렬하며-외부-network-machine-locale-또는-agent-추론에-의존하지-않아야-한다)

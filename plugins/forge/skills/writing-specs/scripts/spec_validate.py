@@ -184,6 +184,9 @@ def _non_root_frontmatter_diagnostics(
 def _validate_bundle_statements(bundle: SpecBundle, errors: list[Diagnostic]) -> None:
     requirements = tuple(item for item in bundle.statements if item.kind == "requirement")
     acceptance = tuple(item for item in bundle.statements if item.kind == "acceptance")
+    acceptance_section_count = sum(
+        member.section_order.count("Acceptance Criteria") for member in bundle.members
+    )
     if not requirements:
         errors.append(
             _diagnostic(
@@ -193,16 +196,15 @@ def _validate_bundle_statements(bundle: SpecBundle, errors: list[Diagnostic]) ->
                 "A spec bundle must contain at least one Requirement statement.",
             )
         )
-    if not acceptance:
+    if acceptance_section_count and not acceptance:
         errors.append(
             _diagnostic(
                 bundle.root_path,
                 1,
-                "BUNDLE_ACCEPTANCE_MISSING",
-                "A spec bundle must contain at least one Acceptance statement.",
+                "BUNDLE_ACCEPTANCE_EMPTY",
+                "An Acceptance Criteria section must contain at least one Acceptance statement.",
             )
         )
-
     history_count = sum(
         member.section_order.count("Decisions & History") for member in bundle.members
     )
@@ -306,16 +308,17 @@ def _validate_bundle_statements(bundle: SpecBundle, errors: list[Diagnostic]) ->
                 continue
             covered.add((target.member_path, target.heading))
 
-    for requirement in requirements:
-        if (requirement.member_path, requirement.heading) not in covered:
-            errors.append(
-                _diagnostic(
-                    requirement.member_path,
-                    requirement.line,
-                    "STATEMENT_COVERAGE",
-                    "Every Requirement statement must be verified by an Acceptance statement.",
+    if acceptance:
+        for requirement in requirements:
+            if (requirement.member_path, requirement.heading) not in covered:
+                errors.append(
+                    _diagnostic(
+                        requirement.member_path,
+                        requirement.line,
+                        "STATEMENT_COVERAGE",
+                        "Every Requirement statement must be verified when Acceptance Criteria is present.",
+                    )
                 )
-            )
 
 
 def _validate_bundle_relations(

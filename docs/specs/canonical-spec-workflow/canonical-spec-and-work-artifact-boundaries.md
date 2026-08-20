@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: policy
 subtype: workflow-lifecycle
@@ -41,7 +41,7 @@ Canonical Spec 필요 여부와 실행 계획 필요 여부는 같은 축이 아
 | Execution Plan | 구현 순서, 의존성, 파일, 검증과 checkpoint | `docs/plans/PPP-<slug>/plan.md` | 필요할 때 추적·작업 수명 | 실행 source이며 SOT 아님 |
 | Verification Evidence | test, build, reproduction과 관찰 결과 | 대화, plan progress 또는 명시적 evidence 문서 | 용도에 따라 일시적 또는 보존 | 완료 주장의 증거 |
 
-`Requirements`와 `Acceptance Criteria`는 Canonical Spec의 규범적 계약에만 사용한다. Change Brief는 `Goal`, `Scope`, `Out of Scope`, `Done Checks`를 사용하고, Execution Plan은 `Task`, `Step`, `Checkpoint`, `Verification`을 사용한다.
+`Requirements`와, bundle이 선택한 경우 `Acceptance Criteria`는 Canonical Spec의 규범적 계약에만 사용한다. Change Brief는 `Goal`, `Scope`, `Out of Scope`, `Done Checks`를 사용하고, Execution Plan은 `Task`, `Step`, `Checkpoint`, `Verification`을 사용한다.
 
 `approved` Canonical Spec은 구현 예정인 승인된 의도를, `implemented` Canonical Spec은 검증된 구현 일치까지 나타낸다. `draft` 문서와 Spec Delta는 제안이며 현재 SOT가 아니다.
 
@@ -62,7 +62,7 @@ flowchart TD
     H -->|"예"| J["Execution Plan 작성 후 실행"]
     E --> K["Fresh focused verification"]
     F --> L["Plan verification"]
-    I --> M["영향받는 AC + command verification"]
+    I --> M["Canonical verification set + command verification"]
     J --> M
 ```
 

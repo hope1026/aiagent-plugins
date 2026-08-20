@@ -59,6 +59,33 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
             mutation(repository)
             self.assertIn(code, self._codes(repository))
 
+    def test_requirement_only_bundle_is_valid(self) -> None:
+        with TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source = TEST_DIR / "fixtures/spec-bundle/valid-requirement-only"
+            target = repository / "docs/specs/requirement-only"
+            target.parent.mkdir(parents=True)
+            shutil.copytree(source, target)
+
+            result = validate_repository(repository, Path("docs/specs"))
+
+            self.assertTrue(result.ok, result.diagnostics)
+
+    def test_empty_acceptance_section_is_rejected(self) -> None:
+        with TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source = TEST_DIR / "fixtures/spec-bundle/valid-requirement-only"
+            target = repository / "docs/specs/requirement-only"
+            target.parent.mkdir(parents=True)
+            shutil.copytree(source, target)
+            root = target / "requirement-only-contract.md"
+            root.write_text(
+                root.read_text(encoding="utf-8") + "\n## Acceptance Criteria\n",
+                encoding="utf-8",
+            )
+
+            self.assertIn("BUNDLE_ACCEPTANCE_EMPTY", self._codes(repository))
+
     def test_path_transition_authorizes_exact_v3_bundle_replacement(self) -> None:
         temporary, repository = self._repository()
         with temporary:
@@ -418,11 +445,6 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
                 "\n",
             )
 
-        def missing_acceptance(repository: Path) -> None:
-            (repository / OUTCOMES_MEMBER).write_text(
-                "# Repository Validation Outcomes\n", encoding="utf-8"
-            )
-
         def duplicate_history(repository: Path) -> None:
             source = repository / CONTAINMENT_MEMBER
             source.write_text(
@@ -433,7 +455,6 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
 
         cases = (
             ("BUNDLE_REQUIREMENTS_MISSING", missing_requirements),
-            ("BUNDLE_ACCEPTANCE_MISSING", missing_acceptance),
             ("BUNDLE_HISTORY_COUNT", duplicate_history),
         )
         for code, mutation in cases:

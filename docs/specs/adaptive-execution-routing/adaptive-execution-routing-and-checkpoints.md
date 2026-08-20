@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: policy
 areas: ["forge","execution"]
@@ -274,7 +274,7 @@ Platform mapping 예시:
 - [`approval` checkpoint는 다음 경우에만 실행을 멈추고 사용자 결정을 기다려야 한다.](adaptive-execution-routing-and-checkpoints.md#approval-checkpoint는-다음-경우에만-실행을-멈추고-사용자-결정을-기다려야-한다)
 - [local file edit, test, 계획된 local commit, capability tier 선택, subagent 위임, 병렬 실행, internal checkpoint, notify checkpoint만으로는 사용자 approval을 요구하지 않아야 한다.](adaptive-execution-routing-and-checkpoints.md#local-file-edit-test-계획된-local-commit-capability-tier-선택-subagent-위임-병렬-실행-internal-checkpoint-notify-checkpoint만으로는-사용자-approval을-요구하지-않아야-한다)
 
-### 모든 Task가 internal checkpoint를 통과하면 중간 사용자 승인을 추가로 요구하지 않고 the forge verifying-work skill로 이동해 영향받는 Acceptance statement별 fresh evidence를 수집한다.
+### 모든 Task가 internal checkpoint를 통과하면 중간 사용자 승인을 추가로 요구하지 않고 the forge verifying-work skill로 이동해 영향받는 Canonical verification set별 fresh evidence를 수집한다.
 
 검증하는 요구사항:
 
@@ -390,4 +390,4 @@ Platform mapping 예시:
 
 ## Decisions & History
 
-- 2026-08-09 [CURRENT] 실행은 capability tier와 위험에 따라 자동 라우팅하고 `internal`, `notify`, `approval` checkpoint를 구분하며, 서브에이전트 결과는 root 검토와 fresh verification 뒤에만 완료로 인정한다.
+- 2026-08-20 [CURRENT] 실행은 capability tier와 위험에 따라 자동 라우팅하고 `internal`, `notify`, `approval` checkpoint를 구분한다. 모든 Task 뒤에는 Acceptance statement가 있으면 Acceptance를, 없으면 Requirement를 사용하는 Canonical verification set으로 fresh evidence를 수집하며, 서브에이전트 결과는 root 검토와 이 검증 뒤에만 완료로 인정한다.

@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: system
 areas: ["forge","specs"]
