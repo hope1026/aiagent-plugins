@@ -56,7 +56,8 @@ Each diagram has:
 The plan review path uses one of these source-owned link shapes:
 
 ```text
-Related Canonical Spec present: Requirement → Acceptance Criterion → Task → Step → verification method
+Related Canonical Spec with Acceptance statements: Requirement → Acceptance Criterion → Task → Step → verification method
+Related Canonical Spec without Acceptance statements: Requirement → Task → Step → verification method
 no Related Canonical Spec: Task → Step → verification method
 ```
 

@@ -38,7 +38,7 @@ NO COMPLETION CLAIM WITHOUT FRESH VERIFICATION EVIDENCE.
 | Execution Plan | Dependencies, Tasks, Steps, checkpoints, and verification | `docs/plans/PPP-<slug>/plan.md` | Work-scoped execution source; not project SOT |
 | Verification Evidence | Fresh commands and observations supporting a claim | Conversation, plan progress, or promoted evidence | Proof for a claim; durable only when explicitly promoted |
 
-Reserve `Requirements` and `Acceptance Criteria` for Canonical Specs. A Change Brief uses `Goal`, `Scope`, `Out of Scope`, and `Done Checks`. An Execution Plan uses `Task`, `Step`, `Checkpoint`, and `Verification`.
+Reserve `Requirements` and `Acceptance Criteria` for Canonical Specs. Requirements are mandatory; Acceptance Criteria are optional at bundle level. A Change Brief uses `Goal`, `Scope`, `Out of Scope`, and `Done Checks`. An Execution Plan uses `Task`, `Step`, `Checkpoint`, and `Verification`.
 
 ## Change Brief Readiness
 
@@ -107,7 +107,7 @@ When the selected route or specialist skill has a checklist, create one checklis
 3. **Route to the owning process.** Quick work goes directly to the relevant debugging, TDD, design, tone, or other execution skill. Plan-only work goes to the forge writing-plans skill. Canonical Spec impact goes to the forge writing-specs skill before implementation.
 4. **Apply specialist skills inside the route.** Bugs use the forge systematic-debugging skill before their fix class is final. Implementation code uses the forge test-driven-development skill. Browser application and public website work use their respective design skills. Human-readable prose uses the forge writing-tone skill.
 5. **Promote before the next mutation.** If Quick or plan-only work reveals Canonical Spec impact, a user-owned product decision, cross-component dependency, migration or release ordering, or meaningful rollback risk, stop the next mutation and reclassify. Add only the newly required Spec Delta or Execution Plan.
-6. **Verify at the matching level.** Quick work needs fresh focused command evidence. Existing-contract restoration needs the original reproduction, the affected contract observation, and a regression command. Approved Spec Delta work needs the affected Acceptance statement walk and regression evidence; a new Canonical Spec needs every Acceptance statement walked.
+6. **Verify at the matching level.** Quick work needs fresh focused command evidence. Existing-contract restoration needs the original reproduction, the affected contract observation, and a regression command. For each governing bundle, the Canonical verification set is its Acceptance statements when any exist, otherwise its Requirement statements. Approved Spec Delta work needs the affected set walked with regression evidence; a new or never-implemented Canonical Spec needs the full set walked.
 7. **Promote durable outcomes.** Move lasting decisions or findings to a Canonical Spec, ADR, `docs/research/`, `docs/debug/`, or explicit evidence file. Do not leave a Change Brief, Spec Delta, or execution log as accidental SOT.
 
 ### Specialist routing

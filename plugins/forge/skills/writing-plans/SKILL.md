@@ -27,7 +27,7 @@ Create a work-scoped Execution Plan that an engineer with **zero context** for t
 NO EXECUTION PLAN UNLESS EXECUTION COMPLEXITY IS HIGH.
 NO DURABLE CONTRACT CHANGE WITHOUT AN APPROVED CANONICAL SPEC OR SPEC DELTA.
 NO STEP WITHOUT ITS COMPLETE CONTENT.
-EVERY RELATED CANONICAL ACCEPTANCE STATEMENT MAPS TO A TASK.
+EVERY RELATED CANONICAL VERIFICATION STATEMENT MAPS TO A TASK.
 ```
 
 ## Precondition Gate
@@ -99,9 +99,10 @@ Do not flatten 22 Tasks into one graph. Group them into Routes first, then show 
 This is the forge addition on top of ordinary planning discipline:
 
 - `Related Specs` contains only normalized bundle directory paths. It never copies statement lists into metadata.
+- For each Related Spec Bundle, the Canonical verification set is every Acceptance statement when one or more exist; otherwise it is every Requirement statement.
 - Every governed Task has a `Governing statements:` block with repository-contained Markdown links to the exact Requirement and Acceptance headings it implements or preserves.
 - Link text equals the exact heading text. The link target includes the member path and generated heading anchor. A short label or path to the bundle root alone is not traceability.
-- Every referenced Acceptance statement appears under at least one Task. An uncovered statement makes the plan incomplete.
+- Every statement in each Related Spec's Canonical verification set appears under at least one Task. An uncovered verification statement makes the plan incomplete.
 - The plan starts with a statement coverage table so gaps remain visible without decoding shorthand.
 
 ```markdown
@@ -234,7 +235,7 @@ Every step must contain the actual content the implementer needs. These are **pl
 
 After writing the complete plan, reread every Related Canonical Spec with fresh eyes and check the plan against it. Create one todo per check:
 
-1. **Canonical coverage:** walk every linked Requirement and Acceptance statement; point to the Task that implements or preserves it. Verify the coverage table matches each `Governing statements:` block. With no Related Canonical Spec, verify every Task maps to the plan goal and evidence. List and fix any gap.
+1. **Canonical coverage:** calculate each Related Spec's Canonical verification set, walk every linked Requirement and Acceptance statement, and point to the Task that implements or preserves each required verification statement. Verify the coverage table matches each `Governing statements:` block. With no Related Canonical Spec, verify every Task maps to the plan goal and evidence. List and fix any gap.
 2. **Placeholder scan:** search the plan for every pattern in "No Placeholders" above. Fix them.
 3. **Type consistency:** do names, signatures, and types used in later tasks match what earlier tasks defined? `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 4. **Language consistency:** confirm all human-readable prose uses the governing Canonical Spec's language, ordinary labels are localized, and original-language terms, code, paths, commands, exact output, and verbatim Canonical Spec values remain intact.
@@ -264,7 +265,7 @@ Fix issues inline and move on — no re-review loop.
 | "The durable requirements are all in this conversation — effectively SOT" | A conversation or Spec Delta is a proposal. Promote approved meaning to the validated Canonical Spec first. |
 | "I'll fill in this step's code during execution" | The executor may be a fresh context with zero knowledge. A step without content is a placeholder, and placeholders are plan failures. |
 | "Similar to Task 2 — no need to repeat" | Implementers read tasks in isolation. Repeat the code. |
-| "This coverage table is just bookkeeping" | The table makes uncovered Acceptance statements visible. Skipping it is how requirements silently drop. |
+| "This coverage table is just bookkeeping" | The table makes an uncovered Canonical verification statement visible. Skipping it is how requirements silently drop. |
 | "Every implementation deserves a plan" | Low-complexity work follows a direct route. Plans exist for execution complexity, not ceremony. |
 | "The migration is not product behavior, so it needs no route" | Canonical Spec impact may be `no` while complexity is `high`; use a plan-only route. |
 | "This plan is the source of truth" | It is the execution source. Durable project authority remains in Canonical Specs and other promoted records. |

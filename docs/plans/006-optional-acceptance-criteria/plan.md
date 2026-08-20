@@ -232,7 +232,7 @@ flowchart LR
 
 **실행 메타데이터:** dependency 없음; writing-specs parser/validator 단독 소유; root 순차 실행; approval gate 없음.
 
-- [ ] **Step 1: Requirement-only와 빈 Acceptance section의 failing test를 추가한다.**
+- [x] **Step 1: Requirement-only와 빈 Acceptance section의 failing test를 추가한다.**
 
 ```python
 def test_requirement_only_bundle_is_valid(self) -> None:
@@ -243,12 +243,12 @@ def test_empty_acceptance_section_is_rejected(self) -> None:
     self.assertIn("BUNDLE_ACCEPTANCE_EMPTY", self._codes(repository))
 ```
 
-- [ ] **Step 2: targeted test가 기존 `BUNDLE_ACCEPTANCE_MISSING` 동작 때문에 실패하는지 확인한다.**
+- [x] **Step 2: targeted test가 기존 `BUNDLE_ACCEPTANCE_MISSING` 동작 때문에 실패하는지 확인한다.**
 
 실행: `python3 -m unittest plugins.forge.skills.writing-specs.tests.test_spec_bundle_validate plugins.forge.skills.writing-specs.tests.test_spec_bundle_model`  
 예상: Requirement-only fixture가 `BUNDLE_ACCEPTANCE_MISSING`으로 FAIL.
 
-- [ ] **Step 3: validator를 최소 구현한다.**
+- [x] **Step 3: validator를 최소 구현한다.**
 
 ```python
 if acceptance_sections and not acceptance:
@@ -259,12 +259,12 @@ if acceptance:
             errors.append(_diagnostic(requirement.member_path, requirement.line, "STATEMENT_COVERAGE", "Every Requirement statement must be verified when Acceptance Criteria is present."))
 ```
 
-- [ ] **Step 4: targeted validator/model test를 다시 실행한다.**
+- [x] **Step 4: targeted validator/model test를 다시 실행한다.**
 
 실행: `python3 -m unittest plugins.forge.skills.writing-specs.tests.test_spec_bundle_validate plugins.forge.skills.writing-specs.tests.test_spec_bundle_model`  
 예상: PASS, 기존 acceptance-bearing negative fixture도 유지.
 
-- [ ] **Step 5: validator 변경 checkpoint를 기록한다.**
+- [x] **Step 5: validator 변경 checkpoint를 기록한다.**
 
 실행: `git add docs/specs plugins/forge/skills/writing-specs/tests plugins/forge/skills/writing-specs/scripts && git commit -m "feat(forge): allow requirement-only spec bundles"`
 
@@ -606,3 +606,6 @@ semantic/canonical/adaptive의 affected statement가 모두 PASS하면 `implemen
 ## Progress History
 
 - 2026-08-20 Task 1: routed (impact=high, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="Canonical validator semantics와 approved spec source를 함께 소유한다")
+- 2026-08-20 Task 1: complete (commits `8eb9763`; verification="Requirement-only RED confirmed, 27 targeted tests PASS, scripts/validate.sh PASS")
+- 2026-08-20 Task 2: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=subagent, parallel_group=route-2-3, reason="writing-specs authoring files만 소유하고 grep gate가 결정적이다")
+- 2026-08-20 Task 3: routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=route-2-3, reason="네 lifecycle skill의 공통 Canonical verification set을 결합한다")
