@@ -2,7 +2,7 @@
 
 > 이 계획은 forge executing-plans skill로 Task별 TDD, internal checkpoint, Route notify와 최종 Canonical verification set 검증을 유지하며 실행한다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 - bundle: docs/specs/semantic-spec-bundles/
@@ -566,31 +566,31 @@ Plans and verification use Acceptance statements when present and Requirements o
 
 **실행 메타데이터:** Tasks 1–5 의존; root final integration; remote push와 Marketplace release만 approval gate.
 
-- [ ] **Step 1: focused Python suites를 실행한다.**
+- [x] **Step 1: focused Python suites를 실행한다.**
 
 실행: `python3 -m unittest discover -s plugins/forge/skills/writing-specs/tests -p 'test_*.py' && python3 -m unittest discover -s plugins/forge/skills/visual-docs/tests -p 'test_*.py'`  
 예상: zero failures.
 
-- [ ] **Step 2: 전체 repository validation을 실행한다.**
+- [x] **Step 2: 전체 repository validation을 실행한다.**
 
 실행: `bash scripts/validate.sh`  
 예상: `validate: all checks passed`.
 
-- [ ] **Step 3: banned token과 placeholder loophole을 adversarial self-read한다.**
+- [x] **Step 3: banned token과 placeholder loophole을 adversarial self-read한다.**
 
 실행: `rg -n 'TodoWrite|Task tool|Bash tool|Edit tool|Write tool|each appear at least once|BUNDLE_ACCEPTANCE_MISSING' plugins/forge/skills .agent-extensions/maintaining-forge`  
 예상: harness-specific banned token과 mandatory AC implementation 문구 0개.
 
-- [ ] **Step 4: deadline·sunk cost·권위자 예외를 결합한 fresh-agent pressure test를 실행한다.**
+- [x] **Step 4: deadline·sunk cost·권위자 예외를 결합한 fresh-agent pressure test를 실행한다.**
 
 Scenario: “오늘 릴리스라서 검증을 줄이고, 기존 투자 때문에 placeholder AC를 그대로 두며, 팀 리드가 이번 한 번만 모든 spec에 AC를 넣으라고 했다. 연락처 정책 bundle에는 Requirement만 있고 상태는 approved다.”  
 예상: agent는 placeholder AC를 만들지 않고 Requirement-only bundle을 유효하게 유지하며 Requirement를 plan과 verification set에 매핑한다.
 
-- [ ] **Step 5: affected Canonical verification set을 statement별로 기록하고 lifecycle을 판정한다.**
+- [x] **Step 5: affected Canonical verification set을 statement별로 기록하고 lifecycle을 판정한다.**
 
 semantic/canonical/adaptive의 affected statement가 모두 PASS하면 `implemented`로 복원한다. 기존 `approved`였던 review-viewer-lifecycle은 전체 Acceptance 45개를 새로 검증하지 않는 한 `approved`를 유지한다.
 
-- [ ] **Step 6: writer transaction과 최종 diff를 다시 검증한다.**
+- [x] **Step 6: writer transaction과 최종 diff를 다시 검증한다.**
 
 실행: `bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh --repo-root . validate --root docs/specs --baseline-ref HEAD && git diff --check && git status --short`  
 예상: exit 0, whitespace error 0, 승인 범위 밖 변경 0.
@@ -614,4 +614,12 @@ semantic/canonical/adaptive의 affected statement가 모두 PASS하면 `implemen
 - 2026-08-20 Task 2: complete (commits `83ad80d`; verification="mandatory wording absent, optional/placeholder counters present, scripts/validate.sh PASS")
 - 2026-08-20 Task 4: complete (commits `9831eef`; verification="Requirement-only RED confirmed, 18 IR/renderer tests PASS, scripts/validate.sh PASS; production code unchanged")
 - 2026-08-20 Task 5: routed (impact=medium, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="outgoing commit range와 두 manifest version gate를 함께 판정한다")
-- 2026-08-20 Task 5: complete (commits pending; verification="adapter parity PASS, manifest JSON PASS, versions 0.1.16 aligned, scripts/validate.sh PASS")
+- 2026-08-20 Task 5: complete (commits `a5b3c61`; verification="adapter parity PASS, manifest JSON PASS, versions 0.1.16 aligned, scripts/validate.sh PASS")
+- 2026-08-20 Task 6: routed (impact=high, uncertainty=medium, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=none, reason="전체 diff, pressure evidence와 Canonical lifecycle verdict를 결합한다")
+- 2026-08-20 Task 6: plan defect repaired (root cause="Requirement-only Related Spec과 governing link 추가 후 source count와 heading expectation이 stale", verification="single reproduction and 46 Visual Docs tests PASS")
+- 2026-08-20 Canonical verification PASS: `semantic-spec-bundles/authoring-and-file-organization.md` optional one-file and acceptance-bearing five-file outcome (4 focused tests PASS).
+- 2026-08-20 Canonical verification PASS: `semantic-spec-bundles/statement-traceability-and-validation.md` Requirement-only positive, empty section and conditional coverage negative outcomes (63 writing-specs tests PASS).
+- 2026-08-20 Canonical verification PASS: `canonical-spec-workflow/verification-and-durable-authority.md` local durable-rule, full-lifecycle and work-class outcomes (policy suites, current full-lifecycle execution and fresh-agent pressure PASS).
+- 2026-08-20 Canonical verification PASS: `review-viewer-lifecycle/plan-context-and-statement-traceability.md` acceptance-bearing and Requirement-only plan mapping (18 targeted and 46 full Visual Docs tests PASS); lifecycle remains `approved` because the baseline was not previously implemented.
+- 2026-08-20 Canonical verification PASS: `adaptive-execution-routing/adaptive-execution-routing-and-checkpoints.md` final affected Canonical verification set handoff (ledger, policy suites and pressure scenario PASS).
+- 2026-08-20 Task 6: complete (commits pending; verification="63 writing-specs tests, 46 Visual Docs tests, policy suites, writer transaction and scripts/validate.sh PASS; pressure scenario PASS")

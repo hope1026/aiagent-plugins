@@ -35,7 +35,10 @@ grep -q '^areas: \["<area>"\]$' "$SPEC_TEMPLATE" || fail "template areas are not
 grep -q '^components: \["<component>"\]$' "$SPEC_TEMPLATE" || fail "template components are not JSON strings"
 grep -q '^## Documents$' "$SPEC_TEMPLATE" || fail "template misses bundle document inventory"
 grep -q 'docs/specs/<semantic-bundle-name>/' "$WRITING_SPECS" || fail "writing-specs misses semantic bundle path"
-grep -q 'full Requirement and Acceptance statement' "$WRITING_SPECS" || fail "writing-specs misses full-statement trace contract"
+grep -q 'Requirements are mandatory' "$WRITING_SPECS" || fail "writing-specs does not require Requirement statements"
+grep -q 'Acceptance Criteria are optional at bundle level' "$WRITING_SPECS" || fail "writing-specs still requires Acceptance Criteria for every bundle"
+grep -q 'When Acceptance Criteria are present.*every Requirement is covered' "$WRITING_SPECS" || fail "writing-specs misses conditional Acceptance coverage"
+grep -q 'Canonical verification set' "$VERIFYING_WORK" || fail "verifying-work misses Requirement-only verification fallback"
 grep -q 'member path' "$WRITING_SPECS" || fail "writing-specs misses member-path contract"
 
 if rg -n 'docs/specs/(NNN|OOO|[0-9]{3})-|docs/specs/[^` ]+/spec\.md|forge/spec@2|\.transitions\.json|R·AC|R/AC|R-ID|AC-ID|R and AC IDs|\bR[0-9]+\b|\bAC[0-9]+\b|requirements: \[R|acceptance: \[AC|Canonical Spec ID|Spec ID|spec ID' \

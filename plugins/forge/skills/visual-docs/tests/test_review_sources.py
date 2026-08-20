@@ -434,7 +434,7 @@ SHOULD_NOT --> COUNT_TILDE
         )
         self.assertEqual(
             [source.role for source in bundle.context],
-            ["related_spec_context"] * 6,
+            ["related_spec_context"] * 7,
         )
         self.assertEqual(bundle.counts["primary"]["task"], 2)
         self.assertEqual(bundle.counts["primary"]["step"], 3)
@@ -455,6 +455,7 @@ SHOULD_NOT --> COUNT_TILDE
             [
                 "Every declared member enters the review source set exactly once",
                 "Repository-contained review inputs load successfully",
+                "Requirement-only policy remains directly traceable",
             ],
         )
         self.assertEqual(
