@@ -441,29 +441,29 @@ if entity.entity_type in {"requirement", "acceptance"}:
 
 **실행 메타데이터:** Tasks 2–4 의존; manifests와 portability reference 단독 소유; push는 별도 approval.
 
-- [ ] **Step 1: outgoing skill change와 upstream version을 확인한다.**
+- [x] **Step 1: outgoing skill change와 upstream version을 확인한다.**
 
 실행: `git diff --name-only origin/main...HEAD && git show origin/main:plugins/forge/.claude-plugin/plugin.json | jq -r .version`  
 예상: `plugins/forge/skills/` 변경이 있고 upstream base version을 읽음.
 
-- [ ] **Step 2: portability reference에 optional AC fallback을 기록한다.**
+- [x] **Step 2: portability reference에 optional AC fallback을 기록한다.**
 
 ```markdown
 Requirements are mandatory. Acceptance Criteria are optional per bundle.
 Plans and verification use Acceptance statements when present and Requirements otherwise.
 ```
 
-- [ ] **Step 3: 두 plugin manifest version을 같은 새 base version으로 올리고 Codex에 fresh UTC suffix를 붙인다.**
+- [x] **Step 3: 두 plugin manifest version을 같은 새 base version으로 올리고 Codex에 fresh UTC suffix를 붙인다.**
 
 실행: `date -u +%Y%m%d%H%M%S`  
 예상: Claude `X.Y.Z`, Codex `X.Y.Z+codex.YYYYMMDDHHMMSS`.
 
-- [ ] **Step 4: manifest JSON과 Marketplace 참조를 검증한다.**
+- [x] **Step 4: manifest JSON과 Marketplace 참조를 검증한다.**
 
 실행: `jq . plugins/forge/.claude-plugin/plugin.json plugins/forge/.codex-plugin/plugin.json .claude-plugin/marketplace.json .agents/plugins/marketplace.json`  
 예상: JSON parse PASS, 두 plugin base version 일치.
 
-- [ ] **Step 5: distribution checkpoint를 기록한다.**
+- [x] **Step 5: distribution checkpoint를 기록한다.**
 
 실행: `git add .agent-extensions/maintaining-forge plugins/forge/.claude-plugin/plugin.json plugins/forge/.codex-plugin/plugin.json && git commit -m "chore(forge): bump optional acceptance release"`
 
@@ -612,4 +612,6 @@ semantic/canonical/adaptive의 affected statement가 모두 PASS하면 `implemen
 - 2026-08-20 Task 3: complete (commits `1c914da`; verification="Canonical verification set grep evidence and scripts/validate.sh PASS")
 - 2026-08-20 Task 4: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=subagent, parallel_group=none, reason="Visual Docs fixture와 IR trace test가 독립적이고 결정적이다")
 - 2026-08-20 Task 2: complete (commits `83ad80d`; verification="mandatory wording absent, optional/placeholder counters present, scripts/validate.sh PASS")
-- 2026-08-20 Task 4: complete (commits pending; verification="Requirement-only RED confirmed, 18 IR/renderer tests PASS, scripts/validate.sh PASS; production code unchanged")
+- 2026-08-20 Task 4: complete (commits `9831eef`; verification="Requirement-only RED confirmed, 18 IR/renderer tests PASS, scripts/validate.sh PASS; production code unchanged")
+- 2026-08-20 Task 5: routed (impact=medium, uncertainty=low, context_coupling=medium, verification_clarity=strong, tier=balanced, mode=root, parallel_group=none, reason="outgoing commit range와 두 manifest version gate를 함께 판정한다")
+- 2026-08-20 Task 5: complete (commits pending; verification="adapter parity PASS, manifest JSON PASS, versions 0.1.16 aligned, scripts/validate.sh PASS")
