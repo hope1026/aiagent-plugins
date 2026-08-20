@@ -391,7 +391,7 @@ Canonical verification set:
 
 **실행 메타데이터:** Task 3 의존; Visual Docs fixture/test 단독 소유; approval gate 없음.
 
-- [ ] **Step 1: Requirement-only context trace test를 추가한다.**
+- [x] **Step 1: Requirement-only context trace test를 추가한다.**
 
 ```python
 def test_plan_traces_requirement_without_acceptance(self) -> None:
@@ -402,24 +402,24 @@ def test_plan_traces_requirement_without_acceptance(self) -> None:
     })
 ```
 
-- [ ] **Step 2: Visual Docs IR targeted test를 실행한다.**
+- [x] **Step 2: Visual Docs IR targeted test를 실행한다.**
 
 실행: `python3 -m unittest plugins.forge.skills.visual-docs.tests.test_review_ir`  
 예상: fixture 또는 direct mapping이 없어서 RED.
 
-- [ ] **Step 3: 기존 generic `traces` relation으로 통과하면 production code를 바꾸지 않고 fixture만 유지하고, 실패하면 Requirement target lookup만 최소 수정한다.**
+- [x] **Step 3: 기존 generic `traces` relation으로 통과하면 production code를 바꾸지 않고 fixture만 유지하고, 실패하면 Requirement target lookup만 최소 수정한다.**
 
 ```python
 if entity.entity_type in {"requirement", "acceptance"}:
     targets[(bundle_path, member_path, entity.entity_type, entity.entity_id)] = entity
 ```
 
-- [ ] **Step 4: IR와 renderer targeted test를 실행한다.**
+- [x] **Step 4: IR와 renderer targeted test를 실행한다.**
 
 실행: `python3 -m unittest plugins.forge.skills.visual-docs.tests.test_review_ir plugins.forge.skills.visual-docs.tests.test_review_renderer`  
 예상: Requirement-only와 기존 acceptance-bearing trace가 모두 PASS.
 
-- [ ] **Step 5: review traceability checkpoint를 기록한다.**
+- [x] **Step 5: review traceability checkpoint를 기록한다.**
 
 실행: `git add plugins/forge/skills/visual-docs && git commit -m "test(forge): cover requirement-only plan traceability"`
 
@@ -611,4 +611,5 @@ semantic/canonical/adaptive의 affected statement가 모두 PASS하면 `implemen
 - 2026-08-20 Task 3: routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=route-2-3, reason="네 lifecycle skill의 공통 Canonical verification set을 결합한다")
 - 2026-08-20 Task 3: complete (commits `1c914da`; verification="Canonical verification set grep evidence and scripts/validate.sh PASS")
 - 2026-08-20 Task 4: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=subagent, parallel_group=none, reason="Visual Docs fixture와 IR trace test가 독립적이고 결정적이다")
-- 2026-08-20 Task 2: complete (commits pending; verification="mandatory wording absent, optional/placeholder counters present, scripts/validate.sh PASS")
+- 2026-08-20 Task 2: complete (commits `83ad80d`; verification="mandatory wording absent, optional/placeholder counters present, scripts/validate.sh PASS")
+- 2026-08-20 Task 4: complete (commits pending; verification="Requirement-only RED confirmed, 18 IR/renderer tests PASS, scripts/validate.sh PASS; production code unchanged")

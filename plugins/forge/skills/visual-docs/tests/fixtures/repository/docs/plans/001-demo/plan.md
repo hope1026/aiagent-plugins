@@ -6,6 +6,7 @@ Status: active
 
 - bundle: docs/specs/semantic-spec-bundles/
 - bundle: docs/specs/supporting-policy/
+- bundle: docs/specs/requirement-only-policy/
 
 **Goal:** Build a deterministic review source bundle.
 
@@ -30,6 +31,7 @@ Governing statements:
 
 - [Every declared member enters the review source set exactly once](../../specs/semantic-spec-bundles/member-loading-and-provenance.md#every-declared-member-enters-the-review-source-set-exactly-once)
 - [Repository-contained review inputs load successfully](../../specs/supporting-policy/supporting-policy-contract.md#repository-contained-review-inputs-load-successfully)
+- [Requirement-only policy remains directly traceable](../../specs/requirement-only-policy/requirement-only-policy.md#requirement-only-policy-remains-directly-traceable)
 
 - Route: source-model
 - Dependencies: none

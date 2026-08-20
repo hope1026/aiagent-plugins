@@ -264,13 +264,36 @@ class ReviewIRTest(unittest.TestCase):
             len([item for item in ir.relations if item.relation_type == "belongs-to"]),
             3,
         )
-        self.assertEqual(len([item for item in ir.relations if item.relation_type == "traces"]), 2)
+        self.assertEqual(len([item for item in ir.relations if item.relation_type == "traces"]), 3)
         entity_keys = {item.key for item in entities}
         self.assertTrue(
             all(
                 relation.from_entity in entity_keys and relation.to_entity in entity_keys
                 for relation in ir.relations
             )
+        )
+
+    def test_plan_traces_requirement_without_acceptance(self) -> None:
+        bundle = collect_plan_sources(
+            REPOSITORY / "docs/plans/001-demo/plan.md", REPOSITORY
+        )
+
+        ir = build_semantic_ir(bundle)
+
+        traces = [
+            relation for relation in ir.relations if relation.relation_type == "traces"
+        ]
+        targets = {
+            entity.key: entity
+            for document in ir.documents
+            for entity in document.entities
+        }
+        self.assertIn(
+            "Requirement-only policy remains directly traceable",
+            {
+                targets[relation.to_entity].attributes["heading"]
+                for relation in traces
+            },
         )
 
 
