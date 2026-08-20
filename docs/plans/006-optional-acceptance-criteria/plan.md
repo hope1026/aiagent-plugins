@@ -285,12 +285,12 @@ if acceptance:
 
 **실행 메타데이터:** Task 1 의존; writing-specs prose 단독 소유; Task 3과 병렬 가능; approval gate 없음.
 
-- [ ] **Step 1: authoring pressure fixture가 placeholder AC를 요구하는 현재 문구를 식별한다.**
+- [x] **Step 1: authoring pressure fixture가 placeholder AC를 요구하는 현재 문구를 식별한다.**
 
 실행: `rg -n 'each appear at least once|Every Requirement is verified|required Acceptance evidence|Acceptance statements include' plugins/forge/skills/writing-specs`  
 예상: mandatory AC 문구가 검색됨.
 
-- [ ] **Step 2: template과 skill을 승인된 contract로 수정한다.**
+- [x] **Step 2: template과 skill을 승인된 contract로 수정한다.**
 
 적용할 핵심 문구:
 
@@ -300,19 +300,19 @@ When Acceptance Criteria are present, every Requirement must be covered.
 Do not create a Requirement that only points to another section or an Acceptance statement that only says the source matches.
 ```
 
-- [ ] **Step 3: Spec Delta Done Checks를 conditional coverage로 수정한다.**
+- [x] **Step 3: Spec Delta Done Checks를 conditional coverage로 수정한다.**
 
 ```markdown
 - When Acceptance Criteria are present, every acceptance-to-requirement link resolves by exact member path, heading text, and anchor.
 - A Requirement-only bundle omits the Acceptance Criteria section.
 ```
 
-- [ ] **Step 4: mandatory wording이 제거되고 placeholder counter가 존재하는지 확인한다.**
+- [x] **Step 4: mandatory wording이 제거되고 placeholder counter가 존재하는지 확인한다.**
 
 실행: `rg -n 'optional at bundle level|Requirement-only|placeholder|When Acceptance Criteria are present' plugins/forge/skills/writing-specs`  
 예상: 새 contract가 SKILL과 reference에 나타남.
 
-- [ ] **Step 5: authoring checkpoint를 기록한다.**
+- [x] **Step 5: authoring checkpoint를 기록한다.**
 
 실행: `git add plugins/forge/skills/writing-specs && git commit -m "docs(forge): make acceptance criteria optional"`
 
@@ -341,12 +341,12 @@ Do not create a Requirement that only points to another section or an Acceptance
 
 **실행 메타데이터:** Task 1 의존; lifecycle skill shared wording 소유; Task 2와 병렬 가능하지만 shared `writing-specs` 없음; approval gate 없음.
 
-- [ ] **Step 1: lifecycle skill의 Acceptance-only 가정을 검색한다.**
+- [x] **Step 1: lifecycle skill의 Acceptance-only 가정을 검색한다.**
 
 실행: `rg -n 'EVERY RELATED CANONICAL ACCEPTANCE|every Acceptance statement|affected Acceptance|Acceptance statement set' plugins/forge/skills/{using-forge,writing-plans,executing-plans,verifying-work}`  
 예상: plan coverage와 verification matrix의 Acceptance-only 문구가 검색됨.
 
-- [ ] **Step 2: writing-plans coverage fallback을 적용한다.**
+- [x] **Step 2: writing-plans coverage fallback을 적용한다.**
 
 ```text
 Every Related Canonical verification statement maps to a Task.
@@ -354,7 +354,7 @@ If a bundle has Acceptance statements, map every Acceptance statement.
 If it has none, map every Requirement statement.
 ```
 
-- [ ] **Step 3: verifying-work matrix와 checklist fallback을 적용한다.**
+- [x] **Step 3: verifying-work matrix와 checklist fallback을 적용한다.**
 
 ```text
 Canonical verification set:
@@ -362,12 +362,12 @@ Canonical verification set:
 - Requirement-only bundle: affected or all Requirement statements by work class
 ```
 
-- [ ] **Step 4: using/executing plan handoff와 plan visual reference를 같은 용어로 정리한다.**
+- [x] **Step 4: using/executing plan handoff와 plan visual reference를 같은 용어로 정리한다.**
 
 실행: `rg -n 'Canonical verification set|Requirement-only bundle|Acceptance-bearing bundle' plugins/forge/skills/{using-forge,writing-plans,executing-plans,verifying-work}`  
 예상: 네 lifecycle skill이 같은 fallback을 설명함.
 
-- [ ] **Step 5: lifecycle wording checkpoint를 기록한다.**
+- [x] **Step 5: lifecycle wording checkpoint를 기록한다.**
 
 실행: `git add plugins/forge/skills/{using-forge,writing-plans,executing-plans,verifying-work} && git commit -m "docs(forge): add canonical verification fallback"`
 
@@ -609,3 +609,6 @@ semantic/canonical/adaptive의 affected statement가 모두 PASS하면 `implemen
 - 2026-08-20 Task 1: complete (commits `8eb9763`; verification="Requirement-only RED confirmed, 27 targeted tests PASS, scripts/validate.sh PASS")
 - 2026-08-20 Task 2: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=subagent, parallel_group=route-2-3, reason="writing-specs authoring files만 소유하고 grep gate가 결정적이다")
 - 2026-08-20 Task 3: routed (impact=high, uncertainty=low, context_coupling=high, verification_clarity=strong, tier=frontier, mode=root, parallel_group=route-2-3, reason="네 lifecycle skill의 공통 Canonical verification set을 결합한다")
+- 2026-08-20 Task 3: complete (commits `1c914da`; verification="Canonical verification set grep evidence and scripts/validate.sh PASS")
+- 2026-08-20 Task 4: routed (impact=medium, uncertainty=low, context_coupling=low, verification_clarity=strong, tier=balanced, mode=subagent, parallel_group=none, reason="Visual Docs fixture와 IR trace test가 독립적이고 결정적이다")
+- 2026-08-20 Task 2: complete (commits pending; verification="mandatory wording absent, optional/placeholder counters present, scripts/validate.sh PASS")

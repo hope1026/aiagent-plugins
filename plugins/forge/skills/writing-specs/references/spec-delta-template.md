@@ -2,7 +2,7 @@
 
 A Spec Delta is a non-authoritative approval proposal for a new or changed Canonical Spec Bundle. Keep it in the conversation or at `.forge/work/<work-id>/spec-delta.md`. It never replaces the current approved or implemented bundle before explicit approval and a passing writer transaction.
 
-Use the user's language for human-readable content. Preserve bundle and member paths, exact Requirement and Acceptance headings, lifecycle tokens, code identifiers, commands, protocol values, and exact user-facing copy.
+Use the user's language for human-readable content. Preserve bundle and member paths, exact Requirement headings, any exact Acceptance headings, lifecycle tokens, code identifiers, commands, protocol values, and exact user-facing copy.
 
 ```markdown
 # Spec Delta: <bundle path or new bundle title>
@@ -18,7 +18,7 @@ Baseline:
 
 ## Scope
 
-- <Links to affected Requirement and Acceptance headings, or the complete new bundle.>
+- <Links to affected Requirement headings and any affected Acceptance headings, or the complete new bundle.>
 
 ## Out of Scope
 
@@ -39,7 +39,9 @@ For a new Canonical Spec, include the complete proposed `forge/spec@3` bundle he
 - The user explicitly approves this exact proposal.
 - The baseline bundle SHA-256 still matches immediately before application.
 - The approved meaning is applied without extra semantic changes.
-- Every acceptance-to-requirement link resolves by exact member path, heading text, and anchor.
+- Every Requirement states the durable contract directly instead of pointing to another section or legacy source as a placeholder.
+- When Acceptance Criteria are present, every acceptance-to-requirement link resolves by exact member path, heading text, and anchor, every Requirement is covered, and no Acceptance statement only says that a source matches.
+- A Requirement-only bundle omits the `Acceptance Criteria` section.
 - Repository Markdown validation passes before implementation handoff.
 ```
 
