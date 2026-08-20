@@ -16,11 +16,13 @@
 
 ### 활성 Spec Bundle은 현재 유효한 제품·시스템 동작과 제약만 source of truth로 제공하고 완료된 실행 과정과 일회성 수치는 plan, ADR, evidence 또는 Git 이력에만 두어야 한다.
 
-### `approved` 또는 `implemented` baseline bundle을 새 semantic path로 교체할 때는 `docs/specs/.bundle-transitions.json`에 exact baseline bundle path와 bundle hash를 가진 one-to-one `superseded` transition을 선언해야 한다.
+### `approved` 또는 `implemented` baseline bundle을 교체할 때는 exact path와 hash를 가진 one-to-one `superseded` transition을 사용하고 둘 이상의 baseline을 하나로 통합할 때는 coordinated many-to-one `merged` transition group을 사용해야 한다.
 
-### Bundle transition record는 `fromSourcePath`, `fromSourceSha256`, `disposition`, `toBundlePath`, `evidencePath`, `reason`만 사용하고 두 source path를 normalized repository-relative semantic bundle directory로 제한해야 한다.
+### Bundle transition record는 `fromSourcePath`, `fromSourceSha256`, `disposition`, `toBundlePath`, `evidencePath`, `reason`만 사용하고 `disposition`을 `superseded` 또는 `merged`로 제한하며 두 source path를 normalized repository-relative semantic bundle directory로 제한해야 한다.
 
-### Validator는 transition의 baseline bundle hash, current target path·status, append-only record prefix, evidence file, unique source·target과 one-step 관계를 검증하고 replacement bundle의 일반 validation도 별도로 수행해야 한다.
+### Validator는 transition의 baseline hash, current target, append-only prefix, evidence, unique source와 one-step 관계를 검증하고 repeated target은 유효한 `merged` group에서만 허용해야 한다.
+
+### Many-to-one `merged` group은 같은 appended diff에 있는 둘 이상의 record가 같은 current `toBundlePath`와 `evidencePath`를 공유하고 모든 source가 exact active baseline이며 target이 baseline에 없을 때만 유효해야 한다.
 
 ## Acceptance Criteria
 
@@ -46,10 +48,17 @@
 
 - [활성 Spec Bundle은 현재 유효한 제품·시스템 동작과 제약만 source of truth로 제공하고 완료된 실행 과정과 일회성 수치는 plan, ADR, evidence 또는 Git 이력에만 두어야 한다.](lifecycle-consumers-and-bundle-replacement.md#활성-spec-bundle은-현재-유효한-제품시스템-동작과-제약만-source-of-truth로-제공하고-완료된-실행-과정과-일회성-수치는-plan-adr-evidence-또는-git-이력에만-두어야-한다)
 
-### Approved bundle replacement fixture에서 exact baseline path·hash와 evidence를 가진 one-to-one transition만 교체를 허용하고 hash·target·prefix·evidence·관계가 잘못된 fixture는 원래 bundle을 유지한 채 실패한다.
+### Approved bundle transition fixture에서 exact one-to-one replacement와 coordinated many-to-one merge만 허용하고 invalid group은 baseline authority를 유지한 채 실패한다.
 
 검증하는 요구사항:
 
-- [`approved` 또는 `implemented` baseline bundle을 새 semantic path로 교체할 때는 `docs/specs/.bundle-transitions.json`에 exact baseline bundle path와 bundle hash를 가진 one-to-one `superseded` transition을 선언해야 한다.](lifecycle-consumers-and-bundle-replacement.md#approved-또는-implemented-baseline-bundle을-새-semantic-path로-교체할-때는-docsspecsbundle-transitionsjson에-exact-baseline-bundle-path와-bundle-hash를-가진-one-to-one-superseded-transition을-선언해야-한다)
-- [Bundle transition record는 `fromSourcePath`, `fromSourceSha256`, `disposition`, `toBundlePath`, `evidencePath`, `reason`만 사용하고 두 source path를 normalized repository-relative semantic bundle directory로 제한해야 한다.](lifecycle-consumers-and-bundle-replacement.md#bundle-transition-record는-fromsourcepath-fromsourcesha256-disposition-tobundlepath-evidencepath-reason만-사용하고-두-source-path를-normalized-repository-relative-semantic-bundle-directory로-제한해야-한다)
-- [Validator는 transition의 baseline bundle hash, current target path·status, append-only record prefix, evidence file, unique source·target과 one-step 관계를 검증하고 replacement bundle의 일반 validation도 별도로 수행해야 한다.](lifecycle-consumers-and-bundle-replacement.md#validator는-transition의-baseline-bundle-hash-current-target-pathstatus-append-only-record-prefix-evidence-file-unique-sourcetarget과-one-step-관계를-검증하고-replacement-bundle의-일반-validation도-별도로-수행해야-한다)
+- [`approved` 또는 `implemented` baseline bundle을 교체할 때는 exact path와 hash를 가진 one-to-one `superseded` transition을 사용하고 둘 이상의 baseline을 하나로 통합할 때는 coordinated many-to-one `merged` transition group을 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#approved-또는-implemented-baseline-bundle을-교체할-때는-exact-path와-hash를-가진-one-to-one-superseded-transition을-사용하고-둘-이상의-baseline을-하나로-통합할-때는-coordinated-many-to-one-merged-transition-group을-사용해야-한다)
+- [Bundle transition record는 `fromSourcePath`, `fromSourceSha256`, `disposition`, `toBundlePath`, `evidencePath`, `reason`만 사용하고 `disposition`을 `superseded` 또는 `merged`로 제한하며 두 source path를 normalized repository-relative semantic bundle directory로 제한해야 한다.](lifecycle-consumers-and-bundle-replacement.md#bundle-transition-record는-fromsourcepath-fromsourcesha256-disposition-tobundlepath-evidencepath-reason만-사용하고-disposition을-superseded-또는-merged로-제한하며-두-source-path를-normalized-repository-relative-semantic-bundle-directory로-제한해야-한다)
+- [Validator는 transition의 baseline hash, current target, append-only prefix, evidence, unique source와 one-step 관계를 검증하고 repeated target은 유효한 `merged` group에서만 허용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#validator는-transition의-baseline-hash-current-target-append-only-prefix-evidence-unique-source와-one-step-관계를-검증하고-repeated-target은-유효한-merged-group에서만-허용해야-한다)
+
+### 세 active baseline과 하나의 new target과 공통 evidence를 가진 `merged` record 세 개를 같은 diff에 append하면 repository validation이 통과하고 invalid merge group fixture는 실패한다.
+
+검증하는 요구사항:
+
+- [Many-to-one `merged` group은 같은 appended diff에 있는 둘 이상의 record가 같은 current `toBundlePath`와 `evidencePath`를 공유하고 모든 source가 exact active baseline이며 target이 baseline에 없을 때만 유효해야 한다.](lifecycle-consumers-and-bundle-replacement.md#many-to-one-merged-group은-같은-appended-diff에-있는-둘-이상의-record가-같은-current-tobundlepath와-evidencepath를-공유하고-모든-source가-exact-active-baseline이며-target이-baseline에-없을-때만-유효해야-한다)
+- [Validator는 transition의 baseline hash, current target, append-only prefix, evidence, unique source와 one-step 관계를 검증하고 repeated target은 유효한 `merged` group에서만 허용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#validator는-transition의-baseline-hash-current-target-append-only-prefix-evidence-unique-source와-one-step-관계를-검증하고-repeated-target은-유효한-merged-group에서만-허용해야-한다)

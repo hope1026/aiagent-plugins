@@ -141,6 +141,12 @@ spec transition manifest:
 }
 ```
 
+`disposition`은 one-to-one replacement의 `superseded`와 coordinated
+many-to-one consolidation의 `merged`를 허용한다. `merged` group은 같은
+`toBundlePath`와 `evidencePath`를 가진 둘 이상의 record로 표현한다.
+Manifest schema와 record field 집합은 `forge/spec-bundle-transitions@1`에서
+backward-compatible하게 유지한다.
+
 동일한 baseline transition은 한 번만 적용한다. 이후 baseline에 `fromSourcePath`가 없으면 해당 record는 audit evidence로 남지만 새 삭제 권한을 만들지 않는다. 현재 bundle을 다시 교체할 때는 그 시점의 baseline bundle을 `fromSourcePath`로 사용하는 새 record를 별도 diff에 append한다.
 
 ## Requirements

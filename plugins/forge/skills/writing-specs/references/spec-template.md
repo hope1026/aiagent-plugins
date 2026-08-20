@@ -104,7 +104,7 @@ The root may also own Requirements, Acceptance Criteria, or Decisions & History.
 - Requirement headings are unique across the bundle after normalization. Acceptance headings follow the same rule.
 - Every Requirement is verified by at least one Acceptance statement. Every Acceptance statement links one or more Requirements in the same bundle using exact heading text, member path, and anchor.
 - `[NEEDS CLARIFICATION: ...]` is allowed only while `status` is `draft`.
-- Replacing an active path is the narrow exception: use one-to-one `superseded` in `docs/specs/.bundle-transitions.json` only after replacement approval and the isolated candidate workflow; never silently delete an approved bundle.
+- Replacing one active path is the narrow exception: use one-to-one `superseded` in `docs/specs/.bundle-transitions.json` only after approval and isolated candidate verification. Consolidating two or more active paths into one new current boundary uses coordinated many-to-one `merged` records in `docs/specs/.bundle-transitions.json` with exact source hashes, one shared target, and one shared evidence file. Neither shape permits partial removal or an unvalidated current-tree mutation.
 
 ## Current decision
 

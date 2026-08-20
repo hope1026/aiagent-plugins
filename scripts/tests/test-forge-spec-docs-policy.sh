@@ -76,6 +76,8 @@ grep -q 'candidate commit' "$WRITING_SPECS" || fail 'writing-specs misses candid
 grep -q 'HEAD.*index.*tracked.*untracked bytes' "$WRITING_SPECS" || fail 'writing-specs misses root byte fingerprint'
 grep -q 'Visual Docs output count.*exactly zero' "$WRITING_SPECS" || fail 'writing-specs misses request-only zero gate'
 grep -q 'one-to-one.*superseded.*docs/specs/.bundle-transitions.json' "$SPEC_TEMPLATE" || fail 'template misses bundle supersession exception'
+grep -q 'many-to-one.*merged.*docs/specs/.bundle-transitions.json' "$SPEC_TEMPLATE" || fail 'template misses bundle consolidation exception'
+grep -q 'coordinated.*merged' "$WRITING_SPECS" || fail 'writing-specs misses coordinated merge workflow'
 grep -q 'schema.*status.*diagnostics' "$WRITING_PLANS" || fail "writing-plans does not inspect typed lifecycle fields"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$WRITING_PLANS" || fail "writing-plans misses inspect CLI"
 grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$EXECUTING_PLANS" || fail "executing-plans misses inspect CLI"

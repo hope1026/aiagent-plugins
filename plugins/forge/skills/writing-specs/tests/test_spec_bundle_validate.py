@@ -111,6 +111,75 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
 
             self.assertTrue(result.ok, result.diagnostics)
 
+    def test_path_transitions_authorize_exact_many_to_one_bundle_merge(self) -> None:
+        temporary, repository = self._repository()
+        with temporary:
+            source = repository / "docs/specs/semantic-workflows"
+            for name in ("prior-a", "prior-b"):
+                shutil.copytree(source, repository / f"docs/specs/{name}")
+
+            baseline = validate_repository(repository)
+            source_paths = (
+                Path("docs/specs/semantic-workflows"),
+                Path("docs/specs/prior-a"),
+                Path("docs/specs/prior-b"),
+            )
+            source_hashes = {
+                bundle.path: bundle.bundle_sha256
+                for bundle in baseline.bundles
+                if bundle.path in source_paths
+            }
+            self.assertEqual(set(source_hashes), set(source_paths))
+
+            subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
+            subprocess.run(["git", "add", "."], cwd=repository, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Forge Test",
+                    "-c",
+                    "user.email=forge@example.invalid",
+                    "commit",
+                    "-qm",
+                    "merge baseline",
+                ],
+                cwd=repository,
+                check=True,
+            )
+
+            target = repository / "docs/specs/consolidated-workflows"
+            (repository / source_paths[0]).rename(target)
+            shutil.rmtree(repository / source_paths[1])
+            shutil.rmtree(repository / source_paths[2])
+            evidence = repository / "docs/evidence/consolidated-workflows.md"
+            evidence.parent.mkdir(parents=True, exist_ok=True)
+            evidence.write_text("Consolidation evidence.\n", encoding="utf-8")
+            records = [
+                {
+                    "fromSourcePath": path.as_posix(),
+                    "fromSourceSha256": source_hashes[path],
+                    "disposition": "merged",
+                    "toBundlePath": "docs/specs/consolidated-workflows",
+                    "evidencePath": "docs/evidence/consolidated-workflows.md",
+                    "reason": "Consolidate one current contract boundary.",
+                }
+                for path in source_paths
+            ]
+            (repository / "docs/specs/.bundle-transitions.json").write_text(
+                json.dumps(
+                    {
+                        "schema": "forge/spec-bundle-transitions@1",
+                        "transitions": records,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = validate_repository(repository, baseline_ref="HEAD")
+
+            self.assertTrue(result.ok, result.diagnostics)
+
     def test_approved_v3_history_may_replace_baseline_entries_with_current_facts(self) -> None:
         temporary, repository = self._repository()
         with temporary:

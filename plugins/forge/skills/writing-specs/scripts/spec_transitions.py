@@ -25,6 +25,7 @@ RECORD_KEYS = (
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _SEMANTIC_NAME_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 _WINDOWS_DRIVE_RE = re.compile(r"^[A-Za-z]:")
+_ALLOWED_DISPOSITIONS = frozenset({"superseded", "merged"})
 
 
 @dataclass(frozen=True)
@@ -361,7 +362,6 @@ def load_transition_manifest(
     parsed: list[SpecBundleTransition] = []
     spec_root_posix = PurePosixPath(spec_root.as_posix())
     seen_sources: set[Path] = set()
-    seen_targets: set[Path] = set()
     for index, item in enumerate(transitions):
         context = f"Transition record {index}"
         record = _exact_object(
@@ -400,12 +400,12 @@ def load_transition_manifest(
             continue
 
         record_error_count = len(diagnostics)
-        if typed["disposition"] != "superseded":
+        if typed["disposition"] not in _ALLOWED_DISPOSITIONS:
             diagnostics.append(
                 _diagnostic(
                     manifest_path,
                     "SPEC_TRANSITION_DISPOSITION",
-                    f"{context} disposition must be 'superseded'.",
+                    f"{context} disposition must be 'superseded' or 'merged'.",
                 )
             )
         if _SHA256_RE.fullmatch(typed["fromSourceSha256"]) is None:
@@ -455,16 +455,7 @@ def load_transition_manifest(
                     f"{context} repeats fromSourcePath '{from_source_path.as_posix()}'.",
                 )
             )
-        if to_bundle_path in seen_targets:
-            diagnostics.append(
-                _diagnostic(
-                    manifest_path,
-                    "SPEC_TRANSITION_DUPLICATE",
-                    f"{context} repeats toBundlePath '{to_bundle_path.as_posix()}'.",
-                )
-            )
         seen_sources.add(from_source_path)
-        seen_targets.add(to_bundle_path)
         parsed.append(
             SpecBundleTransition(
                 from_source_path=from_source_path,
@@ -475,6 +466,38 @@ def load_transition_manifest(
                 reason=typed["reason"],
             )
         )
+
+    target_groups: dict[Path, list[SpecBundleTransition]] = {}
+    for transition in parsed:
+        target_groups.setdefault(transition.to_bundle_path, []).append(transition)
+
+    for target, group in sorted(target_groups.items()):
+        if len(group) == 1 and group[0].disposition == "merged":
+            diagnostics.append(
+                _diagnostic(
+                    manifest_path,
+                    "SPEC_TRANSITION_MERGE_GROUP",
+                    f"Merged target '{target.as_posix()}' requires at least two records.",
+                )
+            )
+            continue
+        if len(group) > 1:
+            if any(item.disposition != "merged" for item in group):
+                diagnostics.append(
+                    _diagnostic(
+                        manifest_path,
+                        "SPEC_TRANSITION_DUPLICATE",
+                        f"Repeated target '{target.as_posix()}' is allowed only for merged records.",
+                    )
+                )
+            elif len({item.evidence_path for item in group}) != 1:
+                diagnostics.append(
+                    _diagnostic(
+                        manifest_path,
+                        "SPEC_TRANSITION_MERGE_GROUP",
+                        f"Merged target '{target.as_posix()}' must share one evidencePath.",
+                    )
+                )
 
     if diagnostics:
         return None, tuple(sorted(diagnostics))

@@ -74,20 +74,23 @@ Compare actual behavior with the authoritative Spec Bundle. Record each mismatch
 - **Code repair:** retain the bundle and route the implementation through the forge systematic-debugging or test-driven-development skill.
 - **Contract change:** enter `change` mode, approve the Delta, update the bundle, then execute through the selected direct or planned route.
 
-## Current-state Supersession
+## Current-state Replacement and Consolidation
 
-Use this subflow only when an `approved` or `implemented` source must move to a new semantic bundle path so active sources contain current facts rather than completed migration history. It does not authorize retirement, merge, a target already present in the baseline, or a same-diff transition chain.
+Use this subflow only when one or more `approved` or `implemented` sources must move to one new semantic bundle path so active sources contain current facts rather than completed migration history. It authorizes one-to-one replacement or a coordinated many-to-one `merged` consolidation. It does not authorize retirement without a target, split, incremental merge into a target already present in the baseline, partial source removal, or a same-diff transition chain.
 
 1. Write and present the complete replacement as a Spec Delta before touching the current source. Keep it outside the final bundle path. Preserve completed execution details in a plan, ADR, or evidence file.
-2. Obtain explicit approval. Then use the forge writing-plans skill to record the exact source path, target bundle path, SHA-256 of the baseline source bytes, evidence path, reference updates, and release boundary.
+2. Obtain explicit approval. Then use the forge writing-plans skill to record every exact source path and baseline bundle SHA-256, the one new target bundle path, evidence path, reference updates, and release boundary.
 3. Commit the approved Execution Plan and durable evidence first. Record the expected clean HEAD and a fingerprint of its HEAD, index, tracked, and untracked bytes. A dirty root blocks candidate creation; do not clean, stash, or overwrite user work.
 4. Create a registered isolated Git worktree detached at the expected HEAD. Perform all supersession mutations there, never in the production root.
-5. In that worktree, append exactly one one-to-one `superseded` record to `docs/specs/.bundle-transitions.json`; promote the replacement at its new semantic bundle path; remove the prior bundle; update active relations and Markdown links; and preserve evidence. The transition uses `fromSourcePath`, `fromSourceSha256`, `toBundlePath`, `evidencePath`, and `reason`, never a document identifier.
+5. In that worktree, append to `docs/specs/.bundle-transitions.json`, choose exactly one transition shape, and apply it atomically:
+   - One baseline to one new target: append one `superseded` record.
+   - Two or more baselines to one new target: append one coordinated `merged` record per baseline in the same candidate diff. Every record uses the exact baseline hash, one shared `toBundlePath`, and one shared `evidencePath`.
+   Promote the replacement, remove every authorized source, update active relations and Markdown links, and preserve evidence. The transition uses `fromSourcePath`, `fromSourceSha256`, `disposition`, `toBundlePath`, `evidencePath`, and `reason`, never a document identifier.
 6. Run baseline validation against the expected HEAD and exact expected-byte checks. Create one candidate commit only after every gate passes.
 7. On any validation, expected-byte, or commit failure, discard the candidate worktree and prove that the production fingerprint is unchanged. When the user did not explicitly request a Visual Docs, the Visual Docs output count stays exactly zero.
 8. Immediately before promotion, require the production root to remain at the expected clean HEAD with the exact recorded fingerprint. Apply only the verified candidate commit with a fast-forward operation. Any HEAD or byte drift refuses promotion without modifying the root.
 
-The transition manifest is durable audit data, but the replacement bundle remains the active source of truth. Existing transition records stay in canonical order as an exact prefix; a prior record never authorizes another deletion.
+The transition manifest is durable audit data, but the replacement bundle remains the active source of truth. Existing transition records stay in canonical order as an exact prefix; a prior record never authorizes another deletion. A `merged` group must contain at least two exact active baseline sources and cannot be extended after the target becomes part of a baseline.
 
 ## Writer Transaction
 
@@ -129,6 +132,7 @@ Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an e
 | "The Delta is effectively the SOT now." | A proposal has no project authority until applied to validated Canonical source. |
 | "The validator passed, so the prose is good." | Self-review owns EARS meaning, scope, and observable Acceptance statements. |
 | "The baseline changed only a little." | Re-inspect and rebase before applying; silent merge can change approved meaning. |
+| "I can remove two sources now and append the last merged record later." | Consolidation is atomic. All exact sources, the new target, shared evidence, relation updates, and removals belong to one isolated candidate diff. |
 | "A Viewer would make approval safer." | Markdown is sufficient; HTML still requires explicit Viewer intent. |
 
 ## Handoff

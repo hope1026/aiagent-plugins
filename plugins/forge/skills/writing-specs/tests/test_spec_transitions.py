@@ -266,6 +266,63 @@ class TransitionManifestTest(unittest.TestCase):
             self.codes(self.source(records=[self.record(), duplicate_target])),
         )
 
+    def test_valid_merged_group_reuses_target_and_evidence(self) -> None:
+        records = [
+            self.record(
+                fromSourcePath=f"docs/specs/prior-{index}",
+                fromSourceSha256=str(index) * 64,
+                disposition="merged",
+                reason="Consolidate exact active contracts.",
+            )
+            for index in (1, 2, 3)
+        ]
+
+        manifest, diagnostics = load_transition_manifest(
+            self.repo, self.spec_root, source=self.source(records=records)
+        )
+
+        self.assertEqual(diagnostics, ())
+        self.assertIsNotNone(manifest)
+        assert manifest is not None
+        self.assertEqual(len(manifest.transitions), 3)
+
+    def test_invalid_merge_groups_are_rejected(self) -> None:
+        merged = self.record(
+            fromSourcePath="docs/specs/prior-a",
+            disposition="merged",
+        )
+        cases = (
+            ([merged], "SPEC_TRANSITION_MERGE_GROUP"),
+            (
+                [
+                    merged,
+                    self.record(fromSourcePath="docs/specs/prior-b"),
+                ],
+                "SPEC_TRANSITION_DUPLICATE",
+            ),
+            (
+                [
+                    merged,
+                    self.record(
+                        fromSourcePath="docs/specs/prior-b",
+                        disposition="merged",
+                        evidencePath="docs/evidence/other.md",
+                    ),
+                ],
+                "SPEC_TRANSITION_MERGE_GROUP",
+            ),
+        )
+        (self.repo / "docs/evidence/other.md").write_text(
+            "other", encoding="utf-8"
+        )
+
+        for records, expected_code in cases:
+            with self.subTest(records=records):
+                self.assertIn(
+                    expected_code,
+                    self.codes(self.source(records=records)),
+                )
+
     def test_record_paths_reject_existing_symlink_components(self) -> None:
         outside = Path(self.temporary.name) / "outside"
         outside.mkdir()
