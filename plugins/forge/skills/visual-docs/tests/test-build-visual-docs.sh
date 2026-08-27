@@ -109,7 +109,7 @@ assert [row["role"] for row in payload["document_sources"]] == [
     "primary_plan", "plan_progress", "plan_task",
 ]
 assert {row["role"] for row in payload["bundles"]} == {"related_spec_context"}
-assert len(payload["member_sources"]) == 6
+assert len(payload["member_sources"]) == 7
 assert payload["rebuild_command"].startswith(
     "build-visual-docs.sh --kind plan --plan docs/plans/001-demo/plan.md"
 )
