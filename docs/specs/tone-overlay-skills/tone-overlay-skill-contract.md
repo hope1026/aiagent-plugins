@@ -60,6 +60,10 @@ flowchart TD
 
 ### WHEN `marketing-tone` is used THE SYSTEM SHALL make claims fact-based, confident, and trust-building without unsupported hype or unverifiable superiority claims.
 
+### WHEN writing Korean prose THE SYSTEM SHALL name the concrete action, failure, or result instead of inserting abstract `흐름` or generic `이어가다`, and SHALL allow `~할 수 있습니다` when natural and accurate.
+
+### WHEN product update copy describes an improvement to an existing capability THE SYSTEM SHALL state the previous user-visible friction and the concrete improvement before the implementation method, and SHALL NOT present the existing capability as newly available.
+
 ### WHEN an agent writes customer support, operations updates, incident replies, GitHub issue replies, support emails, or status notices THE SYSTEM SHALL use `operations-tone` as an overlay on top of `writing-tone`.
 
 ### WHEN `operations-tone` is used THE SYSTEM SHALL lead with confirmed status, user impact, action plan, customer action required, and next update criteria.
@@ -88,6 +92,18 @@ Verifies:
 
 - [WHEN an agent writes marketing, product, landing page, launch, social, or campaign copy THE SYSTEM SHALL use `marketing-tone` as an overlay on top of `writing-tone`.](tone-overlay-skill-contract.md#when-an-agent-writes-marketing-product-landing-page-launch-social-or-campaign-copy-the-system-shall-use-marketing-tone-as-an-overlay-on-top-of-writing-tone)
 - [WHEN `marketing-tone` is used THE SYSTEM SHALL make claims fact-based, confident, and trust-building without unsupported hype or unverifiable superiority claims.](tone-overlay-skill-contract.md#when-marketing-tone-is-used-the-system-shall-make-claims-fact-based-confident-and-trust-building-without-unsupported-hype-or-unverifiable-superiority-claims)
+
+### GIVEN Korean prose, WHEN `writing-tone` is read, THEN it prefers a concrete action, failure, or result over abstract `흐름` or generic `이어가다` and does not prohibit natural, accurate `~할 수 있습니다` phrasing.
+
+Verifies:
+
+- [WHEN writing Korean prose THE SYSTEM SHALL name the concrete action, failure, or result instead of inserting abstract `흐름` or generic `이어가다`, and SHALL allow `~할 수 있습니다` when natural and accurate.](tone-overlay-skill-contract.md#when-writing-korean-prose-the-system-shall-name-the-concrete-action-failure-or-result-instead-of-inserting-abstract-흐름-or-generic-이어가다-and-shall-allow-할-수-있습니다-when-natural-and-accurate)
+
+### GIVEN Korean product update copy about an existing capability, WHEN `marketing-tone` is read, THEN it leads with the previous user-visible friction and concrete improvement, explains the implementation method afterward, and does not claim the capability is newly available.
+
+Verifies:
+
+- [WHEN product update copy describes an improvement to an existing capability THE SYSTEM SHALL state the previous user-visible friction and the concrete improvement before the implementation method, and SHALL NOT present the existing capability as newly available.](tone-overlay-skill-contract.md#when-product-update-copy-describes-an-improvement-to-an-existing-capability-the-system-shall-state-the-previous-user-visible-friction-and-the-concrete-improvement-before-the-implementation-method-and-shall-not-present-the-existing-capability-as-newly-available)
 
 ### GIVEN a customer support reply request, WHEN `operations-tone` is read, THEN it prioritizes confirmed status, customer impact, next action, and minimal cause detail unless the cause is requested, confirmed, and useful.
 
@@ -118,6 +134,8 @@ Verifies:
 - [WHEN an agent writes or revises human-readable prose THE SYSTEM SHALL use `writing-tone` as the single base tone skill for natural, clear, non-AI-like writing.](tone-overlay-skill-contract.md#when-an-agent-writes-or-revises-human-readable-prose-the-system-shall-use-writing-tone-as-the-single-base-tone-skill-for-natural-clear-non-ai-like-writing)
 - [WHEN an agent writes marketing, product, landing page, launch, social, or campaign copy THE SYSTEM SHALL use `marketing-tone` as an overlay on top of `writing-tone`.](tone-overlay-skill-contract.md#when-an-agent-writes-marketing-product-landing-page-launch-social-or-campaign-copy-the-system-shall-use-marketing-tone-as-an-overlay-on-top-of-writing-tone)
 - [WHEN `marketing-tone` is used THE SYSTEM SHALL make claims fact-based, confident, and trust-building without unsupported hype or unverifiable superiority claims.](tone-overlay-skill-contract.md#when-marketing-tone-is-used-the-system-shall-make-claims-fact-based-confident-and-trust-building-without-unsupported-hype-or-unverifiable-superiority-claims)
+- [WHEN writing Korean prose THE SYSTEM SHALL name the concrete action, failure, or result instead of inserting abstract `흐름` or generic `이어가다`, and SHALL allow `~할 수 있습니다` when natural and accurate.](tone-overlay-skill-contract.md#when-writing-korean-prose-the-system-shall-name-the-concrete-action-failure-or-result-instead-of-inserting-abstract-흐름-or-generic-이어가다-and-shall-allow-할-수-있습니다-when-natural-and-accurate)
+- [WHEN product update copy describes an improvement to an existing capability THE SYSTEM SHALL state the previous user-visible friction and the concrete improvement before the implementation method, and SHALL NOT present the existing capability as newly available.](tone-overlay-skill-contract.md#when-product-update-copy-describes-an-improvement-to-an-existing-capability-the-system-shall-state-the-previous-user-visible-friction-and-the-concrete-improvement-before-the-implementation-method-and-shall-not-present-the-existing-capability-as-newly-available)
 - [WHEN an agent writes customer support, operations updates, incident replies, GitHub issue replies, support emails, or status notices THE SYSTEM SHALL use `operations-tone` as an overlay on top of `writing-tone`.](tone-overlay-skill-contract.md#when-an-agent-writes-customer-support-operations-updates-incident-replies-github-issue-replies-support-emails-or-status-notices-the-system-shall-use-operations-tone-as-an-overlay-on-top-of-writing-tone)
 - [WHEN `operations-tone` is used THE SYSTEM SHALL lead with confirmed status, user impact, action plan, customer action required, and next update criteria.](tone-overlay-skill-contract.md#when-operations-tone-is-used-the-system-shall-lead-with-confirmed-status-user-impact-action-plan-customer-action-required-and-next-update-criteria)
 - [IF the customer did not ask for root cause details and the root cause is not required for customer action THEN THE SYSTEM SHALL avoid detailed cause explanations and use status wording such as "the issue has been confirmed", "we are preparing a fix", or "no action is needed on your side".](tone-overlay-skill-contract.md#if-the-customer-did-not-ask-for-root-cause-details-and-the-root-cause-is-not-required-for-customer-action-then-the-system-shall-avoid-detailed-cause-explanations-and-use-status-wording-such-as-the-issue-has-been-confirmed-we-are-preparing-a-fix-or-no-action-is-needed-on-your-side)
@@ -128,4 +146,5 @@ Verifies:
 
 ## Decisions & History
 
+- 2026-08-27 [CURRENT] 한국어 문장에서는 구체적인 동작이나 결과를 우선하고, 제품 업데이트는 기존 불편과 개선 결과를 구현 방법보다 먼저 설명한다. `~할 수 있습니다`는 자연스럽고 정확한 경우 그대로 사용한다.
 - 2026-08-09 [CURRENT] `writing-tone`을 공통 기반으로 사용하고 `marketing-tone`과 `operations-tone`은 목적별 overlay로 적용한다.
