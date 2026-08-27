@@ -40,6 +40,8 @@ Apply a direct, practical Korean engineering tone. Keep the message useful, calm
 - Make requests explicit: who should do what, by when, and what happens next.
 - When reviewing code or plans, start with the issue and impact before suggestions.
 - When reporting progress, separate completed work, verification, and blockers.
+- Avoid the abstract noun `흐름` when the concrete action, failure, or result can be named. Use `Agent 종료 시 Studio 연결도 끊겼습니다` instead of a vague phrase such as `연결 흐름을 개선했습니다`.
+- Do not insert `이어가다` as a generic benefit. Name the actual result, such as keeping a connection, reducing a wait, or avoiding a retry. `~할 수 있습니다` is acceptable when it is natural and accurately describes an available action.
 
 ### Message Shapes
 
