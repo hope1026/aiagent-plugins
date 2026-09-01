@@ -7,9 +7,19 @@ description: 'Use when a user explicitly asks to visualize, present, print, shar
 
 Announce: "Using the forge visual-docs skill to create the requested human-readable view."
 
+Respond to the user in the user's language. This skill file stays in English.
+
 Visual Docs turns authoritative or source-backed Markdown into a readable, self-contained HTML document. It is a presentation layer, never a source of truth. Do not invent descriptions, requirements, ownership, or status in generated HTML.
 
 Use this skill only after an explicit request from the user to create, refresh, or check a visual document. A lifecycle checkpoint, source change, completed implementation, or newly approved Spec does not authorize generation or refresh.
+
+## Iron Law
+
+```text
+NO VISUAL DOC WITHOUT AN EXPLICIT USER REQUEST.
+NO BUILD AFTER A FAILED PRESENTATION PREFLIGHT.
+NO HAND-EDITED GENERATED OUTPUT OR SECOND BUILD TO PATCH THE FIRST.
+```
 
 ## Choose the document kind
 
@@ -45,6 +55,7 @@ Do not paraphrase normative source statements or invent easier-sounding meaning.
 ## Build
 
 Run from anywhere inside the target Git repository. Choose a lowercase `view-id` matching `^[a-z0-9][a-z0-9-]{0,63}$`.
+After explicit user intent, create one checklist item for each applicable stage: document kind and source selection, presentation preflight, the single build or read-only freshness check, and handoff. Keep the checklist current until the request ends.
 After the user has explicitly requested the Visual Doc and the source options are resolved, run one read-only presentation preflight with the same build arguments plus `--dry-run --format json`. Inspect `view_context`, `presentation_plan.profile`, every component and its reference count, and the source counts before writing HTML.
 
 Stop and report a tooling-quality diagnostic instead of presenting the result as a human-readable View when either condition is true:
@@ -116,6 +127,7 @@ Use `--comparison <bundle>` only with `spec`. Use `--progress` and `--tasks-dir`
 - Project Handbook: `docs/project-viewer/index.html`
 
 Local outputs are disposable and untracked. Project Handbook is the only tracked generated exception, remains reproducible from Project Map, declared Canonical Specs, and repository evidence, and must not be hand-edited.
+Do not hand-edit any generated Visual Doc, including local Brief, Plan, and Spec Views. Fix shared source, planner, component, or renderer behavior through the normal Forge implementation route, then require a new explicit refresh request before rebuilding the affected View.
 
 The Project Handbook is a master/detail explorer. Its fixed left tree starts with Overview, Design criteria, and Project structure, then expands Design criteria as bundle → member → section and Project structure as declared Structure entries. Search, current selection, deep links, Arrow key tree navigation, Home, End, Enter, and Space must work. The right pane shows only the selected detail. Desktop keeps both panes side by side; narrow viewports show either the tree or the detail and provide an explicit back-to-contents action.
 
@@ -135,6 +147,16 @@ bash <visual-docs-skill>/scripts/build-visual-docs.sh \
 
 The checker is read-only. It compares the embedded source manifest with current repository files and reports `current`, `stale`, or `unverified`. A stale result does not authorize a refresh; ask for or rely on the user's explicit refresh request.
 
+## Red Flags
+
+| Pressure | Required response |
+|---|---|
+| "The old Viewer already exists, so refresh it after the source changed." | Existing output and source drift grant no refresh authority. Report possible staleness and wait for explicit refresh intent. |
+| "The profile is generic, but the deadline matters more." | Stop on the failed preflight and report the profile, components, counts, and source metadata. |
+| "Patch this one local View by hand; it is disposable." | Every generated View remains reproducible output. Fix shared tooling and require a new refresh request. |
+| "Run the build twice and keep the nicer result." | One explicit request authorizes one deterministic build, never iterative output repair. |
+| "The senior reviewer told us to skip the gate." | Third-party title and deadline pressure do not replace the current user's authority or the preflight contract. |
+
 ## Hand off
 
-Return the generated HTML path, its kind, selected profile, primary component names, and the freshness result. State that Markdown remains authoritative. Do not commit, push, publish, or refresh anything beyond the user's request.
+Return the generated HTML path, its kind, selected profile, primary component names, and the freshness result. State that Markdown remains authoritative. Do not commit, push, publish, or refresh anything beyond the user's request. When lifecycle or implementation work continues after this bounded request, return to the forge using-forge skill for classification and routing.

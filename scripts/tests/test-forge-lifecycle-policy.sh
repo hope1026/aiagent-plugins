@@ -46,6 +46,11 @@ grep -q 'Run one build command' "$REVIEW_VIEWER" || fail "visual-docs does not e
 grep -q -- '--dry-run --format json' "$REVIEW_VIEWER" || fail "visual-docs misses presentation preflight"
 grep -q 'profile.*generic' "$REVIEW_VIEWER" || fail "visual-docs preflight does not catch generic degradation"
 grep -q 'primary component' "$REVIEW_VIEWER" || fail "visual-docs preflight does not catch empty primary composition"
+grep -q '## Iron Law' "$REVIEW_VIEWER" || fail "visual-docs misses its iron law"
+grep -q 'Do not hand-edit any generated Visual Doc' "$REVIEW_VIEWER" || fail "visual-docs allows generated output hand edits"
+grep -q 'create one checklist item' "$REVIEW_VIEWER" || fail "visual-docs misses its execution checklist"
+grep -q '## Red Flags' "$REVIEW_VIEWER" || fail "visual-docs misses pressure counters"
+grep -q 'the forge using-forge skill' "$REVIEW_VIEWER" || fail "visual-docs misses terminal lifecycle handoff"
 
 if rg -n 'score 2\+ uses|rebuild an existing Viewer|If a lifecycle Viewer exists, rebuild|rebuild it before the first checkpoint' \
   "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS" >/dev/null; then
