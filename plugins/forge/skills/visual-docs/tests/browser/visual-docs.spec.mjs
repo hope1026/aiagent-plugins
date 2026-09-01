@@ -26,6 +26,48 @@ async function expectNoDocumentOverflow(page) {
 }
 
 for (const viewport of viewports) {
+  test(`System Spec master-detail navigation — ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.route(mermaidURL, async (route) => {
+      await route.fulfill({ status: 200, contentType: 'text/javascript', body: fs.readFileSync(mermaidPath) });
+    });
+    await page.goto(`${baseURL}/.forge/visual-docs/system-cdn/view.html`);
+    await expectReady(page);
+    await expect(page.locator('[data-spec-workspace]')).toBeVisible();
+    if (viewport.name === 'mobile') {
+      await expect(page.locator('.project-master')).toBeVisible();
+      await expect(page.locator('.project-detail-pane')).toBeHidden();
+    } else {
+      await expect(page.locator('[data-component="system-overview"]')).toBeVisible();
+      await expect(page.locator('.system-metrics')).toContainText('필수 사항');
+    }
+    await expect(page.locator('[data-node-kind="spec-member"]')).toHaveCount(5);
+    await expect(page.locator('[data-node-kind="spec-section"]')).not.toHaveCount(0);
+    await page.locator('#spec-search').fill('Statement Traceability');
+    await expect(page.locator('[data-node-kind="spec-member"]:visible')).toHaveCount(1);
+    const member = page.locator('[data-node-kind="spec-member"]:visible');
+    await member.click();
+    await expect(page.locator('[data-project-detail].is-active')).toContainText('Statement Traceability');
+    if (viewport.name === 'mobile') {
+      await expect(page.locator('.project-master')).toBeHidden();
+      await page.locator('.project-back').click();
+      await expect(page.locator('.project-master')).toBeVisible();
+      await page.locator('#spec-search').fill('');
+      await page.locator('[data-route="spec-overview"][role="treeitem"]').click();
+      await expect(page.locator('[data-component="system-overview"]')).toBeVisible();
+      await expect(page.locator('.system-metrics')).toContainText('필수 사항');
+      await page.locator('.project-back').click();
+    } else {
+      await expect(page.locator('.project-master')).toBeVisible();
+      await expect(page.locator('.project-detail-pane')).toBeVisible();
+    }
+    const first = page.locator('[role="treeitem"]:visible').first();
+    await first.focus();
+    await first.press('ArrowDown');
+    await expect(page.locator('[role="treeitem"]:focus')).not.toHaveCount(0);
+    await expectNoDocumentOverflow(page);
+  });
+
   test(`Project Handbook human-first navigation — ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto(`${baseURL}/docs/project-viewer/index.html`);

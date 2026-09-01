@@ -145,6 +145,24 @@
   .spec-index { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
   .spec-index-card { padding: 1rem; border-left: 3px solid var(--accent); background: var(--surface); }
   .spec-index-card > :first-child { margin-top: 0; }
+  .system-overview { display: grid; gap: 1.25rem; }
+  .system-metrics {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px; margin: 0; border: 1px solid var(--border); background: var(--border);
+  }
+  .system-metric { padding: 1rem 1.1rem; background: var(--surface); }
+  .system-metric dt { color: var(--text-muted); font-size: 0.8rem; font-weight: 700; }
+  .system-metric dd { margin: 0.15rem 0 0; font-size: 1.55rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .system-taxonomy h3 { margin: 0 0 0.45rem; font-size: 1rem; }
+  .system-taxonomy ul { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
+  .system-taxonomy li { padding: 0.3rem 0.55rem; border: 1px solid var(--border); background: var(--surface); }
+  .responsibility-table, .interface-table { margin: 1.5rem 0; }
+  .semantic-table-card { margin: 1rem 0; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+  .semantic-table-card > h3 { margin-top: 0.75rem; }
+  .coverage-groups { display: grid; gap: 0; margin: 1.5rem 0; border-top: 1px solid var(--border); }
+  .coverage-summary { padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
+  .coverage-summary h3 { margin: 0; font-size: 1rem; }
+  .coverage-summary p { margin: 0.2rem 0 0; color: var(--text-muted); font-size: 0.85rem; }
 
   .project-workspace {
     display: grid; grid-template-columns: minmax(16rem, 19rem) minmax(0, 1fr);
@@ -252,6 +270,7 @@
     .project-workspace.is-detail .project-detail-pane { display: block; }
     .project-workspace.is-detail .project-back { display: inline-flex; align-items: center; }
     .project-index-list li { grid-template-columns: 1fr; }
+    .system-metrics { grid-template-columns: 1fr; }
   }
 
   @media print {
@@ -375,10 +394,10 @@
     var items = Array.from(workspace.querySelectorAll('[role="treeitem"]'));
     var toggles = Array.from(workspace.querySelectorAll('[data-tree-toggle]'));
     var details = Array.from(workspace.querySelectorAll('[data-project-detail]'));
-    var search = workspace.querySelector('#project-search');
+    var search = workspace.querySelector('[data-workspace-search]');
     var searchEmpty = workspace.querySelector('.project-search-empty');
     var back = workspace.querySelector('.project-back');
-    var selectedRoute = 'project-overview';
+    var selectedRoute = workspace.dataset.defaultRoute || 'project-overview';
 
     function detailForHash(hash) {
       var value = String(hash || '').replace(/^#/, '');
@@ -554,7 +573,7 @@
 
     var initialDetail = detailForHash(location.hash);
     selectRoute(
-      initialDetail ? initialDetail.dataset.route : 'project-overview',
+      initialDetail ? initialDetail.dataset.route : selectedRoute,
       { showDetail: Boolean(initialDetail) },
     );
   }

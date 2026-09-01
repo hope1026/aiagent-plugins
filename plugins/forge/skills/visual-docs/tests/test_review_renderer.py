@@ -96,6 +96,66 @@ def project_bundle():
     )
 
 
+def long_system_bundle(repository: Path):
+    bundle = repository / "docs/specs/system-view-long"
+    bundle.mkdir(parents=True)
+    contracts = [8, 8, 8, 8, 7, 7, 7, 7]
+    inventory = ["- root: [Long System View](long-system-view.md)"]
+    requirements: list[tuple[str, str]] = []
+    for member_index, count in enumerate(contracts, 1):
+        filename = f"system-area-{member_index}.md"
+        title = f"System Area {member_index}"
+        inventory.append(f"- contract: [{title}]({filename})")
+        statements = []
+        for _ in range(count):
+            number = len(requirements) + 1
+            heading = f"System requirement {number:02d} preserves source-backed behavior"
+            requirements.append((filename, heading))
+            statements.append(f"### {heading}\n\nThe observable behavior remains deterministic.\n")
+        (bundle / filename).write_text(
+            f"# {title}\n\n"
+            "## Runtime Responsibilities\n\n"
+            "| Responsibility | Owner |\n|---|---|\n| Runtime decision | Server |\n\n"
+            "## Stat Catalog\n\n"
+            "| stat ID | Meaning |\n|---|---|\n| `system.value` | Source-backed value |\n\n"
+            "## Requirements\n\n"
+            + "\n".join(statements),
+            encoding="utf-8",
+        )
+    inventory.append("- acceptance: [Long System Verification](long-system-verification.md)")
+    root = (
+        "---\n"
+        "schema: forge/spec@3\nrole: root\nstatus: approved\nlanguage: en\n"
+        "kind: system\nsubtype: combat-system\n"
+        'areas: ["runtime", "data"]\n'
+        'components: ["state", "stats", "interfaces"]\n'
+        "relatedSpecs: []\n---\n"
+        "# Long System View\n\n## Documents\n\n"
+        + "\n".join(inventory)
+        + "\n\n## Overview\n\nA large source-backed system fixture.\n\n"
+        "## Decisions & History\n\n- 2026-08-31 [CURRENT] Use source-backed system navigation.\n"
+    )
+    (bundle / "long-system-view.md").write_text(root, encoding="utf-8")
+    acceptance_sections = []
+    for index in range(15):
+        selected = requirements[index * 4 : index * 4 + 4]
+        links = "\n".join(
+            f"- [{heading}]({filename}#{heading.lower().replace(' ', '-')})"
+            for filename, heading in selected
+        )
+        acceptance_sections.append(
+            f"### System acceptance {index + 1:02d} verifies four requirements\n\n"
+            "Verifies:\n\n"
+            f"{links}\n"
+        )
+    (bundle / "long-system-verification.md").write_text(
+        "# Long System Verification\n\n## Acceptance Criteria\n\n"
+        + "\n".join(acceptance_sections),
+        encoding="utf-8",
+    )
+    return collect_spec_sources(bundle, (), repository)
+
+
 def render(bundle, *, intent=None, subtype=None, locale="en", offline=False):
     kwargs = {}
     if intent is not None:
@@ -303,6 +363,58 @@ class ReviewRendererTest(unittest.TestCase):
         self.assertIn("Trace each item to its source path.", parsed.visible)
         self.assertNotRegex(document, r"\{\{[A-Z][A-Z0-9_]*\}\}")
         self.assertEqual(parsed.manifest["freshness"], "unverified")
+
+    def test_system_profile_renders_distinct_semantic_components(self) -> None:
+        document = render(
+            spec_bundle(), intent="review", subtype="combat-system", locale="ko"
+        )
+
+        self.assertIn('data-component="system-overview"', document)
+        self.assertIn('class="system-metrics"', document)
+        self.assertIn('class="responsibility-table"', document)
+        self.assertIn('class="interface-table"', document)
+        self.assertIn('class="coverage-groups"', document)
+        self.assertIn("필수 사항", document)
+        self.assertIn("완료 기준", document)
+        self.assertNotIn("blocks ·", document)
+        self.assertNotIn("entities</li>", document)
+
+    def test_system_profile_uses_member_section_master_detail_navigation(self) -> None:
+        document = render(
+            spec_bundle(), intent="review", subtype="combat-system", locale="ko"
+        )
+
+        self.assertIn('data-spec-workspace', document)
+        self.assertIn('data-default-route="spec-overview"', document)
+        self.assertIn('id="spec-search"', document)
+        self.assertIn('data-workspace-search', document)
+        self.assertIn('role="tree"', document)
+        self.assertIn('data-node-kind="spec-member"', document)
+        self.assertIn('data-node-kind="spec-section"', document)
+        self.assertIn('class="project-detail-pane"', document)
+        self.assertIn('class="project-back"', document)
+
+    def test_long_system_view_keeps_primary_reading_path_human_facing(self) -> None:
+        with TemporaryDirectory() as temporary:
+            repository = Path(temporary)
+            bundle = long_system_bundle(repository)
+            document = render(
+                bundle, intent="review", subtype="combat-system", locale="ko"
+            )
+
+        parsed = DocumentParser()
+        parsed.feed(document)
+        self.assertEqual(parsed.manifest["presentation_plan"]["profile"], "spec.system")
+        self.assertEqual(parsed.manifest["counts"]["primary"]["requirement"], 60)
+        self.assertEqual(parsed.manifest["counts"]["primary"]["acceptance"], 15)
+        self.assertEqual(parsed.manifest["counts"]["primary"]["mermaid"], 0)
+        self.assertEqual(document.count('data-node-kind="spec-member"'), 10)
+        self.assertEqual(document.count('class="coverage-summary"'), 15)
+        self.assertEqual(len(re.findall(r'data-statement-kind="requirement"', document)), 60)
+        self.assertEqual(len(re.findall(r'data-statement-kind="acceptance"', document)), 15)
+        self.assertNotIn("Current spec source", document)
+        self.assertNotIn(">primary <", document)
+        self.assertNotIn("blocks ·", document)
 
     def test_same_source_changes_composition_by_intent(self) -> None:
         bundle = spec_bundle()

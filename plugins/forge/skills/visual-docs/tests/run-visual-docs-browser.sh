@@ -26,6 +26,10 @@ cp "$TEST_DIR/browser/visual-docs.spec.mjs" "$DEPENDENCY_ROOT/visual-docs.spec.m
 cp -R "$TEST_DIR/fixtures/repository" "$REPOSITORY_ROOT"
 cp -R "$REPOSITORY_ROOT/docs/specs/semantic-spec-bundles" \
   "$REPOSITORY_ROOT/docs/specs/comparison-review-contract"
+cp -R "$REPOSITORY_ROOT/docs/specs/semantic-spec-bundles" \
+  "$REPOSITORY_ROOT/docs/specs/system-view-contract"
+perl -pi -e 's/subtype: workflow/subtype: combat-system/' \
+  "$REPOSITORY_ROOT/docs/specs/system-view-contract/semantic-spec-bundle-contract.md"
 
 (
   cd "$WRITING_SPECS/assets"
@@ -51,6 +55,9 @@ git -C "$REPOSITORY_ROOT" commit -qm fixture
     --spec docs/specs/semantic-spec-bundles \
     --comparison docs/specs/comparison-review-contract \
     --view-id spec-cdn --generated-at 2026-08-01T00:00:00Z
+  "$SKILL_DIR/scripts/build-visual-docs.sh" --kind spec \
+    --spec docs/specs/system-view-contract \
+    --view-id system-cdn --locale ko --generated-at 2026-08-01T00:00:00Z
   "$SKILL_DIR/scripts/build-visual-docs.sh" --kind plan \
     --plan docs/plans/001-demo/plan.md --view-id plan-offline \
     --generated-at 2026-08-01T00:00:00Z --offline

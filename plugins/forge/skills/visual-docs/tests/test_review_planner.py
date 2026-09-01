@@ -165,7 +165,7 @@ class ReviewPlannerTest(unittest.TestCase):
             "architecture": "spec.architecture",
             "policy": "spec.policy",
             "migration": "spec.migration",
-            "unusual": "generic",
+            "unusual": "spec.system",
         }
         for subtype, profile in expected.items():
             with self.subTest(subtype=subtype):
@@ -175,6 +175,36 @@ class ReviewPlannerTest(unittest.TestCase):
                 selected = select_presentation_plan(ir, context)
                 self.assertEqual(selected.profile, profile)
                 self.assertEqual(validate_presentation_plan(ir, selected), ())
+
+    def test_custom_system_subtype_uses_system_profile_before_generic(self) -> None:
+        ir = self.workflow_ir()
+
+        system = select_presentation_plan(
+            ir,
+            ViewContext(
+                "spec", "system", "combat-system", "review", "mixed", "ko", "standalone"
+            ),
+        )
+        feature = select_presentation_plan(
+            ir,
+            ViewContext(
+                "spec", "feature", "unusual", "review", "mixed", "ko", "standalone"
+            ),
+        )
+
+        self.assertEqual(system.profile, "spec.system")
+        self.assertEqual(
+            [component.component for component in system.components],
+            [
+                "system-overview",
+                "runtime-responsibility",
+                "interface-table",
+                "acceptance-coverage",
+                "spec-navigator",
+            ],
+        )
+        self.assertEqual(feature.profile, "generic")
+        self.assertEqual(validate_presentation_plan(ir, system), ())
 
         implementation = select_presentation_plan(
             ir,

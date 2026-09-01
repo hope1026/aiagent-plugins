@@ -43,6 +43,9 @@ if rg -n 'explicit source/kind/view-id|Visual Docs still requires an exact reque
 fi
 grep -q 'exactly one.*handoff\|one.*handoff' "$WRITING_SPECS" || fail "positive request does not cap handoff at one"
 grep -q 'Run one build command' "$REVIEW_VIEWER" || fail "visual-docs does not enforce one build"
+grep -q -- '--dry-run --format json' "$REVIEW_VIEWER" || fail "visual-docs misses presentation preflight"
+grep -q 'profile.*generic' "$REVIEW_VIEWER" || fail "visual-docs preflight does not catch generic degradation"
+grep -q 'primary component' "$REVIEW_VIEWER" || fail "visual-docs preflight does not catch empty primary composition"
 
 if rg -n 'score 2\+ uses|rebuild an existing Viewer|If a lifecycle Viewer exists, rebuild|rebuild it before the first checkpoint' \
   "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS" >/dev/null; then

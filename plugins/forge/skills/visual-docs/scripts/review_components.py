@@ -27,8 +27,10 @@ render_markdown = _load_markdown_renderer()
 
 TITLES = {
     "summary": ("Summary", "요약"), "outline": ("Outline", "목차"),
+    "system-overview": ("System overview", "시스템 개요"),
     "state-map": ("State Map", "상태 흐름"), "sequence": ("Sequence", "시퀀스"),
     "interface-table": ("Interfaces", "인터페이스"), "exception-matrix": ("Exceptions", "예외"),
+    "runtime-responsibility": ("Runtime responsibilities", "실행 책임"),
     "relation-graph": ("Relations", "관계"), "route-map": ("Routes", "Route"),
     "dependency-map": ("Dependencies", "의존성"), "runtime-atlas": ("Runtime Atlas", "Runtime Atlas"),
     "progress": ("Progress", "진행 상태"), "blockers": ("Blockers", "차단 요소"),
@@ -36,6 +38,7 @@ TITLES = {
     "decision-matrix": ("Decisions", "결정"), "change-route": ("Change Route", "변경 경로"),
     "verification": ("Verification", "검증"), "delta-matrix": ("Comparison", "비교"),
     "provenance": ("Provenance", "출처"), "source-detail": ("Source Detail", "Source 상세"),
+    "spec-navigator": ("Spec contents", "설계 기준 탐색"),
     "brief-overview": ("At a glance", "한눈에 보기"),
     "brief-scope": ("Scope", "범위"),
     "brief-done": ("Done checks", "완료 조건"),
@@ -249,6 +252,179 @@ def _summary(ir: SemanticIR) -> str:
         for document in ir.documents
     )
     return f'<ul class="component-summary">{rows}</ul>'
+
+
+def _entity_count(ir: SemanticIR, entity_type: str) -> int:
+    return sum(
+        1
+        for document in ir.documents
+        for entity in document.entities
+        if entity.entity_type == entity_type
+    )
+
+
+def _system_overview(ir: SemanticIR, *, korean: bool) -> str:
+    primary = ir.documents[0]
+    metadata = primary.metadata
+    areas = tuple(metadata.get("areas", ()))
+    components = tuple(metadata.get("components", ()))
+    labels = (
+        ("문서", "필수 사항", "완료 기준", "담당 영역", "구성 요소")
+        if korean
+        else ("Documents", "Requirements", "Completion criteria", "Areas", "Components")
+    )
+    metrics = (
+        (labels[0], len(ir.documents)),
+        (labels[1], _entity_count(ir, "requirement")),
+        (labels[2], _entity_count(ir, "acceptance")),
+    )
+    return (
+        '<article class="system-overview" data-component="system-overview">'
+        '<dl class="system-metrics">'
+        + "".join(
+            f'<div class="system-metric"><dt>{html.escape(label)}</dt><dd>{value}</dd></div>'
+            for label, value in metrics
+        )
+        + "</dl>"
+        + (
+            f'<section class="system-taxonomy"><h3>{html.escape(labels[3])}</h3><ul>'
+            + "".join(f"<li>{html.escape(str(item))}</li>" for item in areas)
+            + "</ul></section>"
+            if areas
+            else ""
+        )
+        + (
+            f'<section class="system-taxonomy"><h3>{html.escape(labels[4])}</h3><ul>'
+            + "".join(f"<li><code>{html.escape(str(item))}</code></li>" for item in components)
+            + "</ul></section>"
+            if components
+            else ""
+        )
+        + "</article>"
+    )
+
+
+def _semantic_table(
+    ir: SemanticIR,
+    refs: tuple[str, ...],
+    *,
+    css_class: str,
+    korean: bool,
+) -> str:
+    del refs
+    tables = [
+        (block, document)
+        for document in ir.documents
+        for block in document.blocks
+        if block.kind == "table"
+    ]
+
+    def responsibility(block: SemanticBlock) -> bool:
+        value = f"{block.heading}\n{block.body}".casefold()
+        return any(
+            token in value
+            for token in ("책임", "서버", "클라이언트", "responsibility", "authority", "owner")
+        )
+
+    if css_class == "responsibility-table":
+        selected = [(block, document) for block, document in tables if responsibility(block)]
+    else:
+        selected = [
+            (block, document)
+            for block, document in tables
+            if not responsibility(block)
+            and any(
+                token in f"{block.heading}\n{block.body}".casefold()
+                for token in ("interface", "schema", "remote", "계약", " id ", "stat id")
+            )
+        ]
+    empty = "표시할 source 항목이 없습니다." if korean else "No source entries are available."
+    if not selected:
+        return f'<div class="{css_class}" data-component="{css_class}"><p class="empty-component">{empty}</p></div>'
+    return (
+        f'<div class="{css_class}" data-component="{css_class}">'
+        + "".join(
+            '<article class="semantic-table-card">'
+            f'<h3>{html.escape(block.heading)}</h3>'
+            f'{render_markdown(block.body)}'
+            f'<p class="provenance"><code>{html.escape(document.path)}</code></p>'
+            "</article>"
+            for block, document in selected
+        )
+        + "</div>"
+    )
+
+
+def _acceptance_coverage(
+    ir: SemanticIR,
+    refs: tuple[str, ...],
+    review_id: str,
+    rendered_entities: set[str],
+    coverage_targets: Mapping[str, tuple[SemanticEntity, ...]],
+    *,
+    korean: bool,
+    summary_only: bool = False,
+) -> str:
+    documents = {document.namespace: document for document in ir.documents}
+    entities = {
+        entity.key: entity
+        for document in ir.documents
+        for entity in document.entities
+    }
+    accepted = [
+        entities[reference]
+        for reference in refs
+        if reference in entities and entities[reference].entity_type == "acceptance"
+    ]
+    if not accepted:
+        empty = "완료 기준이 없습니다." if korean else "No completion criteria are available."
+        return f'<div class="coverage-groups" data-component="acceptance-coverage"><p class="empty-component">{empty}</p></div>'
+    groups = []
+    for entity in accepted:
+        document = documents[entity.source_namespace]
+        targets = coverage_targets.get(entity.key, ())
+        if summary_only:
+            heading = str(entity.attributes.get("heading", entity.entity_id))
+            target = _internal_id("statement", entity.key)
+            count_label = (
+                f"필수 사항 {len(targets)}개"
+                if korean
+                else f"{len(targets)} required behaviors"
+            )
+            groups.append(
+                '<article class="coverage-summary">'
+                f'<h3><a href="#{target}">{html.escape(heading)}</a></h3>'
+                f'<p>{html.escape(count_label)}</p>'
+                "</article>"
+            )
+            continue
+        requirements = "".join(
+            (
+                _statement_reference_markup(target, documents[target.source_namespace])
+                if target.key in rendered_entities
+                else _statement_markup(
+                    target,
+                    documents[target.source_namespace],
+                    review_id,
+                    coverage_targets,
+                )
+            )
+            for target in targets
+        )
+        rendered_entities.update(target.key for target in targets)
+        statement = (
+            _statement_reference_markup(entity, document)
+            if entity.key in rendered_entities
+            else _statement_markup(entity, document, review_id, coverage_targets)
+        )
+        groups.append(
+            '<section class="coverage-group">'
+            + requirements
+            + statement
+            + "</section>"
+        )
+        rendered_entities.add(entity.key)
+    return '<div class="coverage-groups" data-component="acceptance-coverage">' + "".join(groups) + "</div>"
 
 
 def _outline(ir: SemanticIR) -> str:
@@ -593,6 +769,7 @@ def _project_spec_parts(
     coverage_targets: Mapping[str, tuple[SemanticEntity, ...]],
     *,
     korean: bool,
+    roles: frozenset[str] = frozenset(("declared_spec",)),
 ) -> tuple[tuple[ProjectNavNode, ...], tuple[str, ...], str]:
     allowed_blocks = {
         block.key
@@ -605,7 +782,7 @@ def _project_spec_parts(
             entities_by_block[entity.block_key] = (*entities_by_block[entity.block_key], entity)
     bundles: dict[str, list[SemanticDocument]] = {}
     for document in ir.documents:
-        if document.role != "declared_spec":
+        if document.role not in roles:
             continue
         bundle_path = document.metadata.get("bundle_path")
         if isinstance(bundle_path, str):
@@ -894,14 +1071,14 @@ def render_project_workspace(
         _project_detail(structure_evidence_route, "source-evidence", source_label, source_panels.get("structure", "")),
     ]
     return (
-        '<div class="project-workspace" data-project-workspace data-component="project-workspace">'
+        '<div class="project-workspace" data-project-workspace data-default-route="project-overview" data-component="project-workspace">'
         '<aside class="project-master">'
         '<div class="project-master-header"><p class="project-master-title">'
         + ("프로젝트 목차" if korean else "Project contents")
         + "</p>"
         '<label class="project-search-label" for="project-search">'
         + ("목차 검색" if korean else "Search contents")
-        + '</label><input id="project-search" class="project-search" type="search" '
+        + '</label><input id="project-search" class="project-search" type="search" data-workspace-search '
         + ('placeholder="설계 기준, 문서, 경로 검색"' if korean else 'placeholder="Search criteria, documents, or paths"')
         + ' autocomplete="off"><p class="project-search-empty" role="status" hidden>'
         + ("검색 결과가 없습니다." if korean else "No matching contents.")
@@ -912,6 +1089,106 @@ def render_project_workspace(
         + tree
         + "</div></nav></aside>"
         '<section class="project-detail-pane" aria-live="polite">'
+        '<button class="project-back" type="button">'
+        + ("목록으로" if korean else "Back to contents")
+        + "</button>"
+        + "".join(details)
+        + "</section></div>"
+    )
+
+
+def render_spec_workspace(
+    ir: SemanticIR,
+    plan: PresentationPlan,
+    context: ViewContext,
+    review_id: str,
+    source_panel: str,
+) -> str:
+    """Render a system Spec as overview plus member/section master-detail navigation."""
+
+    korean = context.locale == "ko"
+    components = {component.component: component for component in plan.components}
+    rendered_entities: set[str] = set()
+    coverage_targets = _coverage_targets(ir)
+    navigator = components.get("spec-navigator")
+    spec_nodes, spec_details, spec_overview = _project_spec_parts(
+        ir,
+        navigator.refs if navigator else (),
+        review_id,
+        rendered_entities,
+        coverage_targets,
+        korean=korean,
+        roles=frozenset(("primary_spec",)),
+    )
+
+    overview_component = components.get("system-overview")
+    responsibility = components.get("runtime-responsibility")
+    interfaces = components.get("interface-table")
+    coverage = components.get("acceptance-coverage")
+    overview_markup = _system_overview(ir, korean=korean)
+    if overview_component is not None:
+        overview_markup += _semantic_table(
+            ir,
+            responsibility.refs if responsibility else (),
+            css_class="responsibility-table",
+            korean=korean,
+        )
+        overview_markup += _semantic_table(
+            ir,
+            interfaces.refs if interfaces else (),
+            css_class="interface-table",
+            korean=korean,
+        )
+        overview_markup += _acceptance_coverage(
+            ir,
+            coverage.refs if coverage else (),
+            review_id,
+            rendered_entities,
+            coverage_targets,
+            korean=korean,
+            summary_only=True,
+        )
+
+    overview_route = "spec-overview"
+    criteria_route = "spec-criteria"
+    source_route = "spec-source"
+    roots = (
+        ProjectNavNode(overview_route, "system-overview", "시스템 개요" if korean else "System overview"),
+        ProjectNavNode(
+            criteria_route,
+            "design-criteria",
+            "설계 기준" if korean else "Design criteria",
+            spec_nodes,
+        ),
+        ProjectNavNode(source_route, "source-evidence", "출처·검증" if korean else "Source & verification"),
+    )
+    tree = "".join(
+        _project_tree_node(node, level=1, korean=korean, root=True, first=index == 0)
+        for index, node in enumerate(roots)
+    )
+    details = [
+        _project_detail(overview_route, "system-overview", roots[0].label, overview_markup, active=True),
+        _project_detail(criteria_route, "design-criteria", roots[1].label, spec_overview),
+        *spec_details,
+        _project_detail(source_route, "source-evidence", roots[2].label, source_panel),
+    ]
+    return (
+        '<div class="project-workspace spec-workspace" data-project-workspace data-spec-workspace '
+        'data-default-route="spec-overview" data-component="spec-workspace">'
+        '<aside class="project-master"><div class="project-master-header">'
+        '<p class="project-master-title">'
+        + ("설계 기준 목차" if korean else "Spec contents")
+        + '</p><label class="project-search-label" for="spec-search">'
+        + ("목차 검색" if korean else "Search contents")
+        + '</label><input id="spec-search" class="project-search" type="search" data-workspace-search '
+        + ('placeholder="문서, 섹션, 필수 사항 검색"' if korean else 'placeholder="Search documents, sections, or requirements"')
+        + ' autocomplete="off"><p class="project-search-empty" role="status" hidden>'
+        + ("검색 결과가 없습니다." if korean else "No matching contents.")
+        + '</p></div><nav class="project-tree-navigation" aria-label="'
+        + ("설계 기준 목차" if korean else "Spec contents")
+        + '"><div role="tree">'
+        + tree
+        + '</div></nav></aside><section class="project-detail-pane" aria-live="polite">'
         '<button class="project-back" type="button">'
         + ("목록으로" if korean else "Back to contents")
         + "</button>"
@@ -978,6 +1255,8 @@ def render_components(
         title = title_pair[1 if korean else 0]
         if component.component == "summary":
             markup = _summary(ir)
+        elif component.component == "system-overview":
+            markup = _system_overview(ir, korean=korean)
         elif component.component == "outline":
             markup = _outline(ir)
         elif component.component == "provenance":
@@ -993,6 +1272,29 @@ def render_components(
                 review_id,
                 rendered_entities,
                 coverage_targets,
+            )
+        elif component.component == "runtime-responsibility":
+            markup = _semantic_table(
+                ir,
+                component.refs,
+                css_class="responsibility-table",
+                korean=korean,
+            )
+        elif component.component == "interface-table":
+            markup = _semantic_table(
+                ir,
+                component.refs,
+                css_class="interface-table",
+                korean=korean,
+            )
+        elif component.component == "acceptance-coverage":
+            markup = _acceptance_coverage(
+                ir,
+                component.refs,
+                review_id,
+                rendered_entities,
+                coverage_targets,
+                korean=korean,
             )
         else:
             markup = _details(

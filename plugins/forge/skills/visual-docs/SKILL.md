@@ -45,6 +45,26 @@ Do not paraphrase normative source statements or invent easier-sounding meaning.
 ## Build
 
 Run from anywhere inside the target Git repository. Choose a lowercase `view-id` matching `^[a-z0-9][a-z0-9-]{0,63}$`.
+After the user has explicitly requested the Visual Doc and the source options are resolved, run one read-only presentation preflight with the same build arguments plus `--dry-run --format json`. Inspect `view_context`, `presentation_plan.profile`, every component and its reference count, and the source counts before writing HTML.
+
+Stop and report a tooling-quality diagnostic instead of presenting the result as a human-readable View when either condition is true:
+
+- a `kind: system` Spec with a custom subtype selects `profile: generic`;
+- the primary composition contains only source detail, outline, provenance, or empty primary components for a non-sparse source.
+
+The diagnostic names the selected profile, empty or fallback components, source counts, and the source metadata that led to the choice. Do not repair it with a document-specific HTML fragment, template, CSS, or script. A valid preflight is read-only and does not count as the build.
+
+Example preflight shape:
+
+```bash
+bash <visual-docs-skill>/scripts/build-visual-docs.sh \
+  --kind spec \
+  --spec docs/specs/<bundle>/ \
+  --view-id <view-id> \
+  --locale en \
+  --dry-run --format json
+```
+
 Run one build command per explicit create or refresh request.
 A successful single build ends generation. A freshness check is a separate read-only action.
 
@@ -117,4 +137,4 @@ The checker is read-only. It compares the embedded source manifest with current 
 
 ## Hand off
 
-Return the generated HTML path, its kind, and the freshness result. State that Markdown remains authoritative. Do not commit, push, publish, or refresh anything beyond the user's request.
+Return the generated HTML path, its kind, selected profile, primary component names, and the freshness result. State that Markdown remains authoritative. Do not commit, push, publish, or refresh anything beyond the user's request.

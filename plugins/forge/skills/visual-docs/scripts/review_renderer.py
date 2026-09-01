@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 from typing import Mapping
 
-from review_components import render_components, render_project_workspace
+from review_components import render_components, render_project_workspace, render_spec_workspace
 from review_ir import SemanticIR, build_semantic_ir
 from review_planner import (
     PresentationPlan,
@@ -39,6 +39,9 @@ LABELS = {
         "mermaid_error": "Diagram could not be rendered",
         "freshness": "Freshness",
         "source_picker": "Verify this source locally",
+        "group_primary": "Primary",
+        "group_comparison": "Comparison",
+        "group_context": "Context",
     },
     "ko": {
         "generated": "생성",
@@ -47,6 +50,19 @@ LABELS = {
         "mermaid_error": "다이어그램을 렌더링하지 못했습니다",
         "freshness": "최신성",
         "source_picker": "이 source를 로컬에서 검증",
+        "group_primary": "현재 문서",
+        "group_comparison": "비교 문서",
+        "group_context": "관련 문서",
+        "origin_primary_spec": "현재 Spec 원문",
+        "origin_comparison_spec": "비교 원문",
+        "origin_primary_plan": "Plan 원문",
+        "origin_plan_progress": "Plan 진행 원문",
+        "origin_plan_task": "Plan Task 원문",
+        "origin_related_spec_context": "관련 Spec 원문",
+        "origin_brief_source": "Brief 원문",
+        "origin_project_map": "프로젝트 구조 설명",
+        "origin_declared_spec": "선언된 Spec 원문",
+        "origin_repository_evidence": "계산된 저장소 근거",
     },
 }
 
@@ -245,7 +261,7 @@ def _source_summary(
     )
     aggregates = "".join(
         '<span class="freshness-aggregate" '
-        f'data-freshness-group="{group}">{html.escape(group)} '
+        f'data-freshness-group="{group}">{html.escape(labels.get(f"group_{group}", group))} '
         '<strong class="freshness-state freshness-unverified">unverified</strong></span>'
         for group in groups
     )
@@ -256,7 +272,7 @@ def _source_summary(
             '<li class="source-row" '
             f'data-source-key="{key}" data-source-path="{html.escape(source.path, quote=True)}" '
             f'data-source-group="{_source_group(source.role)}">'
-            f'<span class="source-role">{html.escape(ORIGINS[source.role])}</span> '
+            f'<span class="source-role">{html.escape(labels.get(f"origin_{source.role}", ORIGINS[source.role]))}</span> '
             f'<span>{html.escape(_source_label(source))}</span> '
             '<span class="freshness-state freshness-unverified" data-source-state>unverified</span>'
             '<span class="source-error" data-source-error aria-live="polite"></span>'
@@ -400,6 +416,7 @@ def render_review(
         raise ValueError(
             "invalid Presentation Plan: " + "; ".join(item.code for item in diagnostics)
         )
+    source_summary = "" if bundle.kind == "project" else _source_summary(bundle, labels)
     if bundle.kind == "project":
         navigation = ""
         content = render_project_workspace(
@@ -434,6 +451,23 @@ def render_review(
                 ),
             },
         )
+    elif bundle.kind == "spec" and plan.profile == "spec.system":
+        navigation = ""
+        content = render_spec_workspace(
+            ir,
+            plan,
+            context,
+            review_id,
+            _source_summary(
+                bundle,
+                labels,
+                roles=frozenset(("primary_spec", "comparison_spec")),
+                groups=("primary", "comparison"),
+                collapsed=False,
+                include_overall=True,
+            ),
+        )
+        source_summary = ""
     else:
         components = render_components(ir, plan, context, review_id)
         navigation = "".join(
@@ -485,7 +519,7 @@ def render_review(
         "STATUS": html.escape(status),
         "GENERATED_LABEL": html.escape(labels["generated"]),
         "GENERATED": html.escape(generated_at),
-        "SOURCE_SUMMARY": "" if bundle.kind == "project" else _source_summary(bundle, labels),
+        "SOURCE_SUMMARY": source_summary,
         "NAV_LABEL": html.escape(labels["nav"], quote=True),
         "NAVIGATION": navigation,
         "CONTENT": content,

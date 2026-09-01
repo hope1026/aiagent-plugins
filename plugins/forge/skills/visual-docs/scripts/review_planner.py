@@ -18,6 +18,13 @@ DISCLOSURES = frozenset(("open", "collapsed", "summary"))
 PROFILE_COMPONENTS: Mapping[str, tuple[str, ...]] = {
     "generic": ("summary", "outline", "source-detail", "provenance"),
     "brief.summary": ("brief-overview", "brief-scope", "brief-done", "source-detail"),
+    "spec.system": (
+        "system-overview",
+        "runtime-responsibility",
+        "interface-table",
+        "acceptance-coverage",
+        "spec-navigator",
+    ),
     "spec.workflow": ("state-map", "exception-matrix", "acceptance-coverage", "source-detail"),
     "spec.api": ("interface-table", "sequence", "exception-matrix", "source-detail"),
     "spec.architecture": ("relation-graph", "runtime-atlas", "decision-matrix", "source-detail"),
@@ -52,6 +59,8 @@ _INTENT_COMPONENTS: Mapping[tuple[str, str], tuple[str, ...]] = {
 }
 
 _COMPONENT_ENTITY_TYPES: Mapping[str, frozenset[str]] = {
+    "system-overview": frozenset(),
+    "runtime-responsibility": frozenset(("interface",)),
     "state-map": frozenset(("mermaid",)),
     "sequence": frozenset(("mermaid",)),
     "interface-table": frozenset(("interface",)),
@@ -206,6 +215,8 @@ def select_presentation_plan(ir: SemanticIR, context: ViewContext) -> Presentati
         profile = f"spec.{context.subtype}"
     elif context.spec_kind == "policy":
         profile = "spec.policy"
+    elif context.spec_kind == "system":
+        profile = "spec.system"
     else:
         profile = "generic"
 
@@ -217,7 +228,9 @@ def select_presentation_plan(ir: SemanticIR, context: ViewContext) -> Presentati
     represented_blocks: set[str] = set()
     components: list[ComponentPlan] = []
     for component_id in component_ids:
-        if component_id in {"source-detail", "developer-information"}:
+        if component_id == "spec-navigator":
+            refs = tuple(block.key for block in blocks)
+        elif component_id in {"source-detail", "developer-information"}:
             refs = tuple(
                 block.key for block in blocks if block.key not in represented_blocks
             )
@@ -240,7 +253,7 @@ def select_presentation_plan(ir: SemanticIR, context: ViewContext) -> Presentati
             ]
             refs = tuple(entity.key for entity in selected)
             represented_blocks.update(entity.block_key for entity in selected)
-        if component_id in {"source-detail", "developer-information"}:
+        if component_id in {"source-detail", "developer-information", "spec-navigator"}:
             represented_blocks.update(refs)
         components.append(
             ComponentPlan(
