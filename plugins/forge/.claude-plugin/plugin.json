@@ -1,7 +1,7 @@
 {
   "name": "forge",
   "displayName": "Forge",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "Semantic Canonical Spec Bundles and complexity-aware execution skills with approved Spec Deltas, full-statement plan traceability, Quick verified execution, request-only Visual Docs for briefs, plans, specs, and projects, cross-agent authoring, debugging, and interface design.",
   "author": { "name": "Onestar Lee" },
   "skills": "./skills/",
