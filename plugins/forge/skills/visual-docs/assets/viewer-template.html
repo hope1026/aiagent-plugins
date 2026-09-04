@@ -91,6 +91,11 @@
   .diagram-scroll { margin: 1rem 0; border: 1px solid var(--border); background: var(--surface); }
   .diagram-scroll pre.mermaid { margin: 0; border: 0; }
   .diagram-scroll svg { display: block; height: auto; margin: 0 auto; }
+  .derived-visual { border-left: 3px solid var(--accent); }
+  .derived-visual .visual-confirm { margin-bottom: 0.2rem; font-weight: 650; }
+  .derived-visual .visual-guide { margin-top: 0; color: var(--text-muted); }
+  .visual-summary-table { margin: 0.85rem 0; }
+  .visual-summary-table table { min-width: 30rem; margin: 0; }
   .diagram-error { border: 1px solid var(--error); padding: 0.85rem 1rem; }
   .mermaid-error-message { color: var(--error); font-weight: 650; margin: 0 0 0.5rem; }
   .mermaid-error-source { margin: 0; }
@@ -160,7 +165,10 @@
   .semantic-table-card { margin: 1rem 0; padding-top: 0.5rem; border-top: 1px solid var(--border); }
   .semantic-table-card > h3 { margin-top: 0.75rem; }
   .coverage-groups { display: grid; gap: 0; margin: 1.5rem 0; border-top: 1px solid var(--border); }
-  .coverage-summary { padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
+  .coverage-visual { margin: 1.5rem 0; padding-top: 0.5rem; border-top: 3px solid var(--accent); }
+  .coverage-visual > h3 { margin-top: 0.75rem; }
+  .coverage-map { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .coverage-summary { padding: 0.85rem; border-bottom: 1px solid var(--border); background: var(--surface); }
   .coverage-summary h3 { margin: 0; font-size: 1rem; }
   .coverage-summary p { margin: 0.2rem 0 0; color: var(--text-muted); font-size: 0.85rem; }
 
@@ -271,6 +279,7 @@
     .project-workspace.is-detail .project-back { display: inline-flex; align-items: center; }
     .project-index-list li { grid-template-columns: 1fr; }
     .system-metrics { grid-template-columns: 1fr; }
+    .coverage-map { grid-template-columns: 1fr; }
   }
 
   @media print {
@@ -282,6 +291,7 @@
     }
     table, pre, svg { page-break-inside: avoid; }
     .table-scroll, .diagram-scroll { overflow: visible; border: 0; }
+    .visual-summary-table table { min-width: 0; }
     .diagram-scroll.is-wide svg { min-width: 0; max-width: 100%; }
     .project-workspace { display: block; }
     .project-master, .project-back { display: none !important; }

@@ -51,6 +51,14 @@ grep -q 'Do not hand-edit any generated Visual Doc' "$REVIEW_VIEWER" || fail "vi
 grep -q 'create one checklist item' "$REVIEW_VIEWER" || fail "visual-docs misses its execution checklist"
 grep -q '## Red Flags' "$REVIEW_VIEWER" || fail "visual-docs misses pressure counters"
 grep -q 'the forge using-forge skill' "$REVIEW_VIEWER" || fail "visual-docs misses terminal lifecycle handoff"
+grep -q 'visual candidate' "$REVIEW_VIEWER" || fail "visual-docs preflight misses source-backed visual candidates"
+grep -q 'decorative diagram' "$REVIEW_VIEWER" || fail "visual-docs does not reject decorative diagrams"
+grep -q 'meets or exceeds the relationship threshold' "$REVIEW_VIEWER" || fail "visual-docs threshold excludes boundary candidates"
+grep -q 'every qualifying visual candidate' "$REVIEW_VIEWER" || fail "visual-docs can validate only one of several candidates"
+grep -q 'ownership.*before.*matrix' "$REVIEW_VIEWER" || fail "visual-docs misses relation-shape precedence"
+grep -q 'non-qualifying source block' "$REVIEW_VIEWER" || fail "visual-docs can drop mixed-source text fallbacks"
+grep -q 'ownership or dependency before mapping' "$REVIEW_VIEWER" || fail "visual-docs precedence is incomplete"
+grep -q 'Each derived visual.*source path.*Derived view' "$REVIEW_VIEWER" || fail "visual-docs misses visible per-visual provenance"
 
 if rg -n 'score 2\+ uses|rebuild an existing Viewer|If a lifecycle Viewer exists, rebuild|rebuild it before the first checkpoint' \
   "$WRITING_SPECS" "$WRITING_PLANS" "$EXECUTING_PLANS" >/dev/null; then

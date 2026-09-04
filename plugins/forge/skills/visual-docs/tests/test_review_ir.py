@@ -243,6 +243,74 @@ class ReviewIRTest(unittest.TestCase):
             )
         )
 
+    def test_explicit_flow_and_ownership_table_become_visual_entities(self) -> None:
+        with TemporaryDirectory() as temporary:
+            repository = Path(temporary)
+            shutil.copytree(REPOSITORY, repository, dirs_exist_ok=True)
+            root = repository / "docs/specs/semantic-spec-bundles/semantic-spec-bundle-contract.md"
+            root.write_text(
+                root.read_text(encoding="utf-8")
+                + """
+
+## Match Flow
+
+`Waiting → Countdown → Active → Cleared | Failed → Results`
+
+`Idle → Active`
+
+## Runtime Ownership
+
+| Area | Owner | Responsibility |
+|---|---|---|
+| Match | Server | State transition |
+| HUD | Client | Presentation |
+| Analytics | Sink | Event storage |
+""",
+                encoding="utf-8",
+            )
+            ir = build_semantic_ir(
+                collect_spec_sources(
+                    repository / "docs/specs/semantic-spec-bundles", (), repository
+                )
+            )
+
+        entities = [entity for document in ir.documents for entity in document.entities]
+        flows = [entity for entity in entities if entity.entity_type == "ordered-flow"]
+        ownership = [
+            entity for entity in entities if entity.entity_type == "responsibility-map"
+        ]
+
+        self.assertEqual(len(flows), 1)
+        self.assertEqual(
+            flows[0].attributes["nodes"],
+            ("Waiting", "Countdown", "Active", "Cleared", "Failed", "Results"),
+        )
+        self.assertEqual(
+            flows[0].attributes["edges"],
+            (
+                ("Waiting", "Countdown", "next"),
+                ("Countdown", "Active", "next"),
+                ("Active", "Cleared", "next"),
+                ("Active", "Failed", "next"),
+                ("Cleared", "Results", "next"),
+                ("Failed", "Results", "next"),
+            ),
+        )
+        self.assertEqual(len(ownership), 1)
+        self.assertEqual(
+            ownership[0].attributes["nodes"],
+            ("Server", "Client", "Sink"),
+        )
+        self.assertEqual(
+            ownership[0].attributes["edges"],
+            (
+                ("Server", "Match", "State transition"),
+                ("Client", "HUD", "Presentation"),
+                ("Sink", "Analytics", "Event storage"),
+            ),
+        )
+        self.assertTrue(all(entity.attributes["source_path"] for entity in (*flows, *ownership)))
+
     def test_plan_tasks_steps_and_traces_keep_source_ownership(self) -> None:
         bundle = collect_plan_sources(
             REPOSITORY / "docs/plans/001-demo/plan.md", REPOSITORY

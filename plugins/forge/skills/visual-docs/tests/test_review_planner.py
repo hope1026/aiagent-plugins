@@ -85,6 +85,41 @@ class ReviewPlannerTest(unittest.TestCase):
         source = repository / "docs/specs/semantic-spec-bundles"
         return build_semantic_ir(collect_spec_sources(source, (), repository))
 
+    def derived_visual_ir(self):
+        temporary = TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        repository = Path(temporary.name)
+        shutil.copytree(REPOSITORY, repository, dirs_exist_ok=True)
+        source = repository / "docs/specs/semantic-spec-bundles"
+        visual = source / "supporting-visual-map.md"
+        visual.write_text(
+            visual.read_text(encoding="utf-8").replace(
+                "```mermaid\nflowchart LR\n    A[Source] --> B[Bundle]\n```",
+                "Source content remains traceable.",
+            ),
+            encoding="utf-8",
+        )
+        root = source / "semantic-spec-bundle-contract.md"
+        root.write_text(
+            root.read_text(encoding="utf-8")
+            + """
+
+## Match Flow
+
+`Waiting → Countdown → Active → Results`
+
+## Runtime Ownership
+
+| Area | Owner | Responsibility |
+|---|---|---|
+| Match | Server | State transition |
+| HUD | Client | Presentation |
+| Analytics | Sink | Event storage |
+""",
+            encoding="utf-8",
+        )
+        return build_semantic_ir(collect_spec_sources(source, (), repository))
+
     def test_workflow_approval_selects_state_first(self) -> None:
         context = ViewContext(
             "spec", "system", "workflow", "approval", "mixed", "ko", "standalone"
@@ -197,6 +232,7 @@ class ReviewPlannerTest(unittest.TestCase):
             [component.component for component in system.components],
             [
                 "system-overview",
+                "state-map",
                 "runtime-responsibility",
                 "interface-table",
                 "acceptance-coverage",
@@ -205,6 +241,29 @@ class ReviewPlannerTest(unittest.TestCase):
         )
         self.assertEqual(feature.profile, "generic")
         self.assertEqual(validate_presentation_plan(ir, system), ())
+
+    def test_system_profile_selects_source_derived_visual_entities(self) -> None:
+        ir = self.derived_visual_ir()
+
+        plan = select_presentation_plan(
+            ir,
+            ViewContext(
+                "spec", "system", "combat-system", "review", "mixed", "ko", "standalone"
+            ),
+        )
+        components = {component.component: component for component in plan.components}
+
+        self.assertIn("state-map", components)
+        self.assertTrue(
+            any(":ordered-flow:" in ref for ref in components["state-map"].refs)
+        )
+        self.assertTrue(
+            any(
+                ":responsibility-map:" in ref
+                for ref in components["runtime-responsibility"].refs
+            )
+        )
+        self.assertEqual(validate_presentation_plan(ir, plan), ())
 
         implementation = select_presentation_plan(
             ir,

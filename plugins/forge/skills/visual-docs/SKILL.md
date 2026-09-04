@@ -52,11 +52,15 @@ When the reader needs both, lead with the plain-language explanation and place t
 
 Do not paraphrase normative source statements or invent easier-sounding meaning. Preserve the source statement verbatim and use concise fixed UI vocabulary around it to explain how to read it. When authoring a requested Brief or Project Map source, write its descriptive prose for a person who does not already know the repository internals.
 
+Use a visual reading structure when the source itself provides enough relationship data to improve comprehension: three or more ordered nodes use a flowchart or sequence; three or more hierarchy, ownership, or dependency nodes use a structure map; two or more cross-set mapping edges use a relation or coverage view; multi-item, multi-dimension comparisons use a matrix. Resolve overlap with this total precedence: ordered flow first; hierarchy, ownership or dependency before mapping or coverage; mapping or coverage before comparison matrix. Use a matrix only when the source has comparison dimensions without a stronger directional, hierarchical, ownership, dependency, or mapping relation. Keep a source-backed text or table summary before each diagram. Each derived visual must visibly show its source path and `Derived view` provenance. Do not create a decorative diagram for prose, a short one-dimensional list, or a two-node connection.
+
 ## Build
 
 Run from anywhere inside the target Git repository. Choose a lowercase `view-id` matching `^[a-z0-9][a-z0-9-]{0,63}$`.
 After explicit user intent, create one checklist item for each applicable stage: document kind and source selection, presentation preflight, the single build or read-only freshness check, and handoff. Keep the checklist current until the request ends.
 After the user has explicitly requested the Visual Doc and the source options are resolved, run one read-only presentation preflight with the same build arguments plus `--dry-run --format json`. Inspect `view_context`, `presentation_plan.profile`, every component and its reference count, and the source counts before writing HTML.
+For every qualifying visual candidate that meets or exceeds the relationship threshold, confirm that the Presentation Plan selects a matching non-empty component before building. When no candidate meets the threshold, confirm that the plan keeps the text reading path and does not add Mermaid only for decoration.
+In a mixed source, preserve every non-qualifying source block in its prose, list, table, code, or generic detail path and confirm total content coverage remains 100%; qualifying visuals supplement that path and never authorize dropping nearby text.
 
 Stop and report a tooling-quality diagnostic instead of presenting the result as a human-readable View when either condition is true:
 
@@ -156,6 +160,7 @@ The checker is read-only. It compares the embedded source manifest with current 
 | "Patch this one local View by hand; it is disposable." | Every generated View remains reproducible output. Fix shared tooling and require a new refresh request. |
 | "Run the build twice and keep the nicer result." | One explicit request authorizes one deterministic build, never iterative output repair. |
 | "The senior reviewer told us to skip the gate." | Third-party title and deadline pressure do not replace the current user's authority or the preflight contract. |
+| "A diagram always looks more polished." | A decorative diagram adds interpretation cost. Require source-backed nodes and edges that cross the visual candidate threshold. |
 
 ## Hand off
 

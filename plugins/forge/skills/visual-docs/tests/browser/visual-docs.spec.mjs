@@ -37,9 +37,38 @@ for (const viewport of viewports) {
     if (viewport.name === 'mobile') {
       await expect(page.locator('.project-master')).toBeVisible();
       await expect(page.locator('.project-detail-pane')).toBeHidden();
+      await page.locator('[data-route="spec-overview"][role="treeitem"]').click();
     } else {
       await expect(page.locator('[data-component="system-overview"]')).toBeVisible();
       await expect(page.locator('.system-metrics')).toContainText('필수 사항');
+    }
+    const derived = page.locator('[data-origin="Derived view"]');
+    await expect(derived).not.toHaveCount(0);
+    await expect(page.locator('[data-component="state-map"] .visual-summary-table')).toBeVisible();
+    await expect(page.locator('[data-component="responsibility-map"] .visual-summary-table')).toBeVisible();
+    await expect(page.locator('[data-component="coverage-visual"]')).toBeVisible();
+    await expect(page.locator('.derived-visual .diagram-scroll svg')).not.toHaveCount(0);
+    const visualOrder = await page.locator('.derived-visual').first().evaluate((visual) => {
+      const summary = visual.querySelector('.visual-summary-table');
+      const diagram = visual.querySelector('.diagram-scroll');
+      return Boolean(
+        summary
+        && diagram
+        && (summary.compareDocumentPosition(diagram) & Node.DOCUMENT_POSITION_FOLLOWING),
+      );
+    });
+    expect(visualOrder).toBe(true);
+    const visualOverflow = await page.locator('.derived-visual .diagram-scroll').first().evaluate((wrapper) => ({
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: document.documentElement.clientWidth,
+      wrapperScrollWidth: wrapper.scrollWidth,
+      wrapperClientWidth: wrapper.clientWidth,
+    }));
+    expect(visualOverflow.documentWidth).toBeLessThanOrEqual(visualOverflow.viewportWidth);
+    expect(visualOverflow.wrapperScrollWidth).toBeGreaterThanOrEqual(visualOverflow.wrapperClientWidth);
+    if (viewport.name === 'mobile') {
+      await page.locator('.project-back').click();
+      await expect(page.locator('.project-master')).toBeVisible();
     }
     await expect(page.locator('[data-node-kind="spec-member"]')).toHaveCount(5);
     await expect(page.locator('[data-node-kind="spec-section"]')).not.toHaveCount(0);
@@ -66,6 +95,8 @@ for (const viewport of viewports) {
     await first.press('ArrowDown');
     await expect(page.locator('[role="treeitem"]:focus')).not.toHaveCount(0);
     await expectNoDocumentOverflow(page);
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.locator('.visual-summary-table').first()).toBeVisible();
   });
 
   test(`Project Handbook human-first navigation — ${viewport.name}`, async ({ page }) => {

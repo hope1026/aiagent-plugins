@@ -115,7 +115,10 @@ def long_system_bundle(repository: Path):
         (bundle / filename).write_text(
             f"# {title}\n\n"
             "## Runtime Responsibilities\n\n"
-            "| Responsibility | Owner |\n|---|---|\n| Runtime decision | Server |\n\n"
+            "| Responsibility | Owner |\n|---|---|\n"
+            "| State transition | Server |\n"
+            "| Presentation | Client |\n"
+            "| Event storage | Sink |\n\n"
             "## Stat Catalog\n\n"
             "| stat ID | Meaning |\n|---|---|\n| `system.value` | Source-backed value |\n\n"
             "## Requirements\n\n"
@@ -133,6 +136,7 @@ def long_system_bundle(repository: Path):
         "# Long System View\n\n## Documents\n\n"
         + "\n".join(inventory)
         + "\n\n## Overview\n\nA large source-backed system fixture.\n\n"
+        "## Match Flow\n\n`Waiting → Countdown → Active → Results`\n\n"
         "## Decisions & History\n\n- 2026-08-31 [CURRENT] Use source-backed system navigation.\n"
     )
     (bundle / "long-system-view.md").write_text(root, encoding="utf-8")
@@ -373,7 +377,7 @@ class ReviewRendererTest(unittest.TestCase):
         self.assertIn('class="system-metrics"', document)
         self.assertIn('class="responsibility-table"', document)
         self.assertIn('class="interface-table"', document)
-        self.assertIn('class="coverage-groups"', document)
+        self.assertIn("coverage-groups", document)
         self.assertIn("필수 사항", document)
         self.assertIn("완료 기준", document)
         self.assertNotIn("blocks ·", document)
@@ -415,6 +419,31 @@ class ReviewRendererTest(unittest.TestCase):
         self.assertNotIn("Current spec source", document)
         self.assertNotIn(">primary <", document)
         self.assertNotIn("blocks ·", document)
+
+    def test_source_derived_visuals_include_summary_provenance_and_runtime(self) -> None:
+        with TemporaryDirectory() as temporary:
+            repository = Path(temporary)
+            bundle = long_system_bundle(repository)
+            document = render(
+                bundle, intent="review", subtype="combat-system", locale="ko"
+            )
+
+        parsed = DocumentParser()
+        parsed.feed(document)
+        self.assertEqual(parsed.manifest["counts"]["primary"]["mermaid"], 0)
+        self.assertIn('data-origin="Derived view"', document)
+        self.assertIn("visual-summary-table", document)
+        self.assertIn('data-component="state-map"', document)
+        self.assertIn('data-component="responsibility-map"', document)
+        self.assertIn('data-component="coverage-visual"', document)
+        self.assertIn('data-mermaid-delivery="cdn"', document)
+        self.assertIn("Waiting", document)
+        self.assertIn("Countdown", document)
+        self.assertIn("State transition", document)
+        first_summary = document.index("visual-summary-table")
+        first_diagram = document.index('<pre class="mermaid">', first_summary)
+        self.assertLess(first_summary, first_diagram)
+        self.assertGreater(len(parsed.mermaid), 0)
 
     def test_same_source_changes_composition_by_intent(self) -> None:
         bundle = spec_bundle()
@@ -465,6 +494,11 @@ class ConditionalMermaidLoaderTest(unittest.TestCase):
         without = replace(bundle, primary=primary)
         self.assertFalse(review_renderer.bundle_needs_mermaid(without))
         self.assertEqual(review_renderer._mermaid_loader(False, without), "")
+        document = render(
+            without, intent="review", subtype="workflow", locale="ko", offline=True
+        )
+        self.assertNotIn('data-origin="Derived view"', document)
+        self.assertNotIn("data-mermaid-delivery", document)
 
     def test_offline_bundle_with_diagram_embeds_runtime(self) -> None:
         bundle = spec_bundle()

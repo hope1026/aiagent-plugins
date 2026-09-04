@@ -40,6 +40,8 @@ Normative source statements remain verbatim. Human-readable orientation may fram
 
 Every selected source records exact repository-relative paths, H1 titles, roles, metadata, outlines, full-statement entities, explicit relations, and ordered blocks. Prose, lists, tables, code, Mermaid, and unrecognized Markdown use distinct block kinds; unknown structures fall back to `generic`.
 
+The IR also records deterministic visual candidates only from explicit source relationships. Three or more arrow-delimited ordered nodes become an ordered-flow candidate. A responsibility or ownership table with at least three distinct endpoints becomes a structure candidate. Two or more explicit cross-set mapping edges become a relation or coverage candidate. A two-node connection, prose, or a short one-dimensional list remains text.
+
 Independent Spec View and Project Handbook Spec detail use the same normalized Spec entities. Their member paths, full Requirement and Acceptance headings, Mermaid SHA-256, and provenance must match.
 
 ## View Context and profiles
@@ -72,9 +74,11 @@ Before rendering, the planner rejects a plan when:
 
 The valid plan may order and group source-backed components. It may derive only explicit relationships, counts, file evidence, and freshness state.
 
+For every qualifying visual candidate, the valid plan selects one non-empty visual component. Relation-shape precedence is ordered flow, hierarchy or ownership, cross-set mapping, then comparison matrix. Each derived visual keeps exact source labels, displays `Derived view` provenance, and places a source-backed text or table summary before the diagram. The renderer never adds an inferred node or edge.
+
 ## Mermaid delivery
 
-Source Mermaid text is escaped for HTML but otherwise unchanged. Each block records the SHA-256 of its UTF-8 source text. CDN mode uses exactly `https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js`. Offline mode inlines the sibling `writing-specs/assets/mermaid.min.js` only after its recorded checksum passes.
+Source Mermaid text is escaped for HTML but otherwise unchanged. Each block records the SHA-256 of its UTF-8 source text. Derived Mermaid is built deterministically from validated visual candidate nodes and edges and records its own SHA-256. CDN mode uses exactly `https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js`. Offline mode inlines the sibling `writing-specs/assets/mermaid.min.js` only after its recorded checksum passes. The runtime is included when the accepted Presentation Plan renders either source Mermaid or derived Mermaid and omitted when both counts are zero.
 
 ## Manifest and freshness
 

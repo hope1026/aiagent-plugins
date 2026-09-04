@@ -335,6 +335,133 @@ def _entity(
     )
 
 
+def _ordered_flow_entities(
+    source: ReviewSource,
+    block: SemanticBlock,
+) -> tuple[SemanticEntity, ...]:
+    if block.kind not in {"prose", "list", "code"}:
+        return ()
+    result: list[SemanticEntity] = []
+    for offset, raw_line in enumerate(block.body.splitlines(), 1):
+        line = raw_line.strip()
+        if len(line) >= 2 and line[0] == "`" and line[-1] == "`":
+            line = line[1:-1].strip()
+        if "→" not in line and "↔" not in line:
+            continue
+        parts = [part.strip() for part in re.split(r"(→|↔)", line)]
+        node_groups = tuple(
+            tuple(value.strip() for value in part.split("|") if value.strip())
+            for part in parts[::2]
+        )
+        nodes = tuple(value for group in node_groups for value in group)
+        arrows = tuple(parts[1::2])
+        if (
+            len(nodes) < 3
+            or len(arrows) != len(node_groups) - 1
+            or any(not group for group in node_groups)
+        ):
+            continue
+        edges = tuple(
+            (source_node, target_node, "both" if arrow == "↔" else "next")
+            for index, arrow in enumerate(arrows)
+            for source_node in node_groups[index]
+            for target_node in node_groups[index + 1]
+        )
+        result.append(
+            _entity(
+                source,
+                "ordered-flow",
+                f"{block.heading} flow {offset}",
+                block,
+                {
+                    "heading": block.heading,
+                    "nodes": nodes,
+                    "edges": edges,
+                    "source_path": block.source_path,
+                    "source_line": block.line + offset - 1,
+                },
+            )
+        )
+    return tuple(result)
+
+
+def _table_cells(line: str) -> tuple[str, ...]:
+    return tuple(cell.strip() for cell in line.strip().strip("|").split("|"))
+
+
+def _responsibility_entity(
+    source: ReviewSource,
+    block: SemanticBlock,
+) -> SemanticEntity | None:
+    if block.kind != "table":
+        return None
+    lines = [line for line in block.body.splitlines() if line.strip()]
+    if len(lines) < 4:
+        return None
+    headers = _table_cells(lines[0])
+    rows = tuple(_table_cells(line) for line in lines[2:])
+    normalized = tuple(header.casefold() for header in headers)
+    owner_tokens = {"owner", "소유자", "담당", "주체"}
+    responsibility_tokens = {"responsibility", "책임", "역할"}
+    owner_index = next(
+        (index for index, value in enumerate(normalized) if value in owner_tokens),
+        None,
+    )
+    responsibility_index = next(
+        (index for index, value in enumerate(normalized) if value in responsibility_tokens),
+        None,
+    )
+    edges: list[tuple[str, str, str]] = []
+    actors: list[str] = []
+    if owner_index is not None and owner_index != 0:
+        for row in rows:
+            if len(row) <= owner_index or not row[0] or not row[owner_index]:
+                continue
+            actor = row[owner_index]
+            label = (
+                row[responsibility_index]
+                if responsibility_index is not None and len(row) > responsibility_index
+                else "owns"
+            )
+            edges.append((actor, row[0], label))
+            if actor not in actors:
+                actors.append(actor)
+    else:
+        actor_columns = [
+            (index, header)
+            for index, (header, value) in enumerate(zip(headers, normalized))
+            if index > 0
+            and any(token in value for token in ("server", "client", "actor", "서버", "클라이언트", "주체"))
+        ]
+        for row in rows:
+            if not row or not row[0]:
+                continue
+            for index, actor in actor_columns:
+                if len(row) <= index or not row[index]:
+                    continue
+                edges.append((actor, row[0], row[index]))
+                if actor not in actors:
+                    actors.append(actor)
+    endpoints = {value for edge in edges for value in edge[:2]}
+    if len(endpoints) < 3 or not edges:
+        return None
+    return _entity(
+        source,
+        "responsibility-map",
+        f"{block.heading} responsibility map",
+        block,
+        {
+            "heading": block.heading,
+            "nodes": tuple(actors),
+            "edges": tuple(edges),
+            "headers": headers,
+            "rows": rows,
+            "source_path": block.source_path,
+            "source_line": block.line,
+        },
+    )
+
+
 def _spec_entities(
     source: ReviewSource,
     document: SpecMember,
@@ -385,6 +512,10 @@ def _spec_entities(
             )
 
     for block in blocks:
+        entities.extend(_ordered_flow_entities(source, block))
+        responsibility = _responsibility_entity(source, block)
+        if responsibility is not None:
+            entities.append(responsibility)
         if block.heading == "Decisions & History":
             for line_offset, line in enumerate(block.body.splitlines()):
                 if not line.lstrip().startswith("-"):

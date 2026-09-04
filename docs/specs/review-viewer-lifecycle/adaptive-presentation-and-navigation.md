@@ -22,6 +22,8 @@
 
 ### derived diagram은 Task 번호, 명시된 Route membership, 명시된 dependency, source-qualified full-statement mapping처럼 selected source에서 기계적으로 계산 가능한 정보만 포함해야 한다.
 
+기계적으로 계산 가능한 정보에는 source에 직접 작성된 arrow-delimited 상태·흐름, table의 actor·responsibility·ownership·dependency pair, Project Map Structure와 Depends On, plan Route·Task dependency, Requirement·Acceptance coverage link가 포함된다.
+
 ### Visual Docs는 source에 없는 새로운 런타임 책임, transaction 순서, 상태 전이 또는 설계 결정을 derived diagram에 추가하지 않아야 한다.
 
 ### 모든 diagram 앞에는 제목, 이 화면에서 확인할 것, 한 문장의 읽는 법을 표시해야 한다.
@@ -52,6 +54,8 @@
 
 ### Visual Docs의 Signature는 장식이나 고정 component 이름이 아니라 selected source와 intent에 맞는 state map, interface contract, dependency route, exception matrix, Acceptance Criterion coverage 같은 primary reading structure에서 만들어야 한다.
 
+Renderer는 relation shape에 따라 flowchart·sequence, tree·structure map, dependency·coverage graph 또는 comparison matrix를 선택하고 source detail보다 먼저 배치한다.
+
 ### diagram 추가는 제목, 읽는 법, mobile 대체 요약표와 한 묶음으로 검토해야 한다.
 
 ### Visual Docs의 각 content component 제목은 스캔 가능한 짧은 명사형 label을 사용하고, 사용자가 그 component에서 답을 찾을 질문은 제목 바로 아래의 종속 orientation 문장으로 표시해야 한다. 같은 component도 Presentation Plan의 intent에 맞는 orientation을 사용해야 한다.
@@ -63,6 +67,8 @@
 ### Visual Docs builder는 selected Markdown source를 Semantic IR로 해석하고, View Context로 Presentation Plan을 선택한 뒤 공통 component grammar로 HTML과 manifest를 생성해야 한다. Agent가 작성한 HTML content fragment나 source 밖의 보충 문장을 입력으로 요구하지 않아야 한다.
 
 ### builder는 해당 Visual Docs가 렌더링할 source Mermaid와 derived diagram을 합쳐 하나 이상 포함할 때만 Mermaid runtime asset을 embed하거나 CDN loader를 출력해야 한다. Diagram이 없는 snapshot은 runtime을 생략해야 하며, 생략 여부는 selected source bytes와 build option에서만 결정적으로 계산해야 한다. `--offline` snapshot은 runtime을 생략한 경우에도 외부 network 없이 열려야 한다.
+
+Runtime 포함 여부는 validated Presentation Plan이 실제로 렌더링할 source diagram과 derived visual component를 함께 계산해 결정한다.
 
 ### Visual Docs의 Overview panel은 source별 집계를 스캔 가능한 요약 지표로 먼저 제시하고 상세 집계 표를 그 아래에 유지해야 하며, 두 표시는 structured parser가 고정한 같은 집계 기준에서 계산해야 한다.
 
@@ -85,6 +91,16 @@
 ### system-overview는 source가 선언한 title, areas, components와 Requirement·Acceptance·member 집계를 먼저 표시하고 path, block count, entity count와 freshness source row는 출처·검증 경로에 종속시켜야 한다.
 
 ### state-map, runtime-responsibility, interface-table과 acceptance-coverage는 각 source entity 관계에 맞는 flow, responsibility table, interface table과 coverage grouping을 렌더링하고 같은 source-block 카드 목록을 서로 다른 component 이름으로 반복하지 않아야 한다.
+
+관계형 source가 있으면 해당 component는 text card보다 먼저 실제 visual reading structure를 렌더링한다.
+
+### Semantic IR이 source에 명시된 세 개 이상의 ordered node, 세 개 이상의 hierarchy·ownership·dependency node 또는 두 집합 사이의 두 개 이상의 mapping edge를 보존하면 Presentation Plan은 관계 형태에 맞는 flowchart·sequence, structure map, dependency·coverage graph 또는 comparison matrix를 primary detail보다 먼저 포함해야 한다.
+
+### Visual candidate 선택은 selected source bytes와 View Context만으로 결정적이어야 하며 같은 입력은 같은 visual kind, node, edge, label과 순서를 만들고 source path와 Derived view provenance를 표시해야 한다.
+
+### 관계를 나타내지 않는 단일 문장, 짧은 일차원 목록 또는 두 node 이하의 단순 연결은 diagram으로 강제하지 않고 읽기 쉬운 prose, list 또는 table로 유지해야 한다.
+
+### Derived visual은 exact source label과 identifier를 유지하고 동일 정보를 읽을 수 있는 source-backed text 또는 table summary를 함께 제공하며 mobile과 print에서도 visual 또는 대체 요약 중 하나가 먼저 이해 가능해야 한다.
 
 ### 문서 종류와 intent에 따라 primary component, reading order, navigation, summary density와 diagram·table 비중은 달라질 수 있지만 typography role, palette, spacing, focus, freshness, provenance, deep link, overflow와 responsive interaction은 공통 visual system을 따라야 한다.
 
@@ -285,6 +301,26 @@
 - [state-map, runtime-responsibility, interface-table과 acceptance-coverage는 각 source entity 관계에 맞는 flow, responsibility table, interface table과 coverage grouping을 렌더링하고 같은 source-block 카드 목록을 서로 다른 component 이름으로 반복하지 않아야 한다.](adaptive-presentation-and-navigation.md#state-map-runtime-responsibility-interface-table과-acceptance-coverage는-각-source-entity-관계에-맞는-flow-responsibility-table-interface-table과-coverage-grouping을-렌더링하고-같은-source-block-카드-목록을-서로-다른-component-이름으로-반복하지-않아야-한다)
 - [Renderer는 최소한 `generic`, `brief.summary`, `spec.system`, `spec.workflow`, `spec.api`, `spec.architecture`, `spec.policy`, `spec.migration`, `plan.execution`, `plan.status`, `project.handbook`, `project.structure`, `project.spec-detail`, `comparison` profile을 제공해야 한다. 새 profile은 공통 component를 조합하고 문서별 template를 복사하지 않아야 한다.](adaptive-presentation-and-navigation.md#renderer는-최소한-generic-briefsummary-specsystem-specworkflow-specapi-specarchitecture-specpolicy-specmigration-planexecution-planstatus-projecthandbook-projectstructure-projectspec-detail-comparison-profile을-제공해야-한다-새-profile은-공통-component를-조합하고-문서별-template를-복사하지-않아야-한다)
 - [공통 component grammar는 summary, outline, prose detail, metadata, system-overview, state map, sequence, runtime-responsibility, interface·schema table, decision·exception matrix, relation graph, route·dependency map, progress, Requirement·Acceptance Criterion coverage, provenance, source detail, spec-navigator, project-overview, capability-map, structure-responsibility, spec-index와 developer-information을 제공해야 한다.](adaptive-presentation-and-navigation.md#공통-component-grammar는-summary-outline-prose-detail-metadata-system-overview-state-map-sequence-runtime-responsibility-interfaceschema-table-decisionexception-matrix-relation-graph-routedependency-map-progress-requirementacceptance-criterion-coverage-provenance-source-detail-spec-navigator-project-overview-capability-map-structure-responsibility-spec-index와-developer-information을-제공해야-한다)
+
+### source Mermaid가 없지만 명시된 상태 흐름, ownership table, dependency와 Requirement·Acceptance mapping을 가진 fixture를 build하면 flowchart, structure·responsibility map과 coverage visual이 Derived view로 표시되고 각 node와 edge가 source 값과 일치한다.
+
+검증하는 요구사항:
+
+- [derived diagram은 Task 번호, 명시된 Route membership, 명시된 dependency, source-qualified full-statement mapping처럼 selected source에서 기계적으로 계산 가능한 정보만 포함해야 한다.](adaptive-presentation-and-navigation.md#derived-diagram은-task-번호-명시된-route-membership-명시된-dependency-source-qualified-full-statement-mapping처럼-selected-source에서-기계적으로-계산-가능한-정보만-포함해야-한다)
+- [Visual Docs는 source에 없는 새로운 런타임 책임, transaction 순서, 상태 전이 또는 설계 결정을 derived diagram에 추가하지 않아야 한다.](adaptive-presentation-and-navigation.md#visual-docs는-source에-없는-새로운-런타임-책임-transaction-순서-상태-전이-또는-설계-결정을-derived-diagram에-추가하지-않아야-한다)
+- [Visual Docs의 Signature는 장식이나 고정 component 이름이 아니라 selected source와 intent에 맞는 state map, interface contract, dependency route, exception matrix, Acceptance Criterion coverage 같은 primary reading structure에서 만들어야 한다.](adaptive-presentation-and-navigation.md#visual-docs의-signature는-장식이나-고정-component-이름이-아니라-selected-source와-intent에-맞는-state-map-interface-contract-dependency-route-exception-matrix-acceptance-criterion-coverage-같은-primary-reading-structure에서-만들어야-한다)
+- [builder는 해당 Visual Docs가 렌더링할 source Mermaid와 derived diagram을 합쳐 하나 이상 포함할 때만 Mermaid runtime asset을 embed하거나 CDN loader를 출력해야 한다. Diagram이 없는 snapshot은 runtime을 생략해야 하며, 생략 여부는 selected source bytes와 build option에서만 결정적으로 계산해야 한다. `--offline` snapshot은 runtime을 생략한 경우에도 외부 network 없이 열려야 한다.](adaptive-presentation-and-navigation.md#builder는-해당-visual-docs가-렌더링할-source-mermaid와-derived-diagram을-합쳐-하나-이상-포함할-때만-mermaid-runtime-asset을-embed하거나-cdn-loader를-출력해야-한다-diagram이-없는-snapshot은-runtime을-생략해야-하며-생략-여부는-selected-source-bytes와-build-option에서만-결정적으로-계산해야-한다-offline-snapshot은-runtime을-생략한-경우에도-외부-network-없이-열려야-한다)
+- [state-map, runtime-responsibility, interface-table과 acceptance-coverage는 각 source entity 관계에 맞는 flow, responsibility table, interface table과 coverage grouping을 렌더링하고 같은 source-block 카드 목록을 서로 다른 component 이름으로 반복하지 않아야 한다.](adaptive-presentation-and-navigation.md#state-map-runtime-responsibility-interface-table과-acceptance-coverage는-각-source-entity-관계에-맞는-flow-responsibility-table-interface-table과-coverage-grouping을-렌더링하고-같은-source-block-카드-목록을-서로-다른-component-이름으로-반복하지-않아야-한다)
+- [Semantic IR이 source에 명시된 세 개 이상의 ordered node, 세 개 이상의 hierarchy·ownership·dependency node 또는 두 집합 사이의 두 개 이상의 mapping edge를 보존하면 Presentation Plan은 관계 형태에 맞는 flowchart·sequence, structure map, dependency·coverage graph 또는 comparison matrix를 primary detail보다 먼저 포함해야 한다.](adaptive-presentation-and-navigation.md#semantic-ir이-source에-명시된-세-개-이상의-ordered-node-세-개-이상의-hierarchyownershipdependency-node-또는-두-집합-사이의-두-개-이상의-mapping-edge를-보존하면-presentation-plan은-관계-형태에-맞는-flowchartsequence-structure-map-dependencycoverage-graph-또는-comparison-matrix를-primary-detail보다-먼저-포함해야-한다)
+- [Visual candidate 선택은 selected source bytes와 View Context만으로 결정적이어야 하며 같은 입력은 같은 visual kind, node, edge, label과 순서를 만들고 source path와 Derived view provenance를 표시해야 한다.](adaptive-presentation-and-navigation.md#visual-candidate-선택은-selected-source-bytes와-view-context만으로-결정적이어야-하며-같은-입력은-같은-visual-kind-node-edge-label과-순서를-만들고-source-path와-derived-view-provenance를-표시해야-한다)
+- [Derived visual은 exact source label과 identifier를 유지하고 동일 정보를 읽을 수 있는 source-backed text 또는 table summary를 함께 제공하며 mobile과 print에서도 visual 또는 대체 요약 중 하나가 먼저 이해 가능해야 한다.](adaptive-presentation-and-navigation.md#derived-visual은-exact-source-label과-identifier를-유지하고-동일-정보를-읽을-수-있는-source-backed-text-또는-table-summary를-함께-제공하며-mobile과-print에서도-visual-또는-대체-요약-중-하나가-먼저-이해-가능해야-한다)
+
+### 관계형 source가 없는 prose·short-list fixture를 build하면 장식용 diagram과 Mermaid runtime이 생성되지 않고 기존 text reading path와 content coverage가 유지된다.
+
+검증하는 요구사항:
+
+- [관계를 나타내지 않는 단일 문장, 짧은 일차원 목록 또는 두 node 이하의 단순 연결은 diagram으로 강제하지 않고 읽기 쉬운 prose, list 또는 table로 유지해야 한다.](adaptive-presentation-and-navigation.md#관계를-나타내지-않는-단일-문장-짧은-일차원-목록-또는-두-node-이하의-단순-연결은-diagram으로-강제하지-않고-읽기-쉬운-prose-list-또는-table로-유지해야-한다)
+- [builder는 해당 Visual Docs가 렌더링할 source Mermaid와 derived diagram을 합쳐 하나 이상 포함할 때만 Mermaid runtime asset을 embed하거나 CDN loader를 출력해야 한다. Diagram이 없는 snapshot은 runtime을 생략해야 하며, 생략 여부는 selected source bytes와 build option에서만 결정적으로 계산해야 한다. `--offline` snapshot은 runtime을 생략한 경우에도 외부 network 없이 열려야 한다.](adaptive-presentation-and-navigation.md#builder는-해당-visual-docs가-렌더링할-source-mermaid와-derived-diagram을-합쳐-하나-이상-포함할-때만-mermaid-runtime-asset을-embed하거나-cdn-loader를-출력해야-한다-diagram이-없는-snapshot은-runtime을-생략해야-하며-생략-여부는-selected-source-bytes와-build-option에서만-결정적으로-계산해야-한다-offline-snapshot은-runtime을-생략한-경우에도-외부-network-없이-열려야-한다)
 
 ### fixed timestamp를 사용한 동일 source·View Context·Presentation Plan 재build diff는 0이고, shell·component·profile·planner 변경은 desktop 1440px와 mobile 390px의 profile별 typical·empty·long·invalid diagram, keyboard, disclosure, overflow와 stable shell geometry 검증을 통과한다.
 

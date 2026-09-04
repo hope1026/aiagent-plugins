@@ -30,6 +30,56 @@ cp -R "$REPOSITORY_ROOT/docs/specs/semantic-spec-bundles" \
   "$REPOSITORY_ROOT/docs/specs/system-view-contract"
 perl -pi -e 's/subtype: workflow/subtype: combat-system/' \
   "$REPOSITORY_ROOT/docs/specs/system-view-contract/semantic-spec-bundle-contract.md"
+python3 - \
+  "$REPOSITORY_ROOT/docs/specs/system-view-contract/semantic-spec-bundle-contract.md" \
+  "$REPOSITORY_ROOT/docs/specs/system-view-contract/supporting-visual-map.md" \
+  "$REPOSITORY_ROOT/docs/specs/system-view-contract/member-loading-and-provenance.md" \
+  "$REPOSITORY_ROOT/docs/specs/system-view-contract/statement-traceability-and-validation.md" <<'PY'
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+visual = Path(sys.argv[2])
+requirements = Path(sys.argv[3])
+acceptance = Path(sys.argv[4])
+root.write_text(
+    root.read_text(encoding="utf-8")
+    + """
+
+## Match Flow
+
+`Waiting → Countdown → Active → Results`
+
+## Runtime Ownership
+
+| Area | Owner | Responsibility |
+|---|---|---|
+| Match | Server | State transition |
+| HUD | Client | Presentation |
+| Analytics | Sink | Event storage |
+""",
+    encoding="utf-8",
+)
+visual.write_text(
+    visual.read_text(encoding="utf-8").replace(
+        "```mermaid\nflowchart LR\n    A[Source] --> B[Bundle]\n```",
+        "Source content remains traceable.",
+    ),
+    encoding="utf-8",
+)
+second_heading = "Every source-backed relation enters the visual candidate set exactly once"
+requirements.write_text(
+    requirements.read_text(encoding="utf-8")
+    + f"\n\n### {second_heading}\n\nEach explicit relation keeps its source label.\n",
+    encoding="utf-8",
+)
+acceptance.write_text(
+    acceptance.read_text(encoding="utf-8")
+    + "\n- [Every source-backed relation enters the visual candidate set exactly once]"
+    "(member-loading-and-provenance.md#every-source-backed-relation-enters-the-visual-candidate-set-exactly-once)\n",
+    encoding="utf-8",
+)
+PY
 
 (
   cd "$WRITING_SPECS/assets"
@@ -45,7 +95,7 @@ git -C "$REPOSITORY_ROOT" commit -qm fixture
 
 (
   cd "$DEPENDENCY_ROOT"
-  npm ci --ignore-scripts
+  npm ci --ignore-scripts --prefer-offline --no-audit --no-fund
   PLAYWRIGHT_BROWSERS_PATH="$BROWSER_ROOT" npm exec -- playwright install chromium
 )
 

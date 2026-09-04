@@ -304,6 +304,156 @@ def _system_overview(ir: SemanticIR, *, korean: bool) -> str:
     )
 
 
+def _mermaid_label(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', "\\\"").replace("\n", " ")
+
+
+def _visual_summary_table(
+    edges: tuple[tuple[str, str, str], ...],
+    *,
+    korean: bool,
+) -> str:
+    headers = ("출발", "도착", "관계") if korean else ("From", "To", "Relation")
+    return (
+        '<div class="table-scroll visual-summary-table" role="region" tabindex="0">'
+        '<table><thead><tr>'
+        + "".join(f"<th>{html.escape(label)}</th>" for label in headers)
+        + "</tr></thead><tbody>"
+        + "".join(
+            "<tr>"
+            f"<td>{html.escape(source)}</td>"
+            f"<td>{html.escape(target)}</td>"
+            f'<td>{html.escape({"next": "다음", "both": "양방향", "owns": "담당"}.get(relation, relation) if korean else relation)}</td>'
+            "</tr>"
+            for source, target, relation in edges
+        )
+        + "</tbody></table></div>"
+    )
+
+
+def _derived_visual_markup(
+    entity: SemanticEntity,
+    document: SemanticDocument,
+    *,
+    korean: bool,
+    component: str,
+) -> str:
+    raw_edges = entity.attributes.get("edges", ())
+    edges = tuple(
+        (str(edge[0]), str(edge[1]), str(edge[2]))
+        for edge in raw_edges
+        if isinstance(edge, tuple) and len(edge) == 3
+    )
+    if not edges:
+        return ""
+    labels = []
+    for source, target, _ in edges:
+        for label in (source, target):
+            if label not in labels:
+                labels.append(label)
+    identifiers = {
+        label: "n" + hashlib.sha256(label.encode("utf-8")).hexdigest()[:12]
+        for label in labels
+    }
+    lines = ["flowchart LR"]
+    for label in labels:
+        lines.append(f'    {identifiers[label]}["{_mermaid_label(label)}"]')
+    for source, target, relation in edges:
+        arrow = "<-->" if relation == "both" else "-->"
+        edge_label = "" if relation in {"next", "both"} else f'|"{_mermaid_label(relation)}"|'
+        lines.append(
+            f"    {identifiers[source]} {arrow}{edge_label} {identifiers[target]}"
+        )
+    mermaid = "\n".join(lines)
+    digest = hashlib.sha256(mermaid.encode("utf-8")).hexdigest()
+    heading = str(entity.attributes.get("heading", entity.entity_id))
+    question = (
+        f"{heading}은 어떤 관계로 이어지는가?"
+        if korean
+        else f"How does {heading} connect?"
+    )
+    confirm = (
+        "표의 source 값과 diagram의 node·edge가 같은지 확인합니다."
+        if korean
+        else "Confirm that the source values in the table match the diagram nodes and edges."
+    )
+    guide = (
+        "요약표를 먼저 읽고 화살표 방향과 관계 label을 따라갑니다."
+        if korean
+        else "Read the summary table first, then follow arrow direction and relation labels."
+    )
+    source_path = str(entity.attributes.get("source_path", document.path))
+    source_line = entity.attributes.get("source_line", "")
+    line_label = "줄" if korean else "line"
+    return (
+        '<article class="diagram-card derived-visual" data-origin="Derived view" '
+        f'data-component="{html.escape(component, quote=True)}" '
+        f'data-source-path="{html.escape(source_path, quote=True)}" '
+        f'data-mermaid-sha256="{digest}">'
+        f"<h3>{html.escape(question)}</h3>"
+        f'<p class="visual-confirm">{html.escape(confirm)}</p>'
+        f'<p class="visual-guide">{html.escape(guide)}</p>'
+        + _visual_summary_table(edges, korean=korean)
+        + f'<p class="provenance">Derived view · <code>{html.escape(source_path)}</code>'
+        + (f" · {line_label} {html.escape(str(source_line))}" if source_line else "")
+        + "</p>"
+        '<div class="diagram-scroll is-wide" role="region" tabindex="0">'
+        f'<pre class="mermaid">{html.escape(mermaid)}</pre></div></article>'
+    )
+
+
+def _visual_component(
+    ir: SemanticIR,
+    refs: tuple[str, ...],
+    *,
+    entity_type: str,
+    component: str,
+    korean: bool,
+    review_id: str,
+    rendered_entities: set[str],
+    coverage_targets: Mapping[str, tuple[SemanticEntity, ...]],
+) -> str:
+    entities = {
+        entity.key: (entity, document)
+        for document in ir.documents
+        for entity in document.entities
+    }
+    result: list[str] = []
+    handled_blocks: set[str] = set()
+    for reference in refs:
+        pair = entities.get(reference)
+        if pair is None:
+            continue
+        entity, document = pair
+        if entity.entity_type == entity_type:
+            result.append(
+                _derived_visual_markup(
+                    entity,
+                    document,
+                    korean=korean,
+                    component=component,
+                )
+            )
+            handled_blocks.add(entity.block_key)
+            continue
+        if entity.entity_type == "mermaid" and entity.block_key not in handled_blocks:
+            block = next(
+                item for item in document.blocks if item.key == entity.block_key
+            )
+            result.append(
+                _block_markup(
+                    block,
+                    document,
+                    (entity,),
+                    review_id,
+                    rendered_entities,
+                    coverage_targets,
+                )
+            )
+            handled_blocks.add(entity.block_key)
+    return "".join(result)
+
+
 def _semantic_table(
     ir: SemanticIR,
     refs: tuple[str, ...],
@@ -424,7 +574,37 @@ def _acceptance_coverage(
             + "</section>"
         )
         rendered_entities.add(entity.key)
-    return '<div class="coverage-groups" data-component="acceptance-coverage">' + "".join(groups) + "</div>"
+    edge_count = sum(len(coverage_targets.get(entity.key, ())) for entity in accepted)
+    if summary_only and edge_count >= 2:
+        title = (
+            "완료 기준은 필수 사항을 어떻게 검증하는가?"
+            if korean
+            else "How do completion criteria verify required behavior?"
+        )
+        guide = (
+            "각 완료 기준의 연결 수를 확인한 뒤 제목을 선택해 정확한 기준 문장으로 이동합니다."
+            if korean
+            else "Check each criterion's relation count, then follow its title to the exact statement."
+        )
+        paths = tuple(
+            dict.fromkeys(documents[entity.source_namespace].path for entity in accepted)
+        )
+        return (
+            '<section class="coverage-visual" data-component="coverage-visual" '
+            'data-origin="Derived view">'
+            f"<h3>{html.escape(title)}</h3>"
+            f'<p class="visual-guide">{html.escape(guide)}</p>'
+            '<p class="provenance">Derived view · '
+            + " · ".join(f"<code>{html.escape(path)}</code>" for path in paths)
+            + '</p><div class="coverage-groups coverage-map">'
+            + "".join(groups)
+            + "</div></section>"
+        )
+    return (
+        '<div class="coverage-groups" data-component="acceptance-coverage">'
+        + "".join(groups)
+        + "</div>"
+    )
 
 
 def _outline(ir: SemanticIR) -> str:
@@ -1123,15 +1303,34 @@ def render_spec_workspace(
 
     overview_component = components.get("system-overview")
     responsibility = components.get("runtime-responsibility")
+    state_map = components.get("state-map")
     interfaces = components.get("interface-table")
     coverage = components.get("acceptance-coverage")
     overview_markup = _system_overview(ir, korean=korean)
     if overview_component is not None:
-        overview_markup += _semantic_table(
+        overview_markup += _visual_component(
             ir,
-            responsibility.refs if responsibility else (),
-            css_class="responsibility-table",
+            state_map.refs if state_map else (),
+            entity_type="ordered-flow",
+            component="state-map",
             korean=korean,
+            review_id=review_id,
+            rendered_entities=rendered_entities,
+            coverage_targets=coverage_targets,
+        )
+        overview_markup += (
+            '<div class="responsibility-table" data-component="runtime-responsibility">'
+            + _visual_component(
+                ir,
+                responsibility.refs if responsibility else (),
+                entity_type="responsibility-map",
+                component="responsibility-map",
+                korean=korean,
+                review_id=review_id,
+                rendered_entities=rendered_entities,
+                coverage_targets=coverage_targets,
+            )
+            + "</div>"
         )
         overview_markup += _semantic_table(
             ir,
@@ -1274,11 +1473,30 @@ def render_components(
                 coverage_targets,
             )
         elif component.component == "runtime-responsibility":
-            markup = _semantic_table(
+            markup = (
+                '<div class="responsibility-table">'
+                + _visual_component(
+                    ir,
+                    component.refs,
+                    entity_type="responsibility-map",
+                    component="responsibility-map",
+                    korean=korean,
+                    review_id=review_id,
+                    rendered_entities=rendered_entities,
+                    coverage_targets=coverage_targets,
+                )
+                + "</div>"
+            )
+        elif component.component == "state-map":
+            markup = _visual_component(
                 ir,
                 component.refs,
-                css_class="responsibility-table",
+                entity_type="ordered-flow",
+                component="state-map",
                 korean=korean,
+                review_id=review_id,
+                rendered_entities=rendered_entities,
+                coverage_targets=coverage_targets,
             )
         elif component.component == "interface-table":
             markup = _semantic_table(

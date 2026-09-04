@@ -337,6 +337,26 @@ def bundle_needs_mermaid(bundle: ReviewBundle) -> bool:
     return bool(bundle.mermaid)
 
 
+def review_needs_mermaid(
+    bundle: ReviewBundle,
+    semantic_ir: SemanticIR,
+    presentation_plan: PresentationPlan,
+) -> bool:
+    if bundle_needs_mermaid(bundle):
+        return True
+    entities = {
+        entity.key: entity
+        for document in semantic_ir.documents
+        for entity in document.entities
+    }
+    return any(
+        entities.get(reference) is not None
+        and entities[reference].entity_type in {"ordered-flow", "responsibility-map"}
+        for component in presentation_plan.components
+        for reference in component.refs
+    )
+
+
 def _offline_mermaid() -> str:
     source = MERMAID_PATH.read_bytes()
     expected = None
@@ -354,8 +374,13 @@ def _offline_mermaid() -> str:
     return f'<script data-mermaid-delivery="offline">\n{text}\n</script>'
 
 
-def _mermaid_loader(offline: bool, bundle: ReviewBundle) -> str:
-    if not bundle_needs_mermaid(bundle):
+def _mermaid_loader(
+    offline: bool,
+    bundle: ReviewBundle,
+    *,
+    needs_mermaid: bool | None = None,
+) -> str:
+    if not (bundle_needs_mermaid(bundle) if needs_mermaid is None else needs_mermaid):
         return ""
     if offline:
         return _offline_mermaid()
@@ -525,7 +550,11 @@ def render_review(
         "CONTENT": content,
         "SOURCE_MANIFEST": _json_for_html(manifest),
         "FRESHNESS_RUNTIME": FRESHNESS_RUNTIME_PATH.read_text(encoding="utf-8"),
-        "MERMAID": _mermaid_loader(offline, bundle),
+        "MERMAID": _mermaid_loader(
+            offline,
+            bundle,
+            needs_mermaid=review_needs_mermaid(bundle, ir, plan),
+        ),
         "DIAGRAM_LABEL": html.escape(labels["diagram"], quote=True),
         "MERMAID_ERROR": html.escape(labels["mermaid_error"], quote=True),
     }

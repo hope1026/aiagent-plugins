@@ -20,6 +20,7 @@ PROFILE_COMPONENTS: Mapping[str, tuple[str, ...]] = {
     "brief.summary": ("brief-overview", "brief-scope", "brief-done", "source-detail"),
     "spec.system": (
         "system-overview",
+        "state-map",
         "runtime-responsibility",
         "interface-table",
         "acceptance-coverage",
@@ -60,8 +61,8 @@ _INTENT_COMPONENTS: Mapping[tuple[str, str], tuple[str, ...]] = {
 
 _COMPONENT_ENTITY_TYPES: Mapping[str, frozenset[str]] = {
     "system-overview": frozenset(),
-    "runtime-responsibility": frozenset(("interface",)),
-    "state-map": frozenset(("mermaid",)),
+    "runtime-responsibility": frozenset(("responsibility-map",)),
+    "state-map": frozenset(("mermaid", "ordered-flow")),
     "sequence": frozenset(("mermaid",)),
     "interface-table": frozenset(("interface",)),
     "exception-matrix": frozenset(("acceptance", "decision")),
