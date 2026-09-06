@@ -62,7 +62,7 @@ Write the smallest complete change. Keep unrelated cleanup out of the fix. Run t
 
 Clean up only after GREEN. Rerun tests affected by the refactor. Expand to the relevant integration or full suite when shared interfaces, dependency changes, broad impact, uncertain coverage, or repository policy requires it.
 
-Evidence from the current unchanged code and test state can support the final claim; do not rerun an identical suite merely because another skill is handing off. New changes, failures, or unresolved concerns require fresh affected evidence.
+Evidence from the current unchanged relevant source, implementation, tests, inputs, settings, and environment can support the final claim; do not rerun an identical suite merely because another skill is handing off. New relevant changes, failures, uncovered impact, or environment drift require affected evidence. Stop after the changed behavior, affected regression boundary, and required project gates pass.
 
 ### 4. Record the result
 

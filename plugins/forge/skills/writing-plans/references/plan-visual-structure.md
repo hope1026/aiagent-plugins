@@ -25,7 +25,7 @@ This order lets a reviewer move from scope to flow to implementation detail to e
 | Route 2 — Review | 4–6 | Review tooling shell | approval only before release |
 ```
 
-Use the same Verification Scope as the plan and final evidence: full coverage for new or never-implemented contracts, affected statements plus regression preservation for partial changes. When a plan has a Related Canonical Spec, label its coverage and provenance references with bundle and member paths. Keep exact heading text visible. Do not infer cross-bundle links or merge statements with similar wording. The canonical Related Specs block owns normalized bundle paths, while each Task owns its exact `Governing statements:` links; diagrams only visualize those declared mappings.
+Use the same Verification Scope as the plan and final evidence: full coverage only when the plan claims full implementation of a new or never-implemented contract, and affected statements plus regression preservation for partial implementation, change, or restoration. When a plan has a Related Canonical Spec, label its coverage and provenance references with bundle and member paths. Keep exact heading text visible. Do not infer cross-bundle links or merge statements with similar wording. The canonical Related Specs block owns normalized bundle paths, while each Task owns its exact `Governing statements:` links; diagrams only visualize those declared mappings.
 
 Use 6–10 Routes as a readability guideline for a large plan, fewer when there are fewer real phases. Do not invent phases to meet a count. Every Task has one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
 

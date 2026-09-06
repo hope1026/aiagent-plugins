@@ -9,7 +9,7 @@ Canonical Specs record durable system intent, contracts, policy, and invariants.
 ## Language rules
 
 - Keep `Documents`, `Requirements`, and `Decisions & History` exactly as written. Keep `Acceptance Criteria` exactly as written when the bundle uses it. Choose any other `##` sections and order that best fit the bundle.
-- Requirements are mandatory. Write each Requirement as a complete `###` heading that directly states the durable contract without pointing to another section or a legacy source as a placeholder.
+- Requirements are mandatory. Write each Requirement as a complete `###` heading centered on one independently reviewable durable condition and required behavior, without pointing to another section or a legacy source as a placeholder. Put supporting numbers, examples, translations, exceptions, and interface detail in its body or another Requirement. Do not use a mechanical heading-length limit.
 - Acceptance Criteria are optional at bundle level. A Requirement-only bundle omits the `Acceptance Criteria` section and any acceptance-only member instead of leaving an empty section.
 - When Acceptance Criteria are present, include at least one Acceptance statement, write every statement as a complete `###` heading, and cover every Requirement. Use EARS as a semantic discipline in the user's language: each Acceptance heading states a precondition, action, and observable outcome instead of only saying that a source matches.
 - Under each Acceptance statement, add `Verifies:` for English or `검증하는 요구사항:` for Korean, then link exact Requirement heading text to its member path and anchor.
@@ -18,7 +18,7 @@ Canonical Specs record durable system intent, contracts, policy, and invariants.
 
 ## Lifecycle
 
-Only `approved` and `implemented` bundles are project SOT. `approved` records accepted intent awaiting full implementation evidence; `implemented` records verified implementation alignment. `draft` is a proposal token for incomplete isolated candidate handling and never replaces existing approved authority. A complete Spec Delta shows the intended post-approval bundle with `status: approved`, but remains non-authoritative outside `docs/specs/` until explicit approval and the writer transaction. Only the forge verifying-work skill sets `implemented` after evidence passes for the bundle's Canonical verification set: all Acceptance statements when any exist, otherwise all Requirement statements. Any authoritative body, metadata, layout, or status edit is incomplete until repository Markdown validation passes. It never implies HTML generation.
+Only `approved` and `implemented` bundles are project SOT. `approved` records accepted intent that may be partially implemented; `implemented` records verified alignment for the whole bundle. `draft` is a proposal token for incomplete isolated candidate handling and never replaces existing approved authority. A complete Spec Delta shows the intended post-approval bundle with `status: approved`, but remains non-authoritative outside `docs/specs/` until explicit approval and the writer transaction. Partial work verifies and reports its affected scope without changing lifecycle. Only the forge verifying-work skill sets `implemented` after evidence passes for the bundle's complete Canonical verification set: all Acceptance statements when any exist, otherwise all Requirement statements. Any authoritative body, metadata, layout, or status edit is incomplete until repository Markdown validation passes. It never implies HTML generation.
 
 ## Root template
 

@@ -91,7 +91,7 @@ Goal: the cause is fixed, proven, and guarded against regression.
 3. Fix the cause, not the symptom. If the wrong value originates three calls up, fix it there — do not pad the crash site with guards.
 4. Write the regression test first, using the forge test-driven-development skill: the test encodes the reproduction, fails before the fix, passes after.
 5. Apply ONE change. No bundled refactoring, no "while I'm here" improvements.
-6. Confirm the original reproduction now passes, the affected Canonical contract matches when present, and relevant regression tests pass. Broaden the suite for shared interfaces, uncertain impact, or repository policy.
+6. Confirm the original reproduction now passes, the affected Canonical contract matches when present, and relevant regression behavior is protected. One focused execution may prove all three when it exercises the contract boundary. Broaden the suite for shared interfaces, concrete uncertain impact, or repository policy, then stop when the fix claim and affected scope are proven.
 7. If the fix does not work: STOP. Count your attempts. Fewer than three → return to Phase 1 with the new information. Three or more failed fixes → stop automatic patching and re-examine the architecture and evidence. Ask the user only if that investigation reaches a product, scope, or new-authority decision.
 
 **Exit criterion:** fix class recorded; original reproduction passes; affected Canonical contract matches when present; regression evidence recorded; relevant suite green.

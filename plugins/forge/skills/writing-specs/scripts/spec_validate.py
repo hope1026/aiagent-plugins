@@ -480,7 +480,17 @@ def _validate_bundle_baseline(
                 root_status = status if isinstance(status, str) else None
         if root_count != 1 or root_status not in {"approved", "implemented"}:
             continue
-        if bundle_path in bundle_index:
+        current_bundle = bundle_index.get(bundle_path)
+        if current_bundle is not None:
+            if current_bundle.metadata.status == "draft":
+                errors.append(
+                    _diagnostic(
+                        current_bundle.root_path,
+                        1,
+                        "SPEC_ACTIVE_STATUS_DOWNGRADE",
+                        "An approved or implemented baseline Spec Bundle cannot be demoted to draft at the same path.",
+                    )
+                )
             continue
 
         digest = hashlib.sha256()

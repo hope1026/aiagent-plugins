@@ -163,6 +163,75 @@ class SpecDocsCliTest(unittest.TestCase):
             self.assertEqual(keys, sorted(keys))
             self.assertTrue(all(path.startswith("docs/specs/") for path, _, _ in keys))
 
+    def test_validate_rejects_active_bundle_demotion_against_git_baseline(self) -> None:
+        with TemporaryDirectory() as temporary:
+            repo = Path(temporary) / "repo"
+            shutil.copytree(REPOSITORY_FIXTURE, repo)
+            subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+            subprocess.run(["git", "add", "."], cwd=repo, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Forge Test",
+                    "-c",
+                    "user.email=forge@example.invalid",
+                    "commit",
+                    "-qm",
+                    "active baseline",
+                ],
+                cwd=repo,
+                check=True,
+            )
+            root = repo / "docs/specs/review-lifecycle/review-lifecycle-contract.md"
+            root.write_text(
+                root.read_text(encoding="utf-8").replace(
+                    "status: implemented", "status: draft"
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_cli(
+                "--repo-root",
+                str(repo),
+                "validate",
+                "--root",
+                "docs/specs",
+                "--baseline-ref",
+                "HEAD",
+            )
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("SPEC_ACTIVE_STATUS_DOWNGRADE", result.stdout)
+
+            subprocess.run(["git", "add", "."], cwd=repo, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Forge Test",
+                    "-c",
+                    "user.email=forge@example.invalid",
+                    "commit",
+                    "-qm",
+                    "demote active bundle",
+                ],
+                cwd=repo,
+                check=True,
+            )
+            committed_result = run_cli(
+                "--repo-root",
+                str(repo),
+                "validate",
+                "--root",
+                "docs/specs",
+                "--baseline-ref",
+                "HEAD^",
+            )
+
+            self.assertEqual(committed_result.returncode, 1)
+            self.assertIn("SPEC_ACTIVE_STATUS_DOWNGRADE", committed_result.stdout)
+
     def test_cli_exposes_only_validate_and_inspect(self) -> None:
         result = run_cli("--help")
         self.assertEqual(result.returncode, 0, result.stderr)

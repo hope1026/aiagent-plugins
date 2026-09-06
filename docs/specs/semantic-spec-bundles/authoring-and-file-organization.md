@@ -8,6 +8,14 @@
 
 ### Requirement는 사용자 언어와 EARS 의미 규칙으로 실제 지속 계약을 직접 설명해야 하고 다른 section이나 legacy source를 준수한다는 placeholder로 대신하지 않아야 한다. `Acceptance Criteria`를 사용하는 bundle의 각 Acceptance Criterion은 선행조건·행동·관찰 결과를 설명해야 하며 source 일치만 반복하는 placeholder이면 안 된다. 활성 bundle의 `Decisions & History`는 현재 채택된 결정만 설명하고 완료된 migration, 제거된 계약과 대체된 locator는 Git 이력 또는 검증된 transition evidence에 보존해야 한다. 명시적으로 교체되는 bundle은 검증된 path transition 기록을 따라야 한다.
 
+### Canonical Spec의 각 Requirement heading은 독립적으로 판단할 수 있는 하나의 지속 조건과 필수 동작을 중심으로 쓰고 수치·예시·예외와 상세 설명은 본문이나 별도 Requirement에 두어야 한다.
+
+완전한 문장과 exact heading identity는 유지하되 여러 독립 조건, UI 수치, 번역 목록과 예외를 한 heading에 누적하지 않는다. 제목 길이만으로 validation을 실패시키지 않고 의미와 독립적인 검토 가능성을 기준으로 나눈다.
+
+### 공개 interface, 권한, 저장 형식 또는 cross-component 책임을 변경할 때 spec 작성자는 owning bundle과 같은 계약을 소비하거나 반복 설명하는 관련 bundle을 확인하고 승인된 의미가 서로 충돌하지 않게 갱신해야 한다.
+
+전역 spec 전체를 매번 검색하지 않는다. 변경 대상의 `relatedSpecs`, statement 검색과 명시된 consumer를 사용해 같은 계약을 다루는 범위를 좁히고, 충돌이 발견되면 구현에 맞춰 암묵적으로 수정하지 않고 승인된 Spec Delta 범위에서 정리한다.
+
 ### 하나의 bundle은 하나의 지속적인 계약 경계여야 하며 `areas`나 기술 분야가 같다는 이유로 서로 다른 spec을 같은 디렉터리에 넣지 않아야 한다.
 
 ### bundle의 모든 Markdown member는 root의 `Documents`에 `root`, `contract`, `acceptance`, `history`, `reference` role과 H1을 그대로 사용한 link로 정확히 한 번 선언되어야 하며 root role은 root file에 정확히 한 번만 사용해야 한다.
@@ -39,3 +47,10 @@
 - [bundle hash는 normalized bundle path와 lexicographically 정렬한 member path·byte length·exact bytes의 length-framed serialization에 SHA-256을 적용해 결정적으로 계산해야 한다.](statement-traceability-and-validation.md#bundle-hash는-normalized-bundle-path와-lexicographically-정렬한-member-pathbyte-lengthexact-bytes의-length-framed-serialization에-sha-256을-적용해-결정적으로-계산해야-한다)
 - [`inspect` machine output은 `bundlePath`, `rootPath`, title, metadata, `bundleSha256`, member path·title·role·source SHA-256, statement kind·path·heading·line·reference와 진단을 반환해야 한다. 사람이 읽는 output은 title, path와 full statement만 identity로 사용해야 한다.](statement-traceability-and-validation.md#inspect-machine-output은-bundlepath-rootpath-title-metadata-bundlesha256-member-pathtitlerolesource-sha-256-statement-kindpathheadinglinereference와-진단을-반환해야-한다-사람이-읽는-output은-title-path와-full-statement만-identity로-사용해야-한다)
 - [bundle은 root를 포함해 기본 1–5개 Markdown으로 작성해야 한다. 독립적인 계약·검토 경계, 별도 책임·runtime flow, API·정책·상태 전이, 변경 소유권 또는 200줄을 넘는 복합 주제가 있을 때 분리하고, 10개를 넘으면 spec 경계 분리를 먼저 검토해야 한다.](authoring-and-file-organization.md#bundle은-root를-포함해-기본-15개-markdown으로-작성해야-한다-독립적인-계약검토-경계-별도-책임runtime-flow-api정책상태-전이-변경-소유권-또는-200줄을-넘는-복합-주제가-있을-때-분리하고-10개를-넘으면-spec-경계-분리를-먼저-검토해야-한다)
+
+### 여러 조건과 세부 수치를 한 제목에 누적한 Requirement와 관련 bundle에 중복된 공개 tier 계약을 수정하면 각 heading은 독립적인 계약을 표현하고 세부 내용은 본문에 보존되며 owning bundle과 consumer의 승인된 의미가 일치한다.
+
+검증하는 요구사항:
+
+- [Canonical Spec의 각 Requirement heading은 독립적으로 판단할 수 있는 하나의 지속 조건과 필수 동작을 중심으로 쓰고 수치·예시·예외와 상세 설명은 본문이나 별도 Requirement에 두어야 한다.](authoring-and-file-organization.md#canonical-spec의-각-requirement-heading은-독립적으로-판단할-수-있는-하나의-지속-조건과-필수-동작을-중심으로-쓰고-수치예시예외와-상세-설명은-본문이나-별도-requirement에-두어야-한다)
+- [공개 interface, 권한, 저장 형식 또는 cross-component 책임을 변경할 때 spec 작성자는 owning bundle과 같은 계약을 소비하거나 반복 설명하는 관련 bundle을 확인하고 승인된 의미가 서로 충돌하지 않게 갱신해야 한다.](authoring-and-file-organization.md#공개-interface-권한-저장-형식-또는-cross-component-책임을-변경할-때-spec-작성자는-owning-bundle과-같은-계약을-소비하거나-반복-설명하는-관련-bundle을-확인하고-승인된-의미가-서로-충돌하지-않게-갱신해야-한다)

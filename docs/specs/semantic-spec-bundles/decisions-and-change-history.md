@@ -2,4 +2,4 @@
 
 ## Decisions & History
 
-- 2026-09-06 [CURRENT] Semantic bundle과 full-statement 추적을 유지한다. 일반 lifecycle은 Markdown이며 명시적 시각 요청은 그 요청의 검증·수정·재생성까지 포함한다. 완료된 View의 새 갱신과 정본 교체는 각각 명시적 의도와 기존 검증된 transition 계약을 따른다.
+- 2026-09-06 [CURRENT] Semantic bundle과 full-statement 추적을 유지하면서 각 Requirement를 독립적으로 검토할 수 있게 작성하고 같은 공개 계약의 owning bundle과 consumer를 함께 확인한다. 일반 lifecycle은 Markdown이며 active bundle의 draft 강등과 잘못된 교체를 차단한다.

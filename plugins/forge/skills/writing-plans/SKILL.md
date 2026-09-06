@@ -57,8 +57,8 @@ Keep progress in the plan by default. Create `progress.md` only for long history
 
 For each Related Spec Bundle, the Canonical verification set is every Acceptance statement when any exist, otherwise every Requirement statement. Select the work scope from that set:
 
-- New contract or full implementation of a never-implemented baseline: cover the whole set.
-- Partial change or restoration of an implemented baseline: cover every directly or indirectly affected statement; name the baseline and regression evidence protecting unchanged behavior.
+- Full implementation claim for a new or never-implemented baseline: cover the whole set.
+- Partial implementation, change, or restoration: cover every directly or indirectly affected statement; name the baseline and regression evidence protecting unchanged behavior. Do not add Tasks for the rest of a never-implemented bundle unless this plan claims to implement the whole bundle.
 - No Related Spec: connect every Task to the goal and observable Done Checks.
 
 Keep exact heading text as link text and use the member path plus its generated anchor. Every governed Task has `Governing statements:` links. A task with no such link states its goal contribution instead. A partial plan does not need artificial Tasks for unaffected statements, but uncertain impact must expand the checked scope.
@@ -102,7 +102,8 @@ With no Related Spec, use the exact one-line form `**Related Specs:** None — C
 ```markdown
 ### Task N: <Outcome>
 
-**Governing statements:**
+Governing statements:
+
 - [<exact heading>](../../specs/<bundle>/<member>.md#<anchor>)
 
 **Files:** <exact owned files and their responsibilities>

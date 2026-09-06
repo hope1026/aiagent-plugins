@@ -1,6 +1,6 @@
 {
   "name": "forge",
-  "version": "0.1.20+codex.20260906011218",
+  "version": "0.1.21+codex.20260906083620",
   "description": "Fast, scope-aware agent workflows with proportional verification, focused plans, durable Canonical Specs, and quality-checked Visual Docs for briefs, plans, specs, and projects.",
   "author": {
     "name": "Onestar Lee"

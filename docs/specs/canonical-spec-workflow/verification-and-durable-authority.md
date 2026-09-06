@@ -6,6 +6,14 @@
 
 ### Forge lifecycle skill은 bundle의 Acceptance statement가 있으면 Acceptance를, 없으면 Requirement를 Canonical verification set으로 사용해야 한다. 새 계약 또는 미구현 baseline의 전체 구현은 전체 집합을 Task와 검증에 연결하고, 구현된 baseline의 부분 변경·복원은 직접·간접 영향 항목과 회귀 보존 범위를 명시해 계획과 완료 검증에 동일하게 적용해야 한다.
 
+### Forge는 작업 완료와 Canonical Spec bundle 전체 구현 완료를 구분하고, 요청 결과와 직접·간접 영향 계약을 충족하는 증거를 먼저 확보한 뒤 그 주장을 증명하는 가장 작은 검증 범위를 사용해야 한다.
+
+작업이 선택한 기능이나 수정 범위만 완성하면 해당 범위의 완료를 보고할 수 있다. Bundle 전체를 `implemented`로 전환할 때만 그 bundle의 전체 Canonical verification set을 검증한다. 변경 줄 수와 파일 수는 검증 축소 근거가 아니며 권한, 결제, 데이터, 공개 interface와 다른 지속 계약에 영향을 주는 작은 변경도 해당 계약에 맞게 검증한다.
+
+### 같은 작업에서 확인한 스펙과 검증 증거는 관련 source·구현·테스트·입력·설정·환경이 바뀌지 않은 동안 재사용하고, 새 변경·실패·영향 또는 불확실성이 생긴 범위만 다시 확인하며 충분한 증거가 확보되면 검증을 종료해야 한다.
+
+스킬 전환이나 최종 보고 자체는 동일한 command를 다시 실행할 이유가 아니다. 검증 결과가 현재 상태에 적용되는지 확인할 수 있으면 같은 증거를 사용하고, 영향을 좁힐 수 있는 구체적인 불확실성은 먼저 조사한 뒤 필요한 범위만 확대한다. 프로젝트가 명시한 필수 gate는 그 정책을 별도로 변경하지 않는 한 유지한다.
+
 ### 작업 종료 시 장기 보존 가치가 생긴 결정은 Canonical Spec, ADR, `docs/research/`, `docs/debug/` 또는 명시적 evidence 문서로 승격해야 한다. Change Brief와 Spec Delta는 SOT로 남기지 않고, Execution Plan을 삭제하기 전 영구 결정을 먼저 승격해야 한다.
 
 ### `using-forge`, `writing-specs`, `writing-plans`, `executing-plans`, `systematic-debugging`, `verifying-work`와 관련 portability·README 문서는 `Spec Bundle`, `bundle path`, `member path`, `Requirement statement`, `Acceptance statement`, 두 축 분류, Change Brief readiness, Brief clarification·Canonical classification·Spec clarification의 경계, Quick 승격 조건과 검증 경계를 동일하게 사용하고 숫자 ID를 사용자-facing 설명에 사용하지 않아야 한다.
@@ -42,6 +50,13 @@
 
 - [모든 구현 완료 주장은 fresh command-level verification을 필요로 해야 한다. 승인된 Spec Delta를 구현한 작업은 bundle의 Canonical verification set을 full text와 member path로 식별해 실제 동작으로 검증해야 한다. Acceptance statement가 하나 이상 있으면 해당 Acceptance statement를 사용하고, 없으면 Requirement statement를 사용해야 한다. Quick 작업은 원래 reproduction, focused test, build·lint 중 주장에 맞는 증거만 요구하고 spec status 전환이나 전체 Canonical verification set 순회를 요구하지 않아야 한다.](verification-and-durable-authority.md#모든-구현-완료-주장은-fresh-command-level-verification을-필요로-해야-한다-승인된-spec-delta를-구현한-작업은-bundle의-canonical-verification-set을-full-text와-member-path로-식별해-실제-동작으로-검증해야-한다-acceptance-statement가-하나-이상-있으면-해당-acceptance-statement를-사용하고-없으면-requirement-statement를-사용해야-한다-quick-작업은-원래-reproduction-focused-test-buildlint-중-주장에-맞는-증거만-요구하고-spec-status-전환이나-전체-canonical-verification-set-순회를-요구하지-않아야-한다)
 - [Forge lifecycle skill은 bundle의 Acceptance statement가 있으면 Acceptance를, 없으면 Requirement를 Canonical verification set으로 사용해야 한다. 새 계약 또는 미구현 baseline의 전체 구현은 전체 집합을 Task와 검증에 연결하고, 구현된 baseline의 부분 변경·복원은 직접·간접 영향 항목과 회귀 보존 범위를 명시해 계획과 완료 검증에 동일하게 적용해야 한다.](verification-and-durable-authority.md#forge-lifecycle-skill은-bundle의-acceptance-statement가-있으면-acceptance를-없으면-requirement를-canonical-verification-set으로-사용해야-한다-새-계약-또는-미구현-baseline의-전체-구현은-전체-집합을-task와-검증에-연결하고-구현된-baseline의-부분-변경복원은-직접간접-영향-항목과-회귀-보존-범위를-명시해-계획과-완료-검증에-동일하게-적용해야-한다)
+
+### 정적 문구 수정, 국소 버그 복원, approved bundle의 부분 구현과 작은 권한 정책 변경 fixture를 실행하면 각 작업은 결과와 위험에 맞는 검증을 사용하고 유효한 증거를 중복 실행하지 않으며, 필요한 계약 검증을 생략하거나 부분 결과로 bundle 전체를 implemented 처리하지 않는다.
+
+검증하는 요구사항:
+
+- [Forge는 작업 완료와 Canonical Spec bundle 전체 구현 완료를 구분하고, 요청 결과와 직접·간접 영향 계약을 충족하는 증거를 먼저 확보한 뒤 그 주장을 증명하는 가장 작은 검증 범위를 사용해야 한다.](verification-and-durable-authority.md#forge는-작업-완료와-canonical-spec-bundle-전체-구현-완료를-구분하고-요청-결과와-직접간접-영향-계약을-충족하는-증거를-먼저-확보한-뒤-그-주장을-증명하는-가장-작은-검증-범위를-사용해야-한다)
+- [같은 작업에서 확인한 스펙과 검증 증거는 관련 source·구현·테스트·입력·설정·환경이 바뀌지 않은 동안 재사용하고, 새 변경·실패·영향 또는 불확실성이 생긴 범위만 다시 확인하며 충분한 증거가 확보되면 검증을 종료해야 한다.](verification-and-durable-authority.md#같은-작업에서-확인한-스펙과-검증-증거는-관련-source구현테스트입력설정환경이-바뀌지-않은-동안-재사용하고-새-변경실패영향-또는-불확실성이-생긴-범위만-다시-확인하며-충분한-증거가-확보되면-검증을-종료해야-한다)
 
 ### 완료된 fixture의 durable source를 검사하면 Canonical Spec에는 현재형 계약만 남고 Change Brief·Spec Delta·실행 log는 SOT로 남지 않으며 보존할 결정과 조사 결과만 지정된 durable 경로에 존재한다.
 

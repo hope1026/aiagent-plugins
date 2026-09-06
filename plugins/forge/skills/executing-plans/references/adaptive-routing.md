@@ -69,10 +69,10 @@ The root agent always owns:
 - approval requests and authority boundaries;
 - integration across worker results;
 - reading every worker diff or artifact;
-- fresh Task verification after worker completion;
+- confirmation that inspected Task evidence applies to the integrated state, with affected verification when it does not;
 - progress ledger and final acceptance judgment.
 
-A worker completion message is not evidence by itself. Do not mark a Task complete until root review and fresh verification pass.
+A worker completion message is not evidence by itself. Do not mark a Task complete until root review and applicable inspected execution evidence pass. Rerun affected verification when worker evidence is missing, invalidated by integration, or does not cover the integrated boundary.
 
 ## Platform Fallback
 
@@ -116,6 +116,6 @@ If the same failure recurs at `frontier`, or after the one escalation retry, sto
 | "The user demanded parallel execution." | User preference and deadline pressure do not establish independence; overlapping writes remain sequential. |
 | "The deadline makes a fourth worker harmless." | The concurrency cap still applies. Queue the extra Task until a slot opens. |
 | "No tier role is configured, so workers are unavailable." | Model mapping and worker availability are separate. Inherit the current model and retain safe subagent execution. |
-| "The worker says it passed, so root verification is redundant." | A worker report is a claim. Root review and fresh verification remain mandatory. |
+| "The worker says it passed, so root verification is redundant." | A worker report is a claim. Root review and applicable inspected execution evidence remain mandatory. |
 | "Balanced means I should always dispatch a worker." | The subagent default applies only when coupling is low, verification is strong, handoff is complete, ownership is disjoint, and review is cheaper than direct execution. Otherwise use root. |
 | "I should ask the user which mode they prefer for this Task." | Apply the deterministic default and report it. Ask only when a user-owned authority, scope, cost, or product decision is actually required. |

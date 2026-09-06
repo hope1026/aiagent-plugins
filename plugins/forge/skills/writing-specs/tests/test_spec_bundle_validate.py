@@ -328,6 +328,76 @@ class SpecBundleRepositoryValidationTest(unittest.TestCase):
 
             self.assertIn("SPEC_TRANSITION_REQUIRED", codes)
 
+    def test_active_bundle_cannot_be_demoted_to_draft(self) -> None:
+        for baseline_status in ("approved", "implemented"):
+            with self.subTest(baseline_status=baseline_status):
+                temporary, repository = self._repository()
+                with temporary:
+                    if baseline_status == "approved":
+                        self._replace(
+                            repository,
+                            REVIEW_ROOT,
+                            "status: implemented",
+                            "status: approved",
+                        )
+                    subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
+                    subprocess.run(["git", "add", "."], cwd=repository, check=True)
+                    subprocess.run(
+                        [
+                            "git",
+                            "-c",
+                            "user.name=Forge Test",
+                            "-c",
+                            "user.email=forge@example.invalid",
+                            "commit",
+                            "-qm",
+                            "active bundle baseline",
+                        ],
+                        cwd=repository,
+                        check=True,
+                    )
+                    self._replace(
+                        repository,
+                        REVIEW_ROOT,
+                        f"status: {baseline_status}",
+                        "status: draft",
+                    )
+
+                    result = validate_repository(repository, baseline_ref="HEAD")
+                    codes = {item.code for item in result.diagnostics}
+
+                    self.assertIn("SPEC_ACTIVE_STATUS_DOWNGRADE", codes)
+
+    def test_implemented_bundle_may_return_to_approved_after_contract_change(self) -> None:
+        temporary, repository = self._repository()
+        with temporary:
+            subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
+            subprocess.run(["git", "add", "."], cwd=repository, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Forge Test",
+                    "-c",
+                    "user.email=forge@example.invalid",
+                    "commit",
+                    "-qm",
+                    "implemented bundle baseline",
+                ],
+                cwd=repository,
+                check=True,
+            )
+            self._replace(
+                repository,
+                REVIEW_ROOT,
+                "status: implemented",
+                "status: approved",
+            )
+
+            result = validate_repository(repository, baseline_ref="HEAD")
+
+            self.assertTrue(result.ok, result.diagnostics)
+
     def test_discovers_direct_child_semantic_bundles_in_lexical_order(self) -> None:
         result = validate_repository(FIXTURE_REPOSITORY, Path("docs/specs"))
         bundles = result.bundles
