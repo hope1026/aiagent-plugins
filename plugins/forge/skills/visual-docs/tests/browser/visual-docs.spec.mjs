@@ -42,30 +42,30 @@ for (const viewport of viewports) {
       await expect(page.locator('[data-component="system-overview"]')).toBeVisible();
       await expect(page.locator('.system-metrics')).toContainText('필수 사항');
     }
-    const derived = page.locator('[data-origin="Derived view"]');
-    await expect(derived).not.toHaveCount(0);
-    await expect(page.locator('[data-component="state-map"] .visual-summary-table')).toBeVisible();
-    await expect(page.locator('[data-component="responsibility-map"] .visual-summary-table')).toBeVisible();
-    await expect(page.locator('[data-component="coverage-visual"]')).toBeVisible();
-    await expect(page.locator('.derived-visual .diagram-scroll svg')).not.toHaveCount(0);
-    const visualOrder = await page.locator('.derived-visual').first().evaluate((visual) => {
+    const overview = page.locator('[data-component="system-overview"]');
+    await expect(overview.locator('.system-overview-lede')).toBeVisible();
+    await expect(overview.locator('.system-review-links')).not.toHaveCount(0);
+    const metricGeometry = await overview.locator('.system-metric').evaluateAll((items) => items.map((item) => {
+      const rect = item.getBoundingClientRect();
+      return { top: rect.top, height: rect.height };
+    }));
+    expect(new Set(metricGeometry.map(item => Math.round(item.top))).size).toBe(1);
+    expect(Math.max(...metricGeometry.map(item => item.height))).toBeLessThan(110);
+    await overview.locator('a[href="#spec-behavior"]').click();
+    await expectReady(page);
+    const behavior = page.locator('[data-project-detail][data-route="spec-behavior"]');
+    await expect(behavior.locator('[data-component="state-map"] .visual-summary-table')).toBeVisible();
+    await expect(behavior.locator('[data-component="responsibility-map"] .visual-summary-table')).toBeVisible();
+    await expect(behavior.locator('.derived-visual .diagram-scroll svg')).not.toHaveCount(0);
+    const visualOrder = await behavior.locator('.derived-visual').first().evaluate((visual) => {
       const summary = visual.querySelector('.visual-summary-table');
       const diagram = visual.querySelector('.diagram-scroll');
-      return Boolean(
-        summary
-        && diagram
-        && (summary.compareDocumentPosition(diagram) & Node.DOCUMENT_POSITION_FOLLOWING),
-      );
+      return Boolean(summary && diagram && (summary.compareDocumentPosition(diagram) & Node.DOCUMENT_POSITION_FOLLOWING));
     });
     expect(visualOrder).toBe(true);
-    const visualOverflow = await page.locator('.derived-visual .diagram-scroll').first().evaluate((wrapper) => ({
-      documentWidth: document.documentElement.scrollWidth,
-      viewportWidth: document.documentElement.clientWidth,
-      wrapperScrollWidth: wrapper.scrollWidth,
-      wrapperClientWidth: wrapper.clientWidth,
-    }));
-    expect(visualOverflow.documentWidth).toBeLessThanOrEqual(visualOverflow.viewportWidth);
-    expect(visualOverflow.wrapperScrollWidth).toBeGreaterThanOrEqual(visualOverflow.wrapperClientWidth);
+    await expectNoDocumentOverflow(page);
+    await page.evaluate(() => { location.hash = 'spec-verification'; });
+    await expect(page.locator('[data-project-detail].is-active [data-component="coverage-visual"]')).toBeVisible();
     if (viewport.name === 'mobile') {
       await page.locator('.project-back').click();
       await expect(page.locator('.project-master')).toBeVisible();
@@ -276,3 +276,122 @@ for (const viewport of viewports) {
     await expect(page.locator('.mermaid-error-source')).toContainText('flowchart LR');
   });
 }
+
+
+for (const viewport of viewports) {
+  test(`hidden branching diagrams render after selection — ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.route(mermaidURL, async (route) => {
+      await route.fulfill({ status: 200, contentType: 'text/javascript', body: fs.readFileSync(mermaidPath) });
+    });
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto(`${baseURL}/.forge/visual-docs/system-cdn/view.html`);
+    await expectReady(page);
+    const branch = page.locator('[data-node-kind="spec-section"]').filter({ hasText: 'Branching Review' });
+    const route = await branch.getAttribute('data-route');
+    const detail = page.locator(`[data-project-detail][data-route="${route}"]`);
+    await expect(detail.locator('.diagram-error')).toHaveCount(0);
+    await expect(detail.locator('pre.mermaid')).toHaveCount(1);
+    await expect(detail.locator('[data-forge-rendered]')).toHaveCount(0);
+    await page.locator('#spec-search').fill('Branching Review');
+    await branch.click();
+    await expectReady(page);
+    await expect(detail.locator('.diagram-error')).toHaveCount(0);
+    await expect(detail.locator('pre.mermaid svg')).toHaveCount(1);
+    const size = await detail.locator('svg').evaluate((svg) => svg.getBoundingClientRect().toJSON());
+    expect(size.width).toBeGreaterThan(100);
+    expect(size.height).toBeGreaterThan(100);
+    await page.reload();
+    await expectReady(page);
+    await expect(detail).toBeVisible();
+    await expect(detail.locator('pre.mermaid svg')).toHaveCount(1);
+    await expect(detail.locator('.diagram-error')).toHaveCount(0);
+    await expectNoDocumentOverflow(page);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('readiness waits for current diagrams through rapid navigation', async ({ page }) => {
+  await page.route(mermaidURL, async (route) => {
+    await route.fulfill({ status: 200, contentType: 'text/javascript', body: fs.readFileSync(mermaidPath, 'utf8') + `
+      window.holdMermaid = true;
+      window.pendingMermaid = [];
+      const realRun = mermaid.run.bind(mermaid);
+      mermaid.run = async (options) => {
+        if (window.holdMermaid) await new Promise(resolve => window.pendingMermaid.push(resolve));
+        return realRun(options);
+      };
+    ` });
+  });
+  await page.goto(`${baseURL}/.forge/visual-docs/system-cdn/view.html`);
+  const branch = page.locator('[data-node-kind="spec-section"]').filter({ hasText: 'Branching Review' });
+  await page.locator('#spec-search').fill('Branching Review');
+  await branch.click();
+  await expect.poll(() => page.evaluate(() => window.pendingMermaid.length)).toBeGreaterThan(0);
+  await expect(page.locator('html')).toHaveAttribute('data-visual-docs-ready', 'false');
+  const route = await branch.getAttribute('data-route');
+  const detail = page.locator(`[data-project-detail][data-route="${route}"]`);
+  await expect(detail.locator('[data-forge-rendered]')).toHaveCount(0);
+  await page.evaluate(() => { location.hash = 'spec-overview'; });
+  await expect(page.locator('[data-project-detail].is-active')).toHaveAttribute('data-route', 'spec-overview');
+  await page.evaluate((value) => { location.hash = value; }, route);
+  await page.evaluate(() => {
+    window.holdMermaid = false;
+    window.pendingMermaid.splice(0).forEach(resolve => resolve());
+  });
+  await expectReady(page);
+  await expect(detail).toBeVisible();
+  await expect(detail.locator('pre.mermaid svg')).toHaveCount(1);
+  await expect(detail.locator('.diagram-error')).toHaveCount(0);
+  await expect(page.locator('.mermaid-render-stage')).toHaveCount(0);
+});
+
+test('print prepares diagrams in unvisited detail panels', async ({ page }) => {
+  await page.route(mermaidURL, async (route) => {
+    await route.fulfill({ status: 200, contentType: 'text/javascript', body: fs.readFileSync(mermaidPath) });
+  });
+  await page.goto(`${baseURL}/.forge/visual-docs/system-cdn/view.html`);
+  await expectReady(page);
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('html')).toHaveAttribute('data-visual-docs-print-ready', 'true');
+  await expect(page.locator('pre.mermaid:not([data-forge-rendered])')).toHaveCount(0);
+  await expect(page.locator('.diagram-error')).toHaveCount(0);
+  await expect(page.locator('[data-project-detail][hidden] svg').first()).toBeVisible();
+  await page.emulateMedia({ media: 'screen' });
+  await expect(page.locator('[data-project-detail][hidden]').first()).toBeHidden();
+});
+
+
+test('Print action awaits all diagrams and preserves native-print source while pending', async ({ page }) => {
+  await page.route(mermaidURL, async (route) => {
+    await route.fulfill({ status: 200, contentType: 'text/javascript', body: fs.readFileSync(mermaidPath, 'utf8') + `
+      window.holdMermaid = true;
+      window.pendingMermaid = [];
+      const realRun = mermaid.run.bind(mermaid);
+      mermaid.run = async (options) => {
+        if (window.holdMermaid) await new Promise(resolve => window.pendingMermaid.push(resolve));
+        return realRun(options);
+      };
+      window.print = () => {
+        window.printedUnrendered = document.querySelectorAll('pre.mermaid:not([data-forge-rendered])').length;
+        window.printed = true;
+      };
+    ` });
+  });
+  await page.goto(`${baseURL}/.forge/visual-docs/system-cdn/view.html`);
+  await page.locator('.review-print').click();
+  await expect.poll(() => page.evaluate(() => window.pendingMermaid.length)).toBeGreaterThan(0);
+  await expect(page.locator('.review-print')).toBeDisabled();
+  expect(await page.evaluate(() => window.printed)).toBeUndefined();
+  // A native print event can snapshot immediately: untouched source remains available.
+  await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+  await expect(page.locator('[data-project-detail][hidden] pre.mermaid').filter({ hasText: '검토 문서 열기' })).not.toHaveCount(0);
+  await page.evaluate(() => {
+    window.holdMermaid = false;
+    window.pendingMermaid.splice(0).forEach(resolve => resolve());
+  });
+  await expect.poll(() => page.evaluate(() => window.printed)).toBe(true);
+  expect(await page.evaluate(() => window.printedUnrendered)).toBe(0);
+  await expect(page.locator('.review-print')).toBeEnabled();
+});

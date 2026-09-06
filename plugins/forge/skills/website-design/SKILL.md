@@ -5,7 +5,7 @@ description: 'Use when designing, implementing, or reviewing public websites suc
 
 # Website Design
 
-Announce at start: "Using the forge website-design skill to declare the website thesis and content composition before writing UI code."
+Announce once when first applied: "Using the forge website-design skill to declare the website thesis and content composition before writing UI code."
 
 Respond to the user in the user's language. This skill file stays in English.
 
@@ -16,7 +16,7 @@ A public website communicates a story, establishes trust, and guides a visitor t
 ## Iron Law
 
 ```text
-NO WEBSITE UI CODE BEFORE THE VISUAL THESIS AND CONTENT HIERARCHY ARE DECLARED.
+NEW OR STRUCTURAL WEBSITE WORK NEEDS A VISUAL THESIS AND CONTENT HIERARCHY.
 ONE CLEAR VISUAL IDEA, ONE PRIMARY ACTION, AND ONE COHERENT SYSTEM.
 REAL RESPONSIVE COMPOSITION IS REQUIRED; A SHRUNK DESKTOP IS NOT MOBILE DESIGN.
 ```
@@ -35,11 +35,11 @@ Do NOT use for:
 
 ## The Process
 
-Create one todo per numbered step before changing UI code.
+Reuse the work checklist. For a focused change to an existing page, inherit its visual thesis, adjust only the requested content or presentation, and verify the affected composition. Use the full process below for new pages, redesigns, or structural changes. Do not produce a full declaration for a local copy or spacing adjustment.
 
 ### Step 1 — Read product and content truth
 
-Read the current plan Task and every Related Spec. Inspect the existing brand, type, color, imagery, components, performance budget, analytics goal, and page content. Preserve established tokens unless the approved spec requires a new direction.
+Read the current plan Task when one exists and the governing Spec sections. Inspect the existing brand, type, color, imagery, components, performance budget, analytics goal, and page content. Preserve established tokens unless the approved spec requires a new direction.
 
 ### Step 2 — Define the visitor journey
 
@@ -53,7 +53,7 @@ State:
 
 ### Step 3 — Declare the website system
 
-Post this completed block to the user before UI code:
+For new or structural work, summarize this system before UI code:
 
 ```text
 WEBSITE SYSTEM — public content surface
@@ -71,7 +71,7 @@ Motion: <purpose, trigger, duration, and reduced-motion behavior>
 
 Rules:
 
-- The Visual thesis must be specific enough that it could not label an unrelated company.
+- The Visual thesis must be specific enough that it could not label an unrelated company. For a new brand, use product facts, available assets, and relevant visual references to choose a direction; ask only when a material audience or brand choice remains unresolved.
 - Content hierarchy comes before decorative sections. Every section must advance the visitor from promise to proof or action.
 - Continuous body copy stays at least 16px with a readable line length and contrast.
 - Imagery must carry meaning, proof, atmosphere, or product understanding. Do not use abstract decoration as a fake product screenshot.
@@ -99,6 +99,8 @@ Use a real browser at desktop and mobile widths. Confirm:
 - keyboard focus, form states, reduced motion, and semantic structure work;
 - performance-sensitive media and motion stay within the declared budget.
 
+Compare the rendered page with the visual thesis: first-viewport hierarchy, image quality, section rhythm, and mobile composition should express it. Correct weak or generic results within the request and recheck the affected view. A declared thesis alone does not demonstrate design quality.
+
 Rendered output is the evidence. If a real browser or performance inspection is unavailable, report the missing verification instead of claiming completion.
 
 ## Red Flags
@@ -116,4 +118,4 @@ Rendered output is the evidence. If a real browser or performance inspection is 
 
 - Authenticated browser application surface discovered during the task → isolate its owned files and use the forge web-app-design skill for that surface only.
 - Marketing or product copy changes → use the forge writing-tone skill with the forge marketing-tone skill.
-- Claiming completion → return to the forge executing-plans skill, then use the forge verifying-work skill against the approved acceptance criteria.
+- Claiming completion → return to the current direct route or the forge executing-plans skill, then use the forge verifying-work skill against the affected work scope.

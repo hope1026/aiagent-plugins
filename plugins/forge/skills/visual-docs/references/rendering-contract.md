@@ -40,7 +40,7 @@ Normative source statements remain verbatim. Human-readable orientation may fram
 
 Every selected source records exact repository-relative paths, H1 titles, roles, metadata, outlines, full-statement entities, explicit relations, and ordered blocks. Prose, lists, tables, code, Mermaid, and unrecognized Markdown use distinct block kinds; unknown structures fall back to `generic`.
 
-The IR also records deterministic visual candidates only from explicit source relationships. Three or more arrow-delimited ordered nodes become an ordered-flow candidate. A responsibility or ownership table with at least three distinct endpoints becomes a structure candidate. Two or more explicit cross-set mapping edges become a relation or coverage candidate. A two-node connection, prose, or a short one-dimensional list remains text.
+The IR also records deterministic visual candidates only from explicit source relationships. Three or more nodes in a standalone arrow-delimited expression become an ordered-flow candidate. Bare labels are identifiers; labels containing spaces use individual quotes or backticks. General prose, Markdown links, multiline explanatory paragraphs, and ambiguous compound expressions remain source text rather than inferred flows. A responsibility or ownership table with at least three distinct endpoints becomes a structure candidate. Two or more explicit cross-set mapping edges become a relation or coverage candidate. A two-node connection, prose, or a short one-dimensional list remains text.
 
 Independent Spec View and Project Handbook Spec detail use the same normalized Spec entities. Their member paths, full Requirement and Acceptance headings, Mermaid SHA-256, and provenance must match.
 
@@ -48,7 +48,7 @@ Independent Spec View and Project Handbook Spec detail use the same normalized S
 
 `ViewContext` contains document `kind`, `spec_kind`, subtype, intent, audience, locale, and export mode. The registry provides at least `generic`, `brief.summary`, `spec.workflow`, `spec.api`, `spec.architecture`, `spec.policy`, `spec.migration`, `plan.execution`, `plan.status`, `project.handbook`, `project.structure`, `project.spec-detail`, and `comparison`.
 
-Profiles compose reusable component IDs. They do not own document-specific templates. The stable shell owns typography, palette, spacing, focus, freshness, provenance, deep links, overflow, print behavior, and responsive interaction.
+Profiles compose reusable component IDs. They do not own document-specific templates. The stable shell owns typography, palette, spacing, focus, freshness, provenance, deep links, overflow, print behavior, and responsive interaction. System overview leads with source purpose and short reading links; diagrams and coverage have addressable detail routes, and counts remain supporting information. The runtime renders visible panels with measurable layout, marks diagrams only after success, and reports readiness after the selected render completes. The print action awaits all diagrams; immediate native print retains readable source fallback for unfinished diagrams.
 
 ## Project Handbook information architecture
 

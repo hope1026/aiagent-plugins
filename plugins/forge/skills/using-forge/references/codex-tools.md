@@ -4,7 +4,7 @@ How forge runs on the Codex CLI. Read this once per session when running in Code
 
 ## Skill invocation
 
-Codex has no session-start hook, so this router skill arrives by description matching, not injection.
+Use the invocation capabilities exposed by the current Codex session. If a session-start hook is unavailable, load this router through explicit invocation, description matching, or a project instruction pointer.
 
 - **Explicit:** invoke any forge skill by typing `$<skill-name>` (for example `$writing-specs`, `$systematic-debugging`).
 - **Implicit:** Codex matches skill descriptions against the task; the routing table in the forge using-forge skill still decides which one is correct.
@@ -16,19 +16,14 @@ Forge skills name actions, never harness tools. On Codex, perform them as follow
 
 | When a forge skill says | On Codex, use |
 |---|---|
-| create a todo / track a checklist | `update_plan` |
-| run in the shell | `shell` |
+| track work | reuse the session planning capability, or the existing plan checkboxes when no planning tool is exposed |
+| run in the shell | the session shell execution capability |
 | edit files / write files | `apply_patch` |
 | dispatch a subagent | `spawn_agent` (see multi-agent support below) |
 
 ## Subagent dispatch requires multi-agent support
 
-Add to your Codex config (`~/.codex/config.toml`):
-
-```toml
-[features]
-multi_agent = true
-```
+Use subagents only when the current session exposes them. A skill does not authorize changing the user's global configuration. Consult the installed platform guidance if setup is explicitly requested.
 
 These operations let the forge executing-plans skill dispatch bounded Tasks that pass adaptive routing. Do not dispatch a fresh subagent mechanically for every Task. Use only the multi-agent lifecycle operations exposed by the current Codex session.
 

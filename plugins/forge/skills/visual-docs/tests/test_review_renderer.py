@@ -191,6 +191,69 @@ def render(bundle, *, intent=None, subtype=None, locale="en", offline=False):
 
 
 class ReviewRendererTest(unittest.TestCase):
+    def test_derived_diagram_uses_short_title_and_preserves_source_heading_in_details(self) -> None:
+        with TemporaryDirectory() as temporary:
+            repository = Path(temporary)
+            long_system_bundle(repository)
+            root = repository / "docs/specs/system-view-long/long-system-view.md"
+            heading = "The complete and deliberately long heading that defines the ordered match flow"
+            root.write_text(root.read_text().replace("## Match Flow", f"## {heading}"))
+            bundle = collect_spec_sources(root.parent, (), repository)
+            for locale in ("ko", "en"):
+                with self.subTest(locale=locale):
+                    document = render(bundle, intent="review", subtype="combat-system", locale=locale)
+                    diagram = re.search(r'<article class="diagram-card derived-visual".*?</article>', document, re.DOTALL).group()
+                    self.assertIn("<h3>동작 흐름</h3>" if locale == "ko" else "<h3>Behavior flow</h3>", diagram)
+                    self.assertIn(f"<p>{heading}</p></details>", diagram)
+                    self.assertIn("원문 제목" if locale == "ko" else "Source heading", diagram)
+                    self.assertNotIn("은 어떤 관계", diagram)
+                    self.assertNotIn("How does ", diagram)
+
+    def test_source_diagram_guidance_follows_locale_in_spec_and_handbook(self) -> None:
+        for bundle, intent, subtype in (
+            (spec_bundle(), "review", "workflow"),
+            (spec_bundle(), "review", "combat-system"),
+            (project_bundle(), None, None),
+        ):
+            for locale in ("ko", "en"):
+                with self.subTest(kind=bundle.kind, subtype=subtype, locale=locale):
+                    document = render(bundle, intent=intent, subtype=subtype, locale=locale)
+                    parsed = DocumentParser()
+                    parsed.feed(document)
+                    self.assertIn("확인할 내용:" if locale == "ko" else "What to confirm:", parsed.visible)
+                    self.assertIn("읽는 방법:" if locale == "ko" else "How to read:", parsed.visible)
+                    if locale == "ko":
+                        self.assertNotIn("What to confirm:", parsed.visible)
+                        self.assertNotIn("How to read:", parsed.visible)
+                    self.assertEqual(set(parsed.mermaid), {block.text for block in bundle.mermaid})
+
+    def test_system_overview_starts_with_source_purpose_and_links_to_bounded_details(self) -> None:
+        with TemporaryDirectory() as temporary:
+            bundle = long_system_bundle(Path(temporary))
+            document = render(bundle, intent="review", subtype="combat-system", locale="ko")
+
+        def detail(route):
+            start = document.index(f'data-project-detail data-route="{route}"')
+            end = document.find('<article class="project-detail', start + 1)
+            return document[start:end if end != -1 else len(document)]
+
+        overview = detail("spec-overview")
+        self.assertIn('class="system-overview-lede"', overview)
+        self.assertLess(overview.index("A large source-backed system fixture."), overview.index('class="system-review-links"'))
+        self.assertLess(overview.index('class="system-review-links"'), overview.index('class="system-metrics"'))
+        self.assertIn('href="#spec-behavior"', overview)
+        self.assertIn('href="#spec-verification"', overview)
+        self.assertIn('href="#spec-criteria"', overview)
+        self.assertNotIn('class="mermaid"', overview)
+        self.assertNotIn('class="coverage-summary"', overview)
+        self.assertNotIn('class="interface-table"', overview)
+        self.assertIn('data-component="state-map"', detail("spec-behavior"))
+        self.assertIn('class="interface-table"', detail("spec-behavior"))
+        self.assertEqual(detail("spec-verification").count('class="coverage-summary"'), 15)
+        self.assertEqual(document.count('data-node-kind="spec-member"'), 10)
+        self.assertEqual(document.count('data-statement-kind="requirement"'), 60)
+        self.assertEqual(document.count('data-statement-kind="acceptance"'), 15)
+
     def test_project_handbook_is_human_first_and_reuses_spec_entities(self) -> None:
         handbook = render(project_bundle(), locale="ko")
         spec = render(spec_bundle(), locale="ko")

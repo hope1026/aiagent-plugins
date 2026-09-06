@@ -5,7 +5,7 @@ description: 'Use when writing or revising customer support, operations updates,
 
 # Operations Tone
 
-Announce at start: "Using the forge operations-tone skill to shape customer and operations communication."
+Announce once when first applied: "Using the forge operations-tone skill to shape customer and operations communication."
 
 Respond to the user in the user's language. This skill is an overlay on top of the forge writing-tone skill.
 
@@ -27,7 +27,7 @@ Apply the forge writing-tone skill first, then apply these rules:
 2. **State customer impact in plain language.** Translate technical details into what the customer sees or needs to do.
 3. **Give the action plan.** Say whether a fix is planned, in progress, released, or blocked on missing information.
 4. **Name customer action.** If there is nothing for the customer to do, say that directly.
-5. **Set the next update condition.** Say when or under what condition the customer will hear back.
+5. **Set the next update condition when known.** Use an actual commitment; do not invent a follow-up, date, or service promise to fill the template.
 6. **Keep cause detail conditional.** Include root cause only when requested, confirmed, safe to share, and useful for customer action.
 7. **Avoid customer blame.** Describe states and actions, not fault.
 
@@ -40,7 +40,7 @@ Apply the forge writing-tone skill first, then apply these rules:
 5. Decide whether cause detail is allowed. If not, leave it out.
 6. Apply the forge writing-tone cut pass: remove hedges, internal process detail, generic apologies, and unnecessary technical depth.
 
-For substantial customer replies, create one todo per step. For short replies, still run steps 2, 4, and 5 before returning the text.
+For substantial replies, reuse the work checklist. For short replies, check status, customer action, and cause detail internally; return the requested message without process narration.
 
 ## Default Shapes
 

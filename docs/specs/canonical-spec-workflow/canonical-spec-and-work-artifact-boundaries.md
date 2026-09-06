@@ -77,7 +77,7 @@ flowchart TD
 
 ### Change Brief Readiness
 
-1. 사용자 요청을 대화상의 `Goal`, `Scope`, `Out of Scope`, `Done Checks` 초안으로 정규화한다.
+1. 목표, 범위, 비범위와 완료 조건을 확인한다. 명확한 국소 요청은 내부 판단과 짧은 목표·검증 안내로 충분하다.
 2. Repository에서 확인 가능한 사실을 먼저 조사한다.
 3. 실행 결과를 바꾸는 user-owned blocking ambiguity만 한 메시지에 하나씩 질문한다.
 4. 답을 초안에 반영하고 readiness 조건을 다시 확인한다.
@@ -107,7 +107,7 @@ Change Brief readiness는 질문 ceremony가 아니다. Agent는 repository 조�
 
 ### `approved`와 `implemented` Canonical Spec만 SOT 권위를 가져야 한다. `draft` candidate와 Spec Delta는 제안으로 표시하고 기존 승인 정본을 암묵적으로 대체하지 않아야 한다.
 
-### Forge는 사용자 요청과 확인한 repository context로 Change Brief 초안을 구성해야 하며, 요구가 대화만으로 충분히 명확한 작업은 Change Brief 파일을 만들지 않아야 한다. 재개, 위임, 여러 범위 조정 또는 명시적 사용자 검토에 독립 문서가 필요한 경우에만 `Goal`, `Scope`, `Out of Scope`, `Done Checks`를 가진 Change Brief를 만들 수 있어야 한다.
+### Forge는 사용자 요청과 repository context에서 목표, 범위, 비범위와 관찰 가능한 완료 조건을 확인해야 한다. 명확한 국소 작업은 이를 내부적으로 판단하고 목표와 검증을 짧게 알린 뒤 실행하며 네 필드를 별도 양식으로 출력하거나 파일로 만들지 않아야 한다. 재개, 위임, 여러 범위 조정 또는 명시적 사용자 검토에 독립 문서가 필요한 경우에만 Change Brief 파일을 만들 수 있어야 한다.
 
 ### 기존 Canonical Spec의 규범적 의미를 변경하거나 새 Canonical Spec을 제안할 때는 승인 전 내용을 Spec Delta로 제시해야 한다. Spec Delta는 baseline bundle path, member path, exact Requirement·Acceptance heading과 결정 변경을 식별하고 사용자의 명시적 승인 뒤에만 Canonical Spec에 반영해야 한다.
 
@@ -122,7 +122,7 @@ Change Brief readiness는 질문 ceremony가 아니다. Agent는 repository 조�
 - [Forge는 `spec`이라는 용어를 `docs/specs/`에 장기 보존되는 Canonical Spec에만 사용하고, 작업 시작 메모나 구현 순서를 spec 또는 micro-spec으로 부르지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#forge는-spec이라는-용어를-docsspecs에-장기-보존되는-canonical-spec에만-사용하고-작업-시작-메모나-구현-순서를-spec-또는-micro-spec으로-부르지-않아야-한다)
 - [Canonical Spec은 capability, system, interface 또는 policy의 승인된 의도와 지속해야 할 계약을 현재형으로 설명해야 하며, 일회성 작업 순서, 임시 조사, 변경 파일 목록과 실행 log를 현재 동작처럼 포함하지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#canonical-spec은-capability-system-interface-또는-policy의-승인된-의도와-지속해야-할-계약을-현재형으로-설명해야-하며-일회성-작업-순서-임시-조사-변경-파일-목록과-실행-log를-현재-동작처럼-포함하지-않아야-한다)
 - [`approved`와 `implemented` Canonical Spec만 SOT 권위를 가져야 한다. `draft` candidate와 Spec Delta는 제안으로 표시하고 기존 승인 정본을 암묵적으로 대체하지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#approved와-implemented-canonical-spec만-sot-권위를-가져야-한다-draft-candidate와-spec-delta는-제안으로-표시하고-기존-승인-정본을-암묵적으로-대체하지-않아야-한다)
-- [Forge는 사용자 요청과 확인한 repository context로 Change Brief 초안을 구성해야 하며, 요구가 대화만으로 충분히 명확한 작업은 Change Brief 파일을 만들지 않아야 한다. 재개, 위임, 여러 범위 조정 또는 명시적 사용자 검토에 독립 문서가 필요한 경우에만 `Goal`, `Scope`, `Out of Scope`, `Done Checks`를 가진 Change Brief를 만들 수 있어야 한다.](canonical-spec-and-work-artifact-boundaries.md#forge는-사용자-요청과-확인한-repository-context로-change-brief-초안을-구성해야-하며-요구가-대화만으로-충분히-명확한-작업은-change-brief-파일을-만들지-않아야-한다-재개-위임-여러-범위-조정-또는-명시적-사용자-검토에-독립-문서가-필요한-경우에만-goal-scope-out-of-scope-done-checks를-가진-change-brief를-만들-수-있어야-한다)
+- [Forge는 사용자 요청과 repository context에서 목표, 범위, 비범위와 관찰 가능한 완료 조건을 확인해야 한다. 명확한 국소 작업은 이를 내부적으로 판단하고 목표와 검증을 짧게 알린 뒤 실행하며 네 필드를 별도 양식으로 출력하거나 파일로 만들지 않아야 한다. 재개, 위임, 여러 범위 조정 또는 명시적 사용자 검토에 독립 문서가 필요한 경우에만 Change Brief 파일을 만들 수 있어야 한다.](canonical-spec-and-work-artifact-boundaries.md#forge는-사용자-요청과-repository-context에서-목표-범위-비범위와-관찰-가능한-완료-조건을-확인해야-한다-명확한-국소-작업은-이를-내부적으로-판단하고-목표와-검증을-짧게-알린-뒤-실행하며-네-필드를-별도-양식으로-출력하거나-파일로-만들지-않아야-한다-재개-위임-여러-범위-조정-또는-명시적-사용자-검토에-독립-문서가-필요한-경우에만-change-brief-파일을-만들-수-있어야-한다)
 - [기존 Canonical Spec의 규범적 의미를 변경하거나 새 Canonical Spec을 제안할 때는 승인 전 내용을 Spec Delta로 제시해야 한다. Spec Delta는 baseline bundle path, member path, exact Requirement·Acceptance heading과 결정 변경을 식별하고 사용자의 명시적 승인 뒤에만 Canonical Spec에 반영해야 한다.](canonical-spec-and-work-artifact-boundaries.md#기존-canonical-spec의-규범적-의미를-변경하거나-새-canonical-spec을-제안할-때는-승인-전-내용을-spec-delta로-제시해야-한다-spec-delta는-baseline-bundle-path-member-path-exact-requirementacceptance-heading과-결정-변경을-식별하고-사용자의-명시적-승인-뒤에만-canonical-spec에-반영해야-한다)
 - [Execution Plan은 구현 방법과 순서의 작업 source이며 프로젝트 SOT가 아니어야 한다. 여러 의존 단계, 여러 컴포넌트, 병렬 소유권, migration·release 순서, 의미 있는 rollback 위험 또는 zero-context handoff가 필요한 경우에만 만들고, 단순히 구현 코드가 존재한다는 이유만으로 만들지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#execution-plan은-구현-방법과-순서의-작업-source이며-프로젝트-sot가-아니어야-한다-여러-의존-단계-여러-컴포넌트-병렬-소유권-migrationrelease-순서-의미-있는-rollback-위험-또는-zero-context-handoff가-필요한-경우에만-만들고-단순히-구현-코드가-존재한다는-이유만으로-만들지-않아야-한다)
 

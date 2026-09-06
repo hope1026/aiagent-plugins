@@ -22,7 +22,7 @@
 
 ### derived diagram은 Task 번호, 명시된 Route membership, 명시된 dependency, source-qualified full-statement mapping처럼 selected source에서 기계적으로 계산 가능한 정보만 포함해야 한다.
 
-기계적으로 계산 가능한 정보에는 source에 직접 작성된 arrow-delimited 상태·흐름, table의 actor·responsibility·ownership·dependency pair, Project Map Structure와 Depends On, plan Route·Task dependency, Requirement·Acceptance coverage link가 포함된다.
+기계적으로 계산 가능한 정보에는 source의 독립된 arrow-delimited 상태·흐름, table의 actor·responsibility·ownership·dependency pair, Project Map Structure와 Depends On, plan Route·Task dependency, Requirement·Acceptance coverage link가 포함된다. 일반 설명 문장이나 Markdown link 안의 화살표를 독립된 흐름으로 간주하지 않으며 여러 조건의 경로를 합치지 않는다.
 
 ### Visual Docs는 source에 없는 새로운 런타임 책임, transaction 순서, 상태 전이 또는 설계 결정을 derived diagram에 추가하지 않아야 한다.
 
@@ -44,7 +44,7 @@
 
 ### 넓은 표는 독립 가로 스크롤 wrapper를 사용해 문서 전체 viewport 폭을 확장하지 않아야 한다.
 
-### Visual Docs shell, template, style, script 또는 runtime 동작을 변경할 때는 desktop 1440px와 mobile 390px에서 tab, 표, diagram, deep link, checkbox를 검증해야 하지만, 고정 shell로 개별 `view.html`을 생성할 때는 이 검증을 반복하지 않아야 한다.
+### Visual Docs shell, template, style, script 또는 runtime을 변경하면 desktop 1440px와 mobile 390px에서 해당 탐색, 표, diagram, deep link와 checkbox를 검증해야 한다. 개별 View 생성은 자료와 요청의 복잡도에 맞는 읽기·표시 검증을 적용하고 공통 tooling의 전체 회귀를 기계적으로 반복하지 않아야 한다.
 
 ### mobile에서 sequence diagram 글자를 읽기 어려우면 책임 요약표 또는 세로 flowchart를 먼저 제공하고 원본 diagram은 가로 스크롤로 유지해야 한다.
 
@@ -70,9 +70,9 @@ Renderer는 relation shape에 따라 flowchart·sequence, tree·structure map, d
 
 Runtime 포함 여부는 validated Presentation Plan이 실제로 렌더링할 source diagram과 derived visual component를 함께 계산해 결정한다.
 
-### Visual Docs의 Overview panel은 source별 집계를 스캔 가능한 요약 지표로 먼저 제시하고 상세 집계 표를 그 아래에 유지해야 하며, 두 표시는 structured parser가 고정한 같은 집계 기준에서 계산해야 한다.
+### Visual Docs의 Overview는 source가 제공하는 목적과 핵심 내용을 먼저 제시하고 source별 집계는 보조 정보로 배치해야 한다. 요약과 상세 집계는 structured parser의 같은 기준에서 계산하고 모든 원문 상세로 이동할 수 있어야 한다.
 
-### 공통 renderer의 provenance와 reading-route 변경은 desktop 1440px와 mobile 390px 및 관련 Acceptance Criterion을 검증하되 개별 `view.html` 생성에 post-build 검증을 다시 도입하지 않아야 한다.
+### 공통 renderer의 provenance와 reading-route 변경은 desktop 1440px와 mobile 390px 및 관련 검증 항목으로 확인해야 한다. 이후 개별 View에서는 해당 자료의 읽기 품질을 확인하되 변경되지 않은 공통 구현의 전체 회귀는 반복하지 않아야 한다.
 
 ### View Context는 `brief`, `plan`, `spec`, `project` 중 하나인 kind, subtype, user intent, audience, locale, comparison·context source role과 export mode를 가져야 한다. `intent`는 `review`, `approval`, `implementation`, `comparison`, `execution`, `status` 중 하나여야 한다.
 
@@ -88,7 +88,7 @@ Runtime 포함 여부는 validated Presentation Plan이 실제로 렌더링할 s
 
 ### 독립 spec kind의 spec.system View는 desktop에서 member·section을 검색하고 선택하는 좌측 탐색과 선택한 내용을 표시하는 우측 상세를 함께 제공하고 narrow viewport에서는 탐색과 상세를 한 화면씩 표시하며 목록으로 돌아가는 명시적 action을 제공해야 한다.
 
-### system-overview는 source가 선언한 title, areas, components와 Requirement·Acceptance·member 집계를 먼저 표시하고 path, block count, entity count와 freshness source row는 출처·검증 경로에 종속시켜야 한다.
+### system-overview는 source의 Overview 목적 설명을 먼저 보여주고 짧은 member별 탐색과 핵심 동작으로 안내해야 한다. areas, components와 Requirement·Acceptance·member 집계는 보조 정보로 배치하며 전체 도표·완료 기준을 개요에 모두 펼치지 않고 각 상세에서 정확한 원문과 provenance를 제공해야 한다.
 
 ### state-map, runtime-responsibility, interface-table과 acceptance-coverage는 각 source entity 관계에 맞는 flow, responsibility table, interface table과 coverage grouping을 렌더링하고 같은 source-block 카드 목록을 서로 다른 component 이름으로 반복하지 않아야 한다.
 
@@ -168,7 +168,7 @@ Runtime 포함 여부는 validated Presentation Plan이 실제로 렌더링할 s
 - [넓은 Mermaid diagram은 독립 가로 스크롤 wrapper 안에 표시하고 SVG를 viewport 폭에 맞춰 무조건 축소하지 않아야 한다.](adaptive-presentation-and-navigation.md#넓은-mermaid-diagram은-독립-가로-스크롤-wrapper-안에-표시하고-svg를-viewport-폭에-맞춰-무조건-축소하지-않아야-한다)
 - [sequence diagram과 넓은 dependency diagram에는 읽을 수 있는 최소 폭을 적용해야 한다.](adaptive-presentation-and-navigation.md#sequence-diagram과-넓은-dependency-diagram에는-읽을-수-있는-최소-폭을-적용해야-한다)
 - [넓은 표는 독립 가로 스크롤 wrapper를 사용해 문서 전체 viewport 폭을 확장하지 않아야 한다.](adaptive-presentation-and-navigation.md#넓은-표는-독립-가로-스크롤-wrapper를-사용해-문서-전체-viewport-폭을-확장하지-않아야-한다)
-- [Visual Docs shell, template, style, script 또는 runtime 동작을 변경할 때는 desktop 1440px와 mobile 390px에서 tab, 표, diagram, deep link, checkbox를 검증해야 하지만, 고정 shell로 개별 `view.html`을 생성할 때는 이 검증을 반복하지 않아야 한다.](adaptive-presentation-and-navigation.md#visual-docs-shell-template-style-script-또는-runtime-동작을-변경할-때는-desktop-1440px와-mobile-390px에서-tab-표-diagram-deep-link-checkbox를-검증해야-하지만-고정-shell로-개별-viewhtml을-생성할-때는-이-검증을-반복하지-않아야-한다)
+- [Visual Docs shell, template, style, script 또는 runtime을 변경하면 desktop 1440px와 mobile 390px에서 해당 탐색, 표, diagram, deep link와 checkbox를 검증해야 한다. 개별 View 생성은 자료와 요청의 복잡도에 맞는 읽기·표시 검증을 적용하고 공통 tooling의 전체 회귀를 기계적으로 반복하지 않아야 한다.](adaptive-presentation-and-navigation.md#visual-docs-shell-template-style-script-또는-runtime을-변경하면-desktop-1440px와-mobile-390px에서-해당-탐색-표-diagram-deep-link와-checkbox를-검증해야-한다-개별-view-생성은-자료와-요청의-복잡도에-맞는-읽기표시-검증을-적용하고-공통-tooling의-전체-회귀를-기계적으로-반복하지-않아야-한다)
 - [mobile에서 sequence diagram 글자를 읽기 어려우면 책임 요약표 또는 세로 flowchart를 먼저 제공하고 원본 diagram은 가로 스크롤로 유지해야 한다.](adaptive-presentation-and-navigation.md#mobile에서-sequence-diagram-글자를-읽기-어려우면-책임-요약표-또는-세로-flowchart를-먼저-제공하고-원본-diagram은-가로-스크롤로-유지해야-한다)
 
 ### diagram 접근성 이름, inline favicon, tabular number가 DOM과 computed style에 존재하고 favicon 404가 발생하지 않는다.
@@ -223,15 +223,15 @@ Runtime 포함 여부는 validated Presentation Plan이 실제로 렌더링할 s
 - [plan kind의 History는 plan 상태, Task checkbox, Progress History, 선택적인 `progress.md`·`tasks/*.md`, primary·auxiliary·context source별 role·path·hash, checkpoint, 관련 commit, 재생성 command를 보여줘야 한다.](plan-context-and-statement-traceability.md#plan-kind의-history는-plan-상태-task-checkbox-progress-history-선택적인-progressmdtasksmd-primaryauxiliarycontext-source별-rolepathhash-checkpoint-관련-commit-재생성-command를-보여줘야-한다)
 - [Visual Docs는 원문 상세를 처음부터 펼치지 않고 요약, 시각 흐름, 상세 source, acceptance evidence 순서로 배치해야 한다.](adaptive-presentation-and-navigation.md#visual-docs는-원문-상세를-처음부터-펼치지-않고-요약-시각-흐름-상세-source-acceptance-evidence-순서로-배치해야-한다)
 
-### Visual Docs shell·template·style·script·runtime 동작을 변경한 경우에만 desktop 1440px와 mobile 390px browser 검증에서 tab, namespaced deep link, checkbox persistence, diagram, table, print layout이 정상이며 Mermaid error가 0개임을 확인하고, 개별 View 생성에서는 해당 검증을 실행하지 않는다.
+### Visual Docs tooling 변경 fixture는 desktop 1440px와 mobile 390px에서 숨겨진 상세 선택, 빠른 탐색, deep link, checkbox persistence, diagram, table과 print의 필요한 상태를 통과한다. 유효한 Mermaid에는 표시된 오류가 없고 개별 View 생성 fixture도 요청 범위의 읽기·표시 확인을 수행한다.
 
 검증하는 요구사항:
 
-- [Visual Docs shell, template, style, script 또는 runtime 동작을 변경할 때는 desktop 1440px와 mobile 390px에서 tab, 표, diagram, deep link, checkbox를 검증해야 하지만, 고정 shell로 개별 `view.html`을 생성할 때는 이 검증을 반복하지 않아야 한다.](adaptive-presentation-and-navigation.md#visual-docs-shell-template-style-script-또는-runtime-동작을-변경할-때는-desktop-1440px와-mobile-390px에서-tab-표-diagram-deep-link-checkbox를-검증해야-하지만-고정-shell로-개별-viewhtml을-생성할-때는-이-검증을-반복하지-않아야-한다)
-- [생성된 개별 Visual Docs에는 별도 `--check`, source count·hash·Mermaid 일치 확인, unresolved placeholder·shell markup 검사 같은 post-build 검증을 수행하지 않아야 한다.](human-readable-review-viewer.md#생성된-개별-visual-docs에는-별도-check-source-counthashmermaid-일치-확인-unresolved-placeholdershell-markup-검사-같은-post-build-검증을-수행하지-않아야-한다)
-- [생성된 개별 Visual Docs에는 desktop·390px mobile render, screenshot, layout, print, tab, deep link, checkbox persistence, Mermaid, offline, freshness 상태의 브라우저 검증을 수행하지 않아야 한다.](human-readable-review-viewer.md#생성된-개별-visual-docs에는-desktop390px-mobile-render-screenshot-layout-print-tab-deep-link-checkbox-persistence-mermaid-offline-freshness-상태의-브라우저-검증을-수행하지-않아야-한다)
+- [Visual Docs shell, template, style, script 또는 runtime을 변경하면 desktop 1440px와 mobile 390px에서 해당 탐색, 표, diagram, deep link와 checkbox를 검증해야 한다. 개별 View 생성은 자료와 요청의 복잡도에 맞는 읽기·표시 검증을 적용하고 공통 tooling의 전체 회귀를 기계적으로 반복하지 않아야 한다.](adaptive-presentation-and-navigation.md#visual-docs-shell-template-style-script-또는-runtime을-변경하면-desktop-1440px와-mobile-390px에서-해당-탐색-표-diagram-deep-link와-checkbox를-검증해야-한다-개별-view-생성은-자료와-요청의-복잡도에-맞는-읽기표시-검증을-적용하고-공통-tooling의-전체-회귀를-기계적으로-반복하지-않아야-한다)
+- [개별 Visual Docs의 검증은 요청한 결과를 직접 증명하는 최소 범위로 선택해야 한다. 동일한 변경 상태에서 이미 통과한 검증은 재사용할 수 있고, 새 변경·실패·미해결 위험이 있을 때만 필요한 증거를 다시 수집해야 한다.](human-readable-review-viewer.md#개별-visual-docs의-검증은-요청한-결과를-직접-증명하는-최소-범위로-선택해야-한다-동일한-변경-상태에서-이미-통과한-검증은-재사용할-수-있고-새-변경실패미해결-위험이-있을-때만-필요한-증거를-다시-수집해야-한다)
+- [개별 Visual Docs는 실제 화면의 읽기 순서와 핵심 내용을 확인해야 하며, 복잡한 자료·새 구성·도표가 있으면 desktop과 narrow viewport에서 도표 의미, 탐색과 가독성을 확인해야 한다. 검증 실패는 같은 요청 안에서 원본 또는 공통 tooling을 수정하고 재생성해 해결하되 생성 HTML을 직접 편집하지 않아야 한다.](human-readable-review-viewer.md#개별-visual-docs는-실제-화면의-읽기-순서와-핵심-내용을-확인해야-하며-복잡한-자료새-구성도표가-있으면-desktop과-narrow-viewport에서-도표-의미-탐색과-가독성을-확인해야-한다-검증-실패는-같은-요청-안에서-원본-또는-공통-tooling을-수정하고-재생성해-해결하되-생성-html을-직접-편집하지-않아야-한다)
 
-### Visual Docs tooling fixture에 Markdown source와 View Context를 입력하면 Semantic IR, validated Presentation Plan, source manifest와 profile-specific HTML이 만들어지고 unresolved source reference·수동 content fragment·source 밖 의미가 0개다. 개별 View 생성 뒤에는 이 fixture를 반복하지 않는다.
+### Visual Docs tooling fixture에 Markdown source와 View Context를 입력하면 Semantic IR, validated Presentation Plan, source manifest와 profile-specific HTML이 만들어지고 unresolved source reference·수동 content fragment·source 밖 의미가 0개다. 개별 View 검증은 자료에 필요한 범위로 수행한다.
 
 검증하는 요구사항:
 
@@ -245,17 +245,17 @@ Runtime 포함 여부는 validated Presentation Plan이 실제로 렌더링할 s
 
 - [builder는 해당 Visual Docs가 렌더링할 source Mermaid와 derived diagram을 합쳐 하나 이상 포함할 때만 Mermaid runtime asset을 embed하거나 CDN loader를 출력해야 한다. Diagram이 없는 snapshot은 runtime을 생략해야 하며, 생략 여부는 selected source bytes와 build option에서만 결정적으로 계산해야 한다. `--offline` snapshot은 runtime을 생략한 경우에도 외부 network 없이 열려야 한다.](adaptive-presentation-and-navigation.md#builder는-해당-visual-docs가-렌더링할-source-mermaid와-derived-diagram을-합쳐-하나-이상-포함할-때만-mermaid-runtime-asset을-embed하거나-cdn-loader를-출력해야-한다-diagram이-없는-snapshot은-runtime을-생략해야-하며-생략-여부는-selected-source-bytes와-build-option에서만-결정적으로-계산해야-한다-offline-snapshot은-runtime을-생략한-경우에도-외부-network-없이-열려야-한다)
 
-### Spec kind와 plan kind의 Overview panel을 열면 source별 요약 지표가 먼저 보이고 상세 집계 표가 그 아래에 남으며 두 표시의 수치가 structured parser의 같은 집계 기준과 일치한다.
+### 목적 설명이 있는 Spec과 plan의 Overview를 열면 목적과 핵심 내용이 집계보다 먼저 보이고 390px에서도 숫자 카드가 첫 읽기 화면을 차지하지 않으며 요약과 상세 수치가 같은 source 집계 기준과 일치한다.
 
 검증하는 요구사항:
 
-- [Visual Docs의 Overview panel은 source별 집계를 스캔 가능한 요약 지표로 먼저 제시하고 상세 집계 표를 그 아래에 유지해야 하며, 두 표시는 structured parser가 고정한 같은 집계 기준에서 계산해야 한다.](adaptive-presentation-and-navigation.md#visual-docs의-overview-panel은-source별-집계를-스캔-가능한-요약-지표로-먼저-제시하고-상세-집계-표를-그-아래에-유지해야-하며-두-표시는-structured-parser가-고정한-같은-집계-기준에서-계산해야-한다)
+- [Visual Docs의 Overview는 source가 제공하는 목적과 핵심 내용을 먼저 제시하고 source별 집계는 보조 정보로 배치해야 한다. 요약과 상세 집계는 structured parser의 같은 기준에서 계산하고 모든 원문 상세로 이동할 수 있어야 한다.](adaptive-presentation-and-navigation.md#visual-docs의-overview는-source가-제공하는-목적과-핵심-내용을-먼저-제시하고-source별-집계는-보조-정보로-배치해야-한다-요약과-상세-집계는-structured-parser의-같은-기준에서-계산하고-모든-원문-상세로-이동할-수-있어야-한다)
 
-### 공통 provenance와 reading-route 구현을 검증하면 desktop 1440px와 mobile 390px의 tab, 표, diagram, deep link와 checkbox가 동작하고 이후 개별 `view.html` 생성에는 post-build checker나 browser 검증이 추가되지 않는다.
+### 공통 provenance와 reading-route 구현을 검증하면 desktop 1440px와 mobile 390px의 탐색, 표, diagram, deep link와 checkbox가 동작하며 개별 View는 해당 자료의 읽기·표시를 확인하고 변경되지 않은 공통 회귀를 반복하지 않는다.
 
 검증하는 요구사항:
 
-- [공통 renderer의 provenance와 reading-route 변경은 desktop 1440px와 mobile 390px 및 관련 Acceptance Criterion을 검증하되 개별 `view.html` 생성에 post-build 검증을 다시 도입하지 않아야 한다.](adaptive-presentation-and-navigation.md#공통-renderer의-provenance와-reading-route-변경은-desktop-1440px와-mobile-390px-및-관련-acceptance-criterion을-검증하되-개별-viewhtml-생성에-post-build-검증을-다시-도입하지-않아야-한다)
+- [공통 renderer의 provenance와 reading-route 변경은 desktop 1440px와 mobile 390px 및 관련 검증 항목으로 확인해야 한다. 이후 개별 View에서는 해당 자료의 읽기 품질을 확인하되 변경되지 않은 공통 구현의 전체 회귀는 반복하지 않아야 한다.](adaptive-presentation-and-navigation.md#공통-renderer의-provenance와-reading-route-변경은-desktop-1440px와-mobile-390px-및-관련-검증-항목으로-확인해야-한다-이후-개별-view에서는-해당-자료의-읽기-품질을-확인하되-변경되지-않은-공통-구현의-전체-회귀는-반복하지-않아야-한다)
 
 ### 같은 workflow spec을 `approval`과 `implementation`, 같은 plan을 `execution`과 `status`로 build하면 stable shell·visual system·provenance는 같고 primary component, reading order, navigation과 summary density는 각 profile·intent 계약에 맞게 다르다.
 
@@ -297,7 +297,7 @@ Runtime 포함 여부는 validated Presentation Plan이 실제로 렌더링할 s
 
 - [kind가 system이고 subtype이 전용 profile로 등록되지 않은 Spec은 generic보다 spec.system profile을 우선 선택하고 source에서 명시된 subsystem, 상태 흐름, 책임, interface와 statement coverage를 primary reading route로 구성해야 한다.](adaptive-presentation-and-navigation.md#kind가-system이고-subtype이-전용-profile로-등록되지-않은-spec은-generic보다-specsystem-profile을-우선-선택하고-source에서-명시된-subsystem-상태-흐름-책임-interface와-statement-coverage를-primary-reading-route로-구성해야-한다)
 - [독립 spec kind의 spec.system View는 desktop에서 member·section을 검색하고 선택하는 좌측 탐색과 선택한 내용을 표시하는 우측 상세를 함께 제공하고 narrow viewport에서는 탐색과 상세를 한 화면씩 표시하며 목록으로 돌아가는 명시적 action을 제공해야 한다.](adaptive-presentation-and-navigation.md#독립-spec-kind의-specsystem-view는-desktop에서-membersection을-검색하고-선택하는-좌측-탐색과-선택한-내용을-표시하는-우측-상세를-함께-제공하고-narrow-viewport에서는-탐색과-상세를-한-화면씩-표시하며-목록으로-돌아가는-명시적-action을-제공해야-한다)
-- [system-overview는 source가 선언한 title, areas, components와 Requirement·Acceptance·member 집계를 먼저 표시하고 path, block count, entity count와 freshness source row는 출처·검증 경로에 종속시켜야 한다.](adaptive-presentation-and-navigation.md#system-overview는-source가-선언한-title-areas-components와-requirementacceptancemember-집계를-먼저-표시하고-path-block-count-entity-count와-freshness-source-row는-출처검증-경로에-종속시켜야-한다)
+- [system-overview는 source의 Overview 목적 설명을 먼저 보여주고 짧은 member별 탐색과 핵심 동작으로 안내해야 한다. areas, components와 Requirement·Acceptance·member 집계는 보조 정보로 배치하며 전체 도표·완료 기준을 개요에 모두 펼치지 않고 각 상세에서 정확한 원문과 provenance를 제공해야 한다.](adaptive-presentation-and-navigation.md#system-overview는-source의-overview-목적-설명을-먼저-보여주고-짧은-member별-탐색과-핵심-동작으로-안내해야-한다-areas-components와-requirementacceptancemember-집계는-보조-정보로-배치하며-전체-도표완료-기준을-개요에-모두-펼치지-않고-각-상세에서-정확한-원문과-provenance를-제공해야-한다)
 - [state-map, runtime-responsibility, interface-table과 acceptance-coverage는 각 source entity 관계에 맞는 flow, responsibility table, interface table과 coverage grouping을 렌더링하고 같은 source-block 카드 목록을 서로 다른 component 이름으로 반복하지 않아야 한다.](adaptive-presentation-and-navigation.md#state-map-runtime-responsibility-interface-table과-acceptance-coverage는-각-source-entity-관계에-맞는-flow-responsibility-table-interface-table과-coverage-grouping을-렌더링하고-같은-source-block-카드-목록을-서로-다른-component-이름으로-반복하지-않아야-한다)
 - [Renderer는 최소한 `generic`, `brief.summary`, `spec.system`, `spec.workflow`, `spec.api`, `spec.architecture`, `spec.policy`, `spec.migration`, `plan.execution`, `plan.status`, `project.handbook`, `project.structure`, `project.spec-detail`, `comparison` profile을 제공해야 한다. 새 profile은 공통 component를 조합하고 문서별 template를 복사하지 않아야 한다.](adaptive-presentation-and-navigation.md#renderer는-최소한-generic-briefsummary-specsystem-specworkflow-specapi-specarchitecture-specpolicy-specmigration-planexecution-planstatus-projecthandbook-projectstructure-projectspec-detail-comparison-profile을-제공해야-한다-새-profile은-공통-component를-조합하고-문서별-template를-복사하지-않아야-한다)
 - [공통 component grammar는 summary, outline, prose detail, metadata, system-overview, state map, sequence, runtime-responsibility, interface·schema table, decision·exception matrix, relation graph, route·dependency map, progress, Requirement·Acceptance Criterion coverage, provenance, source detail, spec-navigator, project-overview, capability-map, structure-responsibility, spec-index와 developer-information을 제공해야 한다.](adaptive-presentation-and-navigation.md#공통-component-grammar는-summary-outline-prose-detail-metadata-system-overview-state-map-sequence-runtime-responsibility-interfaceschema-table-decisionexception-matrix-relation-graph-routedependency-map-progress-requirementacceptance-criterion-coverage-provenance-source-detail-spec-navigator-project-overview-capability-map-structure-responsibility-spec-index와-developer-information을-제공해야-한다)
