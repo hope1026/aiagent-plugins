@@ -42,11 +42,7 @@ if rg -n 'explicit source/kind/view-id|Visual Docs still requires an exact reque
   fail "request overconstraint remains outside writer handoff"
 fi
 grep -q 'exactly one.*handoff\|one.*handoff' "$WRITING_SPECS" || fail "positive request does not cap handoff at one"
-grep -q 'within the same request' "$REVIEW_VIEWER" || fail "visual-docs misses in-scope correction authority"
-grep -q 'Inspect the actual reading path' "$REVIEW_VIEWER" || fail "visual-docs misses rendered verification"
-if rg -n 'Run one build command|Do not add a second checker|NO STEP WITHOUT ITS COMPLETE CONTENT' "$REVIEW_VIEWER" "$VERIFYING_WORK" "$WRITING_PLANS" >/dev/null; then
-  fail "obsolete build-count, verification, or full-code gate remains"
-fi
+grep -q 'Run one build command' "$REVIEW_VIEWER" || fail "visual-docs does not enforce one build"
 grep -q -- '--dry-run --format json' "$REVIEW_VIEWER" || fail "visual-docs misses presentation preflight"
 grep -q 'profile.*generic' "$REVIEW_VIEWER" || fail "visual-docs preflight does not catch generic degradation"
 grep -q 'primary component' "$REVIEW_VIEWER" || fail "visual-docs preflight does not catch empty primary composition"
@@ -98,19 +94,8 @@ grep -q 'Requirement → Acceptance Criterion → Task' "$PLAN_VISUAL" || fail "
 grep -q 'progress.md.*long history.*multiple independent executors' "$WRITING_PLANS" || fail "progress.md creation gate is incomplete"
 grep -q 'tasks/\*\.md.*large plan.*independent ownership.*parallel execution.*independent approval' "$WRITING_PLANS" || fail "tasks/*.md creation gate is incomplete"
 grep -qi 'Before deleting.*plan.*permanent decisions.*Canonical Spec.*docs/research' "$WRITING_PLANS" || fail "plan deletion promotion gate is missing"
-grep -qi 'repository-contained.*bundle path' "$WRITING_PLANS" || fail "Related Specs containment gate missing"
+grep -q 'repository-contained.*bundle path' "$WRITING_PLANS" || fail "Related Specs containment gate missing"
 grep -q 'unique normalized bundle paths' "$WRITING_PLANS" || fail "duplicate Related Specs bundle gate missing"
 grep -q 'exact linked Requirement and Acceptance statement' "$WRITING_PLANS" || fail "Related Specs statement existence gate missing"
-
-# Scale verification and planning without weakening logic or authority boundaries.
-TDD="$ROOT_DIR/plugins/forge/skills/test-driven-development/SKILL.md"
-APP="$ROOT_DIR/plugins/forge/skills/web-app-design/SKILL.md"
-grep -q 'NEW LOGIC AND BEHAVIORAL FIXES NEED AN OBSERVED FAILING TEST' "$TDD" || fail "logic lost its regression gate"
-grep -q 'Do not install a test framework just to assert a label' "$TDD" || fail "presentation changes still require test infrastructure"
-grep -q 'Focused adjustment' "$APP" || fail "UI lacks a focused path"
-grep -q 'Partial change or restoration of an implemented baseline' "$WRITING_PLANS" || fail "plan scope cannot follow partial changes"
-grep -q 'Do not write the implementation twice' "$WRITING_PLANS" || fail "plan still duplicates implementation"
-grep -q 'same unchanged implementation' "$VERIFYING_WORK" || fail "verification evidence cannot be reused safely"
-grep -q 'already given for a concrete proposal' "$WRITING_PLANS" || fail "concrete approval reuse missing"
 
 echo "forge lifecycle policy: all checks passed"

@@ -10,7 +10,7 @@
 
 ### Visual Docs는 사용자가 현재 Brief, Plan, Spec 또는 Project source set의 시각화, 생성 또는 갱신을 명시한 경우에만 별도 Visual Docs 계약에 따라 생성해야 한다.
 
-### Source 변경만으로 완료된 local View나 tracked Project Handbook을 자동 갱신하지 않아야 한다. 진행 중인 명시적 시각 문서 요청을 완성하기 위한 검증·수정·재생성은 같은 요청 안에서 수행할 수 있고, 완료 후 새 갱신에는 명시적 사용자 의도가 필요해야 한다.
+### Source 변경은 저장된 local View나 tracked Project Handbook을 자동 갱신하지 않아야 하며 stale 사실은 보고할 수 있지만 재생성에는 별도의 명시적 사용자 요청이 필요해야 한다.
 
 ### Bundle parser와 validator, Visual Docs parser·renderer·component asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle과 four-kind explicit Visual Docs request 계약을 사용해야 한다.
 
@@ -33,7 +33,7 @@
 - [Forge lifecycle skill은 일반적인 작성·변경·승인·handoff·checkpoint·status 전환에서 Markdown source만 생성하거나 변경하고, 명시적 Visual Docs 요청이 있을 때만 local View 또는 tracked Project Handbook을 생성하거나 갱신해야 한다.](lifecycle-consumers-and-bundle-replacement.md#forge-lifecycle-skill은-일반적인-작성변경승인handoffcheckpointstatus-전환에서-markdown-source만-생성하거나-변경하고-명시적-visual-docs-요청이-있을-때만-local-view-또는-tracked-project-handbook을-생성하거나-갱신해야-한다)
 - [Source 변경, lifecycle status, 문서 복잡도, Mermaid·표, approval 요청, handoff와 기존 HTML 존재를 Visual Docs 생성 또는 갱신 권한으로 해석하지 않아야 한다.](lifecycle-consumers-and-bundle-replacement.md#source-변경-lifecycle-status-문서-복잡도-mermaid표-approval-요청-handoff와-기존-html-존재를-visual-docs-생성-또는-갱신-권한으로-해석하지-않아야-한다)
 - [Visual Docs는 사용자가 현재 Brief, Plan, Spec 또는 Project source set의 시각화, 생성 또는 갱신을 명시한 경우에만 별도 Visual Docs 계약에 따라 생성해야 한다.](lifecycle-consumers-and-bundle-replacement.md#visual-docs는-사용자가-현재-brief-plan-spec-또는-project-source-set의-시각화-생성-또는-갱신을-명시한-경우에만-별도-visual-docs-계약에-따라-생성해야-한다)
-- [Source 변경만으로 완료된 local View나 tracked Project Handbook을 자동 갱신하지 않아야 한다. 진행 중인 명시적 시각 문서 요청을 완성하기 위한 검증·수정·재생성은 같은 요청 안에서 수행할 수 있고, 완료 후 새 갱신에는 명시적 사용자 의도가 필요해야 한다.](lifecycle-consumers-and-bundle-replacement.md#source-변경만으로-완료된-local-view나-tracked-project-handbook을-자동-갱신하지-않아야-한다-진행-중인-명시적-시각-문서-요청을-완성하기-위한-검증수정재생성은-같은-요청-안에서-수행할-수-있고-완료-후-새-갱신에는-명시적-사용자-의도가-필요해야-한다)
+- [Source 변경은 저장된 local View나 tracked Project Handbook을 자동 갱신하지 않아야 하며 stale 사실은 보고할 수 있지만 재생성에는 별도의 명시적 사용자 요청이 필요해야 한다.](lifecycle-consumers-and-bundle-replacement.md#source-변경은-저장된-local-view나-tracked-project-handbook을-자동-갱신하지-않아야-하며-stale-사실은-보고할-수-있지만-재생성에는-별도의-명시적-사용자-요청이-필요해야-한다)
 
 ### 세 agent용 설치 fixture에서 같은 bundle을 validate·inspect하고 Visual Docs source로 읽으면 동일한 bundle·member path와 full statement 결과가 나오며 일반 validation은 HTML을 생성하지 않는다.
 

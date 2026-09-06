@@ -5,7 +5,7 @@ description: 'Use when a written implementation plan exists in docs/plans/ and t
 
 # Executing Plans
 
-**Announce once when first applied:** "Using the forge executing-plans skill to execute this plan task by task."
+**Announce at start:** "Using the forge executing-plans skill to execute this plan task by task."
 
 Respond to the user in the user's language. This skill file stays in English.
 
@@ -34,11 +34,11 @@ When execution reveals a wrong or missing requirement in a Related Canonical Spe
 
 ## The Process
 
-Use the plan's Task checklist as the execution checklist. Track startup concerns only when they require separate action; do not duplicate completed routing and verification work.
+The startup checklist and every plan task become todos — create one todo per item; never track them only in memory.
 
 ### Phase 1: Startup
 
-1. **Read the plan** and inspect its Related Spec Bundles with `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <bundle-directory> --format json`. Require `forge/spec@3`, lifecycle `approved|implemented` appropriate to new work or preservation, and empty diagnostics. Verify exact `Governing statements:` links against the plan's Verification Scope: the full Canonical verification set for new or never-implemented contracts, or directly and indirectly affected statements plus regression preservation for partial changes to an implemented baseline. Resolve repository facts yourself. A user-owned outcome gap returns to Brief clarification; a bounded technical question follows its investigation Task.
+1. **Read the plan** in `docs/plans/` end to end. For every Related Canonical Spec Bundle entry, run `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <bundle-directory> --format json`. Require `schema` = `forge/spec@3`, `status` in `approved|implemented`, and empty `diagnostics`; an approved bundle governs new contract work and an approved or implemented bundle may govern preservation or restoration. Confirm every Task's `Governing statements:` links resolve to exact Requirement and Acceptance headings in declared bundles. For each bundle, require every Acceptance statement to map to a Task when any exist; otherwise require every Requirement statement to map. Review unclear instructions, contradictions, and missing preconditions before execution. Resolve repository-discoverable facts directly. If the Goal, scope, or observable Done Checks still depend on a user-owned choice, do not mutate; return to Brief clarification through the forge using-forge skill.
 2. **Open progress state.** The default source is Task checkboxes plus `Progress History` in `plan.md`. When `progress.md` exists beside the plan, use it for detailed routing and checkpoint evidence. When `tasks/*.md` exists, confirm each Task ID appears once in the plan index and once in its owned Task file.
 3. **Skip completed work.** Tasks the plan-local progress state marks complete are DONE — do not redo them. Resume at the first task not marked complete. After any compaction or resume, trust plan-local progress and commit history over recollection.
 4. **Create one todo per remaining task.**
@@ -50,17 +50,17 @@ Use the plan's Task checklist as the execution checklist. Track startup concerns
 For each task, in plan order:
 
 1. Mark the task's todo in progress, re-read the full task text including its Interfaces block, confirm its `fast`, `balanced`, or `frontier` route, and record tier, mode, `parallel_group`, and a concise reason in plan-local progress.
-2. Execute the Task's outcome and boundaries. Testable logic uses the forge test-driven-development skill; prose, styling, and logic-free configuration use the focused direct check. Correct mechanical plan defects in scope and record them; do not invent unapproved contract meaning.
-3. Run the Task's required verification and read the actual output. Reuse observed evidence from the same unchanged code and test state; new changes, failures, or unresolved concerns require affected reruns. Root review and fresh verification of worker changes remain mandatory.
+2. Execute each step exactly as written. Implementation steps REQUIRE the forge test-driven-development skill: failing test first, watch it fail, minimal code to pass. A plan step is not a license to skip the red-green cycle.
+3. Run the task's verification commands NOW and read the actual output. Expected output only counts when you saw it.
 4. Commit as the plan directs.
 5. Check the Task boxes and append one `Progress History` line: `Task N: complete (commits <a>..<b>)`. When `progress.md` exists, append detailed route evidence there and keep the summary in `plan.md`.
-6. If a completed visual document's source changed, report possible staleness without refreshing it. Explicit create or refresh intent permits one `visual-docs` handoff covering the requested document's generation, quality verification, and necessary corrections; an existing View alone grants no refresh authority.
+6. If a visual document exists and its source changed, report possible staleness without assuming freshness. Only explicit create or refresh intent permits one `visual-docs` handoff; resolve its options and stop when the single build succeeds.
 7. Mark the todo complete and record an **internal checkpoint**: verification, checkbox, ledger, and planned local commit are the durable recovery point. Start the next safe Task without waiting for the user.
 8. Send a non-blocking **notify checkpoint** when a Route or Milestone completes, a `frontier` Task completes, or automatic tier escalation occurs. Summarize completed work, fresh evidence, tier and execution mode, and what continues next. Do not wait for a response before starting the next safe Task.
 
 ### Phase 3: Approval boundaries and blockers
 
-Use an **approval checkpoint** only when one of these boundaries is not already covered by the user's concrete authorization. Preserve existing approvals. Persist completed work and the exact resume point, then state the new decision, options, and impact:
+Use an **approval checkpoint** only for one of these boundaries. Persist completed work and the exact resume point in the ledger, then state the decision, options, and impact and wait for the user:
 
 - **Canonical Spec divergence:** a requirement in a Related Canonical Spec is wrong, missing, or cannot work as approved → propose a Spec Delta via the forge writing-specs skill in change mode.
 - **New authority:** a destructive action, external write, purchase, paid resource, or agreed cost-limit increase is required.
@@ -95,8 +95,8 @@ Do not dispatch one fresh subagent mechanically for every Task. Delegate only bo
 | "This plan has no spec, so scope can expand freely" | Plan-only means Canonical Spec impact remains `no`. Durable contract discovery promotes the route before the next mutation. |
 | "I remember finishing that task" | Memory does not survive compaction; plan-local progress and commit history do. Re-executing done work is the single most expensive failure mode. |
 | "I'll update Progress History after a few tasks" | A crash between tasks erases everything unwritten. One line per task, immediately after it completes. |
-| "This logic is too small for the TDD cycle" | Testable behavior needs its focused test; labels and styling use direct checks. |
-| "Any earlier pass proves the changed code" | Evidence must match the current code and test state. Rerun affected checks after changes. |
+| "This step is too small for the TDD cycle" | Implementation steps require the forge test-driven-development skill. Small steps are exactly where untested regressions hide. |
+| "Verification passed earlier, no need to rerun" | The plan's verification runs fresh for THIS task's changes. A remembered pass is not evidence. |
 | "Every Task needs a user checkpoint to stay safe." | Safety comes from the internal checkpoint, root verification, and explicit approval boundaries. Per-Task waiting only breaks execution flow. |
 | "A notify was sent, so I must wait for feedback." | Notify is informational. Continue with the next safe Task unless an approval boundary exists. |
 | "Plan progress changed, so I should refresh the existing Viewer." | The Viewer is stale, but that does not grant update permission. Report it and wait for an explicit user request. |

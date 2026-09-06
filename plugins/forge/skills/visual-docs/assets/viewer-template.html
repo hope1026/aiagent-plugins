@@ -49,7 +49,7 @@
   .doc-header { border-bottom: 1px solid var(--border); background: var(--surface); }
   .doc-header-inner, .review-navigation, main { max-width: 88rem; margin: 0 auto; padding: 0 1.5rem; }
   .doc-header-inner { padding-top: 2rem; padding-bottom: 1.25rem; }
-  .doc-meta { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; color: var(--text-muted); margin: 0.5rem 0 0; }
+  .doc-meta { display: flex; gap: 1rem; align-items: center; color: var(--text-muted); margin: 0.5rem 0 0; }
   .status {
     display: inline-block; padding: 0.1rem 0.6rem; border: 1px solid var(--accent);
     border-radius: 999px; color: var(--accent); background: var(--accent-soft);
@@ -155,20 +155,9 @@
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1px; margin: 0; border: 1px solid var(--border); background: var(--border);
   }
-  .system-overview-lede { max-width: 72ch; font-size: 1rem; line-height: 1.7; }
-  .system-overview-lede > :first-child { margin-top: 0; }
-  .system-overview-lede > :last-child { margin-bottom: 0; }
-  .system-overview-section { min-width: 0; padding-top: 1rem; border-top: 1px solid var(--border); }
-  .system-overview-section > h3 { margin: 0 0 0.5rem; font-size: 1rem; }
-  .system-review-links { list-style: none; padding: 0; margin: 0; }
-  .system-review-links li { padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
-  .system-review-links li:last-child { border-bottom: 0; }
-  .system-review-links a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 650; overflow-wrap: anywhere; }
-  .system-review-links p { margin: 0; font-size: 1rem; }
-  .system-review-links span { display: block; color: var(--text-muted); font-size: 0.85rem; }
-  .system-metric { padding: 0.6rem 0.75rem; background: var(--surface); }
+  .system-metric { padding: 1rem 1.1rem; background: var(--surface); }
   .system-metric dt { color: var(--text-muted); font-size: 0.8rem; font-weight: 700; }
-  .system-metric dd { margin: 0.15rem 0 0; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .system-metric dd { margin: 0.15rem 0 0; font-size: 1.55rem; font-weight: 700; font-variant-numeric: tabular-nums; }
   .system-taxonomy h3 { margin: 0 0 0.45rem; font-size: 1rem; }
   .system-taxonomy ul { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
   .system-taxonomy li { padding: 0.3rem 0.55rem; border: 1px solid var(--border); background: var(--surface); }
@@ -289,16 +278,11 @@
     .project-workspace.is-detail .project-detail-pane { display: block; }
     .project-workspace.is-detail .project-back { display: inline-flex; align-items: center; }
     .project-index-list li { grid-template-columns: 1fr; }
-    .system-metric { padding: 0.5rem; }
+    .system-metrics { grid-template-columns: 1fr; }
     .coverage-map { grid-template-columns: 1fr; }
   }
 
-  .mermaid-render-stage { position: fixed; left: -100000px; top: 0; visibility: hidden; pointer-events: none; }
-  .review-print { flex-shrink: 0; min-height: 44px; padding: 0.35rem 0.75rem; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--accent); font: inherit; cursor: pointer; }
-  .review-print:hover { background: var(--accent-soft); }
-  .review-print:disabled { color: var(--text-muted); cursor: wait; }
   @media print {
-    .review-print { display: none; }
     .review-navigation { display: none; }
     body { background: #fff; color: #000; }
     .review-component::before {
@@ -306,7 +290,6 @@
       margin: 1.5rem 0 0.75rem; border-bottom: 1px solid #000; padding-bottom: 0.25rem;
     }
     table, pre, svg { page-break-inside: avoid; }
-    pre.mermaid:not([data-forge-rendered]), .mermaid-error-source { white-space: pre-wrap; overflow-wrap: anywhere; }
     .table-scroll, .diagram-scroll { overflow: visible; border: 0; }
     .visual-summary-table table { min-width: 0; }
     .diagram-scroll.is-wide svg { min-width: 0; max-width: 100%; }
@@ -342,49 +325,20 @@
     mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'neutral' });
   }
 
-  var diagramQueue = Promise.resolve();
-  var renderRevision = 0;
-  var diagramIndex = 0;
-  var printPreparation = null;
-
-  function diagramVisible(el) {
-    return el.getClientRects().length > 0;
-  }
-
-  async function renderDiagrams(panel, includeHidden) {
+  async function renderDiagrams(panel) {
     if (!window.mermaid) { return; }
     var blocks = panel.querySelectorAll('pre.mermaid:not([data-forge-rendered])');
     for (var i = 0; i < blocks.length; i++) {
       var el = blocks[i];
-      if (!el.isConnected || el.hasAttribute('data-forge-rendered') || (!includeHidden && !diagramVisible(el))) { continue; }
+      el.setAttribute('data-forge-rendered', '1');
       var src = el.textContent;
-      var wrapper = ensureDiagramWrapper(el, src, diagramIndex++);
-      var stage = document.createElement('div');
-      stage.className = 'mermaid-render-stage';
-      stage.setAttribute('aria-hidden', 'true');
-      stage.setAttribute('inert', '');
-      stage.style.width = Math.max(280, wrapper.clientWidth || document.querySelector('main').clientWidth) + 'px';
-      var copy = document.createElement('pre');
-      copy.className = 'mermaid';
-      copy.textContent = src;
-      stage.appendChild(copy);
-      document.body.appendChild(stage);
+      var wrapper = ensureDiagramWrapper(el, src, i);
+      var valid = false;
       var parseError = null;
-      try {
-        // A measurable staging area survives navigation hiding the source panel mid-render.
-        // Keep the original source intact until rendering succeeds, including native print.
-        await mermaid.parse(src);
-        await mermaid.run({ nodes: [copy] });
-        if (!copy.querySelector('svg')) { throw new Error('Diagram did not produce an SVG'); }
-        el.replaceChildren.apply(el, Array.from(copy.childNodes));
-        el.setAttribute('data-processed', 'true');
-        el.setAttribute('data-forge-rendered', '1');
-      } catch (error) {
-        parseError = error;
-      } finally {
-        stage.remove();
+      try { valid = await mermaid.parse(src); } catch (e) { parseError = e; }
+      if (valid) {
+        try { await mermaid.run({ nodes: [el] }); continue; } catch (e2) { parseError = e2; }
       }
-      if (!parseError) { continue; }
       var fallback = document.createElement('div');
       fallback.className = 'diagram-error';
       var message = document.createElement('p');
@@ -397,54 +351,6 @@
       fallback.appendChild(source);
       wrapper.replaceWith(fallback);
     }
-  }
-
-  function renderVisibleDiagrams() {
-    var revision = ++renderRevision;
-    document.documentElement.setAttribute('data-visual-docs-ready', 'false');
-    diagramQueue = diagramQueue.then(function () { return renderDiagrams(document, false); });
-    diagramQueue.then(function () {
-      if (revision === renderRevision) {
-        document.documentElement.setAttribute('data-visual-docs-ready', 'true');
-      }
-    });
-    return diagramQueue;
-  }
-
-  function preparePrint() {
-    if (printPreparation) { return printPreparation; }
-    document.documentElement.setAttribute('data-visual-docs-print-ready', 'false');
-    diagramQueue = diagramQueue.then(function () { return renderDiagrams(document, true); });
-    printPreparation = diagramQueue.then(function () {
-      document.documentElement.setAttribute('data-visual-docs-print-ready', 'true');
-    });
-    return printPreparation;
-  }
-
-  function initPrint() {
-    var button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'review-print';
-    button.textContent = document.documentElement.lang === 'ko' ? '인쇄' : 'Print';
-    button.addEventListener('click', async function () {
-      button.disabled = true;
-      button.setAttribute('aria-busy', 'true');
-      try {
-        await preparePrint();
-        window.print();
-      } finally {
-        button.disabled = false;
-        button.removeAttribute('aria-busy');
-      }
-    });
-    document.querySelector('.doc-meta').appendChild(button);
-    // Native beforeprint cannot await promises. Unfinished diagrams retain their source;
-    // the Print button above provides an explicitly awaited, fully rendered path.
-    window.addEventListener('beforeprint', preparePrint);
-    window.matchMedia('print').addEventListener('change', function (event) {
-      if (event.matches) { preparePrint(); }
-      else { renderVisibleDiagrams(); }
-    });
   }
 
   function errorDetails(error) {
@@ -564,7 +470,6 @@
       if (options.showDetail) {
         workspace.classList.add('is-detail');
       }
-      renderVisibleDiagrams();
       if (options.focusDetail) {
         var heading = detail.querySelector('h2');
         if (heading) {
@@ -659,7 +564,6 @@
     if (back) {
       back.addEventListener('click', function () {
         workspace.classList.remove('is-detail');
-        renderVisibleDiagrams();
         history.pushState(null, '', location.pathname + location.search);
         var selected = itemForRoute(selectedRoute);
         if (selected) { selected.focus(); }
@@ -696,12 +600,8 @@
 
   initProjectWorkspace();
   wrapTables(document);
-  initPrint();
-  renderVisibleDiagrams();
-  document.addEventListener('toggle', function (event) {
-    if (event.target.matches('details[open]')) { renderVisibleDiagrams(); }
-  }, true);
-  window.matchMedia('(max-width: 43.75rem)').addEventListener('change', renderVisibleDiagrams);
+  renderDiagrams(document);
+  document.documentElement.setAttribute('data-visual-docs-ready', 'true');
 })();
 </script>
 </body>

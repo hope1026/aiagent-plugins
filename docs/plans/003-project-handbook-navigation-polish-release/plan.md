@@ -31,7 +31,7 @@ Status: complete
 |---|---|---:|
 | [Project Handbook의 좌측 탐색은 Spec bundle·member·section과 Structure entry를 의미 기반 계층 node로 표시하고 검색, 현재 선택 상태, deep link와 표준 tree keyboard interaction을 지원해야 한다.](../../specs/review-viewer-lifecycle/project-handbook-and-structure.md#project-handbook의-좌측-탐색은-spec-bundlemembersection과-structure-entry를-의미-기반-계층-node로-표시하고-검색-현재-선택-상태-deep-link와-표준-tree-keyboard-interaction을-지원해야-한다) | Requirement | 1 |
 | [Project Handbook은 desktop working width에서 좌측 탐색과 우측 상세를 side-by-side로 유지하고 narrow viewport에서는 탐색과 상세을 한 화면씩 표시하며 상세에서 탐색으로 돌아가는 명시적 action을 제공해야 한다.](../../specs/review-viewer-lifecycle/project-handbook-and-structure.md#project-handbook은-desktop-working-width에서-좌측-탐색과-우측-상세를-side-by-side로-유지하고-narrow-viewport에서는-탐색과-상세을-한-화면씩-표시하며-상세에서-탐색으로-돌아가는-명시적-action을-제공해야-한다) | Requirement | 1 |
-| [공통 provenance와 reading-route 구현을 검증하면 desktop 1440px와 mobile 390px의 탐색, 표, diagram, deep link와 checkbox가 동작하며 개별 View는 해당 자료의 읽기·표시를 확인하고 변경되지 않은 공통 회귀를 반복하지 않는다.](../../specs/review-viewer-lifecycle/human-readable-review-viewer.md#공통-provenance와-reading-route-구현을-검증하면-desktop-1440px와-mobile-390px의-탐색-표-diagram-deep-link와-checkbox가-동작하며-개별-view는-해당-자료의-읽기표시를-확인하고-변경되지-않은-공통-회귀를-반복하지-않는다) | Acceptance | 1, 2 |
+| [공통 provenance와 reading-route 구현을 검증하면 desktop 1440px와 mobile 390px의 tab, 표, diagram, deep link와 checkbox가 동작하고 이후 개별 `view.html` 생성에는 post-build checker나 browser 검증이 추가되지 않는다.](../../specs/review-viewer-lifecycle/human-readable-review-viewer.md#공통-provenance와-reading-route-구현을-검증하면-desktop-1440px와-mobile-390px의-tab-표-diagram-deep-link와-checkbox가-동작하고-이후-개별-viewhtml-생성에는-post-build-checker나-browser-검증이-추가되지-않는다) | Acceptance | 1, 2 |
 | [fixed timestamp를 사용한 동일 source·View Context·Presentation Plan 재build diff는 0이고, shell·component·profile·planner 변경은 desktop 1440px와 mobile 390px의 profile별 typical·empty·long·invalid diagram, keyboard, disclosure, overflow와 stable shell geometry 검증을 통과한다.](../../specs/review-viewer-lifecycle/human-readable-review-viewer.md#fixed-timestamp를-사용한-동일-sourceview-contextpresentation-plan-재build-diff는-0이고-shellcomponentprofileplanner-변경은-desktop-1440px와-mobile-390px의-profile별-typicalemptylonginvalid-diagram-keyboard-disclosure-overflow와-stable-shell-geometry-검증을-통과한다) | Acceptance | 1, 2 |
 
 ## 실행 Route
@@ -75,7 +75,7 @@ flowchart LR
 ### Task 2: Forge `0.1.14`를 release한다
 
 **Governing statements:**
-- [공통 provenance와 reading-route 구현을 검증하면 desktop 1440px와 mobile 390px의 탐색, 표, diagram, deep link와 checkbox가 동작하며 개별 View는 해당 자료의 읽기·표시를 확인하고 변경되지 않은 공통 회귀를 반복하지 않는다.](../../specs/review-viewer-lifecycle/human-readable-review-viewer.md#공통-provenance와-reading-route-구현을-검증하면-desktop-1440px와-mobile-390px의-탐색-표-diagram-deep-link와-checkbox가-동작하며-개별-view는-해당-자료의-읽기표시를-확인하고-변경되지-않은-공통-회귀를-반복하지-않는다)
+- [공통 provenance와 reading-route 구현을 검증하면 desktop 1440px와 mobile 390px의 tab, 표, diagram, deep link와 checkbox가 동작하고 이후 개별 `view.html` 생성에는 post-build checker나 browser 검증이 추가되지 않는다.](../../specs/review-viewer-lifecycle/human-readable-review-viewer.md#공통-provenance와-reading-route-구현을-검증하면-desktop-1440px와-mobile-390px의-tab-표-diagram-deep-link와-checkbox가-동작하고-이후-개별-viewhtml-생성에는-post-build-checker나-browser-검증이-추가되지-않는다)
 
 **파일:** 수정 `plugins/forge/.claude-plugin/plugin.json`, `plugins/forge/.codex-plugin/plugin.json`; plan progress.
 

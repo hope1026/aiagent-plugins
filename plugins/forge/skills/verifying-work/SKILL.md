@@ -5,7 +5,7 @@ description: 'Use when about to claim work complete, fixed, passing, or done; be
 
 # Verifying Work
 
-Announce once when first applied: "Using the forge verifying-work skill: matching fresh evidence to this work class before any completion claim."
+Announce at start: "Using the forge verifying-work skill: matching fresh evidence to this work class before any completion claim."
 
 Respond in the user's language. The discipline below applies in every language.
 
@@ -28,7 +28,7 @@ NO CANONICAL SPEC STATUS CHANGE WITHOUT THE REQUIRED CANONICAL VERIFICATION EVID
 - committing, reporting progress, accepting worker results, or moving to the next Execution Plan Task;
 - setting Canonical Spec lifecycle `status: implemented`.
 
-**NOT needed for:** neutral in-progress narration that claims nothing, answering questions that assert nothing about work state, or a visual-document request whose evidence is handled by the forge visual-docs skill below.
+**NOT needed for:** neutral in-progress narration that claims nothing, answering questions that assert nothing about work state, or one fixed Visual Docs build handled by the exception below.
 
 ## Work-class Matrix
 
@@ -44,7 +44,7 @@ Keep an applied Spec Delta through verification so its baseline lifecycle and af
 
 ## The Process
 
-Reuse the existing work checklist. Add one item per required Canonical verification statement when needed; a focused Quick claim can use its command and observation directly without a separate five-stage checklist.
+Create one checklist item per applicable numbered stage below, plus one item per required statement in the Canonical verification set. Do not collapse several statements into one memory-only judgment.
 
 ### 1. Identify the claim and work class
 
@@ -57,8 +57,8 @@ Plan existence does not determine the class. A plan-only route can have no Canon
 ### 2. Run command-level verification now
 
 1. Choose the command or concrete observation that proves the exact claim.
-2. Run it and read the full output and exit code, or use already observed evidence tied to the same unchanged implementation, tests, inputs, and environment.
-3. Count failures yourself. Remembered or worker-reported success without inspected output is not evidence. Root must review the worker diff and run fresh affected verification; an unchanged root-verified result need not be run again at handoff.
+2. Run it now and read the full output and exit code.
+3. Count failures yourself. Cached, remembered, and worker-reported results count as no evidence.
 4. Compare actual output with the claim. Report disagreement directly.
 
 | Claim | Required evidence | Not sufficient |
@@ -110,11 +110,9 @@ Claim: Refresh retries no longer duplicate writes.
 | Given one expired session, refresh returns one usable session | `session-verification.md` | PASS | `pytest tests/test_refresh.py -q` → 7 passed, exit 0 |
 ```
 
-## Requested Visual Docs
+## Fixed Visual Docs Exception
 
-The forge visual-docs skill owns generation and proportional rendered verification for an explicitly requested document. Build success proves file generation; inspect the actual reading path and content before claiming visual quality. Complex sources, new compositions, or diagrams need desktop and narrow-view checks of the relevant navigation, meaning, and readability. Do not rerun the whole tooling suite for every document. A tracked Project Handbook also needs its freshness check and repository validation.
-
-Within the active request, fix source or shared tooling and rebuild as needed; preserve generated-output reproducibility. Report unavailable checks accurately. Tooling changes use normal regression evidence. Neither generation nor visual review alone marks the governing product contract implemented.
+After explicit user intent, one successful build of a local `.forge/visual-docs/<view-id>/view.html` or tracked `docs/project-viewer/index.html` from unchanged visual-docs tooling proves generation only. Do not add a second checker, browser, screenshot, layout, interaction, Mermaid, or freshness run. Visual Docs tooling changes use normal command and Canonical evidence.
 
 ## Working Files
 

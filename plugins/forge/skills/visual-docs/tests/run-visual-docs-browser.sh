@@ -80,7 +80,6 @@ acceptance.write_text(
     encoding="utf-8",
 )
 PY
-cat "$TEST_DIR/browser/branching-review.md" >> "$REPOSITORY_ROOT/docs/specs/system-view-contract/supporting-visual-map.md"
 
 (
   cd "$WRITING_SPECS/assets"
@@ -145,7 +144,7 @@ fi
   FORGE_VISUAL_DOCS_REPOSITORY="$REPOSITORY_ROOT" \
   FORGE_VISUAL_DOCS_MERMAID="$DEPENDENCY_ROOT/vendored-mermaid.min.js" \
   PLAYWRIGHT_BROWSERS_PATH="$BROWSER_ROOT" \
-    npm exec -- playwright test visual-docs.spec.mjs --workers=1 --reporter=line "$@"
+    npm exec -- playwright test visual-docs.spec.mjs --workers=1 --reporter=line
 )
 
 test ! -e "$SKILL_DIR/node_modules"

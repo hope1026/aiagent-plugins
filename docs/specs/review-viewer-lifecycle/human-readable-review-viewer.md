@@ -22,7 +22,7 @@ relatedSpecs: [{"path":"docs/specs/semantic-spec-bundles/","relation":"relatedTo
 
 ## Overview
 
-Visual Docs는 작업 요약, 실행 계획, 설계 기준과 프로젝트 구조를 읽기 쉬운 문서로 보여준다. 목적과 책임, 작업 의존성과 완료 기준을 단계적으로 확인하고 원문 Markdown까지 찾아갈 수 있다. 사용자가 요청할 때만 생성하는 읽기 전용 HTML이며, 원문의 의미를 유지한다.
+Forge 문서와 프로젝트 구조가 커질수록 원본 Markdown과 파일 탐색기만으로 목적, 책임 경계, Task 의존성, Requirement·Acceptance coverage를 파악하기 어렵다. Visual Docs는 source ownership을 보존하면서, 사용자가 명시적으로 요청한 시점에 사람이 내용을 단계적으로 이해할 수 있는 읽기 전용 HTML 문서를 `brief`, `plan`, `spec`, `project` kind로 제공한다.
 
 Visual Docs의 목적은 텍스트를 그림으로 치환하는 것이 아니다. Selected Markdown을 Semantic IR로 보존하고 문서 종류, subtype, 사용자의 검토 목적과 독자에 맞는 Presentation Plan을 선택해 사람이 현재 질문의 답을 빠르게 찾도록 하는 것이다. 일관성은 모든 문서에 동일한 panel 구조를 적용하는 대신 공통 visual system, component grammar, provenance와 interaction contract에서 제공한다.
 
@@ -31,7 +31,7 @@ Visual Docs의 목적은 텍스트를 그림으로 치환하는 것이 아니다
 - Visual Docs 안에서 source에 없는 런타임 의미, 요구사항, 의존성 또는 설계 결정을 새로 만들지 않는다.
 - Notion, Google Docs, 별도 문서 사이트를 필수 운영 요소로 추가하지 않는다.
 - Visual Docs 검토 결과만으로 제품 구현 완료나 governing spec의 lifecycle status `implemented`를 선언하지 않는다.
-- 개별 자료 검증을 이유로 변경되지 않은 공통 tooling의 전체 회귀를 반복하지 않는다.
+- 생성된 개별 Visual Docs를 구현 산출물처럼 별도 렌더링·레이아웃 검증하지 않는다.
 - 사용자의 명시적 요청 없이 Brief·Plan·Spec·Project Handbook의 Visual Docs를 생성하거나 갱신하지 않는다.
 - source 사이의 대응을 추론하거나 임의 문서를 하나의 `combined` kind로 병합하지 않는다.
 - spec·plan의 일반적인 작성·변경·승인·handoff에서 HTML을 자동 생성하지 않는다. Markdown-only lifecycle 경계는 `docs/specs/semantic-spec-bundles/`가 소유한다.
@@ -51,8 +51,7 @@ flowchart TD
     F -- 아니오 --> E
     G --> GP[Presentation Plan 선택·검증]
     GP --> GR[공통 component grammar로 HTML 생성]
-    GR --> QA[읽기·표시 검증과 필요한 수정]
-    QA --> H[검증한 Visual Docs 제공]
+    GR --> H[Visual Docs와 함께 승인 또는 handoff 요청]
     E --> I[다음 lifecycle 단계]
     H --> I
     I --> J[Task 실행과 checkpoint]
@@ -237,7 +236,7 @@ Visual Docs shell의 inherited visual system:
 |---|---|---|
 | Class | Utilitarian, inherited | 장식보다 빠른 문서 탐색이 우선이다. |
 | Type | 현재 16px base와 1.25 scale inherited | 긴 문서와 표를 읽는 기준을 유지한다. |
-| Palette | 현재 neutral·blue accent inherited | 상태와 deep link를 절제된 한 색으로 강조한다. |
+| Palette | 현재 neutral·green accent inherited | 상태와 deep link를 절제된 한 색으로 강조한다. |
 | Spacing | 현재 shell spacing inherited | fragment가 임의 밀도를 만들지 않게 한다. |
 | Depth | border 전략 inherited | 표, code, panel 경계를 그림자 없이 구분한다. |
 | Signature | Route Map, Runtime Atlas, AC Coverage | Viewer 고유성은 장식이 아니라 source 관계를 읽는 구조에서 나온다. |
@@ -254,7 +253,7 @@ Visual Docs shell의 inherited visual system:
 | `executing-plans` | plan 디렉터리의 상태·진행 기록과 요청이 있을 때만 plan kind Visual Docs 갱신 |
 | `web-app-design` | 개별 View 생성 제외와 Viewer tooling 변경 시 browser app UI 검증 |
 | `writing-tone` | 질문형 제목, 읽는 법, 요약 우선, locale copy |
-| `verifying-work` | 자료별 읽기 검증, Viewer tooling 회귀, 제품 `implemented` 오인 금지 |
+| `verifying-work` | 개별 View 생성 제외, Viewer tooling 검증, `implemented` 금지 |
 | `using-forge`, portability rules, README | `docs/specs`, `docs/plans`, `.forge/visual-docs` Git 비추적 계약 동기화 |
 
 ## Requirements
@@ -263,7 +262,7 @@ Visual Docs shell의 inherited visual system:
 
 ### Visual Docs는 읽기 전용 파생 문서여야 하며, Visual Docs에서 Brief·Plan·Canonical Spec·Project Map·repository evidence source를 직접 수정하지 않아야 한다.
 
-### 완료된 Visual Docs의 source가 변경되었다는 사실만으로는 갱신하지 않아야 한다. 사용자가 요청한 시각 문서를 완성하는 동안에는 같은 요청 범위의 source·공통 tooling 수정, 검증과 필요한 재생성이 허용되며, 요청 완료 뒤 별도 갱신에는 새로운 명시적 의도가 필요해야 한다.
+### Visual Docs가 생성된 이후 source가 변경되더라도 Forge는 사용자가 명시적으로 갱신을 요청한 경우에만 같은 View 또는 Project Handbook을 다시 생성해야 한다.
 
 ### Brief, Plan과 Spec의 독립 View는 `.forge/visual-docs/<view-id>/view.html`에 저장하고 Git 비추적 상태로 유지해야 한다.
 
@@ -287,17 +286,17 @@ Visual Docs shell의 inherited visual system:
 
 ### Visual Docs는 임의 source를 합치는 `combined` kind를 지원하지 않고, project kind에서는 Project Map이 명시적으로 선언한 project source와 Spec Bundle만 읽어야 한다.
 
-### 요청한 Brief, Plan 또는 Spec View의 완료는 deterministic build 성공과 변경 규모에 맞는 실제 읽기·표시 검증으로 판단해야 한다. 생성 성공만으로 시각 품질이나 governing product 구현 완료를 주장하지 않아야 한다.
+### 고정 Visual Docs tooling으로 개별 Brief, Plan 또는 Spec `view.html`을 생성하는 작업은 `verifying-work`를 적용하지 않고, deterministic build command 성공을 생성 완료의 충분한 근거로 사용해야 한다.
 
-### 개별 Visual Docs의 검증은 요청한 결과를 직접 증명하는 최소 범위로 선택해야 한다. 동일한 변경 상태에서 이미 통과한 검증은 재사용할 수 있고, 새 변경·실패·미해결 위험이 있을 때만 필요한 증거를 다시 수집해야 한다.
+### 생성된 개별 Visual Docs에는 별도 `--check`, source count·hash·Mermaid 일치 확인, unresolved placeholder·shell markup 검사 같은 post-build 검증을 수행하지 않아야 한다.
 
-### 개별 Visual Docs는 실제 화면의 읽기 순서와 핵심 내용을 확인해야 하며, 복잡한 자료·새 구성·도표가 있으면 desktop과 narrow viewport에서 도표 의미, 탐색과 가독성을 확인해야 한다. 검증 실패는 같은 요청 안에서 원본 또는 공통 tooling을 수정하고 재생성해 해결하되 생성 HTML을 직접 편집하지 않아야 한다.
+### 생성된 개별 Visual Docs에는 desktop·390px mobile render, screenshot, layout, print, tab, deep link, checkbox persistence, Mermaid, offline, freshness 상태의 브라우저 검증을 수행하지 않아야 한다.
 
 ### Tracked Project Handbook을 생성하거나 갱신할 때는 deterministic build, freshness `--check`와 repository validation을 수행해야 한다.
 
 ### Visual Docs 생성 결과만으로 governing product spec의 lifecycle status를 `implemented`로 변경하지 않아야 하며, Visual Docs parser·builder·template·style·script·runtime 동작 변경은 일반 구현 검증과 관련 Acceptance Criterion 검증을 따라야 한다.
 
-### `writing-specs`와 `writing-plans`는 Markdown source 검토 후 시각 자료가 판단에 도움이 될 때 그 효용을 간단히 안내할 수 있어야 한다. 시각 자료가 필요하지 않거나 이미 요청된 경우 추가 생성 여부 질문을 하지 않아야 한다.
+### `writing-specs`와 `writing-plans`는 각각 Markdown source 작성과 자체 검토가 끝난 뒤 승인 또는 다음 lifecycle handoff를 요청할 때, Visual Docs가 검토에 도움이 되는 경우 사용자에게 생성 여부를 물어야 한다.
 
 ### 저장된 Visual Docs의 source가 변경되면 Forge는 그 Visual Docs가 stale임을 사용자에게 알릴 수 있지만, 명시적 요청 전에는 stale Visual Docs를 갱신하거나 현재 검토 화면으로 제시하지 않아야 한다.
 
@@ -334,7 +333,7 @@ Visual Docs shell의 inherited visual system:
 - [Forge는 `docs/specs/<semantic-bundle-name>/`의 root와 선언된 모든 Markdown member를 하나의 Canonical Spec source of truth로 유지해야 한다.](human-readable-review-viewer.md#forge는-docsspecssemantic-bundle-name의-root와-선언된-모든-markdown-member를-하나의-canonical-spec-source-of-truth로-유지해야-한다)
 - [Forge는 `docs/plans/PPP-<slug>/plan.md`를 작업 단위의 목표, Route, Task, 파일, Interface, 검증 절차의 source of truth로 유지해야 하며 plan 번호는 spec 번호와 독립적으로 부여해야 한다.](plan-context-and-statement-traceability.md#forge는-docsplansppp-slugplanmd를-작업-단위의-목표-route-task-파일-interface-검증-절차의-source-of-truth로-유지해야-하며-plan-번호는-spec-번호와-독립적으로-부여해야-한다)
 - [Visual Docs는 읽기 전용 파생 문서여야 하며, Visual Docs에서 Brief·Plan·Canonical Spec·Project Map·repository evidence source를 직접 수정하지 않아야 한다.](human-readable-review-viewer.md#visual-docs는-읽기-전용-파생-문서여야-하며-visual-docs에서-briefplancanonical-specproject-maprepository-evidence-source를-직접-수정하지-않아야-한다)
-- [완료된 Visual Docs의 source가 변경되었다는 사실만으로는 갱신하지 않아야 한다. 사용자가 요청한 시각 문서를 완성하는 동안에는 같은 요청 범위의 source·공통 tooling 수정, 검증과 필요한 재생성이 허용되며, 요청 완료 뒤 별도 갱신에는 새로운 명시적 의도가 필요해야 한다.](human-readable-review-viewer.md#완료된-visual-docs의-source가-변경되었다는-사실만으로는-갱신하지-않아야-한다-사용자가-요청한-시각-문서를-완성하는-동안에는-같은-요청-범위의-source공통-tooling-수정-검증과-필요한-재생성이-허용되며-요청-완료-뒤-별도-갱신에는-새로운-명시적-의도가-필요해야-한다)
+- [Visual Docs가 생성된 이후 source가 변경되더라도 Forge는 사용자가 명시적으로 갱신을 요청한 경우에만 같은 View 또는 Project Handbook을 다시 생성해야 한다.](human-readable-review-viewer.md#visual-docs가-생성된-이후-source가-변경되더라도-forge는-사용자가-명시적으로-갱신을-요청한-경우에만-같은-view-또는-project-handbook을-다시-생성해야-한다)
 - [Visual Docs는 manifest에 `kind`, `view_id`, output lifecycle `local|tracked`, source별 role·path·SHA-256, 생성 시각, locale, 집계 수치와 project kind의 Project Map path·declared Spec Bundle·repository evidence source를 기록하고 열람 시점 hash와 비교해 `current`, `stale`, `unverified` freshness를 표시해야 한다. 화면의 주 label은 H1, path와 full statement이고 hash나 내부 key를 identity label로 사용하지 않아야 한다.](source-selection-and-freshness.md#visual-docs는-manifest에-kind-view_id-output-lifecycle-localtracked-source별-rolepathsha-256-생성-시각-locale-집계-수치와-project-kind의-project-map-pathdeclared-spec-bundlerepository-evidence-source를-기록하고-열람-시점-hash와-비교해-current-stale-unverified-freshness를-표시해야-한다-화면의-주-label은-h1-path와-full-statement이고-hash나-내부-key를-identity-label로-사용하지-않아야-한다)
 - [Brief, Plan과 Spec의 독립 View는 `.forge/visual-docs/<view-id>/view.html`에 저장하고 Git 비추적 상태로 유지해야 한다.](human-readable-review-viewer.md#brief-plan과-spec의-독립-view는-forgevisual-docsview-idviewhtml에-저장하고-git-비추적-상태로-유지해야-한다)
 - [`writing-specs`는 new·change·clarify·sync 과정에서 사용자의 명시적 요청이 없는 한 spec kind Visual Docs를 생성하거나 갱신하지 않아야 한다.](human-readable-review-viewer.md#writing-specs는-newchangeclarifysync-과정에서-사용자의-명시적-요청이-없는-한-spec-kind-visual-docs를-생성하거나-갱신하지-않아야-한다)
@@ -342,20 +341,20 @@ Visual Docs shell의 inherited visual system:
 - [`executing-plans`는 Visual Docs가 이미 존재하더라도 사용자의 명시적 요청이 없는 한 Task checkpoint 후 plan kind Visual Docs나 Project Handbook을 갱신하지 않아야 한다.](human-readable-review-viewer.md#executing-plans는-visual-docs가-이미-존재하더라도-사용자의-명시적-요청이-없는-한-task-checkpoint-후-plan-kind-visual-docs나-project-handbook을-갱신하지-않아야-한다)
 - [저장된 Visual Docs의 source가 변경되면 Forge는 그 Visual Docs가 stale임을 사용자에게 알릴 수 있지만, 명시적 요청 전에는 stale Visual Docs를 갱신하거나 현재 검토 화면으로 제시하지 않아야 한다.](human-readable-review-viewer.md#저장된-visual-docs의-source가-변경되면-forge는-그-visual-docs가-stale임을-사용자에게-알릴-수-있지만-명시적-요청-전에는-stale-visual-docs를-갱신하거나-현재-검토-화면으로-제시하지-않아야-한다)
 
-### 시각 문서 요청 fixture에서 agent는 build 후 읽기·표시를 확인하고 필요한 경우 같은 요청 안에서 원본·공통 tooling 수정과 재생성을 수행하며 별도 재승인을 요구하지 않는다. 완료 후 source만 변경된 fixture는 자동 갱신하지 않고, 어느 경우에도 View 생성만으로 governing product lifecycle을 변경하지 않는다.
+### 고정 Visual Docs tooling으로 개별 View를 build하면 성공한 build에서 작업을 종료하고 별도 checker나 브라우저 검증을 실행하지 않으며 governing spec의 lifecycle status를 변경하지 않는다. Visual Docs tooling 자체를 변경하면 이 예외 없이 일반 구현 검증을 수행한다.
 
 검증하는 요구사항:
 
-- [요청한 Brief, Plan 또는 Spec View의 완료는 deterministic build 성공과 변경 규모에 맞는 실제 읽기·표시 검증으로 판단해야 한다. 생성 성공만으로 시각 품질이나 governing product 구현 완료를 주장하지 않아야 한다.](human-readable-review-viewer.md#요청한-brief-plan-또는-spec-view의-완료는-deterministic-build-성공과-변경-규모에-맞는-실제-읽기표시-검증으로-판단해야-한다-생성-성공만으로-시각-품질이나-governing-product-구현-완료를-주장하지-않아야-한다)
-- [개별 Visual Docs의 검증은 요청한 결과를 직접 증명하는 최소 범위로 선택해야 한다. 동일한 변경 상태에서 이미 통과한 검증은 재사용할 수 있고, 새 변경·실패·미해결 위험이 있을 때만 필요한 증거를 다시 수집해야 한다.](human-readable-review-viewer.md#개별-visual-docs의-검증은-요청한-결과를-직접-증명하는-최소-범위로-선택해야-한다-동일한-변경-상태에서-이미-통과한-검증은-재사용할-수-있고-새-변경실패미해결-위험이-있을-때만-필요한-증거를-다시-수집해야-한다)
-- [개별 Visual Docs는 실제 화면의 읽기 순서와 핵심 내용을 확인해야 하며, 복잡한 자료·새 구성·도표가 있으면 desktop과 narrow viewport에서 도표 의미, 탐색과 가독성을 확인해야 한다. 검증 실패는 같은 요청 안에서 원본 또는 공통 tooling을 수정하고 재생성해 해결하되 생성 HTML을 직접 편집하지 않아야 한다.](human-readable-review-viewer.md#개별-visual-docs는-실제-화면의-읽기-순서와-핵심-내용을-확인해야-하며-복잡한-자료새-구성도표가-있으면-desktop과-narrow-viewport에서-도표-의미-탐색과-가독성을-확인해야-한다-검증-실패는-같은-요청-안에서-원본-또는-공통-tooling을-수정하고-재생성해-해결하되-생성-html을-직접-편집하지-않아야-한다)
+- [고정 Visual Docs tooling으로 개별 Brief, Plan 또는 Spec `view.html`을 생성하는 작업은 `verifying-work`를 적용하지 않고, deterministic build command 성공을 생성 완료의 충분한 근거로 사용해야 한다.](human-readable-review-viewer.md#고정-visual-docs-tooling으로-개별-brief-plan-또는-spec-viewhtml을-생성하는-작업은-verifying-work를-적용하지-않고-deterministic-build-command-성공을-생성-완료의-충분한-근거로-사용해야-한다)
+- [생성된 개별 Visual Docs에는 별도 `--check`, source count·hash·Mermaid 일치 확인, unresolved placeholder·shell markup 검사 같은 post-build 검증을 수행하지 않아야 한다.](human-readable-review-viewer.md#생성된-개별-visual-docs에는-별도-check-source-counthashmermaid-일치-확인-unresolved-placeholdershell-markup-검사-같은-post-build-검증을-수행하지-않아야-한다)
+- [생성된 개별 Visual Docs에는 desktop·390px mobile render, screenshot, layout, print, tab, deep link, checkbox persistence, Mermaid, offline, freshness 상태의 브라우저 검증을 수행하지 않아야 한다.](human-readable-review-viewer.md#생성된-개별-visual-docs에는-desktop390px-mobile-render-screenshot-layout-print-tab-deep-link-checkbox-persistence-mermaid-offline-freshness-상태의-브라우저-검증을-수행하지-않아야-한다)
 - [Visual Docs 생성 결과만으로 governing product spec의 lifecycle status를 `implemented`로 변경하지 않아야 하며, Visual Docs parser·builder·template·style·script·runtime 동작 변경은 일반 구현 검증과 관련 Acceptance Criterion 검증을 따라야 한다.](human-readable-review-viewer.md#visual-docs-생성-결과만으로-governing-product-spec의-lifecycle-status를-implemented로-변경하지-않아야-하며-visual-docs-parserbuildertemplatestylescriptruntime-동작-변경은-일반-구현-검증과-관련-acceptance-criterion-검증을-따라야-한다)
 
-### spec 또는 plan의 Markdown source 검토가 끝나면 시각 자료가 유용한 경우 그 효용을 안내할 수 있고, 사용자가 요청하지 않은 fixture에는 HTML이 생성되지 않으며 이미 시각화를 요청한 fixture에는 같은 의도를 다시 묻지 않는다.
+### spec 또는 plan의 Markdown source 작성과 자체 검토가 끝나면 Visual Docs가 유용한 경우 승인 또는 handoff 메시지에서 생성 여부를 묻고, 사용자의 명시적 응답 전에는 Visual Docs HTML이 생성되지 않는다.
 
 검증하는 요구사항:
 
-- [`writing-specs`와 `writing-plans`는 Markdown source 검토 후 시각 자료가 판단에 도움이 될 때 그 효용을 간단히 안내할 수 있어야 한다. 시각 자료가 필요하지 않거나 이미 요청된 경우 추가 생성 여부 질문을 하지 않아야 한다.](human-readable-review-viewer.md#writing-specs와-writing-plans는-markdown-source-검토-후-시각-자료가-판단에-도움이-될-때-그-효용을-간단히-안내할-수-있어야-한다-시각-자료가-필요하지-않거나-이미-요청된-경우-추가-생성-여부-질문을-하지-않아야-한다)
+- [`writing-specs`와 `writing-plans`는 각각 Markdown source 작성과 자체 검토가 끝난 뒤 승인 또는 다음 lifecycle handoff를 요청할 때, Visual Docs가 검토에 도움이 되는 경우 사용자에게 생성 여부를 물어야 한다.](human-readable-review-viewer.md#writing-specs와-writing-plans는-각각-markdown-source-작성과-자체-검토가-끝난-뒤-승인-또는-다음-lifecycle-handoff를-요청할-때-visual-docs가-검토에-도움이-되는-경우-사용자에게-생성-여부를-물어야-한다)
 
 ### 새 spec과 새 plan은 각각 독립된 docs 경로를 유지하고, 명시적 생성 요청을 받은 Visual Docs만 `.forge/visual-docs/<view-id>/view.html`에 생성되며 Git 추적 파일 목록에는 source 옆 `view.html`이나 Visual Docs가 나타나지 않는다.
 

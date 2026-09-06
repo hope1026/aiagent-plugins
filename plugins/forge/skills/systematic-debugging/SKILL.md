@@ -5,7 +5,7 @@ description: 'Use when encountering any bug, test failure, error, or unexpected 
 
 # Systematic Debugging
 
-**Announce once when first applied:** "Using the forge systematic-debugging skill to find the root cause before fixing."
+**Announce at start:** "Using the forge systematic-debugging skill to find the root cause before fixing."
 
 Respond to the user in the user's language. This skill file stays in English.
 
@@ -44,7 +44,7 @@ If you cannot state the root cause in one sentence AND show a reproduction that 
 
 ## The Process
 
-Reuse the work checklist and keep reproduction, isolation, root cause, and verification evidence. For a bounded defect, the same focused observation can satisfy several phases; do not expand one-line findings into separate forms. Complex investigations need explicit recovery notes.
+Before starting, create one todo per phase below and complete them strictly in order. A phase is done only when its exit criterion is met — never skip ahead to the fix.
 
 ### Phase 1: Reproduce
 
@@ -91,10 +91,10 @@ Goal: the cause is fixed, proven, and guarded against regression.
 3. Fix the cause, not the symptom. If the wrong value originates three calls up, fix it there — do not pad the crash site with guards.
 4. Write the regression test first, using the forge test-driven-development skill: the test encodes the reproduction, fails before the fix, passes after.
 5. Apply ONE change. No bundled refactoring, no "while I'm here" improvements.
-6. Confirm the original reproduction now passes, the affected Canonical contract matches when present, and relevant regression tests pass. Broaden the suite for shared interfaces, uncertain impact, or repository policy.
-7. If the fix does not work: STOP. Count your attempts. Fewer than three → return to Phase 1 with the new information. Three or more failed fixes → stop automatic patching and re-examine the architecture and evidence. Ask the user only if that investigation reaches a product, scope, or new-authority decision.
+6. Confirm the original reproduction from Phase 1 now passes, the affected Canonical contract observation matches when one exists, and the rest of the test suite still passes.
+7. If the fix does not work: STOP. Count your attempts. Fewer than three → return to Phase 1 with the new information. Three or more failed fixes → the problem is likely architectural; stop fixing and discuss the design with the user before any further attempt.
 
-**Exit criterion:** fix class recorded; original reproduction passes; affected Canonical contract matches when present; regression evidence recorded; relevant suite green.
+**Exit criterion:** fix class recorded; original reproduction passes; affected Canonical contract matches when present; regression test committed; suite green.
 
 ## Working Files
 
@@ -114,7 +114,7 @@ If you catch yourself thinking any of these, STOP and return to Phase 1.
 | "Can't reproduce, but the fix looks right" | An unreproduced fix is unverifiable — you cannot know it worked. Reproduce first. |
 | "This is urgent, no time for process" | Systematic debugging is faster than guess-and-check thrashing. Emergencies are when guessing costs most. |
 | "The issue is too simple for all this" | Simple bugs have root causes too, and the process is fast on simple bugs. |
-| "One more fix attempt" (after 2+ failures) | Repeated failures mean the mental model is wrong. Three or more → re-examine the architecture; ask only for a user-owned decision. |
+| "One more fix attempt" (after 2+ failures) | Repeated failures mean the mental model is wrong. Three or more → question the architecture with the user. |
 | "The bug changes behavior, so it always needs a new spec" | Restoration changes implementation behavior without changing Canonical authority. Compare the intended contract first. |
 | "It is only a bugfix, so it can never change the spec" | A root cause may expose a wrong durable contract. That result requires a Spec Delta before the fix changes authority. |
 | "I cannot reproduce yet, so I should ask which framework this uses." | Read the repository and runtime evidence first. Ask only when the desired outcome or material scope is a user-owned blocking choice. |

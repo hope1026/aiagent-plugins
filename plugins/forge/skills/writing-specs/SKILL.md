@@ -5,7 +5,7 @@ description: 'Use when creating or changing a durable Canonical Spec, proposing 
 
 # Writing Canonical Specs
 
-Announce once when first applied: "Using the forge writing-specs skill — Canonical Spec mode: <new | change | clarify | sync>."
+Announce: "Using the forge writing-specs skill — Canonical Spec mode: <new | change | clarify | sync>."
 
 Respond in the user's language. Write human-readable Canonical Spec and Spec Delta content in that language while preserving canonical headings, lifecycle values, code identifiers, commands, paths, and established technical names.
 
@@ -42,13 +42,13 @@ Use EARS as a semantic discipline in the user's language. Each Requirement headi
 | A proposed bundle or Delta contains unresolved choices | `clarify` |
 | Approved authority and implementation disagree | `sync` |
 
-Reuse the work checklist for proposal, application, and validation. Lead the review with a concise before/after summary and keep exact full statements in the linked Delta. Approval of the concrete proposal already given in the conversation remains valid; ask again only if its meaning or effect changes.
+Before starting a mode, create one checklist item per numbered step and keep it current through approval, application, and validation.
 
 ### New
 
 1. Explore current product and repository context.
 2. Ask one clarification question per message only for choices that materially change durable authority. Mark unresolved choices in the proposal as `[NEEDS CLARIFICATION: ...]`.
-3. Present alternatives with trade-offs only when there is a meaningful unresolved choice. If the requested contract is already concrete, draft that contract directly.
+3. Present two or three approaches with trade-offs.
 4. Choose a semantic bundle directory and descriptive root and member filenames. Draft a Spec Delta containing the complete proposed Spec Bundle with lifecycle `status: approved`; keep it in the conversation or `.forge/work/<work-id>/spec-delta.md`. Do not create authoritative files under `docs/specs/` yet.
 5. Self-review language, EARS discipline, member boundaries, `Documents` completeness, full Requirement wording, the decision to use or omit Acceptance Criteria, ambiguity, and source-owned Mermaid. When Acceptance Criteria are present, also review full Acceptance wording, exact Requirement links, and complete Requirement coverage. Reject Requirement and Acceptance placeholders that only defer to another source.
 6. Validate the proposal in an isolated temporary repository, then ask the user to approve the exact proposal. The proposal remains non-authoritative while approval is pending.
@@ -104,7 +104,7 @@ Any nonzero result blocks implementation handoff and completion claims. The tran
 
 ## Visual Docs Request Boundary
 
-Markdown is the default review path. A Spec Delta is not a Visual Docs source and does not authorize HTML generation. Only an explicit user request to create, refresh, present, or freshness-check a Brief, Canonical Spec, Execution Plan, or Project Handbook permits one handoff to the forge visual-docs skill for generation, proportional quality verification, and necessary corrections within that request.
+Markdown is the default review path. A Spec Delta is not a Visual Docs source and does not authorize HTML generation. Only an explicit user request to create, refresh, present, or freshness-check a Brief, Canonical Spec, Execution Plan, or Project Handbook permits one handoff to the forge visual-docs skill.
 
 Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an existing visual document are not generation requests. Report possible staleness without reading or updating it.
 

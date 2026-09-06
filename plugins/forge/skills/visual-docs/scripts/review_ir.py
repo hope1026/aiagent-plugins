@@ -335,46 +335,22 @@ def _entity(
     )
 
 
-# A derived flow must consume an entire expression, not an arbitrary sentence
-# containing arrows. Bare labels are identifiers; whitespace in a label needs
-# explicit quoting. This deliberately leaves ambiguous prose in its source block.
-_FLOW_WORD = r"\w+(?:[-./·]\w+)*"
-_FLOW_LABEL_RE = re.compile(rf"(?:{_FLOW_WORD}|(?P<quote>[\"'`]){_FLOW_WORD}(?: +{_FLOW_WORD})*(?P=quote))")
-
-
-def _flow_label(value: str) -> str | None:
-    value = value.strip()
-    match = _FLOW_LABEL_RE.fullmatch(value)
-    if match is None:
-        return None
-    return value[1:-1] if match.group("quote") else value
-
-
 def _ordered_flow_entities(
     source: ReviewSource,
     block: SemanticBlock,
 ) -> tuple[SemanticEntity, ...]:
     if block.kind not in {"prose", "list", "code"}:
         return ()
-    lines = block.body.splitlines()
-    if block.kind == "prose" and len(lines) != 1:
-        return ()
     result: list[SemanticEntity] = []
-    for offset, raw_line in enumerate(lines, 1):
+    for offset, raw_line in enumerate(block.body.splitlines(), 1):
         line = raw_line.strip()
-        if block.kind == "list":
-            marker = _LIST_RE.match(line)
-            # Continuation text qualifies the item: it is not a standalone flow.
-            if marker is None or (offset < len(lines) and not _LIST_RE.match(lines[offset])):
-                continue
-            line = line[marker.end():].strip()
-        if code_span := re.fullmatch(r"(`+)([^`]+)\1", line):
-            line = code_span.group(2).strip()
+        if len(line) >= 2 and line[0] == "`" and line[-1] == "`":
+            line = line[1:-1].strip()
         if "→" not in line and "↔" not in line:
             continue
         parts = [part.strip() for part in re.split(r"(→|↔)", line)]
         node_groups = tuple(
-            tuple(_flow_label(value) for value in part.split("|"))
+            tuple(value.strip() for value in part.split("|") if value.strip())
             for part in parts[::2]
         )
         nodes = tuple(value for group in node_groups for value in group)
@@ -382,7 +358,7 @@ def _ordered_flow_entities(
         if (
             len(nodes) < 3
             or len(arrows) != len(node_groups) - 1
-            or any(value is None for value in nodes)
+            or any(not group for group in node_groups)
         ):
             continue
         edges = tuple(
@@ -402,7 +378,7 @@ def _ordered_flow_entities(
                     "nodes": nodes,
                     "edges": edges,
                     "source_path": block.source_path,
-                    "source_line": block.line + offset - 1 + (block.kind == "code"),
+                    "source_line": block.line + offset - 1,
                 },
             )
         )

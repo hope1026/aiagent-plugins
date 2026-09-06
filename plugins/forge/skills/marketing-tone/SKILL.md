@@ -5,7 +5,7 @@ description: 'Use when writing or revising marketing, product, landing page, lau
 
 # Marketing Tone
 
-Announce once when first applied: "Using the forge marketing-tone skill to shape product and marketing copy."
+Announce at start: "Using the forge marketing-tone skill to shape product and marketing copy."
 
 Respond to the user in the user's language. This skill is an overlay on top of the forge writing-tone skill.
 
@@ -46,7 +46,7 @@ Apply the forge writing-tone skill first, then apply these rules:
 5. Rewrite or delete every `assumed` or `unsupported` claim.
 6. Apply the forge writing-tone cut pass: remove filler, generic excitement, and stock marketing phrases.
 
-For substantial copy, reuse the work checklist. For short posts, run the claim audit internally and return the requested copy without an additional process report.
+For substantial copy, create one todo per step. For short posts, still run the claim audit before returning the copy.
 
 ## Patterns
 

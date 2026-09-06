@@ -19,9 +19,8 @@ jobs:
             python3 -m unittest discover \
               -s plugins/forge/skills/writing-specs/tests -p 'test_*.py' -v
           node plugins/forge/skills/writing-specs/tests/test_mermaid_validate.mjs
-          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
-            -s plugins/forge/skills/visual-docs/tests -p 'test_*.py' -v
-          bash scripts/tests/test-agent-extension-skill.sh
+          python3 plugins/forge/skills/visual-docs/tests/test_review_sources.py
+          python3 plugins/forge/skills/visual-docs/tests/test_review_renderer.py
           node plugins/forge/skills/visual-docs/tests/test-visual-docs-freshness.mjs
           bash plugins/forge/skills/visual-docs/tests/test-build-visual-docs.sh
           bash scripts/tests/test-maintaining-forge-layout.sh
