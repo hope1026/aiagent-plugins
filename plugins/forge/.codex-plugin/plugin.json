@@ -1,15 +1,15 @@
 {
   "name": "forge",
-  "version": "0.1.19+codex.20260904022134",
-  "description": "Semantic Canonical Spec Bundles and complexity-aware execution skills with approved Spec Deltas, full-statement plan traceability, Quick verified execution, request-only Visual Docs for briefs, plans, specs, and projects, cross-agent authoring, debugging, and interface design.",
+  "version": "0.1.20+codex.20260906011218",
+  "description": "Fast, scope-aware agent workflows with proportional verification, focused plans, durable Canonical Specs, and quality-checked Visual Docs for briefs, plans, specs, and projects.",
   "author": {
     "name": "Onestar Lee"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Forge",
-    "shortDescription": "Semantic Spec Bundles with task-sized execution paths.",
-    "longDescription": "Forge stores permanent Canonical Specs as semantic bundles with descriptive files and full-statement links, separate from work-scoped Change Briefs, Spec Deltas, Execution Plans, and Verification Evidence. Durable contract changes require explicit approval; bounded local work can use a Quick verified route; complex work can use plan-only or full lifecycle execution. Forge also includes one-source authoring for Codex, Claude Code, and Antigravity skills and MCP configurations, browser application design, website design, tone overlays, systematic debugging, and TDD. Visual Docs presents briefs, plans, specs, and project handbooks only on explicit request.",
+    "shortDescription": "Fast scoped work, focused plans, and readable Visual Docs.",
+    "longDescription": "Forge matches process and verification to the work. Clear local changes run through a lightweight Quick path; new logic and behavioral fixes use focused TDD; complex work uses plans centered on outcomes, dependencies, interfaces, and evidence. Durable contract changes remain governed by semantic Canonical Spec Bundles and explicit approved meaning. Visual Docs presents briefs, plans, specs, and project handbooks only on request, then verifies the rendered reading experience and permits source-backed corrections within that request. Forge also includes cross-agent extension authoring, systematic debugging, browser application and website design, and purpose-specific tone skills.",
     "developerName": "Onestar Lee",
     "category": "Productivity",
     "capabilities": [
