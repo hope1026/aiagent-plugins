@@ -2,7 +2,7 @@
 
 > 계획 작성 요청에 따른 제안이다. 사용자가 실행을 요청하면 the forge executing-plans skill로 진행한다. 이 계획은 현재 정본을 대체하거나 구현 완료를 선언하지 않는다.
 
-Status: active
+Status: complete
 
 **Related Specs:**
 
@@ -212,7 +212,7 @@ Governing statements:
 
 - [x] **Step 1:** 정책 검사·README·portability 설명을 승인된 의미에 맞추고 아래 시나리오를 실행한다.
 - [x] **Step 2:** 필요한 회귀와 최종 validation을 통과한 뒤 결과·한계·남은 작업을 보고한다.
-- [ ] **Step 3:** PR을 `main`에 병합하고 push 기반 배포 workflow 성공을 확인한 뒤 계획을 완료 처리한다.
+- [x] **Step 3:** PR을 `main`에 병합하고 push 기반 배포 workflow 성공을 확인한 뒤 계획을 완료 처리한다.
 
 ## 작업 시나리오와 완료 판단
 
@@ -251,3 +251,4 @@ Governing statements:
 - 2026-09-06: Tasks 1–4를 완료했다. Canonical workflow와 semantic bundle 정본을 적용했고, 부분 완료·증거 재사용·검증 종료·Requirement 가독성·관련 계약 정합성 지침을 배포 스킬과 portability reference에 반영했다. Active bundle draft 강등 RED를 unit·CLI에서 확인한 뒤 validator와 PR/push baseline CI를 구현했으며 focused 29 tests, 전체 spec 66 tests, lifecycle/spec policy와 writer transaction이 PASS했다.
 - 2026-09-06: 새 agent pressure test에서 다섯 작업 유형의 비례 검증을 확인했다. 발견된 CI baseline 누락, 계획 템플릿 설명, `relevant source` 표현을 수정하고 영향 검증을 다시 통과했다.
 - 2026-09-06: Task 5의 로컬 검증을 완료했다. Forge 0.1.21로 version을 올렸고 GitHub Actions main job과 같은 로컬 명령, Visual Docs Python 62 tests, extension manager 17 tests, browser 13 tests, 모든 정책·설치·bundle·writer 검증이 PASS했다. Push·PR·merge와 원격 workflow 확인을 release checkpoint로 남겼다.
+- 2026-09-06: PR #4를 `main` merge commit `6f16f1e`로 병합해 Forge 0.1.21을 배포했다. Main push workflow `34022652862`의 validate와 browser job이 모두 PASS해 release checkpoint를 닫고 계획을 완료했다.
