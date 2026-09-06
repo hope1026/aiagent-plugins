@@ -7,12 +7,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Resolve spec validation baseline
+        id: spec_baseline
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            baseline="${{ github.event.pull_request.base.sha }}"
+          else
+            baseline="${{ github.event.before }}"
+            if [[ "$baseline" =~ ^0+$ ]]; then
+              baseline="$(git rev-parse HEAD^)"
+            fi
+          fi
+          git cat-file -e "$baseline^{commit}"
+          echo "ref=$baseline" >> "$GITHUB_OUTPUT"
       - name: Validate structured specs, viewers, policies, and installs
         run: |
           PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts \
@@ -34,7 +50,8 @@ jobs:
           bash scripts/tests/test-forge-ui-skill-install.sh
           bash scripts/tests/test-forge-visual-docs-install.sh
           bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
-            validate --root docs/specs --baseline-ref HEAD
+            validate --root docs/specs --baseline-ref \
+              "${{ steps.spec_baseline.outputs.ref }}"
           bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
             inspect --spec docs/specs/semantic-spec-bundles/ --format json
           bash scripts/validate.sh

@@ -11,7 +11,7 @@ Respond to the user in the user's language. This skill file stays in English.
 
 ## Overview
 
-Forge helps agents finish work quickly, make consequential choices clear, and provide readable visual documents when requested. Use only the process the work needs. A Canonical Spec records approved contracts that future work must preserve; briefs, plans, and evidence serve the current work.
+Forge helps agents finish work completely, keep durable authority accurate, and avoid verification that does not improve either result. Quality and Canonical Spec accuracy come first; within that boundary, use the smallest process and evidence that prove the claim. A Canonical Spec records approved contracts that future work must preserve; briefs, plans, and evidence serve the current work.
 
 Route every execution request on two independent axes:
 
@@ -107,8 +107,9 @@ Track distinct deliverables and real recovery points. Reuse the work's checklist
 3. **Route to the owning process.** Quick work goes directly to the relevant debugging, TDD, design, tone, or other execution skill. Plan-only work goes to the forge writing-plans skill. Canonical Spec impact goes to the forge writing-specs skill before implementation.
 4. **Apply specialist skills at the matching scale.** Bugs use the forge systematic-debugging skill. New logic and behavioral defects use the forge test-driven-development skill. Prose, styling, and logic-free configuration use direct observation or validity checks; do not install a test framework for them. Existing UI adjustments use the design skill's focused path; new surfaces use its full path. Human-readable prose uses the forge writing-tone skill.
 5. **Promote before the next mutation.** If Quick or plan-only work reveals Canonical Spec impact, a user-owned product decision, cross-component dependency, migration or release ordering, or meaningful rollback risk, stop the next mutation and reclassify. Add only the newly required Spec Delta or Execution Plan.
-6. **Verify at the matching level.** Quick work needs fresh focused command evidence. Existing-contract restoration needs the original reproduction, the affected contract observation, and a regression command. For each governing bundle, the Canonical verification set is its Acceptance statements when any exist, otherwise its Requirement statements. Approved Spec Delta work needs the affected set walked with regression evidence; a new or never-implemented Canonical Spec needs the full set walked.
-7. **Promote durable outcomes.** Move lasting decisions or findings to a Canonical Spec, ADR, `docs/research/`, `docs/debug/`, or explicit evidence file. Do not leave a Change Brief, Spec Delta, or execution log as accidental SOT.
+6. **Verify at the matching level.** Define the exact completion claim, then choose the smallest command or observation that proves the requested result and affected contract. Quick work uses focused evidence. Existing-contract restoration uses the original reproduction, affected contract observation, and relevant regression; one execution may satisfy more than one role. A partial implementation verifies its directly and indirectly affected statements without changing the whole bundle lifecycle. Only a claim that a new or never-implemented Canonical Spec is fully implemented walks the full Canonical verification set and permits `implemented` status.
+7. **Reuse and stop.** Reuse inspected spec context and observed evidence while the relevant source, implementation, tests, inputs, settings, and environment remain unchanged. Rerun only the scope invalidated by a new change, failure, impact, or uncertainty. Stop when the request, affected contracts, required project gates, and completion claim are proven.
+8. **Promote durable outcomes.** Move lasting decisions or findings to a Canonical Spec, ADR, `docs/research/`, `docs/debug/`, or explicit evidence file. Do not leave a Change Brief, Spec Delta, or execution log as accidental SOT.
 
 ### Specialist routing
 

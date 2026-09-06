@@ -22,6 +22,8 @@
 
 ### Validator는 transition의 baseline hash, current target, append-only prefix, evidence, unique source와 one-step 관계를 검증하고 repeated target은 유효한 `merged` group에서만 허용해야 한다.
 
+### Baseline에서 `approved` 또는 `implemented`였던 bundle이 같은 path에 남아 있으면 validator는 lifecycle을 `draft`로 내리는 변경을 거부하고, 계약 변경 뒤 `implemented`를 `approved`로 전환하는 정상 lifecycle은 허용해야 한다.
+
 ### Many-to-one `merged` group은 같은 appended diff에 있는 둘 이상의 record가 같은 current `toBundlePath`와 `evidencePath`를 공유하고 모든 source가 exact active baseline이며 target이 baseline에 없을 때만 유효해야 한다.
 
 ## Acceptance Criteria
@@ -55,6 +57,12 @@
 - [`approved` 또는 `implemented` baseline bundle을 교체할 때는 exact path와 hash를 가진 one-to-one `superseded` transition을 사용하고 둘 이상의 baseline을 하나로 통합할 때는 coordinated many-to-one `merged` transition group을 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#approved-또는-implemented-baseline-bundle을-교체할-때는-exact-path와-hash를-가진-one-to-one-superseded-transition을-사용하고-둘-이상의-baseline을-하나로-통합할-때는-coordinated-many-to-one-merged-transition-group을-사용해야-한다)
 - [Bundle transition record는 `fromSourcePath`, `fromSourceSha256`, `disposition`, `toBundlePath`, `evidencePath`, `reason`만 사용하고 `disposition`을 `superseded` 또는 `merged`로 제한하며 두 source path를 normalized repository-relative semantic bundle directory로 제한해야 한다.](lifecycle-consumers-and-bundle-replacement.md#bundle-transition-record는-fromsourcepath-fromsourcesha256-disposition-tobundlepath-evidencepath-reason만-사용하고-disposition을-superseded-또는-merged로-제한하며-두-source-path를-normalized-repository-relative-semantic-bundle-directory로-제한해야-한다)
 - [Validator는 transition의 baseline hash, current target, append-only prefix, evidence, unique source와 one-step 관계를 검증하고 repeated target은 유효한 `merged` group에서만 허용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#validator는-transition의-baseline-hash-current-target-append-only-prefix-evidence-unique-source와-one-step-관계를-검증하고-repeated-target은-유효한-merged-group에서만-허용해야-한다)
+
+### approved와 implemented baseline을 같은 path에서 draft로 바꾸면 validation은 lifecycle downgrade 진단으로 실패하고, implemented에서 approved로 돌아가거나 신규 draft를 추가하는 fixture는 성공한다.
+
+검증하는 요구사항:
+
+- [Baseline에서 `approved` 또는 `implemented`였던 bundle이 같은 path에 남아 있으면 validator는 lifecycle을 `draft`로 내리는 변경을 거부하고, 계약 변경 뒤 `implemented`를 `approved`로 전환하는 정상 lifecycle은 허용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#baseline에서-approved-또는-implemented였던-bundle이-같은-path에-남아-있으면-validator는-lifecycle을-draft로-내리는-변경을-거부하고-계약-변경-뒤-implemented를-approved로-전환하는-정상-lifecycle은-허용해야-한다)
 
 ### 세 active baseline과 하나의 new target과 공통 evidence를 가진 `merged` record 세 개를 같은 diff에 append하면 repository validation이 통과하고 invalid merge group fixture는 실패한다.
 
