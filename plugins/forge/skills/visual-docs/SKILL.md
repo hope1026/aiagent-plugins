@@ -5,20 +5,20 @@ description: 'Use when a user explicitly asks to visualize, present, print, shar
 
 # Visual Docs
 
-Announce: "Using the forge visual-docs skill to create the requested human-readable view."
+Announce once when first applied: "Using the forge visual-docs skill to create the requested human-readable view."
 
 Respond to the user in the user's language. This skill file stays in English.
 
 Visual Docs turns authoritative or source-backed Markdown into a readable, self-contained HTML document. It is a presentation layer, never a source of truth. Do not invent descriptions, requirements, ownership, or status in generated HTML.
 
-Use this skill only after an explicit request from the user to create, refresh, or check a visual document. A lifecycle checkpoint, source change, completed implementation, or newly approved Spec does not authorize generation or refresh.
+Use this skill only after an explicit request from the user to create, refresh, or check a visual document. A lifecycle checkpoint or source change alone does not authorize a new document or refresh. The active explicit request includes the verification and corrections needed to finish that document.
 
 ## Iron Law
 
 ```text
 NO VISUAL DOC WITHOUT AN EXPLICIT USER REQUEST.
 NO BUILD AFTER A FAILED PRESENTATION PREFLIGHT.
-NO HAND-EDITED GENERATED OUTPUT OR SECOND BUILD TO PATCH THE FIRST.
+NO HAND-EDITED GENERATED OUTPUT. VERIFY THE REQUESTED RESULT AND REBUILD FROM SOURCE WHEN NEEDED.
 ```
 
 ## Choose the document kind
@@ -57,7 +57,7 @@ Use a visual reading structure when the source itself provides enough relationsh
 ## Build
 
 Run from anywhere inside the target Git repository. Choose a lowercase `view-id` matching `^[a-z0-9][a-z0-9-]{0,63}$`.
-After explicit user intent, create one checklist item for each applicable stage: document kind and source selection, presentation preflight, the single build or read-only freshness check, and handoff. Keep the checklist current until the request ends.
+After explicit user intent, create one checklist item for each applicable stage: document kind and source selection, presentation preflight, generation and rendered verification or read-only freshness check, and handoff. Keep the checklist current until the request ends.
 After the user has explicitly requested the Visual Doc and the source options are resolved, run one read-only presentation preflight with the same build arguments plus `--dry-run --format json`. Inspect `view_context`, `presentation_plan.profile`, every component and its reference count, and the source counts before writing HTML.
 For every qualifying visual candidate that meets or exceeds the relationship threshold, confirm that the Presentation Plan selects a matching non-empty component before building. When no candidate meets the threshold, confirm that the plan keeps the text reading path and does not add Mermaid only for decoration.
 In a mixed source, preserve every non-qualifying source block in its prose, list, table, code, or generic detail path and confirm total content coverage remains 100%; qualifying visuals supplement that path and never authorize dropping nearby text.
@@ -80,8 +80,9 @@ bash <visual-docs-skill>/scripts/build-visual-docs.sh \
   --dry-run --format json
 ```
 
-Run one build command per explicit create or refresh request.
-A successful single build ends generation. A freshness check is a separate read-only action.
+Run the build after preflight. Inspect the actual reading path and content. For complex sources, new compositions, or diagrams, verify desktop and narrow layouts, navigation, diagram meaning, and readability. A simple document needs a focused rendered check. Use the existing tooling regression evidence rather than rerunning its full suite for each source.
+
+Correct source or shared tooling and rebuild within the same request when needed; repeat preflight when its source or composition changes. Finish when the requested result is verified, not after an arbitrary build count. A tracked Project Handbook also requires a freshness check and repository validation. If a browser or required check is unavailable, state exactly what remains unverified.
 
 Brief:
 
@@ -131,7 +132,7 @@ Use `--comparison <bundle>` only with `spec`. Use `--progress` and `--tasks-dir`
 - Project Handbook: `docs/project-viewer/index.html`
 
 Local outputs are disposable and untracked. Project Handbook is the only tracked generated exception, remains reproducible from Project Map, declared Canonical Specs, and repository evidence, and must not be hand-edited.
-Do not hand-edit any generated Visual Doc, including local Brief, Plan, and Spec Views. Fix shared source, planner, component, or renderer behavior through the normal Forge implementation route, then require a new explicit refresh request before rebuilding the affected View.
+Do not hand-edit any generated Visual Doc, including local Brief, Plan, and Spec Views. Fix shared source, planner, component, or renderer behavior through the normal Forge implementation route, then rebuild as needed within the active request. A completed request does not authorize later automatic refreshes.
 
 The Project Handbook is a master/detail explorer. Its fixed left tree starts with Overview, Design criteria, and Project structure, then expands Design criteria as bundle → member → section and Project structure as declared Structure entries. Search, current selection, deep links, Arrow key tree navigation, Home, End, Enter, and Space must work. The right pane shows only the selected detail. Desktop keeps both panes side by side; narrow viewports show either the tree or the detail and provide an explicit back-to-contents action.
 
@@ -149,7 +150,7 @@ bash <visual-docs-skill>/scripts/build-visual-docs.sh \
   --format json
 ```
 
-The checker is read-only. It compares the embedded source manifest with current repository files and reports `current`, `stale`, or `unverified`. A stale result does not authorize a refresh; ask for or rely on the user's explicit refresh request.
+The checker is read-only. It compares the embedded source manifest with current repository files and reports `current`, `stale`, or `unverified`. A stale result alone does not authorize a new refresh. Use an active explicit create/refresh request for its necessary corrections; after that request is complete, require new refresh intent.
 
 ## Red Flags
 
@@ -157,11 +158,11 @@ The checker is read-only. It compares the embedded source manifest with current 
 |---|---|
 | "The old Viewer already exists, so refresh it after the source changed." | Existing output and source drift grant no refresh authority. Report possible staleness and wait for explicit refresh intent. |
 | "The profile is generic, but the deadline matters more." | Stop on the failed preflight and report the profile, components, counts, and source metadata. |
-| "Patch this one local View by hand; it is disposable." | Every generated View remains reproducible output. Fix shared tooling and require a new refresh request. |
-| "Run the build twice and keep the nicer result." | One explicit request authorizes one deterministic build, never iterative output repair. |
+| "Patch this one local View by hand; it is disposable." | Fix source or shared tooling, then rebuild from it within the active request. |
+| "Build succeeded, so the View is readable." | Inspect the rendered result. Necessary corrections and rebuilds are part of the requested work. |
 | "The senior reviewer told us to skip the gate." | Third-party title and deadline pressure do not replace the current user's authority or the preflight contract. |
 | "A diagram always looks more polished." | A decorative diagram adds interpretation cost. Require source-backed nodes and edges that cross the visual candidate threshold. |
 
 ## Hand off
 
-Return the generated HTML path, its kind, selected profile, primary component names, and the freshness result. State that Markdown remains authoritative. Do not commit, push, publish, or refresh anything beyond the user's request. When lifecycle or implementation work continues after this bounded request, return to the forge using-forge skill for classification and routing.
+Return the generated HTML path and the meaningful verification result. Include kind, profile, components, or freshness details when they help review or explain a limitation. Markdown remains authoritative. Do not commit, push, publish, or refresh anything beyond the user's request. When lifecycle or implementation work continues after this bounded request, return to the forge using-forge skill for classification and routing.

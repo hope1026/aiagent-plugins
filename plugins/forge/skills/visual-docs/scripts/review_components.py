@@ -182,6 +182,8 @@ def _block_markup(
     review_id: str,
     rendered_entities: set[str],
     coverage_targets: Mapping[str, tuple[SemanticEntity, ...]],
+    *,
+    korean: bool = False,
 ) -> str:
     statement = next(
         (item for item in entities if item.entity_type in {"requirement", "acceptance"}),
@@ -200,13 +202,19 @@ def _block_markup(
     provenance = html.escape(_document_label(document))
     if block.kind == "mermaid":
         digest = hashlib.sha256(block.body.encode("utf-8")).hexdigest()
+        guidance = (
+            '<p><strong>확인할 내용:</strong> 노드와 화살표가 원문과 일치하는지 확인합니다.</p>'
+            '<p><strong>읽는 방법:</strong> 원문에서 정한 방향을 따라갑니다.</p>'
+            if korean else
+            '<p><strong>What to confirm:</strong> The nodes and arrows match the source.</p>'
+            '<p><strong>How to read:</strong> Follow the source-defined direction.</p>'
+        )
         return (
             '<article class="diagram-card" data-origin="Source" '
             f'data-source-path="{html.escape(block.source_path, quote=True)}" '
             f'data-mermaid-sha256="{digest}">'
             f'<h3>{html.escape(block.heading)}</h3>'
-            '<p><strong>What to confirm:</strong> The nodes and arrows match the source.</p>'
-            '<p><strong>How to read:</strong> Follow the source-defined direction.</p>'
+            f'{guidance}'
             f'<p class="provenance">{provenance}</p>'
             '<div class="diagram-scroll" role="region" tabindex="0">'
             f'<pre class="mermaid">{html.escape(block.body)}</pre></div></article>'
@@ -263,8 +271,15 @@ def _entity_count(ir: SemanticIR, entity_type: str) -> int:
     )
 
 
-def _system_overview(ir: SemanticIR, *, korean: bool) -> str:
-    primary = ir.documents[0]
+def _system_overview(ir: SemanticIR, *, korean: bool, reading_links: str = "") -> str:
+    primary = next(
+        (
+            document for document in ir.documents
+            if document.role == "primary_spec"
+            and document.metadata.get("member_role") == "root"
+        ),
+        ir.documents[0],
+    )
     metadata = primary.metadata
     areas = tuple(metadata.get("areas", ()))
     components = tuple(metadata.get("components", ()))
@@ -278,14 +293,34 @@ def _system_overview(ir: SemanticIR, *, korean: bool) -> str:
         (labels[1], _entity_count(ir, "requirement")),
         (labels[2], _entity_count(ir, "acceptance")),
     )
+    purpose = next(
+        (
+            block for block in primary.blocks
+            if block.kind == "prose" and block.heading_path == ("Overview",)
+        ),
+        None,
+    )
     return (
         '<article class="system-overview" data-component="system-overview">'
-        '<dl class="system-metrics">'
+        + (
+            '<div class="system-overview-lede">'
+            + render_markdown(purpose.body)
+            + f'<p class="provenance"><code>{html.escape(primary.path)}</code>'
+            + f' · {"줄" if korean else "lines"} {purpose.line}–{purpose.end_line}</p></div>'
+            if purpose else ""
+        )
+        + reading_links
+        + '<dl class="system-metrics">'
         + "".join(
             f'<div class="system-metric"><dt>{html.escape(label)}</dt><dd>{value}</dd></div>'
             for label, value in metrics
         )
         + "</dl>"
+        + (
+            '<details class="system-overview-section"><summary>'
+            + ("분류 정보" if korean else "Classification") + "</summary>"
+            if areas or components else ""
+        )
         + (
             f'<section class="system-taxonomy"><h3>{html.escape(labels[3])}</h3><ul>'
             + "".join(f"<li>{html.escape(str(item))}</li>" for item in areas)
@@ -300,6 +335,7 @@ def _system_overview(ir: SemanticIR, *, korean: bool) -> str:
             if components
             else ""
         )
+        + ("</details>" if areas or components else "")
         + "</article>"
     )
 
@@ -367,18 +403,18 @@ def _derived_visual_markup(
     mermaid = "\n".join(lines)
     digest = hashlib.sha256(mermaid.encode("utf-8")).hexdigest()
     heading = str(entity.attributes.get("heading", entity.entity_id))
-    question = (
-        f"{heading}은 어떤 관계로 이어지는가?"
-        if korean
-        else f"How does {heading} connect?"
+    title = (
+        ("책임 관계" if korean else "Responsibility relations")
+        if component == "responsibility-map"
+        else ("동작 흐름" if korean else "Behavior flow")
     )
     confirm = (
-        "표의 source 값과 diagram의 node·edge가 같은지 확인합니다."
+        "원문 표의 값과 도표의 노드·연결이 같은지 확인합니다."
         if korean
         else "Confirm that the source values in the table match the diagram nodes and edges."
     )
     guide = (
-        "요약표를 먼저 읽고 화살표 방향과 관계 label을 따라갑니다."
+        "요약표를 먼저 읽고 화살표 방향과 관계 이름을 따라갑니다."
         if korean
         else "Read the summary table first, then follow arrow direction and relation labels."
     )
@@ -390,8 +426,11 @@ def _derived_visual_markup(
         f'data-component="{html.escape(component, quote=True)}" '
         f'data-source-path="{html.escape(source_path, quote=True)}" '
         f'data-mermaid-sha256="{digest}">'
-        f"<h3>{html.escape(question)}</h3>"
-        f'<p class="visual-confirm">{html.escape(confirm)}</p>'
+        f"<h3>{html.escape(title)}</h3>"
+        '<details class="project-evidence"><summary>'
+        + ("원문 제목" if korean else "Source heading")
+        + f"</summary><p>{html.escape(heading)}</p></details>"
+        + f'<p class="visual-confirm">{html.escape(confirm)}</p>'
         f'<p class="visual-guide">{html.escape(guide)}</p>'
         + _visual_summary_table(edges, korean=korean)
         + f'<p class="provenance">Derived view · <code>{html.escape(source_path)}</code>'
@@ -448,6 +487,7 @@ def _visual_component(
                     review_id,
                     rendered_entities,
                     coverage_targets,
+                    korean=korean,
                 )
             )
             handled_blocks.add(entity.block_key)
@@ -630,6 +670,8 @@ def _details(
     review_id: str,
     rendered_entities: set[str],
     coverage_targets: Mapping[str, tuple[SemanticEntity, ...]],
+    *,
+    korean: bool = False,
 ) -> str:
     return "".join(
         _block_markup(
@@ -639,6 +681,7 @@ def _details(
             review_id,
             rendered_entities,
             coverage_targets,
+            korean=korean,
         )
         for block, document, entities in _referenced_blocks(ir, refs)
     )
@@ -1053,6 +1096,7 @@ def _project_spec_parts(
                         review_id,
                         rendered_entities,
                         coverage_targets,
+                        korean=korean,
                     )
                     for block in visible_blocks
                 )
@@ -1201,6 +1245,7 @@ def render_project_workspace(
         review_id,
         rendered_entities,
         coverage_targets,
+        korean=korean,
     )
 
     overview_route = "project-overview"
@@ -1306,9 +1351,10 @@ def render_spec_workspace(
     state_map = components.get("state-map")
     interfaces = components.get("interface-table")
     coverage = components.get("acceptance-coverage")
-    overview_markup = _system_overview(ir, korean=korean)
+    behavior_markup = ""
+    verification_markup = ""
     if overview_component is not None:
-        overview_markup += _visual_component(
+        behavior_markup += _visual_component(
             ir,
             state_map.refs if state_map else (),
             entity_type="ordered-flow",
@@ -1318,7 +1364,7 @@ def render_spec_workspace(
             rendered_entities=rendered_entities,
             coverage_targets=coverage_targets,
         )
-        overview_markup += (
+        behavior_markup += (
             '<div class="responsibility-table" data-component="runtime-responsibility">'
             + _visual_component(
                 ir,
@@ -1332,13 +1378,13 @@ def render_spec_workspace(
             )
             + "</div>"
         )
-        overview_markup += _semantic_table(
+        behavior_markup += _semantic_table(
             ir,
             interfaces.refs if interfaces else (),
             css_class="interface-table",
             korean=korean,
         )
-        overview_markup += _acceptance_coverage(
+        verification_markup += _acceptance_coverage(
             ir,
             coverage.refs if coverage else (),
             review_id,
@@ -1351,6 +1397,8 @@ def render_spec_workspace(
     overview_route = "spec-overview"
     criteria_route = "spec-criteria"
     source_route = "spec-source"
+    behavior_route = "spec-behavior"
+    verification_route = "spec-verification"
     roots = (
         ProjectNavNode(overview_route, "system-overview", "시스템 개요" if korean else "System overview"),
         ProjectNavNode(
@@ -1359,8 +1407,28 @@ def render_spec_workspace(
             "설계 기준" if korean else "Design criteria",
             spec_nodes,
         ),
+        ProjectNavNode(behavior_route, "spec-behavior", "동작과 관계" if korean else "Behavior and relations"),
+        ProjectNavNode(verification_route, "spec-verification", "완료 기준" if korean else "Completion criteria"),
         ProjectNavNode(source_route, "source-evidence", "출처·검증" if korean else "Source & verification"),
     )
+    reading_links = (
+        '<section class="system-overview-section"><h3>'
+        + ("살펴볼 내용" if korean else "Explore the system")
+        + '</h3><ul class="system-review-links">'
+        + "".join(
+            f'<li><a href="#{node.route}">{html.escape(node.label)}</a></li>'
+            for node in (roots[2], roots[3], roots[1])
+        )
+        + '</ul></section><details class="system-overview-section"><summary>'
+        + ("문서 탐색" if korean else "Browse documents")
+        + '</summary><ul class="project-index-list">'
+        + "".join(
+            f'<li><a href="#{member.route}">{html.escape(member.label)}</a></li>'
+            for bundle in spec_nodes for member in bundle.children
+        )
+        + "</ul></details>"
+    )
+    overview_markup = _system_overview(ir, korean=korean, reading_links=reading_links)
     tree = "".join(
         _project_tree_node(node, level=1, korean=korean, root=True, first=index == 0)
         for index, node in enumerate(roots)
@@ -1369,7 +1437,9 @@ def render_spec_workspace(
         _project_detail(overview_route, "system-overview", roots[0].label, overview_markup, active=True),
         _project_detail(criteria_route, "design-criteria", roots[1].label, spec_overview),
         *spec_details,
-        _project_detail(source_route, "source-evidence", roots[2].label, source_panel),
+        _project_detail(behavior_route, "spec-behavior", roots[2].label, behavior_markup),
+        _project_detail(verification_route, "spec-verification", roots[3].label, verification_markup),
+        _project_detail(source_route, "source-evidence", roots[4].label, source_panel),
     ]
     return (
         '<div class="project-workspace spec-workspace" data-project-workspace data-spec-workspace '
@@ -1521,6 +1591,7 @@ def render_components(
                 review_id,
                 rendered_entities,
                 coverage_targets,
+                korean=korean,
             )
         rendered.append(
             RenderedComponent(

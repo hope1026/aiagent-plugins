@@ -5,7 +5,7 @@ description: 'Use when creating or updating a skill, MCP definition, or combined
 
 # Creating Agent Extensions
 
-Announce at start: "Using the forge creating-agent-extensions skill to create one canonical extension with agent-native adapters."
+Announce once when first applied: "Using the forge creating-agent-extensions skill to create one canonical extension with agent-native adapters."
 
 Respond to the user in the user's language. This skill file stays in English.
 
@@ -42,7 +42,7 @@ Do not use this skill when:
 
 ## The Process
 
-Create one checklist item per numbered step before starting. Read `references/layout-contract.md` for every run and `references/authoring-providers.md` before selecting or invoking a content provider.
+Reuse the work checklist for canonical content, preview, rendering, and verification. Read `references/layout-contract.md` for every run and `references/authoring-providers.md` before selecting or invoking a content provider.
 
 ### 1. Fix the request contract
 
@@ -139,7 +139,7 @@ For repository scope:
 python3 "$MANAGER" render --extension /path/to/repository/.agent-extensions/example-extension
 ```
 
-For user scope, first run `render` without confirmation. Its expected `E_CONFIRMATION` response includes `canonicalSources`, entry-level `changes`, `nativeTargets`, `credentialRequirements`, and `collisions` without writing. Show that preview and ask for confirmation. Only then run:
+For user scope, first run `render` without confirmation. Its expected `E_CONFIRMATION` response includes `canonicalSources`, entry-level `changes`, `nativeTargets`, `credentialRequirements`, and `collisions` without writing. Compare that preview with the concrete scope already approved. Reuse the approval when targets, content, credentials, and effects match; ask only for a new or changed decision. Once covered by approval, run:
 
 ```bash
 python3 "$MANAGER" render \
@@ -196,7 +196,7 @@ If an external service or target agent is unavailable, report that scenario as p
 |---|---|
 | "Copy the finished skill into all three directories; it is faster." | Full copies create three sources. Keep one canonical skill and thin wrappers. |
 | "The provider already edited the native files, so keep them." | Provider writes outside staging have no ownership proof. Preserve unrelated content, remove only those unowned edits, and render through the manager. |
-| "It is user scope, but the user already said to proceed earlier." | Earlier intent is not a complete current preview. Show targets, changes, credentials, and collisions before each write boundary. |
+| "User scope always needs a second approval at render." | Inspect the current preview. A complete approval covering the same targets and changes remains valid; changed content, effects, or collisions require a new decision. |
 | "The same name probably belongs to this extension." | Ownership is state plus matching hashes, not a guess. Stop on collision. |
 | "Put the token in the config temporarily." | Temporary credentials leak and persist. Use environment variable names only. |
 | "Claude-only or Antigravity-only metadata is close enough to portable." | Keep agent-only behavior under that agent's adapter extension point; do not claim parity. |
@@ -205,4 +205,4 @@ If an external service or target agent is unavailable, report that scenario as p
 
 ## Handoff
 
-After manager validation and realistic scenario tests pass, use the forge verifying-work skill against every acceptance criterion in the approved spec. Release and push remain separate actions requiring explicit authority.
+After manager validation and realistic scenario tests pass, use the forge verifying-work skill against the required verification set for the current work class. Use affected statements and regression evidence for a partial change to an implemented baseline; do not invent a Spec for spec-free work. Release and push remain separate actions requiring explicit authority.

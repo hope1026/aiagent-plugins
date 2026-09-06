@@ -5,7 +5,7 @@ description: 'Use when writing or editing anything humans will read - natural, h
 
 # Writing Tone
 
-Announce at start: "Using the forge writing-tone skill to shape this prose."
+Announce once when first applied: "Using the forge writing-tone skill to shape this prose."
 
 Respond to the user in the user's language. These rules govern whatever language the deliverable is written in.
 
@@ -34,7 +34,7 @@ Above all: **lead with the point** — decision, result, or ask first; backgroun
 ## The Process
 
 1. Decide the scope: substantial prose (documentation, README, reports, multi-paragraph PR descriptions) or a short message (Slack reply, commit message, brief comment).
-2. Substantial prose: read references/style-rules.md BEFORE drafting. Short messages: apply the core rules directly — except Korean output, where you read part 2 of the reference first, for every message, at any length.
+2. Substantial prose: read references/style-rules.md BEFORE drafting. Short messages: apply the core rules directly. Read part 2 once per session before Korean output and reuse it while available; reread only when context or the source changed.
 3. Draft, leading with the point.
 4. Cut pass: delete hedges, filler, and anything the reader does not need in order to act.
 5. Read once as the reader: is the ask explicit — who does what, by when, and what happens next?
@@ -50,7 +50,7 @@ For requested Visual Docs:
 - Order content as summary → visual flow → source detail → acceptance evidence. Keep the full source detail collapsed or later in the reading path when a summary is enough to orient the reader.
 - Prefer concrete actor, responsibility, state, count, and verification wording over abstract labels such as "Architecture Overview".
 
-For substantial prose, create one todo per step of this checklist. For short messages, still run steps 3–5 — the cut pass is never optional.
+For substantial prose, reuse the work checklist for drafting and review. For short messages, edit directly; keep the cut pass internal and return the requested text without process narration.
 
 ## Limited-Context Strategy
 
