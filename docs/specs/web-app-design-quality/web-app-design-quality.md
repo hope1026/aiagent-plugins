@@ -1,0 +1,82 @@
+---
+schema: forge/spec@3
+role: root
+status: implemented
+language: ko
+kind: policy
+areas: ["forge","design"]
+components: ["web-app-design"]
+relatedSpecs: [{"path":"docs/specs/forge-ui-design-skill-separation/","relation":"refines"}]
+---
+
+# Web App 디자인 품질 계약
+
+## Documents
+
+- root: [Web App 디자인 품질 계약](web-app-design-quality.md)
+
+## Overview
+
+`web-app-design`은 특정 프로젝트의 화면 구조나 해결책을 재사용하지 않고, 각 browser application의 제품 맥락과 사용자 작업에서 디자인 판단을 도출한다. 결과는 시각적으로 완성되어야 하며 사용자가 작업에 필요한 정보, 상태와 action을 쉽게 찾고 이해할 수 있어야 한다.
+
+## Requirements
+
+### `web-app-design`은 특정 프로젝트의 명칭·정보 구조·기능 또는 수치를 범용 기본값으로 고정하지 않고 현재 제품의 사용자 작업, 기존 디자인 시스템과 실제 상태를 근거로 UI를 설계하고 검토해야 한다.
+
+### 새 화면과 구조 변경은 typography, 정렬, 여백의 리듬, 색상 조화, 컴포넌트 비례, 시각적 위계와 정보 관계를 렌더링 결과에서 검토하고 주 작업과 관련 정보가 쉽게 보이는 완성된 UI를 만들어야 한다.
+
+### 각 정보 그룹은 현재 작업의 판단 관련성, 사용 빈도와 누락 결과에 따라 기본 표시, 명시적 상세 열기 후 표시 또는 예외 상태에서 항상 표시로 분류하고 오류와 차단 상태의 존재는 기본 화면에 유지해야 한다.
+
+경로, timestamp, ID, 긴 값 전체와 설명 metadata는 정보 종류만으로 숨기지 않는다. 현재 판단에 필요하면 기본 화면에 두고, 그렇지 않으면 상세에 둔다. 오류와 차단의 전체 진단은 상세에 둘 수 있다.
+
+### 색상은 기능 이름이나 action 동사가 아니라 semantic role에 따라 기존 제품 palette와 대응하고 제품이 지원하는 theme 사이에서 같은 의미를 유지해야 한다.
+
+해당 제품에 존재하는 primary interaction, neutral action, premium identity, success, warning, info, system error와 destructive action을 대조한다. Add 또는 Create라는 이름만으로 success나 diff-add 색상을 사용하지 않는다.
+
+### 제품 계약이 데이터 변경을 명시하지 않은 상세 열기, filter, group, pagination과 layout editing은 저장 데이터 mutation을 일으키지 않고 관련 입력 draft, focus, scroll과 live subscription을 의도하지 않게 잃지 않아야 한다.
+
+상호작용 계약이 focus나 scroll 이동을 요구하면 그 의도된 변화는 허용하되 관계없는 화면 상태와 데이터 상태는 보존한다.
+
+### 데이터 중심 화면은 항목 1개, 제품에서 일반적인 작업량과 많은 데이터 fixture에서 정보 밀도를 확인하고 비교 가능한 viewport에서 첫 주요 값까지 거리, 기본 row 또는 cell 높이와 초기 viewport에 보이는 주요 값 개수를 기록해야 한다.
+
+밀도를 높이기 위해 주요 값을 metadata 크기로 낮추거나 오류와 차단 상태를 숨기지 않는다. 측정값은 목표 자체가 아니라 읽기, 비교와 조작 품질을 평가하는 증거로 사용한다.
+
+### 재정렬 기능이 있는 화면은 drag source, 삽입 위치, 최종 순서, 이동 경계, 저장 중 상태와 저장 실패 복구를 검증하고 keyboard와 touch에서 같은 최종 결과를 제공해야 한다.
+
+live data를 지원하면 재정렬 중 stable identity를 유지하고 이동 대상의 삭제나 동시 순서 변경을 제품 계약에 따라 처리한다.
+
+### focused adjustment는 영향받는 surface와 상태만 검증하고 새 화면 또는 structural UI는 선언된 UI system과 관련 상태 matrix 전체를 검증하며, 최소 44px hit area와 compact visual size를 독립적으로 설계해야 한다.
+
+## Acceptance Criteria
+
+### 서로 다른 설정 화면, 데이터 작업 화면과 콘텐츠 편집 화면에 스킬을 적용하면 각 제품의 작업과 디자인 시스템에서 서로 다른 정보 위계와 시각 구성을 도출하고 특정 프로젝트의 명칭이나 구조를 공통 요구사항으로 가져오지 않는다.
+
+검증하는 요구사항:
+
+- [`web-app-design`은 특정 프로젝트의 명칭·정보 구조·기능 또는 수치를 범용 기본값으로 고정하지 않고 현재 제품의 사용자 작업, 기존 디자인 시스템과 실제 상태를 근거로 UI를 설계하고 검토해야 한다.](web-app-design-quality.md#web-app-design은-특정-프로젝트의-명칭정보-구조기능-또는-수치를-범용-기본값으로-고정하지-않고-현재-제품의-사용자-작업-기존-디자인-시스템과-실제-상태를-근거로-ui를-설계하고-검토해야-한다)
+- [새 화면과 구조 변경은 typography, 정렬, 여백의 리듬, 색상 조화, 컴포넌트 비례, 시각적 위계와 정보 관계를 렌더링 결과에서 검토하고 주 작업과 관련 정보가 쉽게 보이는 완성된 UI를 만들어야 한다.](web-app-design-quality.md#새-화면과-구조-변경은-typography-정렬-여백의-리듬-색상-조화-컴포넌트-비례-시각적-위계와-정보-관계를-렌더링-결과에서-검토하고-주-작업과-관련-정보가-쉽게-보이는-완성된-ui를-만들어야-한다)
+
+### 일반 상태와 오류·차단 상태를 정보량별 fixture와 지원 theme에서 렌더링하면 작업에 필요한 정보와 상태가 기본 화면에 보이고 상세 정보, semantic color와 측정된 밀도가 해당 제품의 UX에 맞게 유지된다.
+
+검증하는 요구사항:
+
+- [각 정보 그룹은 현재 작업의 판단 관련성, 사용 빈도와 누락 결과에 따라 기본 표시, 명시적 상세 열기 후 표시 또는 예외 상태에서 항상 표시로 분류하고 오류와 차단 상태의 존재는 기본 화면에 유지해야 한다.](web-app-design-quality.md#각-정보-그룹은-현재-작업의-판단-관련성-사용-빈도와-누락-결과에-따라-기본-표시-명시적-상세-열기-후-표시-또는-예외-상태에서-항상-표시로-분류하고-오류와-차단-상태의-존재는-기본-화면에-유지해야-한다)
+- [색상은 기능 이름이나 action 동사가 아니라 semantic role에 따라 기존 제품 palette와 대응하고 제품이 지원하는 theme 사이에서 같은 의미를 유지해야 한다.](web-app-design-quality.md#색상은-기능-이름이나-action-동사가-아니라-semantic-role에-따라-기존-제품-palette와-대응하고-제품이-지원하는-theme-사이에서-같은-의미를-유지해야-한다)
+- [데이터 중심 화면은 항목 1개, 제품에서 일반적인 작업량과 많은 데이터 fixture에서 정보 밀도를 확인하고 비교 가능한 viewport에서 첫 주요 값까지 거리, 기본 row 또는 cell 높이와 초기 viewport에 보이는 주요 값 개수를 기록해야 한다.](web-app-design-quality.md#데이터-중심-화면은-항목-1개-제품에서-일반적인-작업량과-많은-데이터-fixture에서-정보-밀도를-확인하고-비교-가능한-viewport에서-첫-주요-값까지-거리-기본-row-또는-cell-높이와-초기-viewport에-보이는-주요-값-개수를-기록해야-한다)
+
+### 표시 방식 조작과 재정렬 기능을 각 입력 방식과 live update 조건에서 실행하면 명시된 데이터 변경만 발생하고 관련 화면 상태, 대상 identity, 최종 순서와 실패 복구가 제품 계약에 맞게 유지된다.
+
+검증하는 요구사항:
+
+- [제품 계약이 데이터 변경을 명시하지 않은 상세 열기, filter, group, pagination과 layout editing은 저장 데이터 mutation을 일으키지 않고 관련 입력 draft, focus, scroll과 live subscription을 의도하지 않게 잃지 않아야 한다.](web-app-design-quality.md#제품-계약이-데이터-변경을-명시하지-않은-상세-열기-filter-group-pagination과-layout-editing은-저장-데이터-mutation을-일으키지-않고-관련-입력-draft-focus-scroll과-live-subscription을-의도하지-않게-잃지-않아야-한다)
+- [재정렬 기능이 있는 화면은 drag source, 삽입 위치, 최종 순서, 이동 경계, 저장 중 상태와 저장 실패 복구를 검증하고 keyboard와 touch에서 같은 최종 결과를 제공해야 한다.](web-app-design-quality.md#재정렬-기능이-있는-화면은-drag-source-삽입-위치-최종-순서-이동-경계-저장-중-상태와-저장-실패-복구를-검증하고-keyboard와-touch에서-같은-최종-결과를-제공해야-한다)
+
+### focused adjustment와 structural UI 사례를 각각 수행하면 전자는 영향 범위만, 후자는 전체 선언과 상태 matrix를 검증하고 두 사례 모두 compact control에서 최소 44px hit area를 제공한다.
+
+검증하는 요구사항:
+
+- [focused adjustment는 영향받는 surface와 상태만 검증하고 새 화면 또는 structural UI는 선언된 UI system과 관련 상태 matrix 전체를 검증하며, 최소 44px hit area와 compact visual size를 독립적으로 설계해야 한다.](web-app-design-quality.md#focused-adjustment는-영향받는-surface와-상태만-검증하고-새-화면-또는-structural-ui는-선언된-ui-system과-관련-상태-matrix-전체를-검증하며-최소-44px-hit-area와-compact-visual-size를-독립적으로-설계해야-한다)
+
+## Decisions & History
+
+- 2026-09-07 [CURRENT] `web-app-design`은 프로젝트별 사례를 일반화한 판단 기준으로 다루고, 시각적 완성도와 작업 관련 정보의 가시성을 함께 검증한다. 정보 노출, semantic color, 표시 조작의 상태 보존, 측정 가능한 밀도와 재정렬 복구는 제품에서 관련 기능이 존재하는 범위에 적용한다.
