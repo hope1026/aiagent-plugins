@@ -18,7 +18,7 @@ for file in "$APP" "$SITE" "$VIEWER"; do [[ -f "$file" ]] || fail "missing skill
 
 assert_has '^name: web-app-design$' "$APP"
 assert_has 'browser.*PWA|PWA.*browser' "$APP"
-assert_has 'Secondary ceiling' "$APP"
+assert_has 'subordinate overall prominence' "$APP"
 assert_has '44px hit area' "$APP"
 assert_has 'viewport.*state matrix' "$APP"
 assert_not_has 'owns native mobile|owns native desktop' "$APP"
