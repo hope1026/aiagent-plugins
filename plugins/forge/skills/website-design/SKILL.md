@@ -39,7 +39,9 @@ Reuse the work checklist. For a focused change to an existing page, inherit its 
 
 ### Step 1 — Read product and content truth
 
-Read the current plan Task when one exists and the governing Spec sections. Inspect the existing brand, type, color, imagery, components, performance budget, analytics goal, and page content. Preserve established tokens unless the approved spec requires a new direction.
+Read the current plan Task when one exists and the governing Spec sections. Inspect the existing brand, type, color, imagery, components, performance budget, analytics goal, and page content. Distinguish intentional brand tokens from accumulated component overrides. Preserve the coherent system and correct demonstrated presentation inconsistencies within the authorized scope; changes to durable brand authority follow the approved Spec or Spec Delta.
+
+Map the affected typography roles: display or hero, page and section headings, subheadings, item titles, body copy, captions, and utility text. Compare representative equivalent roles across relevant sections, pages, and reused components. Match by content role and context rather than HTML heading level alone. A focused change needs only affected roles and enough peers to judge consistency, not a redesign or full-site audit.
 
 ### Step 2 — Define the visitor journey
 
@@ -60,7 +62,7 @@ WEBSITE SYSTEM — public content surface
 Visual thesis: <one specific visual idea that expresses this product>
 Audience and action: <visitor context and one primary action>
 Content hierarchy: <ordered story from promise through proof to action>
-Typography: <display, body, utility roles and why they fit the thesis>
+Typography: <role-to-token mapping, parent/child distinction, and intentional editorial or responsive variants>
 Palette: <dominant field, supporting color, and one accent>
 Spacing: <base unit and section rhythm>
 Depth: <one primary separation strategy>
@@ -74,6 +76,7 @@ Rules:
 - The Visual thesis must be specific enough that it could not label an unrelated company. For a new brand, use product facts, available assets, and relevant visual references to choose a direction; ask only when a material audience or brand choice remains unresolved.
 - Content hierarchy comes before decorative sections. Every section must advance the visitor from promise to proof or action.
 - Continuous body copy stays at least 16px with a readable line length and contrast.
+- Equivalent roles in the same context share size, weight, line height, and spacing conventions. Hero, editorial, and responsive variants may differ when their content role explains the difference; do not flatten them into one heading size. Preserve readable body copy and make heading/content hierarchy clear through size, weight, spacing, and grouping. Same-size text can express different levels, and a larger answer than its compact FAQ question is not automatically a defect. Do not import an application help-size ceiling or a product-specific pixel scale.
 - Imagery must carry meaning, proof, atmosphere, or product understanding. Do not use abstract decoration as a fake product screenshot.
 - Use one accent and one dominant visual gesture. Repeating large type, saturated color, gradients, floating cards, and motion as simultaneous focal points creates noise.
 - Motion is restrained, optional, and subordinate to reading. Respect reduced motion and avoid `transition: all`.
@@ -94,6 +97,8 @@ Use a real browser at desktop and mobile widths. Confirm:
 
 - first-viewport promise, visual anchor, and primary action remain legible;
 - heading hierarchy and reading order match the content plan;
+- representative affected roles have recorded computed font size, weight, line height, color, and surrounding spacing; equivalent roles across relevant sections or pages are compared at comparable viewports, with intentional variants explained;
+- rendered heading/content pairs remain distinguishable, including long headings and expanded content when present; semantic heading order, equal numeric values, or absence of overflow alone does not prove visual hierarchy;
 - imagery crops intentionally and does not shift layout;
 - body copy remains readable and no horizontal overflow appears;
 - keyboard focus, form states, reduced motion, and semantic structure work;
@@ -113,6 +118,9 @@ Rendered output is the evidence. If a real browser or performance inspection is 
 | "A gradient, oversized type, floating cards, and motion will make it memorable." | One dominant gesture is memorable; four gestures compete. |
 | "Mobile can stack the desktop layout." | Mobile composition needs its own hierarchy, crops, and action placement. |
 | "The asset looks good, so its weight is acceptable." | Visual value must justify performance cost and layout stability. |
+| "The headings are semantic and nothing overflows, so typography passes." | Compare rendered equivalent roles and parent/child relationships, including relevant peers and responsive variants. |
+| "Existing components justify any difference in section titles." | Reuse the coherent role system; incidental overrides still need correction within scope. |
+| "Consistency means every title uses the same size." | Match equivalent roles and contexts. Preserve intentional hero and editorial hierarchy without a universal size ratio. |
 
 ## Handoff
 

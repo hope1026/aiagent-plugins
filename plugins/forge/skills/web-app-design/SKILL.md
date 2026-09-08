@@ -46,7 +46,9 @@ Choose the scope before changing UI code. Reuse the work checklist.
 
 ### Step 1 — Read product truth
 
-Read the current plan Task when one exists and the governing Spec sections. Then inspect the actual component, design tokens, typography roles, spacing, control states, information architecture, and responsive rules already used by the product. Existing values are inherited unless the approved spec requires a change. Treat examples from another product as evidence for a general design question, never as this product's default structure, terminology, feature set, or numeric target.
+Read the current plan Task when one exists and the governing Spec sections. Then inspect the actual component, design tokens, typography roles, spacing, control states, information architecture, and responsive rules already used by the product. Distinguish intentional shared tokens from accumulated component overrides. Inherit the coherent system; correct demonstrated presentation inconsistencies within the authorized scope. A change to durable design authority follows the approved Spec or Spec Delta. Treat examples from another product as evidence for a general design question, never as this product's default structure, terminology, feature set, or numeric target.
+
+Map the roles that exist in the affected surface: page title, section title, group title, item or field label, primary value, body copy, help, and metadata. Compare representative peers across relevant tabs, pages, and components, as well as each parent with its children. Match by role and context, not HTML tag alone. A focused adjustment needs only the affected role and enough neighboring or peer elements to judge consistency; it does not require a product-wide audit.
 
 ### Step 2 — Classify the primary task and interaction
 
@@ -70,7 +72,8 @@ For new or structural UI, summarize this system before UI code. Keep it concise 
 WEB APP SYSTEM — browser application surface
 Intent: <product-specific operational intent>
 Inherited tokens: <actual type, color, spacing, radius, and depth sources>
-Role scale: Primary <setting or task role> / Secondary ceiling <help role that cannot exceed primary> / Metadata <supporting role>
+Role scale: Primary <setting or task role> / Secondary <help with subordinate overall prominence and readable text> / Metadata <supporting role>
+Typography roles: <role-to-token mapping, parent/child distinction, and intentional contextual variants>
 Palette: <neutral work surface, semantic states, and one interaction accent>
 Spacing: <base unit and density rule>
 Depth: <one primary separation strategy>
@@ -82,11 +85,12 @@ Visual character: <product-appropriate composition, type, spacing, surface, and 
 
 Rules:
 
-- Continuous reading copy stays at least 16px. Compact labels and metadata may use an inherited 12–14px role only when readability is verified and they do not carry the primary task.
-- Help, tooltip, and “how it works” content uses the inherited secondary role. Opening it must not make its type size, weight, contrast, or spacing stronger than the setting or menu item it explains.
+- Continuous reading copy stays at least 16px. Compact labels and metadata may use an inherited 12–14px role when readability is verified; primary values and actions need a task-appropriate readable role rather than being demoted to metadata for density. This is not a minimum size for every UI label.
+- Help, tooltip, and “how it works” content uses the secondary role and stays subordinate in overall prominence to the setting or task it explains. Preserve readable text even when a long explanation needs a larger font than a compact label; use weight, contrast, grouping, and placement to retain hierarchy without reducing contrast below readability. Opening help does not promote it to a section heading or primary action.
 - A 44px hit area is an interaction floor, not a mandate for a 44px-tall visible control. Use padding or a wrapper so compact controls remain visually proportional.
 - Selected tabs, segmented controls, mode choices, toggles, and buttons must look operable before hover and must differ from static status text.
 - Use spacing, weight, and color before introducing a larger title size. Preserve the product's established role scale.
+- Equivalent roles in the same context use shared typography tokens, including size, weight, and line height, with consistent surrounding spacing. Explain intentional responsive or contextual variants. Parent and child roles must be visibly distinguishable, but need not have different font sizes when weight, spacing, and grouping already make the hierarchy clear. Do not prescribe a universal heading/body ratio or copy another product's pixel scale.
 - Choose color by semantic role rather than a feature name or action verb. Map the roles the product actually supports—primary interaction, neutral action, premium identity, success, warning, information, system error, and destructive action—to its existing palette. Add and Create do not become success or diff-add actions by name. Verify that supported light and dark themes preserve meaning and prominence.
 - Make typography, alignment, spacing rhythm, color relationships, surface treatment, and component proportions look intentional together. Visual detail may add character, but it must strengthen grouping, affordance, or orientation instead of competing with the task.
 
@@ -124,6 +128,8 @@ Motion is optional. When used, keep it under 300ms and animate `transform` or `o
 Use a real browser and execute the viewport×state matrix. For each case:
 
 - compare primary, secondary, and metadata hierarchy;
+- record computed font size, weight, line height, color, and surrounding spacing for representative affected roles; compare equivalent roles across relevant tabs, pages, or components at comparable viewports, and compare each heading with its content in the rendered view;
+- identify intentional variants and resolve unexplained role drift; confirm parent/child hierarchy remains clear in applicable narrow, long-label, and disclosure states. Numeric equality alone does not prove readability, and numeric difference alone does not prove a defect;
 - confirm default, disclosed, and exception-visible information matches the primary task and keeps actionable errors and blockers visible;
 - verify interactive and informational regions are distinguishable;
 - measure row height, core column width, and action slot before and after mode changes;
@@ -143,7 +149,10 @@ Rendered behavior is the evidence. If a real browser is unavailable, report the 
 
 | Excuse | Reality |
 |---|---|
-| "The explanation deserves a larger font because it is newly opened." | Disclosure changes visibility, not ownership. Secondary help stays below the primary setting. |
+| "The explanation deserves a larger font because it is newly opened." | Disclosure changes visibility, not role. Preserve readable copy and subordinate overall emphasis; do not enlarge it merely because it opened. |
+| "These are existing tokens, so their inconsistent use is correct." | Compare equivalent roles and separate the shared system from incidental overrides. |
+| "Every heading must be bigger, so shrink the paragraph or enlarge all labels." | Preserve readable copy. Weight, spacing, and grouping can distinguish same-size roles; derive any size change from this product. |
+| "This tab looks fine, so all peer headings are consistent." | A cross-surface consistency claim needs representative peer comparisons within the claimed scope. |
 | "A 44px hit target means every visible control should be 44px tall." | Hit geometry and visual geometry are separate decisions. |
 | "Auto and Manual use different content, so different row geometry is expected." | Different content still needs a shared comparable row, core columns, and action slot. |
 | "The selected option is obvious from context." | A control must communicate interaction and selection without requiring inference. |

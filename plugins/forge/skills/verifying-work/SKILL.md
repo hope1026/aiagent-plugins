@@ -70,6 +70,8 @@ Plan existence does not determine the class. A plan-only route can have no Canon
 | Plan-only work complete | Every plan command and Done Check passes | Task boxes alone |
 | Worker finished | Root diff review and applicable inspected execution evidence | worker report |
 
+For UI or visual-quality claims, use the owning design skill's rendered checks and role-comparison evidence. A consistency claim across tabs, pages, or components needs representative comparisons within that scope; one screenshot or a successful build cannot prove unobserved surfaces. Reuse applicable evidence, report missing observations, and keep typography values in the owning design system rather than defining another scale here. Requested Visual Docs retain the proportional verification path below.
+
 ### 3. Add Canonical contract evidence when required
 
 For existing-contract restoration, partial implementation, or approved Spec Delta work:
@@ -140,6 +142,7 @@ Within the active request, fix source or shared tooling and rebuild as needed; p
 | "Another skill started, so the same unchanged suite must run again." | Reuse valid inspected evidence until a relevant change or uncovered impact invalidates it. |
 | "The deadline makes schema work Quick." | Misclassification is a routing failure, not a verification shortcut. |
 | "I can say it should work." | Confidence and code reading are not execution evidence. |
+| "The build passed and one screenshot looks fine, so the entire UI is consistent." | Match the claim to the owning design skill's rendered evidence and representative role comparisons; unobserved scope remains unverified. |
 
 ## Handoff
 

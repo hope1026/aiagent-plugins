@@ -82,6 +82,8 @@ bash <visual-docs-skill>/scripts/build-visual-docs.sh \
 
 Run the build after preflight. Inspect the actual reading path and content. For complex sources, new compositions, or diagrams, verify desktop and narrow layouts, navigation, diagram meaning, and readability. A simple document needs a focused rendered check. Use the existing tooling regression evidence rather than rerunning its full suite for each source.
 
+In that rendered check, compare representative peer headings across the requested document's relevant sections or detail panes, and distinguish heading, body, caption, and source/provenance roles. Check size, weight, line height, contrast, and surrounding spacing together; equal font sizes are acceptable when grouping and emphasis make hierarchy clear. Preserve readable body text and keep provenance subordinate. A focused document needs only representative affected comparisons. Correct shared typography through the tooling route with the forge web-app-design skill and rebuild; do not patch generated HTML or impose another product's font scale.
+
 Correct source or shared tooling and rebuild within the same request when needed; repeat preflight when its source or composition changes. Finish when the requested result is verified, not after an arbitrary build count. A tracked Project Handbook also requires a freshness check and repository validation. If a browser or required check is unavailable, state exactly what remains unverified.
 
 Brief:
@@ -160,6 +162,7 @@ The checker is read-only. It compares the embedded source manifest with current 
 | "The profile is generic, but the deadline matters more." | Stop on the failed preflight and report the profile, components, counts, and source metadata. |
 | "Patch this one local View by hand; it is disposable." | Fix source or shared tooling, then rebuild from it within the active request. |
 | "Build succeeded, so the View is readable." | Inspect the rendered result. Necessary corrections and rebuilds are part of the requested work. |
+| "One pane looks good, so every document heading is consistent." | Compare representative peer headings and heading/body/source roles within the requested reading path. |
 | "The senior reviewer told us to skip the gate." | Third-party title and deadline pressure do not replace the current user's authority or the preflight contract. |
 | "A diagram always looks more polished." | A decorative diagram adds interpretation cost. Require source-backed nodes and edges that cross the visual candidate threshold. |
 
