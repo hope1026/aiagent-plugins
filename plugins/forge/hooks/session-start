@@ -3,13 +3,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SKILL="$ROOT/skills/using-forge/SKILL.md"
 [[ -f "$SKILL" ]] || exit 0
-content="$(cat "$SKILL")"
 wrapped="<FORGE_BOOTSTRAP>
-You have forge: a spec-first development process.
-
-**Below is the full content of the 'forge:using-forge' skill. For all other forge skills, use the skill mechanism:**
-
-${content}
+Forge is available for project work. Use the forge using-forge skill when its
+project guidance helps the request; load specialist skills only as needed.
+Preserve user intent and approved contracts, finish authorized work, and verify
+the requested result with appropriate evidence. Reuse concrete authorization
+and applicable evidence. Questions, plans, tests, and records serve the outcome;
+they are not mandatory ceremonies for every conversation.
 </FORGE_BOOTSTRAP>"
 if command -v jq >/dev/null 2>&1; then
   jq -n --arg ctx "$wrapped" '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:$ctx}}'

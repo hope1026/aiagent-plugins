@@ -5,15 +5,13 @@ description: 'Use when a user explicitly asks to visualize, present, print, shar
 
 # Visual Docs
 
-Announce once when first applied: "Using the forge visual-docs skill to create the requested human-readable view."
-
 Respond to the user in the user's language. This skill file stays in English.
 
 Visual Docs turns authoritative or source-backed Markdown into a readable, self-contained HTML document. It is a presentation layer, never a source of truth. Do not invent descriptions, requirements, ownership, or status in generated HTML.
 
 Use this skill only after an explicit request from the user to create, refresh, or check a visual document. A lifecycle checkpoint or source change alone does not authorize a new document or refresh. The active explicit request includes the verification and corrections needed to finish that document.
 
-## Iron Law
+## Output guarantees
 
 ```text
 NO VISUAL DOC WITHOUT AN EXPLICIT USER REQUEST.
@@ -57,7 +55,7 @@ Use a visual reading structure when the source itself provides enough relationsh
 ## Build
 
 Run from anywhere inside the target Git repository. Choose a lowercase `view-id` matching `^[a-z0-9][a-z0-9-]{0,63}$`.
-After explicit user intent, create one checklist item for each applicable stage: document kind and source selection, presentation preflight, generation and rendered verification or read-only freshness check, and handoff. Keep the checklist current until the request ends.
+Reuse the existing work record when generation and review need tracking; a simple request needs no separate stage checklist.
 After the user has explicitly requested the Visual Doc and the source options are resolved, run one read-only presentation preflight with the same build arguments plus `--dry-run --format json`. Inspect `view_context`, `presentation_plan.profile`, every component and its reference count, and the source counts before writing HTML.
 For every qualifying visual candidate that meets or exceeds the relationship threshold, confirm that the Presentation Plan selects a matching non-empty component before building. When no candidate meets the threshold, confirm that the plan keeps the text reading path and does not add Mermaid only for decoration.
 In a mixed source, preserve every non-qualifying source block in its prose, list, table, code, or generic detail path and confirm total content coverage remains 100%; qualifying visuals supplement that path and never authorize dropping nearby text.
@@ -154,17 +152,6 @@ bash <visual-docs-skill>/scripts/build-visual-docs.sh \
 
 The checker is read-only. It compares the embedded source manifest with current repository files and reports `current`, `stale`, or `unverified`. A stale result alone does not authorize a new refresh. Use an active explicit create/refresh request for its necessary corrections; after that request is complete, require new refresh intent.
 
-## Red Flags
-
-| Pressure | Required response |
-|---|---|
-| "The old Viewer already exists, so refresh it after the source changed." | Existing output and source drift grant no refresh authority. Report possible staleness and wait for explicit refresh intent. |
-| "The profile is generic, but the deadline matters more." | Stop on the failed preflight and report the profile, components, counts, and source metadata. |
-| "Patch this one local View by hand; it is disposable." | Fix source or shared tooling, then rebuild from it within the active request. |
-| "Build succeeded, so the View is readable." | Inspect the rendered result. Necessary corrections and rebuilds are part of the requested work. |
-| "One pane looks good, so every document heading is consistent." | Compare representative peer headings and heading/body/source roles within the requested reading path. |
-| "The senior reviewer told us to skip the gate." | Third-party title and deadline pressure do not replace the current user's authority or the preflight contract. |
-| "A diagram always looks more polished." | A decorative diagram adds interpretation cost. Require source-backed nodes and edges that cross the visual candidate threshold. |
 
 ## Hand off
 

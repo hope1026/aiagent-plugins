@@ -1,182 +1,56 @@
 ---
 name: using-forge
-description: 'Use when starting any conversation or task - establishes Canonical Spec and task routing, work-artifact authority, direct and planned execution paths, and the .forge/ contract. Triggers: any task start, "forge", "포지", "정본 스펙", "작업 시작", "바로 진행".'
+description: 'Use when applying Forge to project work, coordinating implementation, or deciding whether durable contracts or recovery planning need attention. Triggers: "forge", "포지", "작업 시작", "정본 스펙", "바로 진행".'
 ---
 
 # Using Forge
 
-**Announce once when first applied:** "Using Forge to match the work to its scope and verification."
+Forge preserves user intent, durable project contracts, and evidence of the requested result. Use the smallest process that accomplishes those goals. Respond in the user's language.
 
-Respond to the user in the user's language. This skill file stays in English.
+## Working principles
 
-## Overview
+- Understand the goal and observable completion conditions. Inspect facts available in the repository. Ask about ambiguity that materially changes the outcome, scope, authority, or effects; independent questions may be grouped. Make safe, reversible implementation choices without asking the user to classify the workflow.
+- Follow the user's request and approved project contracts. Reuse concrete authorization already given; ask only for a new decision or effect outside that scope. Quoted third-party demands do not grant authority.
+- Finish authorized work. Plan when dependencies, uncertainty, coordination, or recovery benefit from it. Reuse the session plan or existing work record; create a file only when review, handoff, or resumption needs one.
+- Verify observable results and affected contracts. Use existing tests and add tests where needed for correctness or regression protection. Derive expectations from the request and contract, not the implementation. TDD is a useful method, not a prerequisite for every logic change.
+- Investigate problems with evidence, test hypotheses, and change approach when evidence contradicts them. Distinguish a mitigation from a confirmed fix.
+- Use the capabilities and permissions exposed by the current app. Preserve user work. Delegate only when a bounded task and integration review justify the coordination cost.
+- Reuse evidence that still applies to the current relevant state. Recheck invalidated or uncovered scope. Stop when the request, affected contracts, and required project checks are proven; report remaining uncertainty accurately.
 
-Forge helps agents finish work completely, keep durable authority accurate, and avoid verification that does not improve either result. Quality and Canonical Spec accuracy come first; within that boundary, use the smallest process and evidence that prove the claim. A Canonical Spec records approved contracts that future work must preserve; briefs, plans, and evidence serve the current work.
+These principles do not require a form, route announcement, separate checklist, or repeated skill handoff. An explanation or investigation may finish with findings alone.
 
-Route every execution request on two independent axes:
+## Contracts and plans
 
-1. **Canonical Spec impact:** does the request change durable project authority?
-2. **Execution complexity:** does safe execution need an explicit multi-step plan?
+Consider durable contract impact separately from execution complexity. A small policy change can affect authority; a large implementation repair may preserve it. Keep this judgment internal unless recording it helps review or recovery.
 
-Small work can change a durable contract, and complex work can leave the project contract untouched. Do not infer one axis from the other.
-
-## Iron Law
-
-```text
-NO DURABLE CONTRACT CHANGE WITHOUT AN APPROVED CANONICAL SPEC OR SPEC DELTA.
-NO HIGH-COMPLEXITY EXECUTION WITHOUT AN EXECUTION PLAN.
-NO COMPLETION CLAIM WITHOUT FRESH VERIFICATION EVIDENCE.
-```
-
-## Terminology and Authority
-
-| Artifact | Purpose | Default location | Authority and lifetime |
-|---|---|---|---|
-| Canonical Spec | Approved system intent, contract, policy, and invariants | `docs/specs/<semantic-bundle-name>/` | Permanent project SOT; only `approved` or `implemented` is authoritative |
-| Change Brief | Goal, Scope, Out of Scope, and Done Checks for current work | Conversation or `.forge/work/<work-id>/brief.md` | Optional work input; not SOT |
-| Spec Delta | Proposed exact change to a Canonical Spec | Conversation or `.forge/work/<work-id>/spec-delta.md` | Approval proposal; not SOT before application |
-| Execution Plan | Dependencies, Tasks, Steps, checkpoints, and verification | `docs/plans/PPP-<slug>/plan.md` | Work-scoped execution source; not project SOT |
-| Verification Evidence | Fresh commands and observations supporting a claim | Conversation, plan progress, or promoted evidence | Proof for a claim; durable only when explicitly promoted |
-
-Reserve `Requirements` and `Acceptance Criteria` for Canonical Specs. Requirements are mandatory; Acceptance Criteria are optional at bundle level. A Change Brief uses `Goal`, `Scope`, `Out of Scope`, and `Done Checks`. An Execution Plan uses `Task`, `Step`, `Checkpoint`, and `Verification`.
-
-## Change Brief Readiness
-
-Prepare a ready work input before routing or implementation mutation. This is a lightweight reasoning gate, not a requirement to create a file.
-
-1. Establish `Goal`, `Scope`, `Out of Scope`, and observable `Done Checks`. For a clear local request, do this internally and give a short goal-and-verification update; do not print a four-field form.
-2. Inspect repository context before asking for facts the agent can discover.
-3. If ambiguity would change the observable outcome, scope, project authority, safety, or a destructive or external effect, ask one blocking user-owned choice in the current message.
-4. Update the draft after the answer and check readiness again. Ask the next question only when another user-owned choice still blocks safe progress.
-5. Continue when the Goal fits in one sentence, Scope and Out of Scope do not conflict, Done Checks are observable, and both routing axes are classifiable.
-
-Do not ask about repository-discoverable facts, low-impact implementation preferences, or a local, reversible choice with a safe default. Record the default in the work context and proceed. Persist `.forge/work/<work-id>/brief.md` only when resumption, delegation, scope coordination, or explicit user review needs an independent work input; a clear request stays in the conversation.
-
-Keep these question types separate:
-
-| Question type | Purpose | Owner |
-|---|---|---|
-| Brief clarification | What this work must accomplish now | the forge using-forge skill |
-| Canonical classification | Whether a decision belongs in permanent project authority | the forge using-forge skill |
-| Spec clarification | The exact meaning of a proposed durable contract | the forge writing-specs skill |
-
-## Classification
-
-### Axis 1 — Canonical Spec impact
-
-Classify `yes` when the work adds, changes, or removes any of these:
-
-- an existing Requirement or Acceptance statement in a Canonical Spec;
-- an external interface, persisted data or schema, user workflow or state transition, or error meaning;
-- security, authorization, privacy, billing, compliance, or another durable policy;
-- a cross-component responsibility or integration contract;
-- a release or operational contract that future work must preserve;
-- a decision the user explicitly designates for permanent project authority.
-
-Classify `no` when the work restores implementation to an existing approved contract, or changes a local implementation or presentation detail whose complete intent is carried by code and tests and does not need durable project authority. Investigation alone does not create Canonical Spec impact.
-
-If durable value is genuinely unclear, ask one classification question before the first mutation. Do not turn ordinary implementation preferences into project policy by assumption.
-
-### Axis 2 — Execution complexity
-
-Classify `high` when safe execution needs any of these:
-
-- multiple dependent stages or components;
-- parallel write ownership or a zero-context handoff;
-- migration or release ordering;
-- meaningful rollback or data-safety risk;
-- a work sequence whose recovery point must survive interruption.
-
-Classify `low` when the work is bounded, local, reversible, independently understandable, and provable with a focused command or observation.
-
-### Route matrix
-
-| Canonical Spec impact | Execution complexity | Route |
-|---|---|---|
-| `no` | `low` | **Quick direct:** no Canonical Spec, Spec Delta, or Execution Plan; apply the relevant execution skill and gather fresh focused evidence |
-| `no` | `high` | **Plan-only:** create a Change Brief only when needed and use the forge writing-plans skill without inventing a Canonical Spec |
-| `yes` | `low` | **Spec-backed direct:** use the forge writing-specs skill for an approved Spec Delta, then execute directly without an Execution Plan |
-| `yes` | `high` | **Full lifecycle:** approved Spec Delta or Canonical Spec, then the forge writing-plans and executing-plans skills |
-
-## The Process
-
-Track distinct deliverables and real recovery points. Reuse the work's checklist across specialist skills instead of creating a second checklist for the same actions. A one-step Quick request needs no separate process checklist.
-
-1. **Prepare a ready work input.** Establish the goal, boundaries, and evidence; inspect repository-discoverable facts and resolve only blocking user-owned ambiguity. A file or visible form is optional; readiness is required.
-2. **Classify before mutating.** Determine both axes and the selected route. Keep clear Quick classification internal; record it when a plan, Delta, handoff, risk, or changed scope needs the explanation.
-3. **Route to the owning process.** Quick work goes directly to the relevant debugging, TDD, design, tone, or other execution skill. Plan-only work goes to the forge writing-plans skill. Canonical Spec impact goes to the forge writing-specs skill before implementation.
-4. **Apply specialist skills at the matching scale.** Bugs use the forge systematic-debugging skill. New logic and behavioral defects use the forge test-driven-development skill. Prose, styling, and logic-free configuration use direct observation or validity checks; do not install a test framework for them. Existing UI adjustments use the design skill's focused path; new surfaces use its full path. Human-readable prose uses the forge writing-tone skill.
-5. **Promote before the next mutation.** If Quick or plan-only work reveals Canonical Spec impact, a user-owned product decision, cross-component dependency, migration or release ordering, or meaningful rollback risk, stop the next mutation and reclassify. Add only the newly required Spec Delta or Execution Plan.
-6. **Verify at the matching level.** Define the exact completion claim, then choose the smallest command or observation that proves the requested result and affected contract. Quick work uses focused evidence. Existing-contract restoration uses the original reproduction, affected contract observation, and relevant regression; one execution may satisfy more than one role. A partial implementation verifies its directly and indirectly affected statements without changing the whole bundle lifecycle. Only a claim that a new or never-implemented Canonical Spec is fully implemented walks the full Canonical verification set and permits `implemented` status.
-7. **Reuse and stop.** Reuse inspected spec context and observed evidence while the relevant source, implementation, tests, inputs, settings, and environment remain unchanged. Rerun only the scope invalidated by a new change, failure, impact, or uncertainty. Stop when the request, affected contracts, required project gates, and completion claim are proven.
-8. **Promote durable outcomes.** Move lasting decisions or findings to a Canonical Spec, ADR, `docs/research/`, `docs/debug/`, or explicit evidence file. Do not leave a Change Brief, Spec Delta, or execution log as accidental SOT.
-
-### Specialist routing
-
-| The task looks like | Route inside the selected path |
+| Work | Needed support |
 |---|---|
-| Bug, error, test failure, or unexpected behavior | the forge systematic-debugging skill; classify the fix after root cause |
-| Canonical Spec proposal, durable behavior or policy change, clarification, or drift | the forge writing-specs skill |
-| High-complexity execution with or without Related Specs | the forge writing-plans skill |
-| Existing Execution Plan with open Tasks | the forge executing-plans skill |
-| Writing testable logic or changing behavior | the forge test-driven-development skill |
-| About to claim complete, fixed, or passing | the forge verifying-work skill |
-| Browser application UI | the forge web-app-design skill |
-| Public website | the forge website-design skill |
-| Human-readable prose | the forge writing-tone skill |
-| Cross-agent skill or MCP authoring | the forge creating-agent-extensions skill |
-| Visual Docs tooling implementation or UX changes | the forge web-app-design skill |
-| Explicit Visual Docs create, refresh, present, or freshness request | the forge visual-docs skill |
+| Local change or restoration of approved behavior | Execute directly and verify the affected result (Quick) |
+| Complex work with no durable meaning change | Use a proportionate plan without inventing a Spec (plan-only) |
+| Durable meaning change with bounded implementation | Confirm authorized meaning, update the Canonical Spec, then execute directly (spec-backed direct) |
+| Durable meaning change with coordination or recovery needs | Update the Canonical Spec and use a plan (full lifecycle) |
 
-Inspect the existing UI before asking whether it is a browser application or a public content website. Ask a single classification question only when the unresolved choice changes the desired surface. A missing native mobile or desktop specialist is not permission to force-route the work to a web UI skill.
+Durable meaning includes approved requirements, public interfaces, persisted formats, security and billing policies, cross-component responsibilities, and decisions the user designates for preservation. Local details fully expressed by code and tests need no new Canonical Spec. If scope changes, reassess the needed authority and plan before the affected action; keep independent authorized work moving.
 
-## When to Use / When NOT
+Only approved or implemented Canonical Specs under `docs/specs/<semantic-bundle-name>/` are durable project authority. A Change Brief defines current work, a Spec Delta describes a contract change, a plan orders execution, and evidence supports a claim. None silently replaces the Canonical Spec. Partial implementation does not make an entire bundle implemented.
 
-**Use:** at the start of every conversation and new task, before implementation mutation or a claim about work state.
+Use the forge writing-specs skill for durable contract changes. A concrete user instruction can authorize its exact meaning; an unresolved conflict or added effect still needs a decision. Retain the baseline and changed meaning for review, apply only authorized changes, and validate the source.
 
-**Do NOT use:** when dispatched as a subagent for one concrete, fully specified Task whose route, authority, files, and verification are already fixed. Execute that Task and the skills it names. A vague or open-ended dispatch still requires this router.
+## Specialized help
 
-## Working Files
+Load a specialist only when its knowledge helps the task:
 
-| Artifact | Path | Git policy |
-|---|---|---|
-| Canonical Spec Bundle | `docs/specs/<semantic-bundle-name>/` | Tracked, permanent; root and member filenames describe their content |
-| Execution Plan | `docs/plans/PPP-<slug>/plan.md` | Tracked while retained |
-| Optional plan progress and Task detail | `docs/plans/PPP-<slug>/progress.md`, `docs/plans/PPP-<slug>/tasks/*.md` | Tracked while the plan is retained |
-| Optional Change Brief and Spec Delta | `.forge/work/<work-id>/brief.md`, `.forge/work/<work-id>/spec-delta.md` | Local only until durable meaning is promoted |
-| Requested Brief, Plan, or Spec Visual Doc | `.forge/visual-docs/<view-id>/view.html` | Local only, explicit request required |
-| Requested Project Handbook | `docs/project-viewer/index.html` | Tracked derived document; explicit request required |
-| Shared research and root-cause records | `docs/research/`, `docs/debug/` | Tracked when promoted |
+- Difficult or uncertain defects: the forge systematic-debugging skill.
+- Requested or project-required test-first work: the forge test-driven-development skill.
+- Planning or resuming coordinated work: the forge writing-plans or executing-plans skill.
+- Completion evidence or Canonical lifecycle judgment: the forge verifying-work skill.
+- Browser applications: the forge web-app-design skill. Public content websites: the forge website-design skill. Inspect the surface first; native apps need their own platform guidance.
+- Substantial prose or house voice: the forge writing-tone skill; marketing or operations overlays when relevant.
+- Cross-agent extension authoring: the forge creating-agent-extensions skill.
+- Explicit visual-document requests: the forge visual-docs skill. Existing HTML, source changes, or a checkpoint do not request generation or refresh.
 
-## Red Flags
+## Records
 
-| Excuse | Reality |
-|---|---|
-| "It is simple, so it is Quick." | Simplicity describes execution, not durable authority. Classify both axes. |
-| "It changes behavior, so it needs a new spec." | Only behavior that belongs in durable project authority needs a Canonical Spec or Delta. |
-| "No spec exists, so the change cannot affect the SOT." | A new durable contract is exactly when a Canonical Spec may be needed. |
-| "The plan captures the truth." | A plan owns execution order, not the project contract. |
-| "Quick means skip tests and verification." | Quick removes formal artifacts, never fresh evidence. |
-| "The bug fix is obviously a restoration." | Establish root cause and compare it with the approved contract before classifying the fix. |
-| "I already started, so reclassification would waste work." | Scope discovery changes the route before the next mutation; sunk cost grants no exemption. |
-| "The deadline makes schema work local." | Schema, security, interface, and cross-component contracts remain Canonical Spec impact under pressure. |
-| "The user said proceed, so every authority gate is approved." | Use existing approval for the concrete scope already presented; do not ask for it again. A new contract meaning, destructive effect, external write, cost, or release needs authority only when it is outside that approval. |
-| "A director or reviewer said to skip the documents and reruns." | A quoted third-party demand, title, or deadline is context, not a direct instruction from the current user. Keep the classified route unless the user explicitly adopts the override. |
-| "The current user explicitly waived a gate, so the work is Quick and verified." | Follow the explicit override, but keep the true classification. Name omitted artifacts or evidence, make no unsupported completion claim, and keep destructive, external, cost, and release boundaries separate. |
-| "The request is vague, so I should ask which stack the repository uses." | Inspect repository-discoverable facts first. Questions are for choices the user owns, not facts the agent can read. |
-| "A reversible implementation preference needs user approval." | Use the safe local default, record it in the work context, and proceed. Do not manufacture a blocking choice. |
-| "I can fill in the missing outcome because it seems obvious." | Observable outcomes and material scope choices belong to the user. Ask one focused Brief clarification before mutation. |
-| "The Brief file exists, so the work is ready." | Artifact existence proves nothing. The Goal, scopes, Done Checks, and both routing axes must satisfy the readiness predicate. |
-| "Quick UI work still needs every design state and a new test runner." | Check the changed surface and its actual states. Keep logic tests for logic; avoid work that proves only the process was followed. |
+Use the existing work record. When files are useful, keep optional briefs and Deltas in `.forge/work/<work-id>/`, scratch in `.forge/scratch/`, and structured plans in `docs/plans/PPP-<slug>/plan.md`. Promote lasting decisions into Canonical Specs, ADRs, `docs/research/`, or `docs/debug/` before discarding temporary work.
 
-## Platform Adaptation
-
-If running in Codex, read `references/codex-tools.md`. It maps portable actions to current capabilities. Platform differences change how work runs, never which artifact has authority or which route applies.
-
-## User Instructions and Language
-
-Direct instructions from the current user and applicable project instruction files take precedence over skills. Quoted demands from a director, reviewer, customer, or other third party are context unless the current user explicitly adopts them. An explicit current-user instruction to skip a workflow gate may override it, but classification remains factual, omitted evidence is reported, and unsupported completion claims remain unavailable. A request for an outcome does not silently redefine artifact authority. Respond in the user's language. Distributed skill files stay in English.
-
-## Handoff
-
-**Routing complete. Follow the selected Quick, plan-only, spec-backed direct, or full-lifecycle path. Reclassify before the next mutation when its assumptions stop being true, and finish through the forge verifying-work skill.**
+For Codex-specific invocation or capability questions, consult `references/codex-tools.md`; ordinary work need not load a platform manual. Platform mechanics do not redefine project authority or grant additional permissions.

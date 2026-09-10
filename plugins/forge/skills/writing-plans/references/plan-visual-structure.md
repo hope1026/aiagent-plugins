@@ -12,7 +12,7 @@ Use this reference for Execution Plans that need a human review view. The plan r
 6. Place, platform, or subsystem extension points
 7. Verification coverage and, when Related Canonical Specs exist, Task-level full-statement mapping
 8. Detailed Tasks and Steps
-9. Internal checkpoints, notify checkpoints, and approval boundaries
+9. Recovery points and unresolved user decisions
 
 This order lets a reviewer move from scope to flow to implementation detail to evidence.
 
@@ -27,7 +27,7 @@ This order lets a reviewer move from scope to flow to implementation detail to e
 
 Use the same Verification Scope as the plan and final evidence: full coverage only when the plan claims full implementation of a new or never-implemented contract, and affected statements plus regression preservation for partial implementation, change, or restoration. When a plan has a Related Canonical Spec, label its coverage and provenance references with bundle and member paths. Keep exact heading text visible. Do not infer cross-bundle links or merge statements with similar wording. The canonical Related Specs block owns normalized bundle paths, while each Task owns its exact `Governing statements:` links; diagrams only visualize those declared mappings.
 
-Use 6–10 Routes as a readability guideline for a large plan, fewer when there are fewer real phases. Do not invent phases to meet a count. Every Task has one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
+Use as many Routes as the actual phases and reading path need. Every Task has one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
 
 ## Task dependency or Route map
 
@@ -63,4 +63,4 @@ no Related Canonical Spec: Task → Step → verification method
 
 Checkboxes record review progress, not product PASS or FAIL. Use Task-scoped Step keys such as `Task4-Step2` because Step numbering restarts inside each Task.
 
-Execution metadata must make routing decidable: exact dependencies, write ownership, stable Interfaces, verification, parallel-safety reason, and any real approval gate. Ordinary local edits, tests, planned commits, tier selection, subagent work, and safe parallel groups use internal or notify checkpoints and do not wait for the user.
+Include dependencies, ownership, interfaces, verification, and recovery where they help execution or review. Continue within existing authorization; only a new user-owned decision or effect outside that scope requires a pause. No fixed execution ledger or model tier is needed.

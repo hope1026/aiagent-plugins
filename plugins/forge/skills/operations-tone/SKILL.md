@@ -5,15 +5,13 @@ description: 'Use when writing or revising customer support, operations updates,
 
 # Operations Tone
 
-Announce once when first applied: "Using the forge operations-tone skill to shape customer and operations communication."
-
 Respond to the user in the user's language. This skill is an overlay on top of the forge writing-tone skill.
 
 ## Overview
 
 Operations communication should reduce uncertainty for the customer. The default is not a root-cause report; the default is confirmed status, customer impact, action plan, customer action required, and the next update condition. The base prose rules come from the forge writing-tone skill; this skill adds customer trust and support discipline.
 
-## Iron Law
+## Principle
 
 ```
 STATUS AND NEXT ACTION FIRST. DO NOT EXPLAIN CAUSE DETAILS UNTIL THEY HELP THE CUSTOMER.
@@ -100,18 +98,3 @@ Do not use this skill for marketing copy, sales pages, or launch posts. Use the 
 ## Working Files
 
 This skill creates no Forge artifacts. Put the finished reply where the user requested: issue comments, support emails, Slack updates, status pages, release replies, or message drafts.
-
-## Red Flags
-
-| Excuse | Reality |
-|---|---|
-| "A detailed cause explanation sounds transparent" | Extra internals can confuse customers and create unsupported commitments. |
-| "We should explain everything we know" | Customers need status, action, and next update first. |
-| "The cause is probably obvious" | Probable is not confirmed. Mark it as an estimate or leave it out. |
-| "No action needed is implied" | Say it directly so the customer can stop troubleshooting. |
-| "Technical accuracy requires technical detail" | Translate technical detail into customer impact unless the customer asked for internals. |
-| "A long apology builds trust" | Concrete action builds trust. Apologize only when it is warranted. |
-
-## Handoff
-
-**Operations reply delivered. Return to the workflow that needed it; if the reply claims a fix is complete, run the forge verifying-work skill first.**

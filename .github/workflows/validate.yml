@@ -46,6 +46,7 @@ jobs:
           bash scripts/tests/test-forge-spec-bundle-migration.sh
           bash scripts/tests/test-forge-artifact-contract.sh
           bash scripts/tests/test-forge-lifecycle-policy.sh
+          bash scripts/tests/test-forge-bootstrap.sh
           bash scripts/tests/test-ui-design-skill-routing.sh
           bash scripts/tests/test-forge-ui-skill-install.sh
           bash scripts/tests/test-forge-visual-docs-install.sh

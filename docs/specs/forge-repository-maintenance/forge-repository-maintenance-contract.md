@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: policy
 areas: ["forge","maintenance"]
@@ -64,7 +64,7 @@ flowchart LR
 
 ### `.agents/skills/maintaining-forge/SKILL.md`와 `.claude/skills/maintaining-forge/SKILL.md`는 canonical skill을 가리키는 manager-rendered adapter여야 하며 독립 절차를 포함하거나 수동으로 수정해서는 안 된다.
 
-### Canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.
+### Canonical skill은 Forge 유지보수·배포의 실제 계약을 검증하고 스킬을 결과·권한·과잉 절차 시나리오로 평가하며 고정 절 수나 반례 개수를 요구하지 않아야 한다.
 
 ### `scripts/validate.sh`는 plugin skills, canonical extension skills, native adapters를 lint하고 모든 repository extension에 manager `validate`를 실행해 collision, drift, parity 오류를 거부해야 한다.
 
@@ -90,7 +90,7 @@ flowchart LR
 검증하는 요구사항:
 
 - [`.agent-extensions/maintaining-forge/`는 `extension.json`, canonical `skills/maintaining-forge/SKILL.md`, portability reference, agent별 ownership state를 포함하는 repository-scope skill extension이어야 한다.](forge-repository-maintenance-contract.md#agent-extensionsmaintaining-forge는-extensionjson-canonical-skillsmaintaining-forgeskillmd-portability-reference-agent별-ownership-state를-포함하는-repository-scope-skill-extension이어야-한다)
-- [Canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
+- [Canonical skill은 Forge 유지보수·배포의 실제 계약을 검증하고 스킬을 결과·권한·과잉 절차 시나리오로 평가하며 고정 절 수나 반례 개수를 요구하지 않아야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-유지보수배포의-실제-계약을-검증하고-스킬을-결과권한과잉-절차-시나리오로-평가하며-고정-절-수나-반례-개수를-요구하지-않아야-한다)
 
 ### 두 native adapter가 동일한 canonical `SKILL.md`를 가리키고 별도 유지보수 절차를 복제하지 않는다.
 
@@ -121,7 +121,7 @@ flowchart LR
 
 검증하는 요구사항:
 
-- [Canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
+- [Canonical skill은 Forge 유지보수·배포의 실제 계약을 검증하고 스킬을 결과·권한·과잉 절차 시나리오로 평가하며 고정 절 수나 반례 개수를 요구하지 않아야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-유지보수배포의-실제-계약을-검증하고-스킬을-결과권한과잉-절차-시나리오로-평가하며-고정-절-수나-반례-개수를-요구하지-않아야-한다)
 - [canonical 또는 native same-name entry의 충돌·drift는 manager ownership state로 판정하며 암묵적으로 덮어쓰지 않아야 한다.](forge-repository-maintenance-contract.md#canonical-또는-native-same-name-entry의-충돌drift는-manager-ownership-state로-판정하며-암묵적으로-덮어쓰지-않아야-한다)
 
 ### 지원하지 않는 `.agent-runbooks/`가 없는 상태에서 manager render를 다시 실행해도 collision이나 drift 없이 parity가 유지된다.
@@ -135,7 +135,7 @@ flowchart LR
 
 검증하는 요구사항:
 
-- [Canonical skill은 Forge 스킬·manifest·hook·validator·설치 스크립트·배포 문서의 작성, 검토, 검증, pressure test, version gate, release gate를 설명하고 Codex·Claude Code·Antigravity portability 규칙을 제공해야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-스킬manifesthookvalidator설치-스크립트배포-문서의-작성-검토-검증-pressure-test-version-gate-release-gate를-설명하고-codexclaude-codeantigravity-portability-규칙을-제공해야-한다)
+- [Canonical skill은 Forge 유지보수·배포의 실제 계약을 검증하고 스킬을 결과·권한·과잉 절차 시나리오로 평가하며 고정 절 수나 반례 개수를 요구하지 않아야 한다.](forge-repository-maintenance-contract.md#canonical-skill은-forge-유지보수배포의-실제-계약을-검증하고-스킬을-결과권한과잉-절차-시나리오로-평가하며-고정-절-수나-반례-개수를-요구하지-않아야-한다)
 - [Push 대상 commit에 `plugins/forge/skills/` 변경이 포함되면 canonical skill은 push 전에 Claude plugin의 base version을 현재 release보다 올리고, Codex plugin은 동일한 base version과 새로운 UTC timestamp suffix로 갱신하도록 요구해야 한다. 두 manifest 중 하나라도 이 조건을 충족하지 않으면 push를 중단해야 한다.](forge-repository-maintenance-contract.md#push-대상-commit에-pluginsforgeskills-변경이-포함되면-canonical-skill은-push-전에-claude-plugin의-base-version을-현재-release보다-올리고-codex-plugin은-동일한-base-version과-새로운-utc-timestamp-suffix로-갱신하도록-요구해야-한다-두-manifest-중-하나라도-이-조건을-충족하지-않으면-push를-중단해야-한다)
 
 ## Decisions & History

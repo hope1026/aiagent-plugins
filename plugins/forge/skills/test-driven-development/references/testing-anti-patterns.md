@@ -66,7 +66,7 @@ test('report sums amounts per category', async () => {
 
 **Why it is wrong:** coverage numbers rise while nothing is verified. The suite goes green whether the code is right or wrong.
 
-**The fix:** every test asserts at least one concrete expected value or observable effect. If you cannot state the expected outcome, you do not understand the behavior yet — go back to RED and figure it out before coding.
+**The fix:** every test asserts at least one concrete expected value or observable effect. If you cannot state the expected outcome, you do not understand the behavior yet — clarify the expectation before claiming the behavior is verified.
 
 ## 4. Snapshot Overuse
 
@@ -118,6 +118,6 @@ await waitFor(() => queue.size() === 0, { timeout: 2000 });
 | Test interdependence | Each test owns its world; passes alone and in any order |
 | Sleeping for async | Wait on the condition, not the clock |
 
-## The Bottom Line
+## Using the guidance
 
-Strict RED-GREEN-REFACTOR prevents all six: writing the test first forces you to define observable behavior, and watching it fail proves the test exercises real code rather than mocks, snapshots, ordering luck, or timing.
+A test-first experiment can expose missing behavior, but test order alone does not prevent these problems. Inspect whether each test distinguishes the intended result from a relevant defect. Use the techniques that improve that evidence.

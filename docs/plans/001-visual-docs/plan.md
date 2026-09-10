@@ -42,7 +42,7 @@ Status: complete
 | [같은 Spec Bundle을 Project Handbook의 Spec 상세와 독립 spec kind로 build하면 member path, full Requirement·Acceptance heading, Mermaid SHA-256과 provenance가 일치하고 Project Handbook Overview에는 해당 statement 본문이 중복되지 않는다.](../../specs/review-viewer-lifecycle/project-handbook-and-structure.md#같은-spec-bundle을-project-handbook의-spec-상세와-독립-spec-kind로-build하면-member-path-full-requirementacceptance-heading-mermaid-sha-256과-provenance가-일치하고-project-handbook-overview에는-해당-statement-본문이-중복되지-않는다) | Acceptance | 3, 4 |
 | [Project Map과 repository evidence를 가진 Project Handbook에서 폴더별 Purpose와 Owns가 파일 목록보다 먼저 표시되고 Runtime mirror, validation, drift, source hash와 lifecycle count는 primary navigation에 없으며 접힌 Developer information에서만 확인된다.](../../specs/review-viewer-lifecycle/project-handbook-and-structure.md#project-map과-repository-evidence를-가진-project-handbook에서-폴더별-purpose와-owns가-파일-목록보다-먼저-표시되고-runtime-mirror-validation-drift-source-hash와-lifecycle-count는-primary-navigation에-없으며-접힌-developer-information에서만-확인된다) | Acceptance | 4 |
 | [Visual Docs 생성·갱신·freshness 요청은 `visual-docs`가 소유하고, shell·component·profile·planner·Project Handbook interaction 변경은 `web-app-design`을 함께 적용해야 한다.](../../specs/forge-ui-design-skill-separation/forge-ui-design-skill-separation.md#visual-docs-생성갱신freshness-요청은-visual-docs가-소유하고-shellcomponentprofileplannerproject-handbook-interaction-변경은-web-app-design을-함께-적용해야-한다) | Requirement | 1, 4, 6 |
-| [저장된 local View나 tracked Project Handbook이 있거나 checkpoint가 발생했다는 사실만으로 Visual Docs를 생성하거나 갱신하지 않아야 하며, stale 사실만 보고하고 Visual Docs 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](../../specs/adaptive-execution-routing/adaptive-execution-routing-and-checkpoints.md#저장된-local-view나-tracked-project-handbook이-있거나-checkpoint가-발생했다는-사실만으로-visual-docs를-생성하거나-갱신하지-않아야-하며-stale-사실만-보고하고-visual-docs-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다) | Requirement | 6 |
+| [Visual Docs는 사용자 요청이 있을 때만 생성하거나 갱신하며 실행 기록이나 정본을 대체하지 않아야 한다.](../../specs/adaptive-execution-routing/adaptive-execution-routing-and-checkpoints.md#visual-docs는-사용자-요청이-있을-때만-생성하거나-갱신하며-실행-기록이나-정본을-대체하지-않아야-한다) | Requirement | 6 |
 
 ## 구현 Route
 
@@ -196,7 +196,7 @@ flowchart TD
 
 **Governing statements:**
 - [Visual Docs 생성·갱신·freshness 요청은 `visual-docs`가 소유하고, shell·component·profile·planner·Project Handbook interaction 변경은 `web-app-design`을 함께 적용해야 한다.](../../specs/forge-ui-design-skill-separation/forge-ui-design-skill-separation.md#visual-docs-생성갱신freshness-요청은-visual-docs가-소유하고-shellcomponentprofileplannerproject-handbook-interaction-변경은-web-app-design을-함께-적용해야-한다)
-- [저장된 local View나 tracked Project Handbook이 있거나 checkpoint가 발생했다는 사실만으로 Visual Docs를 생성하거나 갱신하지 않아야 하며, stale 사실만 보고하고 Visual Docs 작업은 사용자의 명시적 요청이 있을 때만 수행해야 한다.](../../specs/adaptive-execution-routing/adaptive-execution-routing-and-checkpoints.md#저장된-local-view나-tracked-project-handbook이-있거나-checkpoint가-발생했다는-사실만으로-visual-docs를-생성하거나-갱신하지-않아야-하며-stale-사실만-보고하고-visual-docs-작업은-사용자의-명시적-요청이-있을-때만-수행해야-한다)
+- [Visual Docs는 사용자 요청이 있을 때만 생성하거나 갱신하며 실행 기록이나 정본을 대체하지 않아야 한다.](../../specs/adaptive-execution-routing/adaptive-execution-routing-and-checkpoints.md#visual-docs는-사용자-요청이-있을-때만-생성하거나-갱신하며-실행-기록이나-정본을-대체하지-않아야-한다)
 
 **파일:** 수정 Forge consumer `SKILL.md`, maintaining-forge canonical source·portability, `README.md`, `.github/workflows/validate.yml`, `scripts/validate.sh`, `scripts/tests/*.sh`; 생성 `test-forge-visual-docs-install.sh`, `.forge/scratch/visual-docs-pressure-test.md`.
 

@@ -2,7 +2,9 @@
 
 ## Requirements
 
-### Forge는 `docs/plans/PPP-<slug>/plan.md`를 작업 단위의 목표, Route, Task, 파일, Interface, 검증 절차의 source of truth로 유지해야 하며 plan 번호는 spec 번호와 독립적으로 부여해야 한다.
+이 문서의 plan kind는 Visual Docs가 읽는 구조화된 파일 계획을 뜻한다. 일반 작업의 계획은 앱이나 기존 기록에 둘 수 있고, 시각 문서 요청 없이 이 형식을 강제하지 않는다.
+
+### Forge의 구조화된 파일 계획은 `docs/plans/PPP-<slug>/plan.md`를 실행 source로 사용하고 plan 번호는 spec과 독립적으로 부여해야 한다.
 
 ### plan kind의 Overview는 목표, primary plan의 Task·Step 집계, context bundle별 Requirement·Acceptance Criterion 집계, 읽기 순서, 사용자 경험, 완료 상태를 분리해 보여줘야 한다.
 
@@ -16,31 +18,31 @@
 
 ### plan kind의 History는 plan 상태, Task checkbox, Progress History, 선택적인 `progress.md`·`tasks/*.md`, primary·auxiliary·context source별 role·path·hash, checkpoint, 관련 commit, 재생성 command를 보여줘야 한다.
 
-### `writing-plans`는 실제 독립 단계에 맞는 Route 또는 Milestone으로 Task를 묶고 각 Task를 하나의 primary Route에 배정해야 한다. 큰 계획에서는 6~10개 묶음을 가독성 지침으로 사용할 수 있지만 개수를 맞추기 위해 단계를 만들지 않아야 한다.
+### 구조화된 파일 계획에서 Route나 Milestone을 사용하면 실제 단계를 표현하고 각 Task의 primary Route를 명확히 해야 한다.
 
-### 큰 plan fixture의 Task는 의미 있는 Route로 묶여 실행 순서와 dependency가 표시되어야 한다.
+### Route를 사용하는 큰 plan fixture는 source의 단계와 Task dependency를 의미 있게 표시해야 한다.
 
 ### plan kind는 plan에 명시된 bundle path, member statement link와 Task·Step 관계만 사용해야 한다. Acceptance statement가 있는 bundle은 Requirement → Acceptance Criterion → Task → Step deep link를, Acceptance statement가 없는 bundle은 Requirement → Task → Step deep link를 만들고, plan에 없는 cross-source 관계를 추론하지 않아야 한다.
 
-### `writing-plans`는 목표와 완료 상태, Related Specs, Task별 산출물·파일 경계·의존성·Interface·검증·재개 조건과 실제 승인 지점을 명확히 해야 한다. Runtime 책임, 데이터 흐름, 확장 지점과 diagram은 작업에 필요한 경우만 포함하고 구현 코드 전체를 미리 작성하거나 반복하지 않아야 한다. 조사 Task는 구체적인 질문과 종료 증거를 가져야 한다.
+### 구조화된 파일 계획은 목표·산출물·검증을 명확히 하고 파일 경계·의존성·Interface·복구·승인 정보와 diagram은 실행이나 검토에 필요한 만큼 포함해야 한다.
 
-### `writing-plans`는 Canonical verification set에서 작업에 필요한 범위를 명시해야 한다. 새 계약·미구현 baseline의 전체 구현은 전체 항목을, 구현된 baseline의 부분 변경·복원은 직접·간접 영향 항목을 Task의 Governing statements와 coverage table에 연결하고 나머지 계약의 회귀 보존 근거를 기록해야 한다.
+### 계획의 계약 검증 범위는 완료 주장에 맞게 선택하고 구조화된 파일 계획은 해당 Governing statements 링크와 회귀 증거를 연결하며 coverage table은 검토에 도움이 될 때 사용해야 한다.
 
-### 복잡한 plan은 검토에 필요한 관계가 source에 있을 때 Task dependency, runtime 또는 transaction, 확장 구조 관점의 diagram을 포함해야 한다. 관계가 없는 관점은 만들지 않고 표나 짧은 설명을 사용해야 한다.
+### 계획의 diagram은 검토에 도움이 되는 source 관계를 설명할 때 사용하고 단계를 채우기 위한 diagram을 만들지 않아야 한다.
 
-### `writing-plans`는 큰 Task 집합을 하나의 평면 diagram으로 연결하지 않고 실제 단계에 맞는 의미 있는 Route로 묶은 뒤 필요한 Task 관계를 보여줘야 한다.
+### 구조화된 파일 계획에서 큰 Task 집합을 diagram으로 표시할 때는 읽기 쉬운 실제 단계나 관계로 구성하고 의미 없는 평면 연결을 피해야 한다.
 
 ### plan의 diagram과 책임 표는 plan에서 선택한 언어로 작성하되 Related Specs context에서 인용한 값과 API, service, schema, code identifier는 원문을 유지하고 source provenance를 표시해야 한다.
 
 ### spec은 프로젝트 수명 동안 영구 관리하고, plan은 작업 단위로 생성하며 작업 종료 뒤 보존 가치가 없으면 plan 디렉터리 전체를 삭제할 수 있어야 한다.
 
-### Plan은 `Related Specs`에서 0개 이상의 unique normalized bundle directory path를 canonical entry로 선언해야 한다. 각 governed Task의 `Governing statements`는 선언된 bundle 안의 exact Requirement·Acceptance statement를 repository-contained Markdown link로 참조해야 한다. Plan의 경로·번호·수명 주기는 특정 spec에 종속시키지 않아야 한다.
+### 구조화된 파일 계획은 `Related Specs`에 0개 이상의 unique normalized bundle path를 선언하고 governed Task의 `Governing statements`를 선언된 bundle의 exact statement에 연결해야 한다.
 
-### 제품 동작을 변경하는 plan은 하나 이상의 approved spec을 참조해야 하며, spec 없이 작성하는 plan은 Forge ceremony floor에 해당하는 작업이나 제품 동작을 바꾸지 않는 운영·조사 작업으로 제한해야 한다.
+### 계획이 지속 계약 의미를 바꾸면 승인된 Canonical Spec을 참조하고 승인 동작의 복원이나 code·test로 충분한 국소 구현에는 새 정본을 요구하지 않아야 한다.
 
-### plan의 진행 상태는 기본적으로 `plan.md`의 Task checkbox와 `Progress History`에서 관리하고, 기록이 길거나 여러 실행 주체가 독립적으로 갱신할 때만 같은 plan 디렉터리의 `progress.md`를 사용해야 한다.
+### 진행 기록은 앱이나 기존 작업 기록을 재사용하고 구조화된 파일 계획을 보존할 때 Task checkbox·Progress History 또는 같은 디렉터리의 progress 기록을 활용해야 한다.
 
-### Task별 독립 소유권·병렬 실행·독립 승인이 필요한 큰 plan만 `docs/plans/PPP-<slug>/tasks/*.md`로 Task를 분리하고, 작은 plan은 단일 `plan.md`를 유지해야 한다.
+### 구조화된 파일 계획의 Task는 독립 소유권이나 검토·복구에 도움이 될 때 같은 plan 디렉터리의 `tasks/*.md`로 분리할 수 있어야 한다.
 
 ### 삭제 예정 plan의 영구 보존 가치가 있는 제품 결정은 삭제 전에 governing spec, ADR 또는 동등한 영구 문서로 이전해야 한다.
 
@@ -54,7 +56,7 @@
 - [plan kind의 Overview는 목표, primary plan의 Task·Step 집계, context bundle별 Requirement·Acceptance Criterion 집계, 읽기 순서, 사용자 경험, 완료 상태를 분리해 보여줘야 한다.](plan-context-and-statement-traceability.md#plan-kind의-overview는-목표-primary-plan의-taskstep-집계-context-bundle별-requirementacceptance-criterion-집계-읽기-순서-사용자-경험-완료-상태를-분리해-보여줘야-한다)
 - [plan kind의 Requirements는 Global Constraints, 핵심 정책, Route별 적용 범위와 Related Specs의 full statement context를 member provenance와 함께 보여줘야 한다.](plan-context-and-statement-traceability.md#plan-kind의-requirements는-global-constraints-핵심-정책-route별-적용-범위와-related-specs의-full-statement-context를-member-provenance와-함께-보여줘야-한다)
 - [plan kind의 Acceptance는 plan에 명시된 Related Specs의 statement link만 사용해야 한다. Acceptance statement가 있는 bundle은 Requirement → Acceptance Criterion → Task → Step·검증 mapping을, Acceptance statement가 없는 bundle은 Requirement → Task → Step·검증 mapping을 보여주고, 관련 spec이 없으면 Task → Step·검증 mapping을 검토 상태와 함께 보여줘야 한다.](plan-context-and-statement-traceability.md#plan-kind의-acceptance는-plan에-명시된-related-specs의-statement-link만-사용해야-한다-acceptance-statement가-있는-bundle은-requirement-acceptance-criterion-task-step검증-mapping을-acceptance-statement가-없는-bundle은-requirement-task-step검증-mapping을-보여주고-관련-spec이-없으면-task-step검증-mapping을-검토-상태와-함께-보여줘야-한다)
-- [`writing-plans`는 Canonical verification set에서 작업에 필요한 범위를 명시해야 한다. 새 계약·미구현 baseline의 전체 구현은 전체 항목을, 구현된 baseline의 부분 변경·복원은 직접·간접 영향 항목을 Task의 Governing statements와 coverage table에 연결하고 나머지 계약의 회귀 보존 근거를 기록해야 한다.](plan-context-and-statement-traceability.md#writing-plans는-canonical-verification-set에서-작업에-필요한-범위를-명시해야-한다-새-계약미구현-baseline의-전체-구현은-전체-항목을-구현된-baseline의-부분-변경복원은-직접간접-영향-항목을-task의-governing-statements와-coverage-table에-연결하고-나머지-계약의-회귀-보존-근거를-기록해야-한다)
+- [계획의 계약 검증 범위는 완료 주장에 맞게 선택하고 구조화된 파일 계획은 해당 Governing statements 링크와 회귀 증거를 연결하며 coverage table은 검토에 도움이 될 때 사용해야 한다.](plan-context-and-statement-traceability.md#계획의-계약-검증-범위는-완료-주장에-맞게-선택하고-구조화된-파일-계획은-해당-governing-statements-링크와-회귀-증거를-연결하며-coverage-table은-검토에-도움이-될-때-사용해야-한다)
 - [plan kind의 History는 plan 상태, Task checkbox, Progress History, 선택적인 `progress.md`·`tasks/*.md`, primary·auxiliary·context source별 role·path·hash, checkpoint, 관련 commit, 재생성 command를 보여줘야 한다.](plan-context-and-statement-traceability.md#plan-kind의-history는-plan-상태-task-checkbox-progress-history-선택적인-progressmdtasksmd-primaryauxiliarycontext-source별-rolepathhash-checkpoint-관련-commit-재생성-command를-보여줘야-한다)
 - [Visual Docs는 원문 상세를 처음부터 펼치지 않고 요약, 시각 흐름, 상세 source, acceptance evidence 순서로 배치해야 한다.](adaptive-presentation-and-navigation.md#visual-docs는-원문-상세를-처음부터-펼치지-않고-요약-시각-흐름-상세-source-acceptance-evidence-순서로-배치해야-한다)
 - [Visual Docs는 spec kind에서 current bundle과 comparison bundle의 Requirement·Acceptance Criterion·Mermaid 수를 bundle과 member별로 분리하고, plan kind에서 primary source set의 Task·Step·Mermaid 수와 Related Specs context의 Requirement·Acceptance Criterion·Mermaid 수를 source별로 분리해 summary에 표시해야 한다.](source-selection-and-freshness.md#visual-docs는-spec-kind에서-current-bundle과-comparison-bundle의-requirementacceptance-criterionmermaid-수를-bundle과-member별로-분리하고-plan-kind에서-primary-source-set의-taskstepmermaid-수와-related-specs-context의-requirementacceptance-criterionmermaid-수를-source별로-분리해-summary에-표시해야-한다)
@@ -68,22 +70,22 @@
 검증하는 요구사항:
 
 - [Scale fixture는 여러 member와 Mermaid를 가진 current bundle, 여러 Task와 Step을 가진 독립 plan primary set과 Related Specs context 0..N을 사용하며, 각 Visual Docs 집계는 source role별 실제 수와 정확히 일치해야 한다.](source-selection-and-freshness.md#scale-fixture는-여러-member와-mermaid를-가진-current-bundle-여러-task와-step을-가진-독립-plan-primary-set과-related-specs-context-0n을-사용하며-각-visual-docs-집계는-source-role별-실제-수와-정확히-일치해야-한다)
-- [`writing-plans`는 실제 독립 단계에 맞는 Route 또는 Milestone으로 Task를 묶고 각 Task를 하나의 primary Route에 배정해야 한다. 큰 계획에서는 6~10개 묶음을 가독성 지침으로 사용할 수 있지만 개수를 맞추기 위해 단계를 만들지 않아야 한다.](plan-context-and-statement-traceability.md#writing-plans는-실제-독립-단계에-맞는-route-또는-milestone으로-task를-묶고-각-task를-하나의-primary-route에-배정해야-한다-큰-계획에서는-610개-묶음을-가독성-지침으로-사용할-수-있지만-개수를-맞추기-위해-단계를-만들지-않아야-한다)
-- [큰 plan fixture의 Task는 의미 있는 Route로 묶여 실행 순서와 dependency가 표시되어야 한다.](plan-context-and-statement-traceability.md#큰-plan-fixture의-task는-의미-있는-route로-묶여-실행-순서와-dependency가-표시되어야-한다)
+- [구조화된 파일 계획에서 Route나 Milestone을 사용하면 실제 단계를 표현하고 각 Task의 primary Route를 명확히 해야 한다.](plan-context-and-statement-traceability.md#구조화된-파일-계획에서-route나-milestone을-사용하면-실제-단계를-표현하고-각-task의-primary-route를-명확히-해야-한다)
+- [Route를 사용하는 큰 plan fixture는 source의 단계와 Task dependency를 의미 있게 표시해야 한다.](plan-context-and-statement-traceability.md#route를-사용하는-큰-plan-fixture는-source의-단계와-task-dependency를-의미-있게-표시해야-한다)
 
 ### 복잡한 plan fixture에는 독립 경로, 선택적인 Related Specs, 변경 범위에 맞는 Governing statements, 실행 가능한 Task와 검증, 실제 단계의 Route와 checkpoint가 존재하며 불필요한 전체 구현 코드나 관계가 없는 diagram이 추가되지 않는다.
 
 검증하는 요구사항:
 
-- [`writing-plans`는 목표와 완료 상태, Related Specs, Task별 산출물·파일 경계·의존성·Interface·검증·재개 조건과 실제 승인 지점을 명확히 해야 한다. Runtime 책임, 데이터 흐름, 확장 지점과 diagram은 작업에 필요한 경우만 포함하고 구현 코드 전체를 미리 작성하거나 반복하지 않아야 한다. 조사 Task는 구체적인 질문과 종료 증거를 가져야 한다.](plan-context-and-statement-traceability.md#writing-plans는-목표와-완료-상태-related-specs-task별-산출물파일-경계의존성interface검증재개-조건과-실제-승인-지점을-명확히-해야-한다-runtime-책임-데이터-흐름-확장-지점과-diagram은-작업에-필요한-경우만-포함하고-구현-코드-전체를-미리-작성하거나-반복하지-않아야-한다-조사-task는-구체적인-질문과-종료-증거를-가져야-한다)
-- [`writing-plans`는 Canonical verification set에서 작업에 필요한 범위를 명시해야 한다. 새 계약·미구현 baseline의 전체 구현은 전체 항목을, 구현된 baseline의 부분 변경·복원은 직접·간접 영향 항목을 Task의 Governing statements와 coverage table에 연결하고 나머지 계약의 회귀 보존 근거를 기록해야 한다.](plan-context-and-statement-traceability.md#writing-plans는-canonical-verification-set에서-작업에-필요한-범위를-명시해야-한다-새-계약미구현-baseline의-전체-구현은-전체-항목을-구현된-baseline의-부분-변경복원은-직접간접-영향-항목을-task의-governing-statements와-coverage-table에-연결하고-나머지-계약의-회귀-보존-근거를-기록해야-한다)
-- [복잡한 plan은 검토에 필요한 관계가 source에 있을 때 Task dependency, runtime 또는 transaction, 확장 구조 관점의 diagram을 포함해야 한다. 관계가 없는 관점은 만들지 않고 표나 짧은 설명을 사용해야 한다.](plan-context-and-statement-traceability.md#복잡한-plan은-검토에-필요한-관계가-source에-있을-때-task-dependency-runtime-또는-transaction-확장-구조-관점의-diagram을-포함해야-한다-관계가-없는-관점은-만들지-않고-표나-짧은-설명을-사용해야-한다)
-- [`writing-plans`는 큰 Task 집합을 하나의 평면 diagram으로 연결하지 않고 실제 단계에 맞는 의미 있는 Route로 묶은 뒤 필요한 Task 관계를 보여줘야 한다.](plan-context-and-statement-traceability.md#writing-plans는-큰-task-집합을-하나의-평면-diagram으로-연결하지-않고-실제-단계에-맞는-의미-있는-route로-묶은-뒤-필요한-task-관계를-보여줘야-한다)
+- [구조화된 파일 계획은 목표·산출물·검증을 명확히 하고 파일 경계·의존성·Interface·복구·승인 정보와 diagram은 실행이나 검토에 필요한 만큼 포함해야 한다.](plan-context-and-statement-traceability.md#구조화된-파일-계획은-목표산출물검증을-명확히-하고-파일-경계의존성interface복구승인-정보와-diagram은-실행이나-검토에-필요한-만큼-포함해야-한다)
+- [계획의 계약 검증 범위는 완료 주장에 맞게 선택하고 구조화된 파일 계획은 해당 Governing statements 링크와 회귀 증거를 연결하며 coverage table은 검토에 도움이 될 때 사용해야 한다.](plan-context-and-statement-traceability.md#계획의-계약-검증-범위는-완료-주장에-맞게-선택하고-구조화된-파일-계획은-해당-governing-statements-링크와-회귀-증거를-연결하며-coverage-table은-검토에-도움이-될-때-사용해야-한다)
+- [계획의 diagram은 검토에 도움이 되는 source 관계를 설명할 때 사용하고 단계를 채우기 위한 diagram을 만들지 않아야 한다.](plan-context-and-statement-traceability.md#계획의-diagram은-검토에-도움이-되는-source-관계를-설명할-때-사용하고-단계를-채우기-위한-diagram을-만들지-않아야-한다)
+- [구조화된 파일 계획에서 큰 Task 집합을 diagram으로 표시할 때는 읽기 쉬운 실제 단계나 관계로 구성하고 의미 없는 평면 연결을 피해야 한다.](plan-context-and-statement-traceability.md#구조화된-파일-계획에서-큰-task-집합을-diagram으로-표시할-때는-읽기-쉬운-실제-단계나-관계로-구성하고-의미-없는-평면-연결을-피해야-한다)
 - [plan의 diagram과 책임 표는 plan에서 선택한 언어로 작성하되 Related Specs context에서 인용한 값과 API, service, schema, code identifier는 원문을 유지하고 source provenance를 표시해야 한다.](plan-context-and-statement-traceability.md#plan의-diagram과-책임-표는-plan에서-선택한-언어로-작성하되-related-specs-context에서-인용한-값과-api-service-schema-code-identifier는-원문을-유지하고-source-provenance를-표시해야-한다)
-- [Plan은 `Related Specs`에서 0개 이상의 unique normalized bundle directory path를 canonical entry로 선언해야 한다. 각 governed Task의 `Governing statements`는 선언된 bundle 안의 exact Requirement·Acceptance statement를 repository-contained Markdown link로 참조해야 한다. Plan의 경로·번호·수명 주기는 특정 spec에 종속시키지 않아야 한다.](plan-context-and-statement-traceability.md#plan은-related-specs에서-0개-이상의-unique-normalized-bundle-directory-path를-canonical-entry로-선언해야-한다-각-governed-task의-governing-statements는-선언된-bundle-안의-exact-requirementacceptance-statement를-repository-contained-markdown-link로-참조해야-한다-plan의-경로번호수명-주기는-특정-spec에-종속시키지-않아야-한다)
-- [제품 동작을 변경하는 plan은 하나 이상의 approved spec을 참조해야 하며, spec 없이 작성하는 plan은 Forge ceremony floor에 해당하는 작업이나 제품 동작을 바꾸지 않는 운영·조사 작업으로 제한해야 한다.](plan-context-and-statement-traceability.md#제품-동작을-변경하는-plan은-하나-이상의-approved-spec을-참조해야-하며-spec-없이-작성하는-plan은-forge-ceremony-floor에-해당하는-작업이나-제품-동작을-바꾸지-않는-운영조사-작업으로-제한해야-한다)
-- [plan의 진행 상태는 기본적으로 `plan.md`의 Task checkbox와 `Progress History`에서 관리하고, 기록이 길거나 여러 실행 주체가 독립적으로 갱신할 때만 같은 plan 디렉터리의 `progress.md`를 사용해야 한다.](plan-context-and-statement-traceability.md#plan의-진행-상태는-기본적으로-planmd의-task-checkbox와-progress-history에서-관리하고-기록이-길거나-여러-실행-주체가-독립적으로-갱신할-때만-같은-plan-디렉터리의-progressmd를-사용해야-한다)
-- [Task별 독립 소유권·병렬 실행·독립 승인이 필요한 큰 plan만 `docs/plans/PPP-<slug>/tasks/*.md`로 Task를 분리하고, 작은 plan은 단일 `plan.md`를 유지해야 한다.](plan-context-and-statement-traceability.md#task별-독립-소유권병렬-실행독립-승인이-필요한-큰-plan만-docsplansppp-slugtasksmd로-task를-분리하고-작은-plan은-단일-planmd를-유지해야-한다)
+- [구조화된 파일 계획은 `Related Specs`에 0개 이상의 unique normalized bundle path를 선언하고 governed Task의 `Governing statements`를 선언된 bundle의 exact statement에 연결해야 한다.](plan-context-and-statement-traceability.md#구조화된-파일-계획은-related-specs에-0개-이상의-unique-normalized-bundle-path를-선언하고-governed-task의-governing-statements를-선언된-bundle의-exact-statement에-연결해야-한다)
+- [계획이 지속 계약 의미를 바꾸면 승인된 Canonical Spec을 참조하고 승인 동작의 복원이나 code·test로 충분한 국소 구현에는 새 정본을 요구하지 않아야 한다.](plan-context-and-statement-traceability.md#계획이-지속-계약-의미를-바꾸면-승인된-canonical-spec을-참조하고-승인-동작의-복원이나-codetest로-충분한-국소-구현에는-새-정본을-요구하지-않아야-한다)
+- [진행 기록은 앱이나 기존 작업 기록을 재사용하고 구조화된 파일 계획을 보존할 때 Task checkbox·Progress History 또는 같은 디렉터리의 progress 기록을 활용해야 한다.](plan-context-and-statement-traceability.md#진행-기록은-앱이나-기존-작업-기록을-재사용하고-구조화된-파일-계획을-보존할-때-task-checkboxprogress-history-또는-같은-디렉터리의-progress-기록을-활용해야-한다)
+- [구조화된 파일 계획의 Task는 독립 소유권이나 검토·복구에 도움이 될 때 같은 plan 디렉터리의 `tasks/*.md`로 분리할 수 있어야 한다.](plan-context-and-statement-traceability.md#구조화된-파일-계획의-task는-독립-소유권이나-검토복구에-도움이-될-때-같은-plan-디렉터리의-tasksmd로-분리할-수-있어야-한다)
 
 ### 저장된 plan kind Visual Docs가 있는 Task checkpoint에서 primary set이나 Related Specs context가 변경되어도 자동 갱신하지 않고 Markdown으로 보고하며, 사용자가 갱신을 명시적으로 요청한 경우에만 current primary set과 context sources를 포함해 같은 view-id를 재생성한다.
 
@@ -94,17 +96,17 @@
 - [`plan` kind에서는 `plan.md`와 존재하는 경우 같은 디렉터리의 `progress.md`, `tasks/*.md`를 primary source set으로 사용하고, plan의 `Related Specs` bundle 0개 이상을 제품 요구사항을 설명하는 context source로 읽되 plan source와 병합하거나 동일한 ownership으로 표시하지 않아야 한다.](source-selection-and-freshness.md#plan-kind에서는-planmd와-존재하는-경우-같은-디렉터리의-progressmd-tasksmd를-primary-source-set으로-사용하고-plan의-related-specs-bundle-0개-이상을-제품-요구사항을-설명하는-context-source로-읽되-plan-source와-병합하거나-동일한-ownership으로-표시하지-않아야-한다)
 - [저장된 Visual Docs의 source가 변경되면 Forge는 그 Visual Docs가 stale임을 사용자에게 알릴 수 있지만, 명시적 요청 전에는 stale Visual Docs를 갱신하거나 현재 검토 화면으로 제시하지 않아야 한다.](human-readable-review-viewer.md#저장된-visual-docs의-source가-변경되면-forge는-그-visual-docs가-stale임을-사용자에게-알릴-수-있지만-명시적-요청-전에는-stale-visual-docs를-갱신하거나-현재-검토-화면으로-제시하지-않아야-한다)
 
-### 관련 spec이 없는 운영 plan, 하나의 approved bundle을 참조하는 기능 plan, 여러 approved bundle을 참조하는 교차 기능 plan을 canonical Related Specs 문법으로 작성하면 모두 독립 plan 경로를 유지한다. 중복·존재하지 않는 bundle, 존재하지 않거나 link text가 다른 statement, repository path escape와 approved bundle 없이 제품 동작을 변경하려는 plan은 작성 단계에서 거부된다.
+### 정본이 필요 없는 구현·복원·운영 계획과 승인된 bundle을 참조하는 계약 변경 계획은 독립 경로를 유지하고 잘못된 bundle·statement 링크·path escape 및 승인되지 않은 지속 계약 변경은 거부된다.
 
 검증하는 요구사항:
 
-- [Plan은 `Related Specs`에서 0개 이상의 unique normalized bundle directory path를 canonical entry로 선언해야 한다. 각 governed Task의 `Governing statements`는 선언된 bundle 안의 exact Requirement·Acceptance statement를 repository-contained Markdown link로 참조해야 한다. Plan의 경로·번호·수명 주기는 특정 spec에 종속시키지 않아야 한다.](plan-context-and-statement-traceability.md#plan은-related-specs에서-0개-이상의-unique-normalized-bundle-directory-path를-canonical-entry로-선언해야-한다-각-governed-task의-governing-statements는-선언된-bundle-안의-exact-requirementacceptance-statement를-repository-contained-markdown-link로-참조해야-한다-plan의-경로번호수명-주기는-특정-spec에-종속시키지-않아야-한다)
-- [제품 동작을 변경하는 plan은 하나 이상의 approved spec을 참조해야 하며, spec 없이 작성하는 plan은 Forge ceremony floor에 해당하는 작업이나 제품 동작을 바꾸지 않는 운영·조사 작업으로 제한해야 한다.](plan-context-and-statement-traceability.md#제품-동작을-변경하는-plan은-하나-이상의-approved-spec을-참조해야-하며-spec-없이-작성하는-plan은-forge-ceremony-floor에-해당하는-작업이나-제품-동작을-바꾸지-않는-운영조사-작업으로-제한해야-한다)
+- [구조화된 파일 계획은 `Related Specs`에 0개 이상의 unique normalized bundle path를 선언하고 governed Task의 `Governing statements`를 선언된 bundle의 exact statement에 연결해야 한다.](plan-context-and-statement-traceability.md#구조화된-파일-계획은-related-specs에-0개-이상의-unique-normalized-bundle-path를-선언하고-governed-task의-governing-statements를-선언된-bundle의-exact-statement에-연결해야-한다)
+- [계획이 지속 계약 의미를 바꾸면 승인된 Canonical Spec을 참조하고 승인 동작의 복원이나 code·test로 충분한 국소 구현에는 새 정본을 요구하지 않아야 한다.](plan-context-and-statement-traceability.md#계획이-지속-계약-의미를-바꾸면-승인된-canonical-spec을-참조하고-승인-동작의-복원이나-codetest로-충분한-국소-구현에는-새-정본을-요구하지-않아야-한다)
 
-### 작은 plan의 진행 상태는 `plan.md`만으로 관리되고, 긴 checkpoint fixture는 `progress.md`, 독립 소유권이 있는 큰 Task fixture는 `tasks/*.md`를 사용하며, plan 삭제 전 영구 결정이 governing spec 또는 ADR로 이전됐는지 확인된다.
+### 앱 계획과 구조화된 파일 계획을 사용하는 사례에서 기존 진행 기록을 재사용하고 필요한 경우에만 progress·Task 파일을 추가하며 plan 삭제 전 영구 결정은 정본이나 ADR에 보존한다.
 
 검증하는 요구사항:
 
-- [plan의 진행 상태는 기본적으로 `plan.md`의 Task checkbox와 `Progress History`에서 관리하고, 기록이 길거나 여러 실행 주체가 독립적으로 갱신할 때만 같은 plan 디렉터리의 `progress.md`를 사용해야 한다.](plan-context-and-statement-traceability.md#plan의-진행-상태는-기본적으로-planmd의-task-checkbox와-progress-history에서-관리하고-기록이-길거나-여러-실행-주체가-독립적으로-갱신할-때만-같은-plan-디렉터리의-progressmd를-사용해야-한다)
-- [Task별 독립 소유권·병렬 실행·독립 승인이 필요한 큰 plan만 `docs/plans/PPP-<slug>/tasks/*.md`로 Task를 분리하고, 작은 plan은 단일 `plan.md`를 유지해야 한다.](plan-context-and-statement-traceability.md#task별-독립-소유권병렬-실행독립-승인이-필요한-큰-plan만-docsplansppp-slugtasksmd로-task를-분리하고-작은-plan은-단일-planmd를-유지해야-한다)
+- [진행 기록은 앱이나 기존 작업 기록을 재사용하고 구조화된 파일 계획을 보존할 때 Task checkbox·Progress History 또는 같은 디렉터리의 progress 기록을 활용해야 한다.](plan-context-and-statement-traceability.md#진행-기록은-앱이나-기존-작업-기록을-재사용하고-구조화된-파일-계획을-보존할-때-task-checkboxprogress-history-또는-같은-디렉터리의-progress-기록을-활용해야-한다)
+- [구조화된 파일 계획의 Task는 독립 소유권이나 검토·복구에 도움이 될 때 같은 plan 디렉터리의 `tasks/*.md`로 분리할 수 있어야 한다.](plan-context-and-statement-traceability.md#구조화된-파일-계획의-task는-독립-소유권이나-검토복구에-도움이-될-때-같은-plan-디렉터리의-tasksmd로-분리할-수-있어야-한다)
 - [삭제 예정 plan의 영구 보존 가치가 있는 제품 결정은 삭제 전에 governing spec, ADR 또는 동등한 영구 문서로 이전해야 한다.](plan-context-and-statement-traceability.md#삭제-예정-plan의-영구-보존-가치가-있는-제품-결정은-삭제-전에-governing-spec-adr-또는-동등한-영구-문서로-이전해야-한다)

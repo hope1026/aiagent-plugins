@@ -1,6 +1,6 @@
 # Style Rules
 
-Part 1 governs English prose mechanics; part 2 governs Korean engineering communication; part 3 governs natural, non-AI-like writing in any language. Read part 1 before drafting substantial English prose. Read part 2 once per session before Korean output and reuse it while the source and context remain available. Apply part 3 to every prose output.
+Part 1 governs English prose mechanics; part 2 governs Korean engineering communication; part 3 governs natural, non-AI-like writing in any language. Use the relevant part when house voice or editing needs its examples. Reuse inspected guidance while it remains applicable; opening this reference does not impose a new reading step for every message.
 
 ## Part 1 — English Prose Mechanics
 
