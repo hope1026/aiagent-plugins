@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: system
 areas: ["forge","visual-docs"]
@@ -332,7 +332,7 @@ Visual Docs shell의 inherited visual system:
 검증하는 요구사항:
 
 - [Forge는 `docs/specs/<semantic-bundle-name>/`의 root와 선언된 모든 Markdown member를 하나의 Canonical Spec source of truth로 유지해야 한다.](human-readable-review-viewer.md#forge는-docsspecssemantic-bundle-name의-root와-선언된-모든-markdown-member를-하나의-canonical-spec-source-of-truth로-유지해야-한다)
-- [Forge는 `docs/plans/PPP-<slug>/plan.md`를 작업 단위의 목표, Route, Task, 파일, Interface, 검증 절차의 source of truth로 유지해야 하며 plan 번호는 spec 번호와 독립적으로 부여해야 한다.](plan-context-and-statement-traceability.md#forge는-docsplansppp-slugplanmd를-작업-단위의-목표-route-task-파일-interface-검증-절차의-source-of-truth로-유지해야-하며-plan-번호는-spec-번호와-독립적으로-부여해야-한다)
+- [Forge의 구조화된 파일 계획은 `docs/plans/PPP-<slug>/plan.md`를 실행 source로 사용하고 plan 번호는 spec과 독립적으로 부여해야 한다.](plan-context-and-statement-traceability.md#forge의-구조화된-파일-계획은-docsplansppp-slugplanmd를-실행-source로-사용하고-plan-번호는-spec과-독립적으로-부여해야-한다)
 - [Visual Docs는 읽기 전용 파생 문서여야 하며, Visual Docs에서 Brief·Plan·Canonical Spec·Project Map·repository evidence source를 직접 수정하지 않아야 한다.](human-readable-review-viewer.md#visual-docs는-읽기-전용-파생-문서여야-하며-visual-docs에서-briefplancanonical-specproject-maprepository-evidence-source를-직접-수정하지-않아야-한다)
 - [완료된 Visual Docs의 source가 변경되었다는 사실만으로는 갱신하지 않아야 한다. 사용자가 요청한 시각 문서를 완성하는 동안에는 같은 요청 범위의 source·공통 tooling 수정, 검증과 필요한 재생성이 허용되며, 요청 완료 뒤 별도 갱신에는 새로운 명시적 의도가 필요해야 한다.](human-readable-review-viewer.md#완료된-visual-docs의-source가-변경되었다는-사실만으로는-갱신하지-않아야-한다-사용자가-요청한-시각-문서를-완성하는-동안에는-같은-요청-범위의-source공통-tooling-수정-검증과-필요한-재생성이-허용되며-요청-완료-뒤-별도-갱신에는-새로운-명시적-의도가-필요해야-한다)
 - [Visual Docs는 manifest에 `kind`, `view_id`, output lifecycle `local|tracked`, source별 role·path·SHA-256, 생성 시각, locale, 집계 수치와 project kind의 Project Map path·declared Spec Bundle·repository evidence source를 기록하고 열람 시점 hash와 비교해 `current`, `stale`, `unverified` freshness를 표시해야 한다. 화면의 주 label은 H1, path와 full statement이고 hash나 내부 key를 identity label로 사용하지 않아야 한다.](source-selection-and-freshness.md#visual-docs는-manifest에-kind-view_id-output-lifecycle-localtracked-source별-rolepathsha-256-생성-시각-locale-집계-수치와-project-kind의-project-map-pathdeclared-spec-bundlerepository-evidence-source를-기록하고-열람-시점-hash와-비교해-current-stale-unverified-freshness를-표시해야-한다-화면의-주-label은-h1-path와-full-statement이고-hash나-내부-key를-identity-label로-사용하지-않아야-한다)
@@ -362,7 +362,7 @@ Visual Docs shell의 inherited visual system:
 검증하는 요구사항:
 
 - [Forge는 `docs/specs/<semantic-bundle-name>/`의 root와 선언된 모든 Markdown member를 하나의 Canonical Spec source of truth로 유지해야 한다.](human-readable-review-viewer.md#forge는-docsspecssemantic-bundle-name의-root와-선언된-모든-markdown-member를-하나의-canonical-spec-source-of-truth로-유지해야-한다)
-- [Forge는 `docs/plans/PPP-<slug>/plan.md`를 작업 단위의 목표, Route, Task, 파일, Interface, 검증 절차의 source of truth로 유지해야 하며 plan 번호는 spec 번호와 독립적으로 부여해야 한다.](plan-context-and-statement-traceability.md#forge는-docsplansppp-slugplanmd를-작업-단위의-목표-route-task-파일-interface-검증-절차의-source-of-truth로-유지해야-하며-plan-번호는-spec-번호와-독립적으로-부여해야-한다)
+- [Forge의 구조화된 파일 계획은 `docs/plans/PPP-<slug>/plan.md`를 실행 source로 사용하고 plan 번호는 spec과 독립적으로 부여해야 한다.](plan-context-and-statement-traceability.md#forge의-구조화된-파일-계획은-docsplansppp-slugplanmd를-실행-source로-사용하고-plan-번호는-spec과-독립적으로-부여해야-한다)
 - [Brief, Plan과 Spec의 독립 View는 `.forge/visual-docs/<view-id>/view.html`에 저장하고 Git 비추적 상태로 유지해야 한다.](human-readable-review-viewer.md#brief-plan과-spec의-독립-view는-forgevisual-docsview-idviewhtml에-저장하고-git-비추적-상태로-유지해야-한다)
 - [Brief, Plan과 Spec의 독립 View는 `.forge/visual-docs/<view-id>/view.html`에 저장하고 Git 비추적 상태로 유지해야 한다.](human-readable-review-viewer.md#brief-plan과-spec의-독립-view는-forgevisual-docsview-idviewhtml에-저장하고-git-비추적-상태로-유지해야-한다)
 - [`.forge/`는 Visual Docs, build staging, 로컬 조사 기록처럼 공유하거나 영구 보존하지 않는 artifact에만 사용하고, `.forge/visual-docs/`를 포함한 로컬 artifact를 Git 비추적 상태로 유지해야 한다.](human-readable-review-viewer.md#forge는-visual-docs-build-staging-로컬-조사-기록처럼-공유하거나-영구-보존하지-않는-artifact에만-사용하고-forgevisual-docs를-포함한-로컬-artifact를-git-비추적-상태로-유지해야-한다)

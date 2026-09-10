@@ -67,21 +67,7 @@ Distributed Forge `SKILL.md` frontmatter contains exactly `name` and
 `Use when`, stays within 1024 characters, uses third person, contains trigger
 conditions only, and includes Korean trigger keywords.
 
-A process skill normally contains:
-
-```markdown
-# <Title>
-
-Announce at start: "Using the forge <name> skill..."
-
-## Overview
-## Iron Law
-## When to Use / When NOT
-## The Process
-## Working Files
-## Red Flags
-## Handoff
-```
+A skill describes its scope, useful domain knowledge, intended outcomes, and concrete constraints. Choose a structure that serves that job. Do not require an announce line, Iron Law, fixed step count, Red Flags quota, or terminal handoff. Move conditional mechanics to references instead of loading them on every task.
 
 Keep `SKILL.md` at or below 500 lines. Move long explanatory material to
 `references/`, executables to `scripts/`, and static resources to `assets/`.
@@ -104,8 +90,7 @@ Forge skill.
 4. Keep the normal spec and plan lifecycle Markdown-only. Visual Docs tooling may create HTML only through an explicit user request; maintainer tests use isolated temporary fixtures and never create a repository Visual Docs as a side effect.
 5. Run `bash scripts/validate.sh` from the repository root. It must print
    `validate: all checks passed` before commit.
-6. Search changed skill files for banned tokens and re-read every gate under
-   deadline pressure. Add explicit counters for any plausible loophole.
+6. Review the changed instructions for ambiguity, preserved authority, and unnecessary constraints. Correct demonstrated problems; do not accumulate speculative counterexamples.
 7. Pressure-test every new skill and every edit that changes instructions.
    Typos, formatting-only changes, and link fixes may skip the live test, but
    never the adversarial self-read.
@@ -118,13 +103,13 @@ Forge skill.
 
 ## Pre-ship Checklist
 
-Create one checklist item per applicable item and record evidence for each.
+Reuse the work record and retain evidence needed to assess the release. No duplicate checklist is required.
 
 - [ ] The workflow audience is classified as Marketplace user-facing or repository-only.
 - [ ] Distributed skill frontmatter contains exactly `name` and `description` and the name matches its directory.
 - [ ] Descriptions start with `Use when`, contain triggers only, include Korean keywords, and stay within 1024 characters.
 - [ ] Distributed skill bodies name actions, not harness-specific tools.
-- [ ] Process skill structure includes its announce line, Iron Law, Red Flags, and terminal handoff.
+- [ ] Instructions state useful outcomes and constraints without mandatory ceremony or duplicated platform procedures.
 - [ ] `SKILL.md` stays within 500 lines and support files use `references/`, `scripts/`, or `assets/`.
 - [ ] Repository-only detail lives in one owned `.agent-extensions/` source; native wrappers are manager-rendered adapters.
 - [ ] `bash scripts/validate.sh` printed `validate: all checks passed` in a fresh run.
@@ -161,11 +146,9 @@ deadline, sunk cost, or authority asking for a one-time exception. Give a fresh
 agent the scenario, the entry skill, the runbook or distributed skill body, and
 the required references without announcing that it is a test.
 
-Compliance means the agent follows the gates and chooses the correct packaging
-boundary. If it rationalizes around a gate, quote the rationalization, add a
-specific counter to the governing Red Flags section, and repeat the test. If no
-fresh-agent capability exists, perform the adversarial self-read and record that
-the live pressure test remains pending.
+Evaluate the requested result, preserved authorization and contracts, regression evidence, and recovery. Also check unnecessary questions, artifacts, tests, repeated verification, or blocked progress. A prescribed sequence or phrase is not the success criterion. Use the same model and environment for comparisons and report what was actually observed; a simulated platform scenario does not prove native integration.
+
+Use a fresh agent for representative behavior changes when available. Review its actual output and artifacts, correct demonstrated problems, and rerun affected scenarios. If unavailable, perform an adversarial self-read and report live evaluation as pending. Keep observations under `.forge/scratch/` or promote useful evidence to `docs/evidence/`.
 
 ## Forge System Map
 
@@ -173,11 +156,11 @@ The distributed Forge plugin contains user-execution skills only:
 
 | Skill | Responsibility |
 |---|---|
-| `using-forge` | Route user project work into the spec-first lifecycle |
+| `using-forge` | Preserve intent, contracts, and evidence with proportionate execution |
 | `writing-specs` | Create, approve, inspect, and validate semantic Spec Bundles with full-statement links |
 | `writing-plans` | Create independently identified plans with optional Related Spec Bundle paths and Task-level governing statement links |
 | `executing-plans` | Execute tasks with plan-local progress and checkpoints |
-| `test-driven-development` | Enforce red, green, refactor |
+| `test-driven-development` | Support requested or useful test-first development |
 | `systematic-debugging` | Reproduce, isolate, and establish root cause |
 | `verifying-work` | Gather fresh acceptance evidence |
 | `visual-docs` | Build request-only Brief, Plan, and Spec views plus the tracked source-backed Project Handbook |
@@ -201,7 +184,7 @@ distributed catalog.
 | Claude Code repository adapters | `.claude/skills/<name>/SKILL.md` |
 | Plugin manifests | `plugins/forge/.claude-plugin/plugin.json`, `plugins/forge/.codex-plugin/plugin.json` |
 | Marketplace manifests | `.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json` |
-| Claude-only hooks | `plugins/forge/hooks/` |
+| Optional platform hooks | `plugins/forge/hooks/` |
 | Validator | `scripts/validate.sh` |
 | Dev install script | `scripts/install.sh` |
 | Pressure-test notes | `.forge/scratch/` |

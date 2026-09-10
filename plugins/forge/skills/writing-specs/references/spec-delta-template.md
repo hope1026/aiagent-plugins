@@ -1,6 +1,6 @@
 # Spec Delta Template
 
-A Spec Delta is a non-authoritative approval proposal for a new or changed Canonical Spec Bundle. Keep it in the conversation or at `.forge/work/<work-id>/spec-delta.md`. It never replaces the current approved or implemented bundle before explicit approval and a passing writer transaction.
+A Spec Delta is a non-authoritative approval proposal for a new or changed Canonical Spec Bundle. Keep it in the conversation or at `.forge/work/<work-id>/spec-delta.md`. It never replaces the current approved or implemented bundle outside concrete user authorization and a passing writer transaction.
 
 Use the user's language for human-readable content. Preserve bundle and member paths, exact Requirement headings, any exact Acceptance headings, lifecycle tokens, code identifiers, commands, protocol values, and exact user-facing copy.
 
@@ -36,7 +36,7 @@ For a new Canonical Spec, include the complete proposed `forge/spec@3` bundle he
 
 ## Done Checks
 
-- The user explicitly approves this exact proposal.
+- Concrete user authorization covers the target, meaning, and effects; record an existing instruction or approval instead of asking again.
 - The baseline bundle SHA-256 still matches immediately before application.
 - The approved meaning is applied without extra semantic changes.
 - Every Requirement states the durable contract directly instead of pointing to another section or legacy source as a placeholder.

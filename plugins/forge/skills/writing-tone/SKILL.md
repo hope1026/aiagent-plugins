@@ -5,15 +5,13 @@ description: 'Use when writing or editing anything humans will read - natural, h
 
 # Writing Tone
 
-Announce once when first applied: "Using the forge writing-tone skill to shape this prose."
-
 Respond to the user in the user's language. These rules govern whatever language the deliverable is written in.
 
 ## Overview
 
 Prose that humans read is a deliverable, not an afterthought. Vigorous writing is concise: every sentence carries information the reader needs, in the order the reader needs it. This is the base tone skill for natural, human-readable writing; purpose-specific skills such as marketing or operations tone may layer on top of it.
 
-## Iron Law
+## Principle
 
 ```
 LEAD WITH THE POINT. EVERY SENTENCE EARNS ITS PLACE — CUT WHAT THE READER DOES NOT NEED.
@@ -34,7 +32,7 @@ Above all: **lead with the point** — decision, result, or ask first; backgroun
 ## The Process
 
 1. Decide the scope: substantial prose (documentation, README, reports, multi-paragraph PR descriptions) or a short message (Slack reply, commit message, brief comment).
-2. Substantial prose: read references/style-rules.md BEFORE drafting. Short messages: apply the core rules directly. Read part 2 once per session before Korean output and reuse it while available; reread only when context or the source changed.
+2. Use references/style-rules.md when substantial prose or house voice needs its examples. Short messages can use the core rules directly. Use part 2 for Korean house voice when needed and reuse it while available.
 3. Draft, leading with the point.
 4. Cut pass: delete hedges, filler, and anything the reader does not need in order to act.
 5. Read once as the reader: is the ask explicit — who does what, by when, and what happens next?
@@ -52,9 +50,6 @@ For requested Visual Docs:
 
 For substantial prose, reuse the work checklist for drafting and review. For short messages, edit directly; keep the cut pass internal and return the requested text without process narration.
 
-## Limited-Context Strategy
-
-If the reference will not fit in the remaining context: draft with the core rules and your judgment, then dispatch a subagent with the draft plus references/style-rules.md to copyedit against the rules. If no subagent capability is available, re-read only part 2 of the reference for Korean output and edit the draft yourself. Never skip both.
 
 ## When NOT to Use
 
@@ -63,22 +58,3 @@ Code, configuration, lockfiles, generated output, machine-parsed formats — any
 ## Working Files
 
 This skill creates no artifacts in the forge working directory `.forge/` — the prose lands where it belongs: docs, specs under docs/specs/, PR bodies, messages. Drafts that should not be committed go to `.forge/scratch/` (gitignored).
-
-## Red Flags
-
-| Excuse | Reality |
-|---|---|
-| "It's just a quick Slack message" | Short messages are read the most. The core rules take seconds to apply. |
-| "More detail looks more thorough" | Padding buries the point. The reader pays for every needless word. |
-| "Hedging sounds polite" | False uncertainty hides real risk. State evidence, remaining risk, and next action. |
-| "The reader will figure out what I need" | Implicit asks stall. Say who does what, by when, and what happens next. |
-| "I'll polish it after it ships" | Readers act on the first version they see. Edit before sending. |
-| "Reading the reference is overkill here" | For substantial prose it is the difference between designed and default — and it is short. |
-| "My default writing is already clear" | Unedited drafts hedge and pad. These rules exist because default output reads as default. |
-| "I know Korean; I don't need part 2" | Part 2 encodes house voice and message shapes, not grammar. Fluency is not the standard — the shapes are. |
-| "The diagram explains itself." | A reviewer needs the question, what to confirm, and a reading guide before interpreting nodes and arrows. |
-| "Technical review labels should stay English." | Localize translatable labels in the user's language; preserve only established names and identifiers whose exact form matters. |
-
-## Handoff
-
-**Prose delivered. Return to the workflow that needed it; if the text claims work is complete, run the forge verifying-work skill first.**

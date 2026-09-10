@@ -5,15 +5,13 @@ description: 'Use when writing or revising marketing, product, landing page, lau
 
 # Marketing Tone
 
-Announce once when first applied: "Using the forge marketing-tone skill to shape product and marketing copy."
-
 Respond to the user in the user's language. This skill is an overlay on top of the forge writing-tone skill.
 
 ## Overview
 
 Marketing copy should make a product easier to trust, not louder. Use a confident voice only when the claim is supported by product facts, observed usage, a concrete workflow, or a clear limitation. The base prose rules come from the forge writing-tone skill; this skill adds product positioning and claim discipline.
 
-## Iron Law
+## Principle
 
 ```
 CONFIDENCE COMES FROM FACTS. CUT HYPE THAT THE PRODUCT CANNOT PROVE.
@@ -75,18 +73,3 @@ Do not use this skill for neutral docs, internal status updates, code comments, 
 ## Working Files
 
 This skill creates no Forge artifacts. Put the finished copy where the user requested: docs, product pages, posts, emails, launch notes, or message drafts.
-
-## Red Flags
-
-| Excuse | Reality |
-|---|---|
-| "Marketing should sound more impressive" | Trust comes from specific evidence, not inflated adjectives. |
-| "Everyone says best-in-class" | Generic superiority claims are forgettable and risky without proof. |
-| "The reader will infer the value" | State the product action and visible result directly. |
-| "A broad promise fits more audiences" | Broad copy fits no one. Name the reader and job. |
-| "The limitation weakens the message" | Clear boundaries make the confident parts more believable. |
-| "This is just a short post" | Short copy still needs a claim audit. |
-
-## Handoff
-
-**Marketing copy delivered. Return to the workflow that needed it; if the copy claims work is complete, run the forge verifying-work skill first.**

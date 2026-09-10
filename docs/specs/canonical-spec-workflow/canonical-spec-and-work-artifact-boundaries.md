@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: policy
 subtype: workflow-lifecycle
@@ -38,7 +38,7 @@ Canonical Spec 필요 여부와 실행 계획 필요 여부는 같은 축이 아
 | Canonical Spec | 시스템의 승인된 의도, 계약, 정책과 불변조건을 담은 Spec Bundle | `docs/specs/<semantic-bundle-name>/` | 추적·장기 보존 | 유일한 SOT |
 | Change Brief | 현재 작업의 Goal, Scope, Out of Scope, Done Checks | 대화 또는 `.forge/work/<work-id>/brief.md` | 기본 비추적·작업 수명 | 작업 입력 |
 | Spec Delta | Canonical Spec에 반영할 승인 전 변경 제안 | 대화 또는 `.forge/work/<work-id>/spec-delta.md` | 승인 전 비추적·반영 후 제거 가능 | 제안이며 SOT 아님 |
-| Execution Plan | 구현 순서, 의존성, 파일, 검증과 checkpoint | `docs/plans/PPP-<slug>/plan.md` | 필요할 때 추적·작업 수명 | 실행 source이며 SOT 아님 |
+| Execution Plan | 구현 순서, 의존성, 검증과 복구 지점 | 앱·기존 기록 또는 `docs/plans/PPP-<slug>/plan.md` | 필요할 때 추적·작업 수명 | 실행 source이며 SOT 아님 |
 | Verification Evidence | test, build, reproduction과 관찰 결과 | 대화, plan progress 또는 명시적 evidence 문서 | 용도에 따라 일시적 또는 보존 | 완료 주장의 증거 |
 
 `Requirements`와, bundle이 선택한 경우 `Acceptance Criteria`는 Canonical Spec의 규범적 계약에만 사용한다. Change Brief는 `Goal`, `Scope`, `Out of Scope`, `Done Checks`를 사용하고, Execution Plan은 `Task`, `Step`, `Checkpoint`, `Verification`을 사용한다.
@@ -53,9 +53,9 @@ Canonical Spec 필요 여부와 실행 계획 필요 여부는 같은 축이 아
 flowchart TD
     A["사용자 요청"] --> B{"Canonical Spec에 남길 계약을 바꾸는가?"}
     B -->|"아니오"| C{"실행 복잡도가 높은가?"}
-    B -->|"예"| D["Spec Delta 제시와 승인"]
+    B -->|"예"| D["변경 의미와 기존 승인 확인"]
     C -->|"아니오"| E["Quick: 바로 실행"]
-    C -->|"예"| F["Change Brief + Execution Plan"]
+    C -->|"예"| F["필요한 계획 사용"]
     D --> G["Canonical Spec 반영과 validation"]
     G --> H{"실행 복잡도가 높은가?"}
     H -->|"아니오"| I["계획 없이 실행"]
@@ -75,29 +75,19 @@ flowchart TD
 | yes | low | 승인된 Canonical Spec 변경 | spec-backed direct execution |
 | yes | high | 승인된 Canonical Spec 변경 + Execution Plan | full lifecycle |
 
-### Change Brief Readiness
+### 작업 이해
 
-1. 목표, 범위, 비범위와 완료 조건을 확인한다. 명확한 국소 요청은 내부 판단과 짧은 목표·검증 안내로 충분하다.
-2. Repository에서 확인 가능한 사실을 먼저 조사한다.
-3. 실행 결과를 바꾸는 user-owned blocking ambiguity만 한 메시지에 하나씩 질문한다.
-4. 답을 초안에 반영하고 readiness 조건을 다시 확인한다.
-5. Ready이면 두 축 route로 진행하며, 독립 작업 입력이 필요한 경우에만 `.forge/work/<work-id>/brief.md`를 만든다.
-
-이 흐름은 다음 세 질문을 구분한다.
-
-- Brief clarification: 이번 작업에서 무엇을 완료해야 하는가?
-- Canonical classification: 이 결정을 프로젝트 정본으로 보존해야 하는가?
-- Spec clarification: 정본 계약의 정확한 의미가 무엇인가?
+목표와 기대 결과를 파악하고 repository 사실을 조사한다. 결과·범위·권한에 영향을 주는 미해결 선택만 질문하며 독립 질문은 함께 물을 수 있다. 가역적인 세부 선택은 판단해서 진행한다. 별도 준비 양식이나 질문 분류는 필요하지 않다.
 
 ## Lifecycle Boundaries
 
-Spec Delta 승인 전에는 현재 `approved` 또는 `implemented` Canonical Spec이 계속 SOT이다. 사용자가 Delta를 승인하면 agent는 승인된 의미만 Canonical Spec에 반영하고 repository Markdown validation을 실행한다. Validation 실패는 계획과 구현 handoff를 차단하며, 승인 의미를 바꾸는 수정은 다시 승인을 받아야 한다.
+구체적인 변경 의미가 승인되기 전에는 현재 `approved` 또는 `implemented` Canonical Spec이 계속 SOT이다. 사용자가 변경 의미를 구체적으로 지시하거나 Delta를 승인하면 agent는 승인된 의미만 Canonical Spec에 반영하고 repository Markdown validation을 실행한다. Validation 실패는 계획과 구현 handoff를 차단하며, 승인 범위 밖의 의미나 효과를 추가하는 수정은 사용자 결정을 받아야 한다.
 
 Execution Plan은 실행 중 정확한 working source일 수 있지만 제품·시스템 계약의 권위를 갖지 않는다. Plan과 구현이 Canonical Spec에 충돌하면 Plan을 따르지 않고 Spec Delta 또는 drift repair 경로로 돌아간다.
 
-Quick 분류는 검증 면제가 아니다. 실행 전에 예상 범위를 기록하고, 실행 뒤 변경된 동작을 가장 직접적으로 증명하는 명령을 새로 실행한다. 정본 영향이나 실행 복잡도의 분류 근거가 달라지면 다음 mutation 전에 해당 lifecycle 경로로 즉시 승격한다.
+Quick 분류는 검증 면제가 아니다. 변경된 동작을 직접 증명하는 검사를 수행하고 현재 상태에 적용되는 기존 증거는 재사용한다. 정본 영향이나 실행 복잡도의 분류 근거가 달라지면 다음 mutation 전에 해당 lifecycle 경로로 즉시 승격한다.
 
-Change Brief readiness는 질문 ceremony가 아니다. Agent는 repository 조사와 안전하고 가역적인 기본값으로 해소할 수 있는 내용을 스스로 처리하고, 사용자만 소유할 수 있는 blocking choice만 질문한다. Ready하지 않은 Brief는 Plan 또는 implementation mutation의 권위를 주지 않으며, 명확한 요청은 질문과 Brief 파일 생성 없이 선택된 route로 진행한다.
+사용자의 목표와 중요한 선택이 분명하면 작업을 진행한다. 질문이나 Brief 파일 자체는 실행 권한이나 품질의 증거가 아니다.
 
 ## Requirements
 
@@ -107,11 +97,15 @@ Change Brief readiness는 질문 ceremony가 아니다. Agent는 repository 조�
 
 ### `approved`와 `implemented` Canonical Spec만 SOT 권위를 가져야 한다. `draft` candidate와 Spec Delta는 제안으로 표시하고 기존 승인 정본을 암묵적으로 대체하지 않아야 한다.
 
-### Forge는 사용자 요청과 repository context에서 목표, 범위, 비범위와 관찰 가능한 완료 조건을 확인해야 한다. 명확한 국소 작업은 이를 내부적으로 판단하고 목표와 검증을 짧게 알린 뒤 실행하며 네 필드를 별도 양식으로 출력하거나 파일로 만들지 않아야 한다. 재개, 위임, 여러 범위 조정 또는 명시적 사용자 검토에 독립 문서가 필요한 경우에만 Change Brief 파일을 만들 수 있어야 한다.
+### Forge는 요청의 목표와 관찰 가능한 완료 조건을 파악하고 재개·협업·검토에 필요한 경우에만 별도 작업 입력을 기록해야 한다.
 
-### 기존 Canonical Spec의 규범적 의미를 변경하거나 새 Canonical Spec을 제안할 때는 승인 전 내용을 Spec Delta로 제시해야 한다. Spec Delta는 baseline bundle path, member path, exact Requirement·Acceptance heading과 결정 변경을 식별하고 사용자의 명시적 승인 뒤에만 Canonical Spec에 반영해야 한다.
+### Canonical Spec 변경은 대상과 의미를 명확히 하고 사용자가 구체적으로 지시하거나 승인한 범위에서만 반영해야 한다.
 
-### Execution Plan은 구현 방법과 순서의 작업 source이며 프로젝트 SOT가 아니어야 한다. 여러 의존 단계, 여러 컴포넌트, 병렬 소유권, migration·release 순서, 의미 있는 rollback 위험 또는 zero-context handoff가 필요한 경우에만 만들고, 단순히 구현 코드가 존재한다는 이유만으로 만들지 않아야 한다.
+Spec Delta는 baseline bundle path·hash, member path와 exact statement 변경을 보존한다. 사용자가 대상·변경 의미·효과를 이미 구체적으로 지시했으면 같은 결정을 다시 승인받지 않는다. 미해결 계약 충돌, 추가 범위나 효과에는 사용자 판단이 필요하며 승인되지 않은 제안은 정본을 대체하지 않는다.
+
+### Execution Plan은 프로젝트 SOT와 구분되는 작업 기록이며 복잡성·조정·복구에 도움이 되는 수준으로 작성해야 한다.
+
+앱의 계획이나 기존 작업 기록을 재사용한다. 독립 검토·인계·세션 간 복구에 파일이 필요한 경우에는 구조화된 docs/plans 형식을 사용한다. 파일 수나 여러 단계가 있다는 사실만으로 별도 파일을 강제하지 않는다.
 
 ## Acceptance Criteria
 
@@ -122,15 +116,15 @@ Change Brief readiness는 질문 ceremony가 아니다. Agent는 repository 조�
 - [Forge는 `spec`이라는 용어를 `docs/specs/`에 장기 보존되는 Canonical Spec에만 사용하고, 작업 시작 메모나 구현 순서를 spec 또는 micro-spec으로 부르지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#forge는-spec이라는-용어를-docsspecs에-장기-보존되는-canonical-spec에만-사용하고-작업-시작-메모나-구현-순서를-spec-또는-micro-spec으로-부르지-않아야-한다)
 - [Canonical Spec은 capability, system, interface 또는 policy의 승인된 의도와 지속해야 할 계약을 현재형으로 설명해야 하며, 일회성 작업 순서, 임시 조사, 변경 파일 목록과 실행 log를 현재 동작처럼 포함하지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#canonical-spec은-capability-system-interface-또는-policy의-승인된-의도와-지속해야-할-계약을-현재형으로-설명해야-하며-일회성-작업-순서-임시-조사-변경-파일-목록과-실행-log를-현재-동작처럼-포함하지-않아야-한다)
 - [`approved`와 `implemented` Canonical Spec만 SOT 권위를 가져야 한다. `draft` candidate와 Spec Delta는 제안으로 표시하고 기존 승인 정본을 암묵적으로 대체하지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#approved와-implemented-canonical-spec만-sot-권위를-가져야-한다-draft-candidate와-spec-delta는-제안으로-표시하고-기존-승인-정본을-암묵적으로-대체하지-않아야-한다)
-- [Forge는 사용자 요청과 repository context에서 목표, 범위, 비범위와 관찰 가능한 완료 조건을 확인해야 한다. 명확한 국소 작업은 이를 내부적으로 판단하고 목표와 검증을 짧게 알린 뒤 실행하며 네 필드를 별도 양식으로 출력하거나 파일로 만들지 않아야 한다. 재개, 위임, 여러 범위 조정 또는 명시적 사용자 검토에 독립 문서가 필요한 경우에만 Change Brief 파일을 만들 수 있어야 한다.](canonical-spec-and-work-artifact-boundaries.md#forge는-사용자-요청과-repository-context에서-목표-범위-비범위와-관찰-가능한-완료-조건을-확인해야-한다-명확한-국소-작업은-이를-내부적으로-판단하고-목표와-검증을-짧게-알린-뒤-실행하며-네-필드를-별도-양식으로-출력하거나-파일로-만들지-않아야-한다-재개-위임-여러-범위-조정-또는-명시적-사용자-검토에-독립-문서가-필요한-경우에만-change-brief-파일을-만들-수-있어야-한다)
-- [기존 Canonical Spec의 규범적 의미를 변경하거나 새 Canonical Spec을 제안할 때는 승인 전 내용을 Spec Delta로 제시해야 한다. Spec Delta는 baseline bundle path, member path, exact Requirement·Acceptance heading과 결정 변경을 식별하고 사용자의 명시적 승인 뒤에만 Canonical Spec에 반영해야 한다.](canonical-spec-and-work-artifact-boundaries.md#기존-canonical-spec의-규범적-의미를-변경하거나-새-canonical-spec을-제안할-때는-승인-전-내용을-spec-delta로-제시해야-한다-spec-delta는-baseline-bundle-path-member-path-exact-requirementacceptance-heading과-결정-변경을-식별하고-사용자의-명시적-승인-뒤에만-canonical-spec에-반영해야-한다)
-- [Execution Plan은 구현 방법과 순서의 작업 source이며 프로젝트 SOT가 아니어야 한다. 여러 의존 단계, 여러 컴포넌트, 병렬 소유권, migration·release 순서, 의미 있는 rollback 위험 또는 zero-context handoff가 필요한 경우에만 만들고, 단순히 구현 코드가 존재한다는 이유만으로 만들지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#execution-plan은-구현-방법과-순서의-작업-source이며-프로젝트-sot가-아니어야-한다-여러-의존-단계-여러-컴포넌트-병렬-소유권-migrationrelease-순서-의미-있는-rollback-위험-또는-zero-context-handoff가-필요한-경우에만-만들고-단순히-구현-코드가-존재한다는-이유만으로-만들지-않아야-한다)
+- [Forge는 요청의 목표와 관찰 가능한 완료 조건을 파악하고 재개·협업·검토에 필요한 경우에만 별도 작업 입력을 기록해야 한다.](canonical-spec-and-work-artifact-boundaries.md#forge는-요청의-목표와-관찰-가능한-완료-조건을-파악하고-재개협업검토에-필요한-경우에만-별도-작업-입력을-기록해야-한다)
+- [Canonical Spec 변경은 대상과 의미를 명확히 하고 사용자가 구체적으로 지시하거나 승인한 범위에서만 반영해야 한다.](canonical-spec-and-work-artifact-boundaries.md#canonical-spec-변경은-대상과-의미를-명확히-하고-사용자가-구체적으로-지시하거나-승인한-범위에서만-반영해야-한다)
+- [Execution Plan은 프로젝트 SOT와 구분되는 작업 기록이며 복잡성·조정·복구에 도움이 되는 수준으로 작성해야 한다.](canonical-spec-and-work-artifact-boundaries.md#execution-plan은-프로젝트-sot와-구분되는-작업-기록이며-복잡성조정복구에-도움이-되는-수준으로-작성해야-한다)
 
 ### 제품 계약을 바꾸지 않는 다단계 repository migration fixture에서 agent는 Canonical Spec을 만들지 않고 Execution Plan을 사용하며, 완료 뒤 영구 결정만 durable 문서로 승격한다.
 
 검증하는 요구사항:
 
-- [Execution Plan은 구현 방법과 순서의 작업 source이며 프로젝트 SOT가 아니어야 한다. 여러 의존 단계, 여러 컴포넌트, 병렬 소유권, migration·release 순서, 의미 있는 rollback 위험 또는 zero-context handoff가 필요한 경우에만 만들고, 단순히 구현 코드가 존재한다는 이유만으로 만들지 않아야 한다.](canonical-spec-and-work-artifact-boundaries.md#execution-plan은-구현-방법과-순서의-작업-source이며-프로젝트-sot가-아니어야-한다-여러-의존-단계-여러-컴포넌트-병렬-소유권-migrationrelease-순서-의미-있는-rollback-위험-또는-zero-context-handoff가-필요한-경우에만-만들고-단순히-구현-코드가-존재한다는-이유만으로-만들지-않아야-한다)
-- [Forge router는 모든 실행 요청을 `Canonical Spec 영향: yes|no`와 `Execution complexity: low|high`의 두 축으로 분류한 뒤 해당 경로를 선택해야 한다.](routing-and-lifecycle-gates.md#forge-router는-모든-실행-요청을-canonical-spec-영향-yesno와-execution-complexity-lowhigh의-두-축으로-분류한-뒤-해당-경로를-선택해야-한다)
-- [`Canonical Spec 영향: yes`이고 복잡도가 낮으면 Spec Delta 승인·Canonical Spec 반영 뒤 Execution Plan 없이 실행해야 한다. 정본 영향이 없고 복잡도가 높으면 Change Brief와 Execution Plan을 사용할 수 있으나 Canonical Spec을 만들지 않아야 한다. 두 축이 모두 높으면 승인된 Canonical Spec과 Execution Plan을 모두 사용해야 한다.](routing-and-lifecycle-gates.md#canonical-spec-영향-yes이고-복잡도가-낮으면-spec-delta-승인canonical-spec-반영-뒤-execution-plan-없이-실행해야-한다-정본-영향이-없고-복잡도가-높으면-change-brief와-execution-plan을-사용할-수-있으나-canonical-spec을-만들지-않아야-한다-두-축이-모두-높으면-승인된-canonical-spec과-execution-plan을-모두-사용해야-한다)
+- [Execution Plan은 프로젝트 SOT와 구분되는 작업 기록이며 복잡성·조정·복구에 도움이 되는 수준으로 작성해야 한다.](canonical-spec-and-work-artifact-boundaries.md#execution-plan은-프로젝트-sot와-구분되는-작업-기록이며-복잡성조정복구에-도움이-되는-수준으로-작성해야-한다)
+- [Forge는 지속 계약 영향과 실행 복잡성을 별도로 판단하고 필요한 계약·계획·검증만 적용해야 한다.](routing-and-lifecycle-gates.md#forge는-지속-계약-영향과-실행-복잡성을-별도로-판단하고-필요한-계약계획검증만-적용해야-한다)
+- [지속 계약을 바꾸는 작업은 승인된 의미를 정본에 반영하고 실행 복잡성에 맞는 계획을 사용하며 계약 의미를 바꾸지 않는 작업에는 정본을 새로 만들지 않아야 한다.](routing-and-lifecycle-gates.md#지속-계약을-바꾸는-작업은-승인된-의미를-정본에-반영하고-실행-복잡성에-맞는-계획을-사용하며-계약-의미를-바꾸지-않는-작업에는-정본을-새로-만들지-않아야-한다)
 - [작업 종료 시 장기 보존 가치가 생긴 결정은 Canonical Spec, ADR, `docs/research/`, `docs/debug/` 또는 명시적 evidence 문서로 승격해야 한다. Change Brief와 Spec Delta는 SOT로 남기지 않고, Execution Plan을 삭제하기 전 영구 결정을 먼저 승격해야 한다.](verification-and-durable-authority.md#작업-종료-시-장기-보존-가치가-생긴-결정은-canonical-spec-adr-docsresearch-docsdebug-또는-명시적-evidence-문서로-승격해야-한다-change-brief와-spec-delta는-sot로-남기지-않고-execution-plan을-삭제하기-전-영구-결정을-먼저-승격해야-한다)

@@ -5,125 +5,26 @@ description: 'Use when designing, implementing, or reviewing public websites suc
 
 # Website Design
 
-Announce once when first applied: "Using the forge website-design skill to declare the website thesis and content composition before writing UI code."
+Design public websites around a clear audience, useful content, a coherent visual idea, and a meaningful next action. Respond in the user's language. Browser applications use the forge web-app-design skill; native apps need platform guidance. Fixed Visual Docs generation belongs to the forge visual-docs skill.
 
-Respond to the user in the user's language. This skill file stays in English.
+## Establish the direction
 
-## Overview
+Inspect the product, brand, assets, existing components, and relevant constraints. Understand what the visitor needs to learn or decide and what evidence supports the page's claims. Ask only about material unresolved audience or brand choices.
 
-A public website communicates a story, establishes trust, and guides a visitor toward a next action. Its design begins with content hierarchy and a distinct visual thesis, then uses typography, imagery, composition, and restrained motion to make that thesis visible.
+Use a specific visual thesis and content hierarchy for new pages or structural redesigns. An existing page may already supply both. A concise description or sketch is sufficient; no fixed declaration block is required. Choose typography, imagery, color, spacing, and restrained motion together so they express the product rather than a generic template.
 
-## Iron Law
+Make the content sequence useful: promise, explanation, credible proof, and an appropriate next action. Do not add decorative sections to satisfy a template. Imagery should support understanding, evidence, or atmosphere, and must not impersonate a real product screenshot.
 
-```text
-NEW OR STRUCTURAL WEBSITE WORK NEEDS A VISUAL THESIS AND CONTENT HIERARCHY.
-ONE CLEAR VISUAL IDEA, ONE PRIMARY ACTION, AND ONE COHERENT SYSTEM.
-REAL RESPONSIVE COMPOSITION IS REQUIRED; A SHRUNK DESKTOP IS NOT MOBILE DESIGN.
-```
+Match equivalent typography roles across relevant sections or pages while preserving intentional hero, editorial, and responsive variants. Distinguish headings, body, captions, and utility text through legible type, weight, spacing, and grouping. A long answer may be larger than a compact question without violating hierarchy. Derive readable sizes from this product and its accessibility target, not a universal pixel floor.
 
-## When to Use / When NOT
+## Build and verify
 
-Use for public landing pages, homepages, marketing and product sites, editorial sites, portfolios, campaign pages, and public documentation sites.
+Compose desktop and mobile deliberately: reading order, image crops, navigation, and action placement should work at supported widths. Use semantic landmarks, headings, visible focus, labels, suitable contrast, and meaningful alt decisions. Forms need their actual loading, error, and success paths.
 
-Do NOT use for:
+Use appropriately sized media, explicit dimensions, and loading behavior suited to the page's performance budget. Respect reduced motion and prevent accidental layout shifts. Decoration should not compete with reading.
 
-- authenticated dashboards, settings, operational tables, admin panels, or SaaS workflows — use the forge web-app-design skill;
-- native mobile or desktop app interfaces;
-- fixed Visual Docs generation;
-- Visual Docs tooling, which is a browser application review surface owned by `web-app-design`;
-- a content-only copy change with no visual or layout decision.
+Inspect the rendered site at representative affected widths and states. Check the first viewport, promise, hierarchy, crops, reading order, typography, keyboard operation, overflow, and changed interactions. Compare relevant peer roles; record computed styles only when diagnosing an inconsistency or protecting a regression.
 
-## The Process
+Judge whether the result expresses the intended visual idea and makes the visitor's next action understandable. Correct observed issues and recheck affected cases. A build or design statement alone does not prove visual quality. Report unavailable browser or performance checks accurately.
 
-Reuse the work checklist. For a focused change to an existing page, inherit its visual thesis, adjust only the requested content or presentation, and verify the affected composition. Use the full process below for new pages, redesigns, or structural changes. Do not produce a full declaration for a local copy or spacing adjustment.
-
-### Step 1 — Read product and content truth
-
-Read the current plan Task when one exists and the governing Spec sections. Inspect the existing brand, type, color, imagery, components, performance budget, analytics goal, and page content. Distinguish intentional brand tokens from accumulated component overrides. Preserve the coherent system and correct demonstrated presentation inconsistencies within the authorized scope; changes to durable brand authority follow the approved Spec or Spec Delta.
-
-Map the affected typography roles: display or hero, page and section headings, subheadings, item titles, body copy, captions, and utility text. Compare representative equivalent roles across relevant sections, pages, and reused components. Match by content role and context rather than HTML heading level alone. A focused change needs only affected roles and enough peers to judge consistency, not a redesign or full-site audit.
-
-### Step 2 — Define the visitor journey
-
-State:
-
-- the primary audience and their starting context;
-- the one primary action;
-- the page promise and proof needed before that action;
-- the content sequence from first viewport to final decision;
-- whether any authenticated application surface must be separated into files owned by the forge web-app-design skill.
-
-### Step 3 — Declare the website system
-
-For new or structural work, summarize this system before UI code:
-
-```text
-WEBSITE SYSTEM — public content surface
-Visual thesis: <one specific visual idea that expresses this product>
-Audience and action: <visitor context and one primary action>
-Content hierarchy: <ordered story from promise through proof to action>
-Typography: <role-to-token mapping, parent/child distinction, and intentional editorial or responsive variants>
-Palette: <dominant field, supporting color, and one accent>
-Spacing: <base unit and section rhythm>
-Depth: <one primary separation strategy>
-Imagery: <photography, illustration, product media, or an intentional non-image anchor>
-Responsive composition: <desktop and mobile hierarchy, crop, stacking, and reading order>
-Motion: <purpose, trigger, duration, and reduced-motion behavior>
-```
-
-Rules:
-
-- The Visual thesis must be specific enough that it could not label an unrelated company. For a new brand, use product facts, available assets, and relevant visual references to choose a direction; ask only when a material audience or brand choice remains unresolved.
-- Content hierarchy comes before decorative sections. Every section must advance the visitor from promise to proof or action.
-- Continuous body copy stays at least 16px with a readable line length and contrast.
-- Equivalent roles in the same context share size, weight, line height, and spacing conventions. Hero, editorial, and responsive variants may differ when their content role explains the difference; do not flatten them into one heading size. Preserve readable body copy and make heading/content hierarchy clear through size, weight, spacing, and grouping. Same-size text can express different levels, and a larger answer than its compact FAQ question is not automatically a defect. Do not import an application help-size ceiling or a product-specific pixel scale.
-- Imagery must carry meaning, proof, atmosphere, or product understanding. Do not use abstract decoration as a fake product screenshot.
-- Use one accent and one dominant visual gesture. Repeating large type, saturated color, gradients, floating cards, and motion as simultaneous focal points creates noise.
-- Motion is restrained, optional, and subordinate to reading. Respect reduced motion and avoid `transition: all`.
-
-### Step 4 — Compose desktop and mobile deliberately
-
-Define the first viewport, section rhythm, image crops, reading order, action placement, and navigation behavior at desktop and mobile widths. Mobile may reorder or remove decorative content, but it must preserve the promise, proof, and primary action.
-
-Do not apply browser app table geometry or dense operational state matrices to a public website. Interactive forms still need keyboard, focus, error, loading, and success states appropriate to the form.
-
-### Step 5 — Implement with accessible, performant media
-
-Use semantic landmarks and heading order. Provide visible focus, labels, alt decisions, sufficient contrast, responsive image sources, explicit media dimensions, and lazy loading below the fold. Avoid layout shifts and assets whose cost is not justified by the visual thesis.
-
-### Step 6 — Verify the rendered website
-
-Use a real browser at desktop and mobile widths. Confirm:
-
-- first-viewport promise, visual anchor, and primary action remain legible;
-- heading hierarchy and reading order match the content plan;
-- representative affected roles have recorded computed font size, weight, line height, color, and surrounding spacing; equivalent roles across relevant sections or pages are compared at comparable viewports, with intentional variants explained;
-- rendered heading/content pairs remain distinguishable, including long headings and expanded content when present; semantic heading order, equal numeric values, or absence of overflow alone does not prove visual hierarchy;
-- imagery crops intentionally and does not shift layout;
-- body copy remains readable and no horizontal overflow appears;
-- keyboard focus, form states, reduced motion, and semantic structure work;
-- performance-sensitive media and motion stay within the declared budget.
-
-Compare the rendered page with the visual thesis: first-viewport hierarchy, image quality, section rhythm, and mobile composition should express it. Correct weak or generic results within the request and recheck the affected view. A declared thesis alone does not demonstrate design quality.
-
-Rendered output is the evidence. If a real browser or performance inspection is unavailable, report the missing verification instead of claiming completion.
-
-## Red Flags
-
-| Excuse | Reality |
-|---|---|
-| "A clean modern website is the thesis." | That phrase fits every product and therefore directs nothing. |
-| "The hero can explain everything." | A first viewport needs one promise, a visual anchor, and one next action. |
-| "More sections make the product look substantial." | Sections without a job dilute the story. |
-| "A gradient, oversized type, floating cards, and motion will make it memorable." | One dominant gesture is memorable; four gestures compete. |
-| "Mobile can stack the desktop layout." | Mobile composition needs its own hierarchy, crops, and action placement. |
-| "The asset looks good, so its weight is acceptable." | Visual value must justify performance cost and layout stability. |
-| "The headings are semantic and nothing overflows, so typography passes." | Compare rendered equivalent roles and parent/child relationships, including relevant peers and responsive variants. |
-| "Existing components justify any difference in section titles." | Reuse the coherent role system; incidental overrides still need correction within scope. |
-| "Consistency means every title uses the same size." | Match equivalent roles and contexts. Preserve intentional hero and editorial hierarchy without a universal size ratio. |
-
-## Handoff
-
-- Authenticated browser application surface discovered during the task → isolate its owned files and use the forge web-app-design skill for that surface only.
-- Marketing or product copy changes → use the forge writing-tone skill with the forge marketing-tone skill.
-- Claiming completion → return to the current direct route or the forge executing-plans skill, then use the forge verifying-work skill against the affected work scope.
+Use the forge writing-tone skill and marketing overlay when copy needs them, and the forge verifying-work skill for completion judgment when needed.

@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: policy
 areas: ["forge","design"]
@@ -26,7 +26,7 @@ flowchart TD
     A["UI 요청"] --> B{"주 surface가 무엇인가?"}
     B -->|"Browser application·dashboard·admin·PWA"| C["web-app-design"]
     B -->|"Landing·marketing·docs·portfolio"| D["website-design"]
-    B -->|"불명확"| E["한 가지 범위 질문"]
+    B -->|"불명확"| E["미해결 범위 확인"]
     B -->|"Native mobile·desktop"| F["전용 스킬 탐색 또는 범위 확인"]
     G["고정 Visual Docs 생성"] --> H["visual-docs"]
     I["Visual Docs tooling 변경"] --> C
@@ -38,7 +38,7 @@ flowchart TD
 
 ### `using-forge`는 landing page, marketing site, product page, public documentation, editorial, portfolio와 공개 콘텐츠 website 구현·설계 요청을 `website-design`으로 라우팅해야 한다.
 
-### 요청의 주 surface가 불명확하면 한 가지 질문으로 application과 public website 중 어느 계약이 필요한지 확인하고, native mobile·desktop 요청을 두 web 스킬에 강제 라우팅하지 않아야 한다.
+### 요청의 surface는 기존 제품에서 확인하고 결과를 바꾸는 미해결 선택만 질문하며 native mobile·desktop을 web 스킬에 강제 라우팅하지 않아야 한다.
 
 ### Visual Docs 생성·갱신·freshness 요청은 `visual-docs`가 소유하고, shell·component·profile·planner·Project Handbook interaction 변경은 `web-app-design`을 함께 적용해야 한다.
 
@@ -54,17 +54,17 @@ flowchart TD
 
 ### 디자인 품질 완료 주장은 담당 스킬이 영향 범위의 역할 일관성과 계층 구분을 실제 렌더링에서 확인한 증거를 포함해야 한다.
 
-웹앱과 웹사이트는 대표 요소의 실제 스타일을 기록하고 관련 상태와 viewport의 렌더링을 확인한다. 단순 수정은 영향받는 요소와 필요한 비교 대상만 확인한다. 요청된 Visual Docs는 제목·본문·출처 역할을 읽기 경로에서 확인한다. 완료 검증은 담당 스킬의 증거를 사용하고 폰트 수치를 중복 정의하지 않는다.
+웹앱과 웹사이트는 대표 요소와 관련 상태·viewport의 실제 렌더링을 확인한다. Computed style 기록은 불일치 진단이나 회귀 확인에 필요할 때 사용한다. 단순 수정은 영향받는 요소와 필요한 비교 대상만 확인한다. 요청된 Visual Docs는 제목·본문·출처 역할을 읽기 경로에서 확인한다. 완료 검증은 담당 스킬의 증거를 사용하고 폰트 수치를 중복 정의하지 않는다.
 
 ## Acceptance Criteria
 
-### app·website·ambiguous·native 요청을 routing fixture에 입력하면 각각 `web-app-design`, `website-design`, 한 가지 범위 질문, 전용 스킬 탐색 또는 범위 확인으로 판정된다.
+### app·website·ambiguous·native 요청을 분류하면 실제 제품에 맞는 스킬을 적용하고 확인 가능한 사실은 조사하며 중요한 미해결 선택만 질문한다.
 
 검증하는 요구사항:
 
 - [`using-forge`는 browser application, dashboard, admin, settings, data-heavy workspace와 PWA 구현·설계 요청을 `web-app-design`으로 라우팅해야 한다.](forge-ui-design-skill-separation.md#using-forge는-browser-application-dashboard-admin-settings-data-heavy-workspace와-pwa-구현설계-요청을-web-app-design으로-라우팅해야-한다)
 - [`using-forge`는 landing page, marketing site, product page, public documentation, editorial, portfolio와 공개 콘텐츠 website 구현·설계 요청을 `website-design`으로 라우팅해야 한다.](forge-ui-design-skill-separation.md#using-forge는-landing-page-marketing-site-product-page-public-documentation-editorial-portfolio와-공개-콘텐츠-website-구현설계-요청을-website-design으로-라우팅해야-한다)
-- [요청의 주 surface가 불명확하면 한 가지 질문으로 application과 public website 중 어느 계약이 필요한지 확인하고, native mobile·desktop 요청을 두 web 스킬에 강제 라우팅하지 않아야 한다.](forge-ui-design-skill-separation.md#요청의-주-surface가-불명확하면-한-가지-질문으로-application과-public-website-중-어느-계약이-필요한지-확인하고-native-mobiledesktop-요청을-두-web-스킬에-강제-라우팅하지-않아야-한다)
+- [요청의 surface는 기존 제품에서 확인하고 결과를 바꾸는 미해결 선택만 질문하며 native mobile·desktop을 web 스킬에 강제 라우팅하지 않아야 한다.](forge-ui-design-skill-separation.md#요청의-surface는-기존-제품에서-확인하고-결과를-바꾸는-미해결-선택만-질문하며-native-mobiledesktop을-web-스킬에-강제-라우팅하지-않아야-한다)
 
 ### Visual Docs 생성과 tooling 변경 요청을 분류하면 전자는 `visual-docs`, 후자는 `visual-docs`와 `web-app-design`의 tooling 검증 경로를 사용한다.
 

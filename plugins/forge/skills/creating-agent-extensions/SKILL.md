@@ -5,8 +5,6 @@ description: 'Use when creating or updating a skill, MCP definition, or combined
 
 # Creating Agent Extensions
 
-Announce once when first applied: "Using the forge creating-agent-extensions skill to create one canonical extension with agent-native adapters."
-
 Respond to the user in the user's language. This skill file stays in English.
 
 ## Overview
@@ -15,7 +13,7 @@ Create or update one agent-neutral source under `.agent-extensions/`, then rende
 
 This is an authoring workflow, not a distribution workflow. It does not create Marketplace entries, release packages, versions, publications, or remote pushes.
 
-## Iron Law
+## Ownership guarantees
 
 ```text
 ONE CANONICAL SOURCE; NATIVE ENTRIES ARE ADAPTERS, NEVER COPIES.
@@ -42,7 +40,7 @@ Do not use this skill when:
 
 ## The Process
 
-Reuse the work checklist for canonical content, preview, rendering, and verification. Read `references/layout-contract.md` for every run and `references/authoring-providers.md` before selecting or invoking a content provider.
+Reuse the work checklist for canonical content, preview, rendering, and verification. Read `references/layout-contract.md` when creating or changing extension structure, and `references/authoring-providers.md` when selecting a content provider. Reuse unchanged inspected context.
 
 ### 1. Fix the request contract
 
@@ -190,18 +188,6 @@ If an external service or target agent is unavailable, report that scenario as p
 | `E_MCP_SCHEMA` | canonical MCP fields or transport are invalid | normalize the staged definition |
 | `E_SECRET` | a raw credential field or value was found | remove it and use an environment variable name |
 
-## Red Flags
-
-| Pressure | Required response |
-|---|---|
-| "Copy the finished skill into all three directories; it is faster." | Full copies create three sources. Keep one canonical skill and thin wrappers. |
-| "The provider already edited the native files, so keep them." | Provider writes outside staging have no ownership proof. Preserve unrelated content, remove only those unowned edits, and render through the manager. |
-| "User scope always needs a second approval at render." | Inspect the current preview. A complete approval covering the same targets and changes remains valid; changed content, effects, or collisions require a new decision. |
-| "The same name probably belongs to this extension." | Ownership is state plus matching hashes, not a guess. Stop on collision. |
-| "Put the token in the config temporarily." | Temporary credentials leak and persist. Use environment variable names only. |
-| "Claude-only or Antigravity-only metadata is close enough to portable." | Keep agent-only behavior under that agent's adapter extension point; do not claim parity. |
-| "Validation passed, so the scenario test is unnecessary." | Validation proves structure and drift state, not discovery or tool behavior. Run a realistic scenario. |
-| "This common folder should also become a plugin package." | Authoring structure and distribution are different lifecycles. Use a separate explicitly approved distribution workflow. |
 
 ## Handoff
 

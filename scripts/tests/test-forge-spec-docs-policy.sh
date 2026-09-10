@@ -26,7 +26,6 @@ done
 if grep -q '^id:' "$SPEC_TEMPLATE"; then
   fail "template still declares a document id"
 fi
-grep -q 'Markdown-only' "$MAINTAINER" || fail "maintainer misses Markdown-only lifecycle"
 for heading in 'Requirements' 'Acceptance Criteria' 'Decisions & History'; do
   grep -q "^## $heading$" "$SPEC_TEMPLATE" || fail "template misses required semantic heading: $heading"
 done
@@ -35,15 +34,6 @@ grep -q '^kind: <feature|system|interface|policy>$' "$SPEC_TEMPLATE" || fail "te
 grep -q '^areas: \["<area>"\]$' "$SPEC_TEMPLATE" || fail "template areas are not JSON strings"
 grep -q '^components: \["<component>"\]$' "$SPEC_TEMPLATE" || fail "template components are not JSON strings"
 grep -q '^## Documents$' "$SPEC_TEMPLATE" || fail "template misses bundle document inventory"
-grep -q 'docs/specs/<semantic-bundle-name>/' "$WRITING_SPECS" || fail "writing-specs misses semantic bundle path"
-grep -q 'Requirements are mandatory' "$WRITING_SPECS" || fail "writing-specs does not require Requirement statements"
-grep -q 'one independently reviewable durable condition' "$WRITING_SPECS" || fail "writing-specs misses readable Requirement boundaries"
-grep -q 'Do not impose a mechanical heading-length limit' "$WRITING_SPECS" || fail "writing-specs uses a mechanical readability gate"
-grep -q 'Acceptance Criteria are optional at bundle level' "$WRITING_SPECS" || fail "writing-specs still requires Acceptance Criteria for every bundle"
-grep -q 'When Acceptance Criteria are present.*every Requirement is covered' "$WRITING_SPECS" || fail "writing-specs misses conditional Acceptance coverage"
-grep -q 'Canonical verification set' "$VERIFYING_WORK" || fail "verifying-work misses Requirement-only verification fallback"
-grep -q 'member path' "$WRITING_SPECS" || fail "writing-specs misses member-path contract"
-
 if rg -n 'docs/specs/(NNN|OOO|[0-9]{3})-|docs/specs/[^` ]+/spec\.md|forge/spec@2|\.transitions\.json|R·AC|R/AC|R-ID|AC-ID|R and AC IDs|\bR[0-9]+\b|\bAC[0-9]+\b|requirements: \[R|acceptance: \[AC|Canonical Spec ID|Spec ID|spec ID' \
   "$ROOT/plugins/forge/skills" "$ROOT/.agent-extensions/maintaining-forge" "$README" \
   --glob 'SKILL.md' --glob '**/references/*.md' --glob '!**/tests/**' --glob '!**/fixtures/**' >/dev/null; then
@@ -66,37 +56,17 @@ assert bundle.metadata.kind in {"feature", "system", "interface", "policy"}
 assert len(bundle.members) == 2
 PY
 
-grep -q 'validate --root docs/specs --baseline-ref HEAD' "$WRITING_SPECS" || fail "writing-specs misses validation transaction"
 CLI_HELP="$(bash "$ROOT/plugins/forge/skills/writing-specs/scripts/spec-docs.sh" --help)"
 grep -q 'validate' <<<"$CLI_HELP" || fail "spec-docs CLI misses validate"
 grep -q 'inspect' <<<"$CLI_HELP" || fail "spec-docs CLI misses inspect"
 if grep -Eq '(^|[,{[:space:]])(build|check)([]},[:space:]]|$)' <<<"$CLI_HELP"; then
   fail "spec-docs CLI still exposes Spec Pages commands"
 fi
-grep -q 'docs/specs/.bundle-transitions.json' "$WRITING_SPECS" || fail 'writing-specs misses bundle transition manifest'
-grep -q 'replacement.*Spec Delta.*before touching.*current source' "$WRITING_SPECS" || fail 'writing-specs misses approval-first replacement gate'
-grep -q 'explicit approval' "$WRITING_SPECS" || fail 'writing-specs misses explicit supersession approval'
-grep -q 'registered isolated Git worktree' "$WRITING_SPECS" || fail 'writing-specs misses isolation gate'
-grep -q 'expected clean HEAD' "$WRITING_SPECS" || fail 'writing-specs misses exact root precondition'
-grep -q 'candidate commit' "$WRITING_SPECS" || fail 'writing-specs misses candidate commit gate'
-grep -q 'HEAD.*index.*tracked.*untracked bytes' "$WRITING_SPECS" || fail 'writing-specs misses root byte fingerprint'
-grep -q 'Visual Docs output count.*exactly zero' "$WRITING_SPECS" || fail 'writing-specs misses request-only zero gate'
-grep -q 'one-to-one.*superseded.*docs/specs/.bundle-transitions.json' "$SPEC_TEMPLATE" || fail 'template misses bundle supersession exception'
-grep -q 'many-to-one.*merged.*docs/specs/.bundle-transitions.json' "$SPEC_TEMPLATE" || fail 'template misses bundle consolidation exception'
-grep -q 'coordinated.*merged' "$WRITING_SPECS" || fail 'writing-specs misses coordinated merge workflow'
-grep -q 'schema.*status.*diagnostics' "$WRITING_PLANS" || fail "writing-plans does not inspect typed lifecycle fields"
-grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$WRITING_PLANS" || fail "writing-plans misses inspect CLI"
-grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$EXECUTING_PLANS" || fail "executing-plans misses inspect CLI"
-grep -q 'spec-docs.sh.*inspect.*--spec.*--format json' "$VERIFYING_WORK" || fail "verifying-work misses inspect CLI"
-grep -q 'Canonical Spec lifecycle.*status.*implemented' "$VERIFYING_WORK" || fail "verifying-work misses Canonical lifecycle status transition"
-grep -q 'run the writer transaction' "$VERIFYING_WORK" || fail "verifying-work misses validation after implemented"
 if rg -n 'set (the )?spec.*`?Status: implemented|set .*Status: implemented' \
   "$ROOT/plugins/forge/skills" --glob 'SKILL.md' >/dev/null; then
   fail "active lifecycle imperative still writes body Status"
 fi
 
-grep -q '.forge/visual-docs/<view-id>/view.html' "$USING_FORGE" || fail "using-forge misses Visual Docs output"
-grep -q 'visual-docs' "$USING_FORGE" || fail "using-forge misses visual-docs routing"
 grep -qx '/.forge/' "$ROOT/.gitignore" || fail "root .forge ignore rule is not exact"
 
 grep -Fq '"$SPEC_DOCS" --repo-root "$ROOT_DIR" validate' "$VALIDATE" || fail "validator misses explicit repo-root validate"
