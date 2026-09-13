@@ -17,6 +17,7 @@ from typing import Mapping
 from review_freshness import CheckResult, check_review, find_repository_root
 from review_renderer import manifest_source_records, render_review
 from review_ir import build_semantic_ir
+from review_composition import prepare_composition, validate_composition
 from review_planner import ViewContext, select_presentation_plan, validate_presentation_plan
 from review_sources import (
     ReviewBundle,
@@ -56,6 +57,8 @@ def parse_args(argv: list[str]) -> tuple[argparse.ArgumentParser, argparse.Names
     parser.add_argument("--generated-at")
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--prepare", action="store_true", help="Read-only source/context packet for authoring a grounded composition")
+    parser.add_argument("--composition", type=Path, help="Source-bound explanation JSON; see references/composition-authoring.md")
     return parser, parser.parse_args(argv)
 
 
@@ -192,6 +195,8 @@ def _normalized_rebuild_command(
         command.extend(("--intent", args.intent))
     if args.audience != "mixed":
         command.extend(("--audience", args.audience))
+    if args.composition is not None:
+        command.extend(("--composition", repository_relative(args.composition, repo_root).as_posix()))
     return shlex.join(command)
 
 
@@ -350,6 +355,8 @@ def _run_check(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int
             args.generated_at,
             args.offline,
             args.dry_run,
+            args.prepare,
+            args.composition,
         )
     ):
         _error(parser, "--check cannot be combined with build arguments")
@@ -447,14 +454,42 @@ def main(argv: list[str] | None = None) -> int:
         _error(parser, "--repo-root is only valid with --check")
     repo_root = _repository_root(parser, None)
     bundle = _collect_build_bundle(parser, args, repo_root)
+    if args.prepare and (args.dry_run or args.composition is not None):
+        _error(parser, "--prepare cannot be combined with --dry-run or --composition")
+    composition = None
+    composition_source = None
+    try:
+        context, ir, plan = _context_and_plan(bundle, args)
+        if args.prepare:
+            if args.format != "json":
+                _error(parser, "--prepare requires --format json")
+            print(json.dumps(prepare_composition(ir, context), ensure_ascii=False, indent=2, sort_keys=True))
+            return 0
+        if args.composition is not None:
+            args.composition = _contained_file(parser, args.composition, repo_root, "composition")
+            import hashlib
+            raw = args.composition.read_bytes()
+            composition = json.loads(raw)
+            validate_composition(composition, ir, context)
+            composition_source = {
+                "key": "composition-input", "namespace": "composition-input",
+                "role": "composition_source", "path": repository_relative(args.composition, repo_root).as_posix(),
+                "title": composition["title"], "sha256": hashlib.sha256(raw).hexdigest(),
+            }
+    except (OSError, UnicodeError, ValueError, TypeError) as error:
+        _error(parser, f"Visual Docs composition failed: {error}")
     if args.dry_run:
         if args.format != "json":
             _error(parser, "--dry-run requires --format json")
         payload = _dry_run_payload(parser, args, bundle, repo_root)
+        payload["quality"] = "reading-check-required" if composition is not None else "source-browser"
+        if composition is not None:
+            payload["composition"] = composition
+            payload["composition_source"] = composition_source
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
     if args.format is not None:
-        _error(parser, "--format is only valid with --dry-run or --check")
+        _error(parser, "--format is only valid with --prepare, --dry-run or --check")
 
     output_relative, output = _review_output(
         parser, repo_root, args.view_id, bundle.kind
@@ -477,6 +512,8 @@ def main(argv: list[str] | None = None) -> int:
             view_context=context,
             semantic_ir=ir,
             presentation_plan=plan,
+            composition=composition,
+            composition_source=composition_source,
         )
     except (OSError, UnicodeError, ValueError, RuntimeError) as error:
         _error(parser, f"Visual Docs rendering failed: {error}")

@@ -396,7 +396,11 @@ def _repository_files(project: ProjectMap, repo_root: Path) -> tuple[Path, ...]:
         )
         for path in candidates:
             relative = path.resolve().relative_to(root).as_posix()
-            if ".git" not in Path(relative).parts:
+            # Derived documents and their local work files cannot become their
+            # own evidence: that makes the next identical build stale.
+            if (".git" not in Path(relative).parts and ".forge" not in Path(relative).parts
+                    and not relative.startswith("docs/project-viewer/")
+                    and relative != "docs/project/visual-doc-composition.json"):
                 files[relative] = path
     return tuple(files[key] for key in sorted(files))
 

@@ -395,3 +395,82 @@ test('Print action awaits all diagrams and preserves native-print source while p
   expect(await page.evaluate(() => window.printedUnrendered)).toBe(0);
   await expect(page.locator('.review-print')).toBeEnabled();
 });
+
+for (const viewport of viewports) {
+  for (const example of [
+    {
+      id: 'workflow-ko', question: '언제 요청을 종료할 수 있는가?',
+      answer: '전문가가 결과를 기록한 뒤에만 담당자가 요청을 종료할 수 있습니다.',
+      conditions: ['연락처가 없으면', '대기 유지', '결과 기록 후에만'],
+      quote: '결과를 기록하지 않은 요청은 종료할 수 없다.', kind: 'flow',
+    },
+    {
+      id: 'policy-en', question: 'Can an invited guest read an internal document today?',
+      answer: 'No. Guests currently cannot read internal documents; seven-day access is only a proposal.',
+      conditions: ['Not allowed', 'Selected documents for seven days; not approved', 'No change stated'],
+      quote: 'Guests cannot read internal documents.', kind: 'table',
+    },
+  ]) {
+    test(`grounded reading ${example.id} — ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      await page.goto(`${baseURL}/.forge/visual-docs/${example.id}/view.html`);
+      await expectReady(page);
+      await expect(page.locator('.reading-lead')).toHaveText(example.answer);
+      await expect(page.locator('.reading-questions a')).toHaveText(example.question);
+      const library = page.locator('.reading-source-library');
+      await expect(library).not.toHaveAttribute('open', '');
+      const answer = page.locator('#reading-answer');
+      await expect(answer).toBeVisible();
+      for (const condition of example.conditions) await expect(answer).toContainText(condition);
+      if (example.kind === 'flow') {
+        await expect(answer.locator('svg')).toHaveCount(1);
+        await expect(answer.locator('.reading-relations')).toBeVisible();
+        const geometry = await answer.locator('svg').evaluate(svg => svg.getBoundingClientRect().toJSON());
+        expect(geometry.width).toBeGreaterThan(100);
+        expect(geometry.height).toBeGreaterThan(100);
+      } else {
+        await expect(answer.locator('table')).toBeVisible();
+        await expect(answer.locator('thead th')).toHaveText(['Situation', 'Current policy', 'Proposed change']);
+        await expect(answer.locator('tbody tr')).toHaveCount(3);
+      }
+      await expect(page.locator('.diagram-error')).toHaveCount(0);
+      await expectNoDocumentOverflow(page);
+      await page.locator('.reading-questions a').click();
+      await expect(page).toHaveURL(/#reading-answer$/);
+      await page.reload();
+      await expectReady(page);
+      await expect(answer).toBeInViewport();
+      await expect(library).not.toHaveAttribute('open', '');
+      const evidence = page.locator('.reading-document > .reading-evidence').first();
+      await evidence.locator(':scope > summary').click();
+      await expect(evidence.locator('blockquote')).toContainText(example.quote);
+      await evidence.locator('a[href="#reading-originals"]').click();
+      await expect(page).toHaveURL(/#reading-originals$/);
+      await expect(library).toHaveAttribute('open', '');
+      await expect(page.locator('#reading-originals')).toBeVisible();
+      await expectNoDocumentOverflow(page);
+      expect(errors).toEqual([]);
+    });
+  }
+}
+
+test('composition JSON freshness reflects changed and restored selected input', async ({ page }) => {
+  const filename = 'policy-en.composition.json';
+  const original = fs.readFileSync(`${process.env.FORGE_VISUAL_DOCS_REPOSITORY}/${filename}`);
+  await page.goto(`${baseURL}/.forge/visual-docs/policy-en/view.html`);
+  await expectReady(page);
+  const row = page.locator('div[data-source-key="composition-input"]');
+  await row.locator('xpath=..').locator(':scope > summary').click();
+  const state = row.locator('[data-source-state]');
+  await expect(state).toHaveText('current');
+  const changed = JSON.parse(original.toString());
+  changed.lead.text = 'Edited explanation awaiting regeneration.';
+  await row.locator('input[type="file"]').setInputFiles({ name: filename, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(changed)) });
+  await expect(state).toHaveText('stale');
+  await expect(page.locator('[data-freshness-overall]')).toHaveText('stale');
+  await row.locator('input[type="file"]').setInputFiles({ name: filename, mimeType: 'application/json', buffer: original });
+  await expect(state).toHaveText('current');
+  await expect(page.locator('[data-freshness-overall]')).toHaveText('current');
+});

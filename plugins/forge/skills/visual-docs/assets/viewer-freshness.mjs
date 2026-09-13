@@ -7,13 +7,13 @@ export function aggregateFreshness(states) {
 export function sourceGroup(role) {
   if (role === 'comparison_spec') return 'comparison';
   if (['related_spec_context', 'declared_spec', 'repository_evidence'].includes(role)) return 'context';
-  return ['primary_spec', 'brief_source', 'primary_plan', 'plan_progress', 'plan_task', 'project_map'].includes(role)
+  return ['primary_spec', 'brief_source', 'primary_plan', 'plan_progress', 'plan_task', 'project_map', 'composition_source'].includes(role)
     ? 'primary'
     : null;
 }
 
 export function manifestSources(manifest) {
-  return [...(manifest.member_sources || []), ...(manifest.document_sources || [])];
+  return [...(manifest.member_sources || []), ...(manifest.document_sources || []), ...(manifest.composition_source ? [manifest.composition_source] : [])];
 }
 
 export function aggregateByGroup(sources, states) {
