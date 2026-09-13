@@ -16,6 +16,7 @@ relatedSpecs: [{"path":"docs/specs/semantic-spec-bundles/","relation":"relatedTo
 - root: [사람 중심 Visual Docs](human-readable-review-viewer.md)
 - contract: [Source 선택과 Freshness](source-selection-and-freshness.md)
 - contract: [적응형 표현과 탐색](adaptive-presentation-and-navigation.md)
+- contract: [근거 기반 설명 구성과 이해 검증](source-grounded-composition.md)
 - contract: [Plan Context와 문장 추적성](plan-context-and-statement-traceability.md)
 - contract: [Project Handbook과 구조 설명](project-handbook-and-structure.md)
 - history: [현재 결정](decisions-and-change-history.md)
@@ -24,7 +25,7 @@ relatedSpecs: [{"path":"docs/specs/semantic-spec-bundles/","relation":"relatedTo
 
 Visual Docs는 작업 요약, 실행 계획, 설계 기준과 프로젝트 구조를 읽기 쉬운 문서로 보여준다. 목적과 책임, 작업 의존성과 완료 기준을 단계적으로 확인하고 원문 Markdown까지 찾아갈 수 있다. 사용자가 요청할 때만 생성하는 읽기 전용 HTML이며, 원문의 의미를 유지한다.
 
-Visual Docs의 목적은 텍스트를 그림으로 치환하는 것이 아니다. Selected Markdown을 Semantic IR로 보존하고 문서 종류, subtype, 사용자의 검토 목적과 독자에 맞는 Presentation Plan을 선택해 사람이 현재 질문의 답을 빠르게 찾도록 하는 것이다. 일관성은 모든 문서에 동일한 panel 구조를 적용하는 대신 공통 visual system, component grammar, provenance와 interaction contract에서 제공한다.
+Visual Docs의 목적은 텍스트를 그림으로 치환하는 것이 아니다. Selected Markdown을 Semantic IR로 보존하고 원문을 읽은 agent가 독자의 질문과 답, 설명 순서와 표현을 source-grounded composition으로 작성해 사람이 현재 질문의 답을 빠르게 찾도록 하는 것이다. Profile과 자동 관계 추출은 그 판단을 돕는 참고 정보다. 일관성은 모든 문서에 동일한 panel 구조를 적용하는 대신 공통 visual system, component grammar, provenance와 interaction contract에서 제공한다.
 
 비목표:
 - Visual Docs를 Brief, Plan, Canonical Spec 또는 Project Map을 대신하는 편집 가능한 source of truth로 만들지 않는다.
@@ -49,9 +50,9 @@ flowchart TD
     D --> F{사용자가 명시적으로 요청했는가?}
     F -- 예 --> G[Semantic IR과 View Context 생성]
     F -- 아니오 --> E
-    G --> GP[Presentation Plan 선택·검증]
+    G --> GP[독자 질문·근거 기반 composition 작성·검증]
     GP --> GR[공통 component grammar로 HTML 생성]
-    GR --> QA[읽기·표시 검증과 필요한 수정]
+    GR --> QA[의미·읽기·표시 검증과 필요한 수정]
     QA --> H[검증한 Visual Docs 제공]
     E --> I[다음 lifecycle 단계]
     H --> I
@@ -132,26 +133,18 @@ Profile과 intent별 primary composition 예시:
 | `project.spec-detail` | `review` | complete Spec member content | statement coverage, provenance |
 | `comparison` | `comparison` | source-qualified delta matrix | relation, coverage, provenance |
 
-모든 profile은 stable shell과 공통 component grammar를 재사용한다. 표에 없는 subtype은 `generic`으로 fallback하고 모든 source block을 source detail에 보존한다.
+모든 profile은 stable shell과 공통 component grammar를 재사용한다. 위 표는 구성 참고 예시이며 최종 읽기 순서는 composition이 정한다. 자동 선택에서 custom system subtype은 `spec.system`, 그 밖의 unknown subtype은 `generic` source-browser로 fallback하고 모든 원문을 보존한다. Fallback은 완성된 설명 문서가 아니다.
 
-Presentation Plan contract:
+구성 입력과 원문 탐색의 역할:
 
-```yaml
-profile: spec.workflow
-intent: approval
-primaryQuestion: "상태 전이와 예외가 승인 가능한가?"
-components:
-  - type: state-map
-    refs: [current:flow-main]
-  - type: exception-matrix
-    refs: [current:exceptions]
-  - type: acceptance-coverage
-    refs: [current:requirements, current:acceptance]
-  - type: source-detail
-    refs: [current:*]
-```
+| 입력 | 소유하는 내용 |
+|---|---|
+| Semantic IR | 선택한 원문, 정확한 문장·식별자, 관계와 source provenance |
+| View Context | kind, 독자, 목적, 언어와 source 역할 |
+| Source-grounded composition | 독자의 질문, 근거가 연결된 답, 설명 순서, prose·table·diagram·example 선택 |
+| Presentation Plan | 재사용 component와 원문 탐색·상세 배치 |
 
-`refs`는 Semantic IR에 존재하는 source-qualified block 또는 entity만 가리킨다. Presentation Plan은 source 밖 prose나 executable markup을 포함하지 않는다.
+공개 CLI의 준비 경로로 source와 context를 얻은 뒤 agent가 composition을 제한된 데이터로 저장하고 build 입력으로 전달한다. Composition은 원문 hash와 context에 연결되며 원문 인용과 설명을 구분한다. 데이터 형식의 정확한 필드는 배포된 composition reference가 설명한다. HTML·CSS·script는 입력으로 허용하지 않는다.
 
 Visual Docs 추천을 위한 복잡도 점수:
 
@@ -183,7 +176,10 @@ build-visual-docs.sh \
   [--progress docs/plans/PPP-<slug>/progress.md] \
   [--tasks-dir docs/plans/PPP-<slug>/tasks] \
   [--project-map docs/project/project-map.md] \
-  [--offline]
+  [--offline] \
+  [--composition <path>] \
+  [--prepare --format json] \
+  [--dry-run]
 
 build-visual-docs.sh --check .forge/visual-docs/<view-id>/view.html
 ```
@@ -203,7 +199,9 @@ source manifest:
 | `project_map` | project kind에서 사용하는 Project Map path와 declared Spec Bundle path |
 | `repository_evidence` | project kind에서 계산한 파일·dependency·source hash evidence |
 | `view_context` | kind, subtype, intent, audience, locale, source role, export mode |
-| `presentation_plan` | profile, primary question, ordered component와 source-qualified reference |
+| `presentation_plan` | 원문 탐색 profile, ordered component와 source-qualified reference |
+| 구성·생성기 식별 정보 | 고정 composition과 generator를 재현할 수 있는 정보 |
+| 읽기 품질 상태 | source-browser 또는 읽기 검증이 남은 설명 문서. Schema 통과는 읽기 완료 상태가 아니다. |
 | `rebuild_command` | 동일 view-id의 Visual Docs를 명시적으로 재생성하는 command |
 
 문서 저장 구조:

@@ -73,10 +73,12 @@ for skills in "$CODEX_SKILLS" "$CLAUDE_SKILLS" "$ANTIGRAVITY_SKILLS"; do
     fail "missing installed structured spec template: $skills"
   test -x "$skills/visual-docs/scripts/build-visual-docs.sh" ||
     fail "missing installed Visual Docs builder: $skills"
-  for module in project_map.py review_sources.py review_ir.py review_planner.py review_components.py review_renderer.py review_freshness.py; do
+  for module in project_map.py review_sources.py review_ir.py review_planner.py review_composition.py review_components.py review_renderer.py review_freshness.py; do
     test -f "$skills/visual-docs/scripts/$module" ||
       fail "missing installed adaptive Visual Docs module $module: $skills"
   done
+  test -f "$skills/visual-docs/references/composition-authoring.md" ||\
+    fail "missing installed composition authoring reference: $skills"
   test -f "$skills/writing-specs/assets/mermaid.min.js" ||
     fail "missing installed offline Mermaid asset: $skills"
   test ! -e "$skills/spec-viewer" ||
@@ -107,6 +109,8 @@ git -C "$TEST_ROOT/review-source" commit -qm fixture
 declare -a INSPECT_HASHES=()
 declare -a REVIEW_HASHES=()
 declare -a TRANSITION_HASHES=()
+declare -a PREPARE_HASHES=()
+declare -a COMPOSITION_HASHES=()
 index=0
 for agent in codex claude antigravity; do
   case "$agent" in
@@ -180,6 +184,56 @@ PY
       --view-id install-proof --generated-at 2026-08-01T00:00:00Z --offline
   ) >/dev/null
 
+  (
+    cd "$review_repo"
+    "$skills/visual-docs/scripts/build-visual-docs.sh" \
+      --kind spec --spec docs/specs/semantic-spec-bundles/ \
+      --view-id composition-proof --generated-at 2026-08-01T00:00:00Z --offline \
+      --prepare --format json >"$TEST_ROOT/$agent.prepare.json"
+    test ! -e .forge/visual-docs/composition-proof/view.html ||
+      fail "installed --prepare wrote HTML: $agent"
+    python3 - "$TEST_ROOT/$agent.prepare.json" >composition.json <<'PYCOMPOSITION'
+import json
+import sys
+packet = json.load(open(sys.argv[1], encoding="utf-8"))
+quote = "Defines how structured Spec Bundle members and statements remain traceable."
+source = next(s for s in packet["sources"] if quote in s["text"])
+refs = [{"source": source["id"], "quote": quote}]
+answer = "The contract explains how to trace bundle members and statements."
+composition = {"schema": packet["schema"], "source_fingerprint": packet["source_fingerprint"],
+    "context": packet["context"], "title": "Understanding document traceability",
+    "lead": {"text": answer, "refs": refs},
+    "questions": [{"text": "What does the contract explain?", "answer_blocks": ["purpose"]}],
+    "sections": [{"id": "understanding", "title": "The purpose", "blocks": [
+        {"id": "purpose", "type": "prose", "text": answer, "refs": refs}]}],
+    "review": {"method": "agent", "reviewer": "isolated export fixture author",
+        "notes": "Source and explanation reviewed; this smoke test verifies export parity."}}
+print(json.dumps(composition, ensure_ascii=False, indent=2))
+PYCOMPOSITION
+    "$skills/visual-docs/scripts/build-visual-docs.sh" \
+      --kind spec --spec docs/specs/semantic-spec-bundles/ \
+      --view-id composition-proof --generated-at 2026-08-01T00:00:00Z --offline \
+      --composition composition.json >/dev/null
+    "$skills/visual-docs/scripts/build-visual-docs.sh" \
+      --check .forge/visual-docs/composition-proof/view.html --repo-root "$review_repo" --format json \
+      >"$TEST_ROOT/$agent.composition-check.json"
+    python3 - .forge/visual-docs/composition-proof/view.html <<'PYVERIFY'
+from pathlib import Path
+import json
+import re
+import sys
+markup = Path(sys.argv[1]).read_text()
+manifest = json.loads(re.search(r'<script[^>]*id="forge-source-manifest"[^>]*>(.*?)</script>', markup, re.S).group(1))
+assert manifest["quality"] == "reading-check-required"
+assert manifest["composition_source"]["path"] == "composition.json"
+assert re.fullmatch(r"[0-9a-f]{64}", manifest["generator"]["sha256"])
+assert markup.index('id="reading-purpose"') < markup.index('class="reading-source-library"')
+assert "The contract explains how to trace bundle members and statements." in markup
+PYVERIFY
+  )
+  PREPARE_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.prepare.json")"
+  COMPOSITION_HASHES[index]="$(sha256 "$review_repo/.forge/visual-docs/composition-proof/view.html")"
+
   INSPECT_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.inspect.json")"
   REVIEW_HASHES[index]="$(sha256 "$review_repo/.forge/visual-docs/install-proof/view.html")"
   TRANSITION_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.transition.json")"
@@ -190,7 +244,7 @@ PY
   index=$((index + 1))
 done
 
-for hashes_name in INSPECT_HASHES REVIEW_HASHES TRANSITION_HASHES; do
+for hashes_name in INSPECT_HASHES REVIEW_HASHES TRANSITION_HASHES PREPARE_HASHES COMPOSITION_HASHES; do
   eval 'hashes=("${'"$hashes_name"'[@]}")'
   [[ "${hashes[0]}" == "${hashes[1]}" && "${hashes[1]}" == "${hashes[2]}" ]] ||
     fail "$hashes_name differs across installed exports"

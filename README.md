@@ -68,7 +68,7 @@ bash scripts/install.sh --agent codex --plugin forge
 | `test-driven-development` | Test-first method when requested, required, or useful; ordinary changes use appropriate outcome checks |
 | `systematic-debugging` | Evidence-based investigation, regression protection, and honest distinction between mitigation and confirmed fix |
 | `verifying-work` | Matches fresh evidence to Quick, plan-only, restoration, or approved-Delta work; changes Canonical lifecycle only when required |
-| `visual-docs` | Builds and verifies requested Brief, Plan, Spec, and Project views, preserving source meaning through shared components |
+| `visual-docs` | Composes source-grounded explanations for the reader’s questions across Brief, Plan, Spec, and Project views; verifies meaning, sources and rendered reading separately |
 | `web-app-design` | Browser app hierarchy, control affordance, state preservation, and proportionate rendered verification |
 | `website-design` | Public website visual thesis, content composition, imagery, responsive behavior, and restrained motion |
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
@@ -121,6 +121,6 @@ Lints plugin skills and repository-local wrappers, validates extensions, and run
 
 Plans specify outcomes, ownership, dependencies, interfaces, verification, and recovery. They include complete code only where an exact example or shared interface is needed. New or never-implemented contracts use full statement coverage; partial changes to an implemented baseline name affected statements and regression preservation.
 
-An explicit Visual Docs request includes the rendered checks and source or shared-tooling corrections needed to complete the requested document. Rebuild as needed within that request. Completed documents are not refreshed merely because their sources changed. Generated HTML stays reproducible and is never edited by hand.
+An explicit Visual Docs request includes the rendered checks and source or shared-tooling corrections needed to complete the requested document. Rebuild as needed within that request. Completed documents are not refreshed merely because their sources changed. Generated HTML stays reproducible and is never edited by hand. Visual Docs prepares source text with `--prepare --format json`, accepts a grounded explanation through `--composition`, and keeps complete original sources accessible. Composition-free output is a source browser. Source hashes, exact quotations and schema checks establish provenance; semantic review and actual reading checks remain separate. Local compositions live beside their views; the tracked Handbook uses `docs/project/visual-doc-composition.json`.
 
 Behavior changes are evaluated with realistic requests for both correctness and unnecessary process. Mechanical gates check executable interfaces, links, ownership, and side effects; they do not require a particular announcement, test order, or ledger phrase. See [the principle-first audit](docs/research/2026-09-10-forge-principle-first-audit.md) for the rationale.

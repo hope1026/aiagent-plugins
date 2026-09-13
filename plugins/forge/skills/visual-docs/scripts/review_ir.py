@@ -725,7 +725,7 @@ def _brief_entities(
                 _entity(
                     source,
                     entity_type,
-                    block.heading,
+                    block.key,
                     block,
                     {"heading": block.heading},
                 )
@@ -920,7 +920,7 @@ def build_semantic_ir(bundle: ReviewBundle) -> SemanticIR:
                 namespace=source.namespace,
                 role=source.role,
                 path=source.path,
-                metadata=_metadata(source),
+                metadata=MappingProxyType({**_metadata(source), "source_sha256": source.sha256}),
                 outline=outline,
                 blocks=blocks,
                 entities=entities,

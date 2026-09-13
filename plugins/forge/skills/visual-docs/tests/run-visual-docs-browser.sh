@@ -120,6 +120,47 @@ git -C "$REPOSITORY_ROOT" commit -qm fixture
     --locale ko --generated-at 2026-08-01T00:00:00Z --offline
 )
 
+# Author representative source-bound explanations through the public CLI.
+python3 - "$SKILL_DIR" "$REPOSITORY_ROOT" <<'PYCOMPOSITION'
+from pathlib import Path
+import json
+import shutil
+import subprocess
+import sys
+
+skill, repo = map(Path, sys.argv[1:])
+cli = skill / "scripts/build-visual-docs.sh"
+for name in ("workflow-ko", "policy-en"):
+    fixture = skill / "tests/fixtures/comprehension"
+    bundle = repo / "docs/specs" / name
+    bundle.mkdir()
+    shutil.copy2(fixture / (name + ".md"), bundle)
+    expected = json.loads((fixture / (name + ".json")).read_text())
+    args = [str(cli), "--kind", "spec", "--spec", "docs/specs/" + name,
+            "--view-id", name, "--locale", name[-2:], "--generated-at", "2026-08-01T00:00:00Z", "--offline"]
+    packet = json.loads(subprocess.check_output(args + ["--prepare", "--format", "json"], cwd=repo))
+    def refs(quote):
+        source = next(s for s in packet["sources"] if quote in s["text"])
+        return [{"source": source["id"], "quote": quote}]
+    block = {"id": "answer", "type": "prose", "text": expected["answer"], "refs": refs(expected["quote"])}
+    if name.startswith("workflow"):
+        block["type"] = "flow"
+        source = next(s["text"] for s in packet["sources"] if expected["quote"] in s["text"])
+        block["nodes"] = [{"id": key, "text": label, "refs": refs(source)} for key, label in expected["nodes"]]
+        block["edges"] = [{"from": a, "to": b, "text": label, "refs": refs(quote)} for a, b, label, quote in expected["edges"]]
+    else:
+        block.update(type="table", columns=expected["columns"], rows=[
+            {"cells": cells, "refs": refs(quote)} for cells, quote in expected["rows"]])
+    composition = {"schema": packet["schema"], "source_fingerprint": packet["source_fingerprint"],
+        "context": packet["context"], "title": expected["question"],
+        "lead": {"text": expected["answer"], "refs": refs(expected["quote"])},
+        "questions": [{"text": expected["question"], "answer_blocks": ["answer"]}],
+        "sections": [{"id": "understanding", "title": expected["question"], "blocks": [block]}],
+        "review": {"method": "agent", "reviewer": "browser fixture author", "notes": "Handwritten source and answer reviewed; browser checks assess rendered behavior."}}
+    (repo / (name + ".composition.json")).write_text(json.dumps(composition, ensure_ascii=False, indent=2) + "\n")
+    subprocess.run(args + ["--composition", name + ".composition.json"], cwd=repo, check=True)
+PYCOMPOSITION
+
 PORT="$(python3 -c 'import socket; value=socket.socket(); value.bind(("127.0.0.1", 0)); print(value.getsockname()[1]); value.close()')"
 python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$REPOSITORY_ROOT" \
   >"$TEMP_ROOT/server.log" 2>&1 &

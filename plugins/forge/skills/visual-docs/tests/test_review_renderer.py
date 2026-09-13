@@ -390,7 +390,7 @@ class ReviewRendererTest(unittest.TestCase):
             "bundles", "checkpoint", "commit", "counts", "freshness",
             "generated_at", "kind", "locale", "offline", "document_sources",
             "output_lifecycle", "presentation_plan", "rebuild_command", "view_id",
-            "source_base", "member_sources", "view_context",
+            "source_base", "member_sources", "view_context", "generator", "quality",
         })
         self.assertEqual(len(parsed.manifest["bundles"]), 2)
         self.assertEqual(len(parsed.manifest["member_sources"]), 10)

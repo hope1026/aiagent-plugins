@@ -45,6 +45,20 @@
   small, .doc-meta { font-size: 0.8rem; }
   p, li { max-width: 65ch; }
   a { color: var(--accent); }
+  .reading-document { max-width: 76rem; margin: 0 auto; }
+  .reading-lead { font-size: 1.25rem; line-height: 1.65; margin-top: 0; }
+  .reading-section { padding: 1rem 0 1.5rem; border-bottom: 1px solid var(--border); }
+  .reading-block { margin: 1.25rem 0; scroll-margin-top: 1rem; }
+  .reading-block:target { border-left: 3px solid var(--accent); padding-left: 1rem; }
+  .reading-questions li { margin: .5rem 0; }
+  .reading-evidence, .reading-review { color: var(--text-muted); font-size: .9rem; }
+  .reading-evidence summary, .reading-review summary, .reading-source-library > summary {
+    cursor: pointer; padding: .6rem 0; min-height: 44px;
+  }
+  .reading-evidence blockquote { color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .reading-source-library { margin-top: 2rem; border-top: 1px solid var(--border); }
+  .reading-source-library > summary { font-weight: 650; }
+  .source-browser-notice { color: var(--text-muted); }
 
   .doc-header { border-bottom: 1px solid var(--border); background: var(--surface); }
   .doc-header-inner, .review-navigation, main { max-width: 88rem; margin: 0 auto; padding: 0 1.5rem; }
@@ -694,6 +708,21 @@
     });
   })();
 
+  function revealReadingTarget() {
+    if (!document.querySelector('[data-composition]')) { return; }
+    var id;
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch (error) { return; }
+    var target = document.getElementById(id);
+    if (!target) { return; }
+    var parent = target.parentElement;
+    while (parent) {
+      if (parent.tagName === 'DETAILS') { parent.open = true; }
+      parent = parent.parentElement;
+    }
+    requestAnimationFrame(function () { target.scrollIntoView({ block: 'start' }); });
+  }
+  window.addEventListener('hashchange', revealReadingTarget);
+  revealReadingTarget();
   initProjectWorkspace();
   wrapTables(document);
   initPrint();

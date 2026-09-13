@@ -12,6 +12,7 @@ from typing import Mapping
 
 from review_components import render_components, render_project_workspace, render_spec_workspace
 from review_ir import SemanticIR, build_semantic_ir
+from review_composition import canonical_bytes, render_composition, validate_composition
 from review_planner import (
     PresentationPlan,
     ViewContext,
@@ -418,6 +419,8 @@ def render_review(
     view_context: ViewContext | None = None,
     semantic_ir: SemanticIR | None = None,
     presentation_plan: PresentationPlan | None = None,
+    composition: dict | None = None,
+    composition_source: dict | None = None,
 ) -> str:
     """Render one deterministic Visual Doc from validated source models."""
 
@@ -441,6 +444,8 @@ def render_review(
         raise ValueError(
             "invalid Presentation Plan: " + "; ".join(item.code for item in diagnostics)
         )
+    if composition is not None:
+        validate_composition(composition, ir, context)
     source_summary = "" if bundle.kind == "project" else _source_summary(bundle, labels)
     if bundle.kind == "project":
         navigation = ""
@@ -536,8 +541,43 @@ def render_review(
         view_context=context,
         presentation_plan=plan,
     )
+    generator_files = (sorted((SKILL_DIR / "scripts").glob("*.py"))
+                       + sorted((SKILL_DIR.parent / "writing-specs" / "scripts").glob("*.py"))
+                       + [TEMPLATE_PATH, FRESHNESS_RUNTIME_PATH, MERMAID_PATH, MERMAID_CHECKSUM_PATH])
+    generator_digest = hashlib.sha256()
+    for generator_file in generator_files:
+        name = generator_file.relative_to(SKILL_DIR.parent).as_posix()
+        generator_digest.update(name.encode() + b"\0" + generator_file.read_bytes() + b"\0")
+    manifest["generator"] = {"name": "forge-visual-docs", "sha256": generator_digest.hexdigest()}
+    manifest["quality"] = "reading-check-required" if composition is not None else "source-browser"
     title = _primary_title(bundle)
+    if composition is not None:
+        title = composition["title"]
+        manifest["composition"] = composition
+        manifest["composition_sha256"] = hashlib.sha256(canonical_bytes(composition)).hexdigest()
+        if composition_source is not None:
+            manifest["composition_source"] = composition_source
+        reading = render_composition(composition, ir, context)
+        if composition_source is not None:
+            reading += ('<details class="reading-review"><summary>'
+                        + ('설명 구성의 출처·최신성' if locale == 'ko' else 'Composition source and freshness')
+                        + '</summary><div class="source-row" data-source-key="composition-input">'
+                        + '<code>' + html.escape(composition_source['path']) + '</code> '
+                        + '<span data-source-state>unverified</span><span data-source-error aria-live="polite"></span>'
+                        + '<label>' + ('구성 JSON으로 확인' if locale == 'ko' else 'Verify with composition JSON')
+                        + '<input type="file" accept=".json,application/json" data-source-picker data-source-key="composition-input"></label></div></details>')
+        label = "전체 원문과 검증 정보" if locale == "ko" else "Complete sources and verification"
+        content = (reading + '<section class="reading-source-library" id="reading-originals"><h2>' + label + '</h2>' + content + '</section>'
+                   if bundle.kind == "project" else
+                   reading + '<details class="reading-source-library"><summary>' + label + '</summary><div id="reading-originals">' + content + '</div></details>')
+        navigation = ""  # The reader's questions, rather than source profiles, lead.
+    else:
+        notice = ("원문 탐색 보기입니다. 이해를 돕는 설명 구성과 읽기 검증은 아직 적용하지 않았습니다."
+                  if locale == "ko" else "Source browser. A reader-oriented explanation and reading check have not been applied.")
+        content = '<p class="source-browser-notice" data-quality="source-browser">' + notice + '</p>' + content
     status = bundle.primary[0].status or bundle.kind
+    if composition is not None and bundle.primary[0].status:
+        status = ("원문 " if locale == "ko" else "Source ") + status
     values = {
         "LANG": locale,
         "TITLE": html.escape(title),
@@ -553,7 +593,9 @@ def render_review(
         "MERMAID": _mermaid_loader(
             offline,
             bundle,
-            needs_mermaid=review_needs_mermaid(bundle, ir, plan),
+            needs_mermaid=review_needs_mermaid(bundle, ir, plan) or bool(composition and any(
+                block["type"] in ("flow", "relationship") for section in composition["sections"] for block in section["blocks"]
+            )),
         ),
         "DIAGRAM_LABEL": html.escape(labels["diagram"], quote=True),
         "MERMAID_ERROR": html.escape(labels["mermaid_error"], quote=True),

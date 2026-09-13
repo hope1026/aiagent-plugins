@@ -104,6 +104,7 @@ def _group_for_role(role: str) -> str | None:
         "plan_progress",
         "plan_task",
         "project_map",
+        "composition_source",
     }:
         return "primary"
     if role == "comparison_spec":
@@ -157,6 +158,11 @@ def _manifest_shape_error(manifest: object, path_review_id: str) -> str | None:
     missing = sorted(required - set(manifest))
     if missing:
         return f"source manifest is missing required fields: {', '.join(missing)}"
+    if "composition_source" in manifest:
+        row = manifest["composition_source"]
+        if (not isinstance(row, dict) or not _valid_text(row, ("key", "namespace", "role", "path", "title", "sha256"))
+                or row["role"] != "composition_source" or not _valid_hash(row["sha256"])):
+            return "composition source has invalid fields"
     review_id = manifest["view_id"]
     if not isinstance(review_id, str) or _REVIEW_ID_RE.fullmatch(review_id) is None:
         return "source manifest view_id is invalid"
@@ -338,6 +344,8 @@ def check_review(viewer: Path, repo_root: Path) -> CheckResult:
     if local_path and manifest.get("output_lifecycle") != "local":
         return _malformed(viewer_label, "local Visual Docs must declare local output_lifecycle")
     rows = [*manifest["member_sources"], *manifest["document_sources"]]
+    if "composition_source" in manifest:
+        rows.append(manifest["composition_source"])
 
     sources: list[list[str]] = []
     diagnostics: list[str] = []
