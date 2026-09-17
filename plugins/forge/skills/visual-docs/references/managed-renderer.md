@@ -37,7 +37,7 @@ Preserve exact identifiers and normative quotations in evidence and original det
 
 Every explanation and graph relation needs relevant evidence, not an arbitrary valid citation. Re-read each claim against its quoted source and relevant surrounding conditions. A valid quote proves provenance, not entailment. Reject an attractive summary that drops an exception. Text-only flows can be explained from prose without modifying the source into arrow syntax.
 
-Use the shared renderer. Do not author document-specific HTML, CSS or JavaScript and do not edit generated HTML. Shared tooling changes use the forge web-app-design skill; individual compositions use the existing visual system.
+Use the shared renderer. Do not author document-specific HTML, CSS or JavaScript and do not edit generated HTML. Verify shared tooling UI changes with the forge verifying-work skill and its UI reference; individual compositions use the existing visual system.
 
 ## Build and verify
 

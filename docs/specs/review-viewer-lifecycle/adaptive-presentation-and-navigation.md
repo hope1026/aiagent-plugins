@@ -50,7 +50,7 @@
 
 ### mobile에서 sequence diagram 글자를 읽기 어려우면 책임 요약표 또는 세로 flowchart를 먼저 제공하고 원본 diagram은 가로 스크롤로 유지해야 한다.
 
-### 승인된 component grammar와 profile로 개별 Visual Docs를 생성하는 작업은 UI 디자인 skill을 적용하지 않아야 하며, Visual Docs shell·component·profile·style·planner·interaction tooling을 변경할 때만 `web-app-design`을 적용해야 한다.
+### 승인된 component grammar와 profile로 개별 Visual Docs를 생성하는 작업에 별도 UI 디자인 skill을 요구하지 않아야 하며, Visual Docs shell·component·profile·style·planner·interaction tooling 변경은 `verifying-work`의 UI 검증 지침으로 확인해야 한다.
 
 ### agent는 수동 HTML content fragment, 문서별 HTML template, CSS 또는 script를 Visual Docs 입력으로 작성하지 않아야 한다. 문서별 설명과 판단은 source-grounded composition 데이터로 작성해야 한다.
 
@@ -195,11 +195,11 @@ Runtime 포함 여부는 원문 상세와 검증된 composition이 실제로 렌
 - [spec kind의 current·comparison statement deep link와 plan kind의 context statement·Task·Step deep link는 bundle path·member path·exact heading에서 계산한 내부 key를 포함해 DOM ID 충돌 없이 해당 Visual Docs의 panel과 대상을 열어야 한다. 화면에는 full statement와 path를 표시해야 한다.](adaptive-presentation-and-navigation.md#spec-kind의-currentcomparison-statement-deep-link와-plan-kind의-context-statementtaskstep-deep-link는-bundle-pathmember-pathexact-heading에서-계산한-내부-key를-포함해-dom-id-충돌-없이-해당-visual-docs의-panel과-대상을-열어야-한다-화면에는-full-statement와-path를-표시해야-한다)
 - [Acceptance Criterion 검토 checkbox와 Step 검토 checkbox는 bundle·member·statement 기반 내부 namespace와 종류를 구분해 localStorage에 저장해야 하며 내부 key를 표시하거나 제품 검증 PASS/FAIL로 표시하지 않아야 한다.](adaptive-presentation-and-navigation.md#acceptance-criterion-검토-checkbox와-step-검토-checkbox는-bundlememberstatement-기반-내부-namespace와-종류를-구분해-localstorage에-저장해야-하며-내부-key를-표시하거나-제품-검증-passfail로-표시하지-않아야-한다)
 
-### 승인된 component grammar로 개별 Visual Docs를 생성할 때 UI 디자인 skill과 수동 HTML fragment·문서별 template·CSS·script를 사용하지 않고 Semantic IR과 composition을 공통 renderer에 전달한다. Shell·component·profile·planner tooling 변경에만 `web-app-design`을 적용한다.
+### 승인된 component grammar로 개별 Visual Docs를 생성할 때 별도 UI 디자인 skill을 요구하지 않으며 수동 HTML fragment·문서별 template·CSS·script를 사용하지 않고 Semantic IR과 composition을 공통 renderer에 전달한다. Shell·component·profile·planner tooling 변경은 `verifying-work`의 UI 지침으로 검증한다.
 
 검증하는 요구사항:
 
-- [승인된 component grammar와 profile로 개별 Visual Docs를 생성하는 작업은 UI 디자인 skill을 적용하지 않아야 하며, Visual Docs shell·component·profile·style·planner·interaction tooling을 변경할 때만 `web-app-design`을 적용해야 한다.](adaptive-presentation-and-navigation.md#승인된-component-grammar와-profile로-개별-visual-docs를-생성하는-작업은-ui-디자인-skill을-적용하지-않아야-하며-visual-docs-shellcomponentprofilestyleplannerinteraction-tooling을-변경할-때만-web-app-design을-적용해야-한다)
+- [승인된 component grammar와 profile로 개별 Visual Docs를 생성하는 작업에 별도 UI 디자인 skill을 요구하지 않아야 하며, Visual Docs shell·component·profile·style·planner·interaction tooling 변경은 `verifying-work`의 UI 검증 지침으로 확인해야 한다.](adaptive-presentation-and-navigation.md#승인된-component-grammar와-profile로-개별-visual-docs를-생성하는-작업에-별도-ui-디자인-skill을-요구하지-않아야-하며-visual-docs-shellcomponentprofilestyleplannerinteraction-tooling-변경은-verifying-work의-ui-검증-지침으로-확인해야-한다)
 - [agent는 수동 HTML content fragment, 문서별 HTML template, CSS 또는 script를 Visual Docs 입력으로 작성하지 않아야 한다. 문서별 설명과 판단은 source-grounded composition 데이터로 작성해야 한다.](adaptive-presentation-and-navigation.md#agent는-수동-html-content-fragment-문서별-html-template-css-또는-script를-visual-docs-입력으로-작성하지-않아야-한다-문서별-설명과-판단은-source-grounded-composition-데이터로-작성해야-한다)
 - [Visual Docs의 Signature는 장식이나 고정 component 이름이 아니라 selected source와 intent에 맞는 state map, interface contract, dependency route, exception matrix, Acceptance Criterion coverage 같은 primary reading structure에서 만들어야 한다.](adaptive-presentation-and-navigation.md#visual-docs의-signature는-장식이나-고정-component-이름이-아니라-selected-source와-intent에-맞는-state-map-interface-contract-dependency-route-exception-matrix-acceptance-criterion-coverage-같은-primary-reading-structure에서-만들어야-한다)
 - [diagram 추가는 제목, 읽는 법, mobile 대체 요약표와 한 묶음으로 검토해야 한다.](adaptive-presentation-and-navigation.md#diagram-추가는-제목-읽는-법-mobile-대체-요약표와-한-묶음으로-검토해야-한다)

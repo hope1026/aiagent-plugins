@@ -162,10 +162,8 @@ The distributed Forge plugin contains user-execution skills only:
 | `executing-plans` | Execute tasks with plan-local progress and checkpoints |
 | `test-driven-development` | Support requested or useful test-first development |
 | `systematic-debugging` | Reproduce, isolate, and establish root cause |
-| `verifying-work` | Gather fresh acceptance evidence |
+| `verifying-work` | Gather fresh acceptance evidence, with a conditional UI reference for state, recovery, accessibility, and rendered checks |
 | `visual-docs` | Build request-only Brief, Plan, and Spec views plus the tracked source-backed Project Handbook |
-| `web-app-design` | Design browser application hierarchy, state geometry, and interaction |
-| `website-design` | Design public website content composition, imagery, and responsive behavior |
 | `writing-tone` | Shape natural human-readable prose |
 | `marketing-tone` | Apply factual marketing and product tone |
 | `operations-tone` | Apply clear support and operations tone |

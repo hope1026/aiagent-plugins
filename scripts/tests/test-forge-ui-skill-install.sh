@@ -2,53 +2,42 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-TEST_HOME="$(mktemp -d)"
-trap 'rm -rf "$TEST_HOME"' EXIT
+TEST_ROOT="$(mktemp -d)"
+trap 'rm -rf "$TEST_ROOT"' EXIT
 
-fail() {
-  echo "FAIL: $1" >&2
-  exit 1
-}
-
-mkdir -p "$TEST_HOME/.agents/skills/ui-design"
-printf 'stale forge copy\n' >"$TEST_HOME/.agents/skills/ui-design/SKILL.md"
-mkdir -p "$TEST_HOME/.agents/skills/user-owned"
-printf 'preserve\n' >"$TEST_HOME/.agents/skills/user-owned/marker"
-
-RECOVERY="$TEST_HOME/recovery/ui-design"
-mkdir -p "$(dirname "$RECOVERY")"
-mv "$TEST_HOME/.agents/skills/ui-design" "$RECOVERY"
-
-for _ in 1 2; do
-  HOME="$TEST_HOME" bash "$ROOT/scripts/install.sh" \
-    --agent codex --mode copy --plugin forge >/dev/null
+# Replacing dedicated exports removes obsolete skills without touching siblings.
+mkdir -p "$TEST_ROOT/user-skills/web-app-design"
+printf 'user-owned\n' >"$TEST_ROOT/user-skills/web-app-design/marker"
+for destination in \
+  codex/.agents/skills \
+  claude/.claude/skills/forge/skills \
+  antigravity/agent-skills; do
+  for name in ui-design web-app-design website-design; do
+    mkdir -p "$TEST_ROOT/export/$destination/$name"
+    printf 'obsolete Forge skill\n' >"$TEST_ROOT/export/$destination/$name/SKILL.md"
+  done
 done
 
-[[ -f "$TEST_HOME/.agents/skills/web-app-design/SKILL.md" ]] ||
-  fail "Codex web-app-design was not installed"
-[[ -f "$TEST_HOME/.agents/skills/website-design/SKILL.md" ]] ||
-  fail "Codex website-design was not installed"
-[[ ! -e "$TEST_HOME/.agents/skills/ui-design" ]] ||
-  fail "Codex ui-design was recreated"
-[[ -f "$RECOVERY/SKILL.md" ]] ||
-  fail "Codex stale skill recovery copy is missing"
-[[ -f "$TEST_HOME/.agents/skills/user-owned/marker" ]] ||
-  fail "Codex user-owned skill was modified"
-
-mkdir -p "$TEST_HOME/.claude/skills/forge/skills/ui-design"
-printf 'stale forge copy\n' \
-  >"$TEST_HOME/.claude/skills/forge/skills/ui-design/SKILL.md"
-
 for _ in 1 2; do
-  HOME="$TEST_HOME" bash "$ROOT/scripts/install.sh" \
-    --agent claude --mode copy --plugin forge >/dev/null
-done
+  bash "$ROOT/scripts/install.sh" --agent all --mode copy --plugin forge \
+    --target-root "$TEST_ROOT/export" >/dev/null
+  python3 - "$ROOT" "$TEST_ROOT" <<'CHECK'
+from pathlib import Path
+import sys
 
-[[ -f "$TEST_HOME/.claude/skills/forge/skills/web-app-design/SKILL.md" ]] ||
-  fail "Claude web-app-design was not installed"
-[[ -f "$TEST_HOME/.claude/skills/forge/skills/website-design/SKILL.md" ]] ||
-  fail "Claude website-design was not installed"
-[[ ! -e "$TEST_HOME/.claude/skills/forge/skills/ui-design" ]] ||
-  fail "Claude ui-design was recreated"
+root, temporary = map(Path, sys.argv[1:])
+source = root / 'plugins/forge/skills'
+expected = {path.parent.name for path in source.glob('*/SKILL.md')}
+assert not expected.intersection({'ui-design', 'web-app-design', 'website-design'})
+assert {'visual-docs', 'verifying-work'} <= expected
+for destination in ('codex/.agents/skills', 'claude/.claude/skills/forge/skills', 'antigravity/agent-skills'):
+    installed = temporary / 'export' / destination
+    assert {p.name for p in installed.iterdir()} == expected, destination
+    for name in ('visual-docs/SKILL.md', 'visual-docs/references/managed-renderer.md',
+                 'verifying-work/SKILL.md', 'verifying-work/references/ui-verification.md'):
+        assert (installed / name).read_bytes() == (source / name).read_bytes(), (destination, name)
+assert (temporary / 'user-skills/web-app-design/marker').read_text() == 'user-owned\n'
+CHECK
+done
 
 echo "forge-ui-skill-install: all checks passed"

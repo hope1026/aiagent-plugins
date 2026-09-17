@@ -19,6 +19,8 @@ For worker results, inspect the diff or artifact and execution evidence, then co
 
 For visual quality, inspect the rendered reading or interaction path and representative affected viewports and states. Compare relevant peer roles and hierarchy. A build or one observed surface cannot prove unobserved UI. Detailed measurements are useful when diagnosing a discrepancy, not mandatory for every claim.
 
+When verifying UI changes, read `references/ui-verification.md` for the affected interaction, state preservation, accessibility, and rendered checks. Apply only relevant cases; ordinary non-UI work does not need this reference.
+
 ## Contract and lifecycle claims
 
 Read `references/canonical-verification.md` when evaluating affected Canonical statements or changing a bundle's status. Use the shared parser for structured bundle identity, status, and diagnostics; reuse valid context. Partial implementation, restoration, or plan completion does not by itself make the whole bundle implemented.

@@ -6,7 +6,7 @@ AI agent plugins managed from one source tree. Forge installs into **Claude Code
 
 | Plugin | Purpose |
 |---|---|
-| `forge` | Fast, clear agent work with proportional verification: bounded work runs directly, complex work uses focused Execution Plans, and durable contract changes preserve approved meaning. Includes TDD, debugging, cross-agent authoring, UI design, tone overlays, and request-only Visual Docs. |
+| `forge` | Fast, clear agent work with proportional verification: bounded work runs directly, complex work uses focused Execution Plans, and durable contract changes preserve approved meaning. Includes TDD, debugging, cross-agent authoring, UI verification, tone overlays, and request-only Visual Docs. |
 
 ```text
 plugins/<name>/
@@ -67,10 +67,8 @@ bash scripts/install.sh --agent codex --plugin forge
 | `executing-plans` | Executes plan Tasks with checkpoints while keeping the plan a work source rather than project SOT |
 | `test-driven-development` | Test-first method when requested, required, or useful; ordinary changes use appropriate outcome checks |
 | `systematic-debugging` | Evidence-based investigation, regression protection, and honest distinction between mitigation and confirmed fix |
-| `verifying-work` | Matches fresh evidence to Quick, plan-only, restoration, or approved-Delta work; changes Canonical lifecycle only when required |
+| `verifying-work` | Matches fresh evidence to the work and affected contracts, with an optional UI reference for state, recovery, accessibility, and rendered checks |
 | `visual-docs` | Preserves meaning and sources in Forge visualizations; chooses free composition for one-time explanations and an optional managed renderer for reproducible documents |
-| `web-app-design` | Browser app hierarchy, control affordance, state preservation, and proportionate rendered verification |
-| `website-design` | Public website visual thesis, content composition, imagery, responsive behavior, and restrained motion |
 | `writing-tone` | Base natural prose layer: clear human writing, non-AI-like wording, and Korean engineering communication |
 | `marketing-tone` | Marketing and product copy overlay: factual, confident, trust-building claims |
 | `operations-tone` | Customer and operations overlay: confirmed status, impact, next action, and restrained cause detail |
@@ -87,7 +85,18 @@ canonical skill, whose ownership state detects collisions and drift.
 Keep detailed maintainer procedures in `.agent-extensions/` and render native
 entries through the `creating-agent-extensions` manager. These files stay
 outside `plugins/forge/`, so Marketplace and `scripts/install.sh` distribute
-the 14 active user-execution skills listed above.
+the 12 active user-execution skills listed above.
+
+Forge does not bundle general web app or website design skills. UI work follows
+the existing product and any useful design guidance the user has selected;
+installing another design skill is optional. `verifying-work` loads its UI
+reference only when needed, and `visual-docs` retains Forge source visualization.
+
+When upgrading an older local dev install, Codex's per-skill copy mode may leave
+previous `web-app-design` and `website-design` entries under `~/.agents/skills/`.
+Confirm their origin and move obsolete Forge copies outside skill discovery paths
+if desired. The installer does not delete same-named user-owned skills. Marketplace
+packages and fresh isolated exports contain only the current catalog.
 
 ## Canonical Spec and task routing
 

@@ -250,9 +250,8 @@ Visual Docs shell의 inherited visual system:
 | `writing-specs` | Markdown 기본 source 검토, 요청된 Forge 시각화의 제작 경로 선택 |
 | `writing-plans` | 독립 plan path, 선택적 Related Specs, plan 디렉터리, 진행·Task 분리 기준 |
 | `executing-plans` | plan 디렉터리의 상태·진행 기록과 요청이 있을 때만 plan kind Visual Docs 갱신 |
-| `web-app-design` | 개별 View 생성 제외와 Viewer tooling 변경 시 browser app UI 검증 |
 | `writing-tone` | 독자 목적에 맞는 제목과 설명 순서, locale copy |
-| `verifying-work` | 자료별 읽기 검증, Viewer tooling 회귀, 제품 `implemented` 오인 금지 |
+| `verifying-work` | 자료별 읽기 검증, UI 참고 문서에 따른 Viewer tooling 동작·상태 회귀, 제품 `implemented` 오인 금지 |
 | `using-forge`, portability rules, README | `docs/specs`, `docs/plans`, `.forge/visual-docs` Git 비추적 계약 동기화 |
 
 ## Requirements
