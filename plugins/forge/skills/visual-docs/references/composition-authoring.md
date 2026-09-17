@@ -1,5 +1,7 @@
 # Authoring a grounded composition
 
+This contract applies only to the optional managed renderer. Freely authored explanations do not use this input schema or rendering pipeline.
+
 The agent edits a constrained JSON explanation, not a template. The renderer supplies visual consistency; the author supplies the reader's questions, useful ordering and source-grounded meaning. Do not automatically transform every source block into a section or every sentence into a diagram.
 
 ## Prepare the source

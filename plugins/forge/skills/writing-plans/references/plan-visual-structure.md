@@ -14,7 +14,7 @@ Use this reference for Execution Plans that need a human review view. The plan r
 8. Detailed Tasks and Steps
 9. Recovery points and unresolved user decisions
 
-This order lets a reviewer move from scope to flow to implementation detail to evidence.
+Use only the parts and ordering that answer the reader's question. A short session-plan diagram needs no Routes table, fixed sections or file conversion.
 
 ## Route table
 
@@ -27,29 +27,23 @@ This order lets a reviewer move from scope to flow to implementation detail to e
 
 Use the same Verification Scope as the plan and final evidence: full coverage only when the plan claims full implementation of a new or never-implemented contract, and affected statements plus regression preservation for partial implementation, change, or restoration. When a plan has a Related Canonical Spec, label its coverage and provenance references with bundle and member paths. Keep exact heading text visible. Do not infer cross-bundle links or merge statements with similar wording. The canonical Related Specs block owns normalized bundle paths, while each Task owns its exact `Governing statements:` links; diagrams only visualize those declared mappings.
 
-Use as many Routes as the actual phases and reading path need. Every Task has one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
+Use as many Routes as the actual phases and reading path need. When Routes help explain the plan, give each Task one primary Route even when it depends on Tasks in another Route. Route names describe outcomes, not team names.
 
 ## Task dependency or Route map
 
-Show Route-level order first. Add Task-level edges only where the plan states an explicit dependency. Do not infer an edge from file proximity or execution preference.
+Show Route-level order when that level helps the reader. Add Task-level edges only where the plan states an explicit dependency. Do not infer an edge from file proximity or execution preference.
 
 ## Runtime responsibility or transaction flow
 
-List actors and responsibilities in a table before a wide sequence diagram. Include server authority, validation ownership, transaction boundary, Remote caller and receiver, and failure owner only when the plan states them.
+Use an actor table or a narrow layout when it makes a complex sequence easier to read. Include server authority, validation ownership, transaction boundary, Remote caller and receiver, and failure owner only when the plan states them.
 
 ## Extension structure or multi-Place flow
 
 Show the current implementation boundary and the named extension point. Do not draw unreleased Places or platforms as implemented. Keep `available`, feature flags, or rollout states visible when they are part of the source.
 
-## Diagram package
+## Diagram presentation
 
-Each diagram has:
-
-- a title framed as the question the reviewer wants answered;
-- one sentence stating what to confirm;
-- a one-sentence reading guide;
-- a source label: `Plan source`, `Spec source`, or `Derived view`;
-- a mobile summary table or vertical source-derived flow before any wide diagram.
+Choose a title that helps the reader find the answer. Add confirmation prompts, a reading guide or a source label when they clarify the diagram. Keep source links available and use a vertical flow or summary for wide diagrams when needed for the actual reading surface. A simple in-conversation diagram needs no fixed package of captions, tables or sections.
 
 ## Traceability
 

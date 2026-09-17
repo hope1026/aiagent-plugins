@@ -1,5 +1,7 @@
 # Visual Docs rendering contract
 
+This contract applies only to the optional managed renderer. Freely authored explanations do not use this input schema or rendering pipeline.
+
 `review_renderer.render_review()` turns one validated source set into a read-only HTML document. Markdown and the lossless Semantic IR own every statement in the result.
 
 ## Pipeline and outputs

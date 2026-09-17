@@ -43,7 +43,7 @@ Any nonzero result blocks implementation handoff and completion claims. The tran
 
 ## Visual Docs Request Boundary
 
-Markdown is the default review path. A Spec Delta is not a Visual Docs source and does not authorize HTML generation. Only an explicit user request to create, refresh, present, or freshness-check a Brief, Canonical Spec, Execution Plan, or Project Handbook permits one handoff to the forge visual-docs skill for generation, proportional quality verification, and necessary corrections within that request.
+Markdown is the default review path. A Spec Delta is not a Visual Docs source and does not authorize HTML generation. For a requested visualization of Forge sources, use the forge visual-docs skill to preserve meaning and choose an appropriate format. One-time explanations may stay in the conversation or use freely authored visuals; only managed freshness, reproducibility or tracked Handbook requests need the shared renderer. The active request includes proportional verification and necessary corrections.
 
 Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an existing visual document are not generation requests. Report possible staleness without reading or updating it.
 

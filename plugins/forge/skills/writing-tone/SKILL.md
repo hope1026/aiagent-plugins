@@ -41,11 +41,11 @@ Above all: **lead with the point** — decision, result, or ask first; backgroun
 
 For requested Visual Docs:
 
-- Frame the page and diagram title as the question the reviewer wants answered, not as an internal system name.
+- Choose titles that help the reader find the answer; a question or a concrete descriptive label can work.
 - State what to confirm before background or source detail.
-- Put a one-sentence reading guide immediately before every diagram.
+- Add a reading guide when a diagram needs context.
 - Use the user's language for labels whose meaning survives translation. Preserve established API, service, schema, protocol, and code identifiers in their original form.
-- Order content as summary → visual flow → source detail → acceptance evidence. Keep the full source detail collapsed or later in the reading path when a summary is enough to orient the reader.
+- Order content around the reader's question. Put source detail where it supports verification without interrupting the explanation; no fixed section order or mandatory diagram is required.
 - Prefer concrete actor, responsibility, state, count, and verification wording over abstract labels such as "Architecture Overview".
 
 For substantial prose, reuse the work checklist for drafting and review. For short messages, edit directly; keep the cut pass internal and return the requested text without process narration.

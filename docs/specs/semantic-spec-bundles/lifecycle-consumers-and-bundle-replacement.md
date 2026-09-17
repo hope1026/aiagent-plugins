@@ -2,6 +2,8 @@
 
 ## Requirements
 
+시각화의 제작 경로는 [시각 문서의 제작 경로](../review-viewer-lifecycle/presentation-routing.md)가 소유한다. 일회성 설명은 자유롭게 표현하며 아래 four-kind 배포 계약은 선택형 관리형 renderer에만 적용한다.
+
 ### `writing-plans`, `executing-plans`, `verifying-work`와 다른 Forge lifecycle skill은 공통 bundle parser가 반환한 root metadata, member 목록, statement와 status를 사용해야 한다.
 
 ### Forge lifecycle skill은 일반적인 작성·변경·승인·handoff·checkpoint·status 전환에서 Markdown source만 생성하거나 변경하고, 명시적 Visual Docs 요청이 있을 때만 local View 또는 tracked Project Handbook을 생성하거나 갱신해야 한다.
@@ -12,7 +14,7 @@
 
 ### Source 변경만으로 완료된 local View나 tracked Project Handbook을 자동 갱신하지 않아야 한다. 진행 중인 명시적 시각 문서 요청을 완성하기 위한 검증·수정·재생성은 같은 요청 안에서 수행할 수 있고, 완료 후 새 갱신에는 명시적 사용자 의도가 필요해야 한다.
 
-### Bundle parser와 validator, Visual Docs parser·renderer·component asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle과 four-kind explicit Visual Docs request 계약을 사용해야 한다.
+### Bundle parser와 validator, 관리형 Visual Docs parser·renderer·component asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle과 관리형 four-kind 계약을 사용해야 한다.
 
 ### 활성 Spec Bundle은 현재 유효한 제품·시스템 동작과 제약만 source of truth로 제공하고 완료된 실행 과정과 일회성 수치는 plan, ADR, evidence 또는 Git 이력에만 두어야 한다.
 
@@ -42,7 +44,7 @@
 검증하는 요구사항:
 
 - [`writing-plans`, `executing-plans`, `verifying-work`와 다른 Forge lifecycle skill은 공통 bundle parser가 반환한 root metadata, member 목록, statement와 status를 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#writing-plans-executing-plans-verifying-work와-다른-forge-lifecycle-skill은-공통-bundle-parser가-반환한-root-metadata-member-목록-statement와-status를-사용해야-한다)
-- [Bundle parser와 validator, Visual Docs parser·renderer·component asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle과 four-kind explicit Visual Docs request 계약을 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#bundle-parser와-validator-visual-docs-parserrenderercomponent-asset은-forge-plugin-배포에-포함되고-claude-code-codex-antigravity에서-같은-spec-bundle과-four-kind-explicit-visual-docs-request-계약을-사용해야-한다)
+- [Bundle parser와 validator, 관리형 Visual Docs parser·renderer·component asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle과 관리형 four-kind 계약을 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#bundle-parser와-validator-관리형-visual-docs-parserrenderercomponent-asset은-forge-plugin-배포에-포함되고-claude-code-codex-antigravity에서-같은-spec-bundle과-관리형-four-kind-계약을-사용해야-한다)
 
 ### Current source audit를 실행하면 Canonical Spec에는 현재 동작과 제약만 남고 대체된 실행 과정이나 일회성 수치는 active statement와 설명에 나타나지 않는다.
 

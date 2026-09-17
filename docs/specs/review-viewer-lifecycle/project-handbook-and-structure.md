@@ -1,5 +1,7 @@
 # Project Handbook과 구조 설명
 
+적용 범위: 이 문서의 구조화 source·renderer·composition·freshness 계약은 [관리형 제작 경로](presentation-routing.md)에 적용한다. 일회성 자유 작성에는 해당 빌드 절차나 표현 제약을 강제하지 않는다.
+
 ## Overview
 
 Project Handbook은 파일 위치 목록이 아니라 프로젝트 목적, 주요 기능, Spec과 구조별 책임을 사람이 이해할 수 있게 연결하는 시각 문서다. `forge/project-map@1`은 사람이 작성한 프로젝트와 구조 설명을 소유하고, Canonical Spec은 규범적 계약을 소유하며, repository scan은 계산 가능한 evidence만 제공한다.

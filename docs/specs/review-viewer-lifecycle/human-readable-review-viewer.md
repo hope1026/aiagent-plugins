@@ -14,6 +14,7 @@ relatedSpecs: [{"path":"docs/specs/semantic-spec-bundles/","relation":"relatedTo
 ## Documents
 
 - root: [사람 중심 Visual Docs](human-readable-review-viewer.md)
+- contract: [시각 문서의 제작 경로](presentation-routing.md)
 - contract: [Source 선택과 Freshness](source-selection-and-freshness.md)
 - contract: [적응형 표현과 탐색](adaptive-presentation-and-navigation.md)
 - contract: [근거 기반 설명 구성과 이해 검증](source-grounded-composition.md)
@@ -23,9 +24,11 @@ relatedSpecs: [{"path":"docs/specs/semantic-spec-bundles/","relation":"relatedTo
 
 ## Overview
 
-Visual Docs는 작업 요약, 실행 계획, 설계 기준과 프로젝트 구조를 읽기 쉬운 문서로 보여준다. 목적과 책임, 작업 의존성과 완료 기준을 단계적으로 확인하고 원문 Markdown까지 찾아갈 수 있다. 사용자가 요청할 때만 생성하는 읽기 전용 HTML이며, 원문의 의미를 유지한다.
+Forge 원문을 설명하는 시각 문서는 요청에 맞게 자유롭게 작성한다. 표, Mermaid, 앱의 시각화 기능이나 직접 작성한 HTML을 선택할 수 있고 일반 시각화에 Forge 제작 절차를 강제하지 않는다. 원문의 조건과 권위, 출처를 보존하는 원칙은 두 경로에 공통으로 적용한다.
 
-Visual Docs의 목적은 텍스트를 그림으로 치환하는 것이 아니다. Selected Markdown을 Semantic IR로 보존하고 원문을 읽은 agent가 독자의 질문과 답, 설명 순서와 표현을 source-grounded composition으로 작성해 사람이 현재 질문의 답을 빠르게 찾도록 하는 것이다. Profile과 자동 관계 추출은 그 판단을 돕는 참고 정보다. 일관성은 모든 문서에 동일한 panel 구조를 적용하는 대신 공통 visual system, component grammar, provenance와 interaction contract에서 제공한다.
+제작 경로와 공통 계약은 [시각 문서의 제작 경로](presentation-routing.md)가 소유한다. 아래의 Behavior, Data, Requirements와 Acceptance Criteria 및 나머지 renderer member는 기존 관리형 경로의 계약이다. 재생성 가능한 tracked Project Handbook, 명시적인 freshness 검사, 동일 입력 재생성 또는 기존 관리형 문서 갱신에 적용하며 자유 작성 결과에는 해당 schema·CLI·no manual HTML 제약을 적용하지 않는다.
+
+관리형 경로는 selected Markdown을 Semantic IR로 보존하고 agent가 source-grounded composition을 작성해 공용 renderer에 전달한다. 기존 네 kind와 저장 경로, 출처 탐색, 최신성 검사와 재현성을 유지한다.
 
 비목표:
 - Visual Docs를 Brief, Plan, Canonical Spec 또는 Project Map을 대신하는 편집 가능한 source of truth로 만들지 않는다.
@@ -39,17 +42,14 @@ Visual Docs의 목적은 텍스트를 그림으로 치환하는 것이 아니다
 
 ## Behavior & Flows
 
-Visual Docs를 사용자 요청에 따라 제공하는 흐름:
+관리형 Visual Docs를 사용자 요청에 따라 제공하는 흐름:
 
 ```mermaid
 flowchart TD
     A[Brief·Plan·Spec·Project Map 작성·변경] --> B[Markdown source 자체 검토 완료]
-    B --> C{Visual Docs가 검토에 도움이 되는가?}
-    C -- 예 --> D[사용자에게 효용을 알리고 생성 여부 질문]
-    C -- 아니오 --> E[Markdown으로 승인 또는 handoff 요청]
-    D --> F{사용자가 명시적으로 요청했는가?}
+    B --> F{관리형 문서를 요청했는가?}
     F -- 예 --> G[Semantic IR과 View Context 생성]
-    F -- 아니오 --> E
+    F -- 아니오 --> E[Markdown으로 검토 또는 handoff]
     G --> GP[독자 질문·근거 기반 composition 작성·검증]
     GP --> GR[공통 component grammar로 HTML 생성]
     GR --> QA[의미·읽기·표시 검증과 필요한 수정]
@@ -247,11 +247,11 @@ Visual Docs shell의 inherited visual system:
 | `visual-docs` | 요청형 Visual Docs, 네 kind, source role·provenance, deterministic parser, local·tracked output lifecycle, freshness, component mapping |
 | `viewer-template.html` | 3단계 freshness UI, source fetch·파일 선택 검증, locale, mobile diagram·table wrapper, 접근성, favicon, 오류 표시 |
 | `build-visual-docs.sh` | `--kind brief|plan|spec|project`, view ID·output naming, kind별 source, `--check`, offline 유지 |
-| `writing-specs` | Markdown 기본 source 검토, Visual Docs 효용 안내, 완료 후 생성 여부 질문 |
+| `writing-specs` | Markdown 기본 source 검토, 요청된 Forge 시각화의 제작 경로 선택 |
 | `writing-plans` | 독립 plan path, 선택적 Related Specs, plan 디렉터리, 진행·Task 분리 기준 |
 | `executing-plans` | plan 디렉터리의 상태·진행 기록과 요청이 있을 때만 plan kind Visual Docs 갱신 |
 | `web-app-design` | 개별 View 생성 제외와 Viewer tooling 변경 시 browser app UI 검증 |
-| `writing-tone` | 질문형 제목, 읽는 법, 요약 우선, locale copy |
+| `writing-tone` | 독자 목적에 맞는 제목과 설명 순서, locale copy |
 | `verifying-work` | 자료별 읽기 검증, Viewer tooling 회귀, 제품 `implemented` 오인 금지 |
 | `using-forge`, portability rules, README | `docs/specs`, `docs/plans`, `.forge/visual-docs` Git 비추적 계약 동기화 |
 

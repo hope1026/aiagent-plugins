@@ -5,7 +5,7 @@ description: 'Use when designing, implementing, or reviewing browser application
 
 # Web App Design
 
-Design browser and PWA applications around the user's primary task, coherent product conventions, and actual rendered quality. Respond in the user's language. Public content sites use the forge website-design skill; native applications need platform-specific guidance. Fixed Visual Docs generation belongs to the forge visual-docs skill. Visual Docs tooling UI changes use this skill at the scale of the affected surface.
+Design browser and PWA applications around the user's primary task, coherent product conventions, and actual rendered quality. Respond in the user's language. Public content sites use the forge website-design skill; native applications need platform-specific guidance. Forge source explanations use the forge visual-docs skill for meaning preservation and optional managed rendering. A one-time visual document does not require this design workflow merely because it uses HTML. Visual Docs tooling UI changes use this skill at the scale of the affected surface.
 
 ## Design from the product
 

@@ -1,5 +1,7 @@
 # Source 선택과 Freshness
 
+적용 범위: 이 문서의 구조화 source·renderer·composition·freshness 계약은 [관리형 제작 경로](presentation-routing.md)에 적용한다. 일회성 자유 작성에는 해당 빌드 절차나 표현 제약을 강제하지 않는다.
+
 ## Requirements
 
 ### Visual Docs는 manifest에 `kind`, `view_id`, output lifecycle `local|tracked`, source별 role·path·SHA-256, 생성 시각, locale, 집계 수치와 project kind의 Project Map path·declared Spec Bundle·repository evidence source를 기록하고 열람 시점 hash와 비교해 `current`, `stale`, `unverified` freshness를 표시해야 한다. 화면의 주 label은 H1, path와 full statement이고 hash나 내부 key를 identity label로 사용하지 않아야 한다.

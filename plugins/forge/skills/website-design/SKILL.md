@@ -5,7 +5,7 @@ description: 'Use when designing, implementing, or reviewing public websites suc
 
 # Website Design
 
-Design public websites around a clear audience, useful content, a coherent visual idea, and a meaningful next action. Respond in the user's language. Browser applications use the forge web-app-design skill; native apps need platform guidance. Fixed Visual Docs generation belongs to the forge visual-docs skill.
+Design public websites around a clear audience, useful content, a coherent visual idea, and a meaningful next action. Respond in the user's language. Browser applications use the forge web-app-design skill; native apps need platform guidance. Forge source explanations use the forge visual-docs skill for meaning preservation and optional managed rendering. A one-time visual document does not require this design workflow merely because it uses HTML.
 
 ## Establish the direction
 

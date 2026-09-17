@@ -28,7 +28,7 @@ flowchart TD
     B -->|"Landing·marketing·docs·portfolio"| D["website-design"]
     B -->|"불명확"| E["미해결 범위 확인"]
     B -->|"Native mobile·desktop"| F["전용 스킬 탐색 또는 범위 확인"]
-    G["고정 Visual Docs 생성"] --> H["visual-docs"]
+    G["Forge 원문·관리형 문서 요청"] --> H["visual-docs"]
     I["Visual Docs tooling 변경"] --> C
 ```
 
@@ -40,7 +40,9 @@ flowchart TD
 
 ### 요청의 surface는 기존 제품에서 확인하고 결과를 바꾸는 미해결 선택만 질문하며 native mobile·desktop을 web 스킬에 강제 라우팅하지 않아야 한다.
 
-### Visual Docs 생성·갱신·freshness 요청은 `visual-docs`가 소유하고, shell·component·profile·planner·Project Handbook interaction 변경은 `web-app-design`을 함께 적용해야 한다.
+### Forge 원문의 시각화와 관리형 문서 요청에만 `visual-docs`를 적용하고 공용 renderer의 UI 변경에는 `web-app-design`을 함께 적용해야 한다.
+
+일반 도식이나 일회성 설명은 현재 앱 기능으로 처리한다. Forge 원문은 의미와 출처를 보존하되 자유롭게 표현하고, tracked Handbook·재현성·freshness 요청이나 기존 관리형 문서 갱신에만 공용 renderer를 사용한다. 단순 문서가 HTML이라는 이유만으로 웹앱·웹사이트 스킬을 추가 적용하지 않는다.
 
 ### Forge source, manifest, installer와 skill catalog는 UI 구현 스킬로 `web-app-design`과 `website-design`만 배포하고 각 스킬의 이름·설명·trigger와 설치 결과를 Claude Code, Codex, Antigravity에서 일치시켜야 한다.
 
@@ -66,11 +68,11 @@ flowchart TD
 - [`using-forge`는 landing page, marketing site, product page, public documentation, editorial, portfolio와 공개 콘텐츠 website 구현·설계 요청을 `website-design`으로 라우팅해야 한다.](forge-ui-design-skill-separation.md#using-forge는-landing-page-marketing-site-product-page-public-documentation-editorial-portfolio와-공개-콘텐츠-website-구현설계-요청을-website-design으로-라우팅해야-한다)
 - [요청의 surface는 기존 제품에서 확인하고 결과를 바꾸는 미해결 선택만 질문하며 native mobile·desktop을 web 스킬에 강제 라우팅하지 않아야 한다.](forge-ui-design-skill-separation.md#요청의-surface는-기존-제품에서-확인하고-결과를-바꾸는-미해결-선택만-질문하며-native-mobiledesktop을-web-스킬에-강제-라우팅하지-않아야-한다)
 
-### Visual Docs 생성과 tooling 변경 요청을 분류하면 전자는 `visual-docs`, 후자는 `visual-docs`와 `web-app-design`의 tooling 검증 경로를 사용한다.
+### 일반 도식, Forge 원문 설명과 공용 tooling 변경 요청을 분류하면 일반 도식은 기본 기능, 원문 설명은 가벼운 의미 보존 지침, 공용 tooling은 관련 디자인 검증을 사용한다.
 
 검증하는 요구사항:
 
-- [Visual Docs 생성·갱신·freshness 요청은 `visual-docs`가 소유하고, shell·component·profile·planner·Project Handbook interaction 변경은 `web-app-design`을 함께 적용해야 한다.](forge-ui-design-skill-separation.md#visual-docs-생성갱신freshness-요청은-visual-docs가-소유하고-shellcomponentprofileplannerproject-handbook-interaction-변경은-web-app-design을-함께-적용해야-한다)
+- [Forge 원문의 시각화와 관리형 문서 요청에만 `visual-docs`를 적용하고 공용 renderer의 UI 변경에는 `web-app-design`을 함께 적용해야 한다.](forge-ui-design-skill-separation.md#forge-원문의-시각화와-관리형-문서-요청에만-visual-docs를-적용하고-공용-renderer의-ui-변경에는-web-app-design을-함께-적용해야-한다)
 
 ### 세 agent용 Forge 설치 결과와 manifest를 검사하면 `web-app-design`과 `website-design`이 같은 계약으로 발견되고 추가 UI compatibility router는 배포되지 않는다.
 
@@ -98,4 +100,5 @@ flowchart TD
 
 ## Decisions & History
 
-- 2026-09-08 [CURRENT] surface별 스킬 책임과 Visual Docs 요청 경계를 유지한다. 웹앱·공개 웹사이트는 제품 맥락의 역할별 일관성, 가독성과 실제 스타일 비교를 공통 기준으로 사용한다. 시각 문서는 제목·본문·출처 역할을 확인하고 완료 검증은 담당 스킬의 증거를 사용한다. 특정 제품의 폰트 수치를 범용 기본값으로 고정하지 않는다.
+- 2026-09-17 [CURRENT] 일반 시각화의 전용 스킬 라우팅을 해제하고 Forge 원문 의미 보존과 선택형 관리형 renderer에 visual-docs의 책임을 한정한다.
+- 2026-09-08 surface별 스킬 책임과 Visual Docs 요청 경계를 유지한다. 웹앱·공개 웹사이트는 제품 맥락의 역할별 일관성, 가독성과 실제 스타일 비교를 공통 기준으로 사용한다. 시각 문서는 제목·본문·출처 역할을 확인하고 완료 검증은 담당 스킬의 증거를 사용한다. 특정 제품의 폰트 수치를 범용 기본값으로 고정하지 않는다.

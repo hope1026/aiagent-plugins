@@ -29,6 +29,6 @@ Keep progress in the existing record. Add separate progress or task files only w
 
 For a plan consumed by Forge tooling, use `docs/plans/PPP-<slug>/plan.md` and read `references/structured-plan-format.md`. Preserve repository-contained, unique normalized Related Spec bundle paths and exact heading text in `Governing statements:` links. Inspect an unfamiliar or changed bundle with the writing-specs parser; reuse valid inspected context.
 
-Read `references/plan-visual-structure.md` only when a requested review needs relationships or diagrams. Visual Docs generation and refresh require an explicit user request; Markdown or an app plan is sufficient for ordinary review.
+Read `references/plan-visual-structure.md` only when a requested review needs relationships or diagrams. Visual Docs generation and refresh require an explicit user request; Markdown or an app plan is sufficient for ordinary review. A requested one-time plan visualization can use that existing source and the current app's capabilities without creating a structured file plan or invoking the managed renderer.
 
 Review whether the plan is executable, appropriately bounded, and verifiable. Continue authorized execution through the forge executing-plans skill without another go-ahead just because a plan was saved.

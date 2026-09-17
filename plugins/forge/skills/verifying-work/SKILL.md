@@ -29,4 +29,4 @@ A contract conflict goes to the forge writing-specs skill; an uncertain implemen
 
 Stop after the exact claim, affected contracts, and required project gates are proven. Report the result, meaningful evidence, and limitations in the existing work record. Ordinary completion needs no work-class form or statement-by-statement report when the evidence is clear.
 
-For requested Visual Docs, use the owning skill's build and proportionate rendered checks. A tracked Project Handbook also needs freshness and repository validation. Generated views remain derived outputs, and source changes alone do not authorize refresh.
+For requested Forge visualizations, check source fidelity and the actual delivered surface at the scale of the document. Only managed renderer output needs its build checks; a reproducible tracked Project Handbook also needs freshness and repository validation. Generated views remain derived outputs, and source changes alone do not authorize refresh.

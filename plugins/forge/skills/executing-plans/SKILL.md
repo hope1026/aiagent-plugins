@@ -31,6 +31,6 @@ Reuse authorization for concrete work already approved. Pause dependent actions 
 
 Use the forge verifying-work skill when assessing completion or Canonical lifecycle status. Match the claim to the requested scope; finishing tasks does not imply an entire Spec Bundle is implemented.
 
-Visual Docs are derived outputs. Do not inspect, generate, or refresh them merely because a plan or source changed. An explicit user request goes to the forge visual-docs skill; report possible staleness when relevant.
+Visual Docs are derived outputs. Do not inspect, generate, or refresh them merely because a plan or source changed. A requested visualization of Forge sources uses the forge visual-docs skill for meaning preservation and format choice; general diagrams use current app capabilities. Report possible staleness when relevant.
 
 When retaining a structured plan, use `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay with it. Promote durable decisions before removing the plan. Requested local views stay under `.forge/visual-docs/`; the reproducible `docs/project-viewer/index.html` is tracked derived output, never an execution source.

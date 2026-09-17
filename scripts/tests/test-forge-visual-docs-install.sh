@@ -79,6 +79,8 @@ for skills in "$CODEX_SKILLS" "$CLAUDE_SKILLS" "$ANTIGRAVITY_SKILLS"; do
   done
   test -f "$skills/visual-docs/references/composition-authoring.md" ||\
     fail "missing installed composition authoring reference: $skills"
+  test -f "$skills/visual-docs/references/managed-renderer.md" ||\
+    fail "missing installed managed renderer reference: $skills"
   test -f "$skills/writing-specs/assets/mermaid.min.js" ||
     fail "missing installed offline Mermaid asset: $skills"
   test ! -e "$skills/spec-viewer" ||

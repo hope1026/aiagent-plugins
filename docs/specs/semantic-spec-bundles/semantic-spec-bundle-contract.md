@@ -23,7 +23,7 @@ relatedSpecs: [{"path":"docs/specs/review-viewer-lifecycle/","relation":"related
 
 Forge의 spec과 plan은 Markdown을 유일한 기본 산출물과 source of truth로 유지해야 한다. 하나의 Canonical Spec은 의미가 드러나는 directory 안에 관련 Markdown을 묶은 Spec Bundle이다. Bundle metadata, full-statement traceability와 lifecycle gate는 기계적으로 검증하되, 서로 다른 feature·workflow·API·architecture·policy·migration 문서를 하나의 파일이나 화면 순서에 강제하지 않는다.
 
-HTML은 일반적인 spec 작성, plan 작성, 승인, handoff, 실행 checkpoint 또는 lifecycle status 변경에서 생성하지 않는다. 사람이 보기 좋은 별도 화면이 필요할 때 사용자가 `visual-docs`를 명시적으로 요청해야만 `docs/specs/review-viewer-lifecycle/`의 계약에 따라 local View 또는 tracked Project Handbook을 생성한다.
+HTML은 일반적인 spec 작성, plan 작성, 승인, handoff, 실행 checkpoint 또는 lifecycle status 변경에서 생성하지 않는다. 사용자가 Forge 원문의 시각화를 요청하면 `docs/specs/review-viewer-lifecycle/`의 제작 경로 계약에 따라 대화 안의 표현이나 자유 작성 문서를 사용할 수 있다. 관리형 renderer와 tracked Project Handbook은 재현성·freshness·기존 관리형 문서 갱신이 필요한 요청에서 선택한다.
 
 비목표:
 - HTML을 spec의 편집 가능한 source of truth로 만들지 않는다.
@@ -120,7 +120,7 @@ spec-docs validate --root docs/specs
 |---|---|---:|---|
 | `docs/specs/<semantic-bundle-name>/` | 영구 source of truth | 예 | 요구사항·상태 변경 |
 | `docs/plans/PPP-<slug>/plan.md` | 작업 단위 실행 source | 예 | 계획·진행 변경 |
-| `.forge/visual-docs/<view-id>/view.html` | 요청형 맥락 snapshot | 아니오 | 사용자 명시 요청 |
+| `.forge/visual-docs/<view-id>/view.html` | 관리형 또는 자유 작성 로컬 HTML | 아니오 | 사용자 명시 요청 |
 | `docs/project-viewer/index.html` | 재생 가능한 Project Handbook | 예 | 사용자 명시 요청과 freshness 검증 |
 
 spec transition manifest:

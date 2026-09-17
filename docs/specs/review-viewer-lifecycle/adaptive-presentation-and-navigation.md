@@ -1,5 +1,7 @@
 # 적응형 표현과 탐색
 
+적용 범위: 이 문서의 구조화 source·renderer·composition·freshness 계약은 [관리형 제작 경로](presentation-routing.md)에 적용한다. 일회성 자유 작성에는 해당 빌드 절차나 표현 제약을 강제하지 않는다.
+
 ## Requirements
 
 ### 복잡도 점수는 bundle 전체의 Requirement 8개 초과, Acceptance Criterion 8개 초과, Mermaid 2개 이상, 데이터·Interface 표 2개 이상, 여러 member·subsystem·actor·Place·상태 전이, bundle 200줄 초과, 미해결 clarification 또는 change history 다수 항목에 각각 1점을 부여하되 Visual Docs 자동 생성 조건으로 사용하지 않아야 한다.

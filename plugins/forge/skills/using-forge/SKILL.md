@@ -47,7 +47,7 @@ Load a specialist only when its knowledge helps the task:
 - Browser applications: the forge web-app-design skill. Public content websites: the forge website-design skill. Inspect the surface first; native apps need their own platform guidance.
 - Substantial prose or house voice: the forge writing-tone skill; marketing or operations overlays when relevant.
 - Cross-agent extension authoring: the forge creating-agent-extensions skill.
-- Explicit visual-document requests: the forge visual-docs skill. Existing HTML, source changes, or a checkpoint do not request generation or refresh.
+- Visualizing Forge sources or managing a Forge document: the forge visual-docs skill for meaning and source preservation, with the managed renderer only when needed. General diagrams and explanations use current app capabilities. Existing HTML, source changes, or a checkpoint do not request generation or refresh.
 
 ## Records
 

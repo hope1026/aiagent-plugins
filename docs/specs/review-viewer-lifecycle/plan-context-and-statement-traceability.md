@@ -1,5 +1,7 @@
 # Plan Context와 문장 추적성
 
+적용 범위: 이 문서의 구조화 source·renderer·composition·freshness 계약은 [관리형 제작 경로](presentation-routing.md)에 적용한다. 일회성 자유 작성에는 해당 빌드 절차나 표현 제약을 강제하지 않는다.
+
 ## Requirements
 
 이 문서의 plan kind는 Visual Docs가 읽는 구조화된 파일 계획을 뜻한다. 일반 작업의 계획은 앱이나 기존 기록에 둘 수 있고, 시각 문서 요청 없이 이 형식을 강제하지 않는다.

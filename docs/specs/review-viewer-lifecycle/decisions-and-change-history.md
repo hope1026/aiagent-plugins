@@ -2,4 +2,4 @@
 
 ## Decisions & History
 
-- 2026-09-13 [CURRENT] Visual Docs는 명시적 요청 범위에서 원문을 보존하고 agent가 독자 질문·답·설명 순서·표현을 근거 기반 composition으로 작성해 공개 builder에 전달한다. Profile과 자동 관계 추출은 보조 수단이며 특정 heading이나 도표 수가 이해 품질을 결정하지 않는다. 별도 설명은 조건·예외·의무 강도·수치·상태를 보존하고 정확한 원문에 연결한다. 기계적 검증, 의미 검토, 실제 출력의 읽기·표시 검증을 분리하고 source-browser를 완성된 설명으로 표시하지 않는다. 재현성은 source·고정 composition·generator·build options에 적용한다. 네 kind의 source ownership, 요청형 생성, no manual HTML과 Markdown authority는 유지한다.
+- 2026-09-17 [CURRENT] 일반 시각화는 앱 기능과 모델 판단에 맡긴다. Forge 원문을 시각화할 때는 의미·조건·상태·출처를 보존하되 표현과 도구를 자유롭게 선택하고 별도 source 파일이나 composition을 강제하지 않는다. 기존 공용 renderer는 재생성 가능한 tracked Project Handbook, 명시적 freshness·재현성 요청과 기존 관리형 문서 갱신에 선택적으로 사용한다. 네 kind, CLI, manifest, no manual generated HTML과 재현성 계약은 관리형 경로 안에서 유지한다. 양 경로 모두 Markdown authority, 요청에 따른 생성·갱신과 실제 읽기 검증을 유지한다.

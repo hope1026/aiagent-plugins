@@ -1,5 +1,7 @@
 # 근거 기반 설명 구성과 이해 검증
 
+적용 범위: 이 문서의 구조화 source·renderer·composition·freshness 계약은 [관리형 제작 경로](presentation-routing.md)에 적용한다. 일회성 자유 작성에는 해당 빌드 절차나 표현 제약을 강제하지 않는다.
+
 ## Requirements
 
 ### Visual Docs의 composition은 선택한 source와 요청 목적을 읽고 독자가 이해하거나 결정할 핵심 질문과 그 답의 설명 순서를 정해야 한다. 문서 종류, heading 이름과 profile은 구성의 참고 정보로 사용해야 한다.
