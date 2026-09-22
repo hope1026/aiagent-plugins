@@ -49,10 +49,6 @@ assert_inside_target_trace() {
 test -x "$ROOT/scripts/install.sh" || fail "installer is not executable"
 grep -Fq 'test-forge-visual-docs-install.sh' "$ROOT/.github/workflows/validate.yml" ||
   fail "CI does not run the isolated install test"
-grep -Fq 'run-visual-docs-browser.sh' "$ROOT/.github/workflows/validate.yml" ||
-  fail "CI does not run the Visual Docs browser harness"
-grep -Fq 'mcr.microsoft.com/playwright:v1.55.0-noble' "$ROOT/.github/workflows/validate.yml" ||
-  fail "CI browser job is not pinned to Playwright 1.55.0 noble"
 
 mkdir -p "$TEST_HOME"
 HOME="$TEST_HOME" bash "$ROOT/scripts/install.sh" \
@@ -71,18 +67,16 @@ for skills in "$CODEX_SKILLS" "$CLAUDE_SKILLS" "$ANTIGRAVITY_SKILLS"; do
     fail "missing installed transition parser: $skills"
   test -f "$skills/writing-specs/references/spec-template.md" ||
     fail "missing installed structured spec template: $skills"
-  test -x "$skills/visual-docs/scripts/build-visual-docs.sh" ||
-    fail "missing installed Visual Docs builder: $skills"
-  for module in project_map.py review_sources.py review_ir.py review_planner.py review_composition.py review_components.py review_renderer.py review_freshness.py; do
-    test -f "$skills/visual-docs/scripts/$module" ||
-      fail "missing installed adaptive Visual Docs module $module: $skills"
-  done
-  test -f "$skills/visual-docs/references/composition-authoring.md" ||\
-    fail "missing installed composition authoring reference: $skills"
-  test -f "$skills/visual-docs/references/managed-renderer.md" ||\
-    fail "missing installed managed renderer reference: $skills"
-  test -f "$skills/writing-specs/assets/mermaid.min.js" ||
-    fail "missing installed offline Mermaid asset: $skills"
+  test -f "$skills/visual-docs/SKILL.md" ||
+    fail "missing installed Visual Docs guidance: $skills"
+  test "$(find "$skills/visual-docs" -type f | wc -l | tr -d ' ')" -eq 1 ||
+    fail "retired visual rendering files were installed: $skills"
+  test -f "$skills/writing-specs/assets/mermaid-validator.bundle.mjs" ||
+    fail "missing installed Mermaid syntax validator: $skills"
+  test ! -e "$skills/writing-specs/scripts/markdown_render.py" ||
+    fail "retired HTML renderer was installed: $skills"
+  test ! -e "$skills/writing-specs/assets/mermaid.min.js" ||
+    fail "retired browser runtime was installed: $skills"
   test ! -e "$skills/spec-viewer" ||
     fail "retired spec-viewer was installed: $skills"
 done
@@ -100,19 +94,10 @@ git -C "$TEST_ROOT/spec-source" config user.email fixture@example.invalid
 git -C "$TEST_ROOT/spec-source" add .
 git -C "$TEST_ROOT/spec-source" commit -qm fixture
 
-cp -R "$ROOT/plugins/forge/skills/visual-docs/tests/fixtures/repository" \
-  "$TEST_ROOT/review-source"
-git -C "$TEST_ROOT/review-source" init -q
-git -C "$TEST_ROOT/review-source" config user.name fixture
-git -C "$TEST_ROOT/review-source" config user.email fixture@example.invalid
-git -C "$TEST_ROOT/review-source" add .
-git -C "$TEST_ROOT/review-source" commit -qm fixture
 
 declare -a INSPECT_HASHES=()
-declare -a REVIEW_HASHES=()
 declare -a TRANSITION_HASHES=()
-declare -a PREPARE_HASHES=()
-declare -a COMPOSITION_HASHES=()
+declare -a CONTEXT_HASHES=()
 index=0
 for agent in codex claude antigravity; do
   case "$agent" in
@@ -121,9 +106,7 @@ for agent in codex claude antigravity; do
     antigravity) skills="$ANTIGRAVITY_SKILLS" ;;
   esac
   spec_repo="$TEST_ROOT/spec-$agent"
-  review_repo="$TEST_ROOT/review-$agent"
   cp -R "$TEST_ROOT/spec-source" "$spec_repo"
-  cp -R "$TEST_ROOT/review-source" "$review_repo"
   mkdir -p "$spec_repo/docs/plans/install-proof"
   printf '# Install transition evidence\n' >"$spec_repo/docs/plans/install-proof/evidence.md"
 
@@ -179,66 +162,20 @@ PY
     inspect --spec docs/specs/semantic-workflows/ --format json \
     >"$TEST_ROOT/$agent.inspect.json"
 
-  (
-    cd "$review_repo"
-    "$skills/visual-docs/scripts/build-visual-docs.sh" \
-      --kind spec --spec docs/specs/semantic-spec-bundles/ \
-      --view-id install-proof --generated-at 2026-08-01T00:00:00Z --offline
-  ) >/dev/null
-
-  (
-    cd "$review_repo"
-    "$skills/visual-docs/scripts/build-visual-docs.sh" \
-      --kind spec --spec docs/specs/semantic-spec-bundles/ \
-      --view-id composition-proof --generated-at 2026-08-01T00:00:00Z --offline \
-      --prepare --format json >"$TEST_ROOT/$agent.prepare.json"
-    test ! -e .forge/visual-docs/composition-proof/view.html ||
-      fail "installed --prepare wrote HTML: $agent"
-    python3 - "$TEST_ROOT/$agent.prepare.json" >composition.json <<'PYCOMPOSITION'
-import json
-import sys
-packet = json.load(open(sys.argv[1], encoding="utf-8"))
-quote = "Defines how structured Spec Bundle members and statements remain traceable."
-source = next(s for s in packet["sources"] if quote in s["text"])
-refs = [{"source": source["id"], "quote": quote}]
-answer = "The contract explains how to trace bundle members and statements."
-composition = {"schema": packet["schema"], "source_fingerprint": packet["source_fingerprint"],
-    "context": packet["context"], "title": "Understanding document traceability",
-    "lead": {"text": answer, "refs": refs},
-    "questions": [{"text": "What does the contract explain?", "answer_blocks": ["purpose"]}],
-    "sections": [{"id": "understanding", "title": "The purpose", "blocks": [
-        {"id": "purpose", "type": "prose", "text": answer, "refs": refs}]}],
-    "review": {"method": "agent", "reviewer": "isolated export fixture author",
-        "notes": "Source and explanation reviewed; this smoke test verifies export parity."}}
-print(json.dumps(composition, ensure_ascii=False, indent=2))
-PYCOMPOSITION
-    "$skills/visual-docs/scripts/build-visual-docs.sh" \
-      --kind spec --spec docs/specs/semantic-spec-bundles/ \
-      --view-id composition-proof --generated-at 2026-08-01T00:00:00Z --offline \
-      --composition composition.json >/dev/null
-    "$skills/visual-docs/scripts/build-visual-docs.sh" \
-      --check .forge/visual-docs/composition-proof/view.html --repo-root "$review_repo" --format json \
-      >"$TEST_ROOT/$agent.composition-check.json"
-    python3 - .forge/visual-docs/composition-proof/view.html <<'PYVERIFY'
-from pathlib import Path
-import json
-import re
-import sys
-markup = Path(sys.argv[1]).read_text()
-manifest = json.loads(re.search(r'<script[^>]*id="forge-source-manifest"[^>]*>(.*?)</script>', markup, re.S).group(1))
-assert manifest["quality"] == "reading-check-required"
-assert manifest["composition_source"]["path"] == "composition.json"
-assert re.fullmatch(r"[0-9a-f]{64}", manifest["generator"]["sha256"])
-assert markup.index('id="reading-purpose"') < markup.index('class="reading-source-library"')
-assert "The contract explains how to trace bundle members and statements." in markup
-PYVERIFY
-  )
-  PREPARE_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.prepare.json")"
-  COMPOSITION_HASHES[index]="$(sha256 "$review_repo/.forge/visual-docs/composition-proof/view.html")"
-
   INSPECT_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.inspect.json")"
-  REVIEW_HASHES[index]="$(sha256 "$review_repo/.forge/visual-docs/install-proof/view.html")"
   TRANSITION_HASHES[index]="$(sha256 "$TEST_ROOT/$agent.transition.json")"
+  python3 "$skills/using-forge/scripts/source_context.py" --repo-root "$spec_repo" capture \
+    --task "Inspect the deployed context helper" \
+    --source docs/specs/semantic-workflows/workflow-contract.md \
+    >"$spec_repo/context.json"
+  CONTEXT_HASHES[index]="$(sha256 "$spec_repo/context.json")"
+  python3 "$skills/using-forge/scripts/source_context.py" --repo-root "$spec_repo" check \
+    --snapshot context.json >"$TEST_ROOT/$agent.context-check.json"
+  printf '\nChanged policy text.\n' >>"$spec_repo/docs/specs/semantic-workflows/workflow-contract.md"
+  expect_exit 1 python3 "$skills/using-forge/scripts/source_context.py" --repo-root "$spec_repo" check \
+    --snapshot context.json
+  [[ "$(sha256 "$spec_repo/context.json")" == "${CONTEXT_HASHES[index]}" ]] ||
+    fail "context check rewrote its snapshot: $agent"
   test "$(find "$spec_repo/docs/specs" -type f -name '*.html' -print -quit)" = "" ||
     fail "Markdown lifecycle created HTML: $agent"
   test ! -e "$spec_repo/.forge/visual-docs" ||
@@ -246,7 +183,7 @@ PYVERIFY
   index=$((index + 1))
 done
 
-for hashes_name in INSPECT_HASHES REVIEW_HASHES TRANSITION_HASHES PREPARE_HASHES COMPOSITION_HASHES; do
+for hashes_name in INSPECT_HASHES TRANSITION_HASHES CONTEXT_HASHES; do
   eval 'hashes=("${'"$hashes_name"'[@]}")'
   [[ "${hashes[0]}" == "${hashes[1]}" && "${hashes[1]}" == "${hashes[2]}" ]] ||
     fail "$hashes_name differs across installed exports"

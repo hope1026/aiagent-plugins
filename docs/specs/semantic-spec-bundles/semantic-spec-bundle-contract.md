@@ -1,7 +1,7 @@
 ---
 schema: forge/spec@3
 role: root
-status: implemented
+status: approved
 language: ko
 kind: system
 areas: ["forge","specs"]
@@ -23,14 +23,14 @@ relatedSpecs: [{"path":"docs/specs/review-viewer-lifecycle/","relation":"related
 
 Forge의 spec과 plan은 Markdown을 유일한 기본 산출물과 source of truth로 유지해야 한다. 하나의 Canonical Spec은 의미가 드러나는 directory 안에 관련 Markdown을 묶은 Spec Bundle이다. Bundle metadata, full-statement traceability와 lifecycle gate는 기계적으로 검증하되, 서로 다른 feature·workflow·API·architecture·policy·migration 문서를 하나의 파일이나 화면 순서에 강제하지 않는다.
 
-HTML은 일반적인 spec 작성, plan 작성, 승인, handoff, 실행 checkpoint 또는 lifecycle status 변경에서 생성하지 않는다. 사용자가 Forge 원문의 시각화를 요청하면 `docs/specs/review-viewer-lifecycle/`의 제작 경로 계약에 따라 대화 안의 표현이나 자유 작성 문서를 사용할 수 있다. 관리형 renderer와 tracked Project Handbook은 재현성·freshness·기존 관리형 문서 갱신이 필요한 요청에서 선택한다.
+HTML은 일반적인 spec 작성, plan 작성, 승인, handoff, 실행 checkpoint 또는 lifecycle status 변경에서 생성하지 않는다. 사용자가 Forge 원문의 시각화를 요청하면 `docs/specs/review-viewer-lifecycle/`의 제작 경로 계약에 따라 대화 안의 표현이나 자유 작성 문서를 사용할 수 있다. 시각 템플릿과 전용 renderer는 배포하지 않는다. 재현성이나 원문 최신성은 요청에 맞는 프로젝트별 방법으로 확인한다.
 
 비목표:
 - HTML을 spec의 편집 가능한 source of truth로 만들지 않는다.
 - source에 없는 요구사항, 책임, 관계, 결정을 generated page에 추가하지 않는다.
 - Markdown의 서술 순서를 Viewer layout에 맞추도록 강제하지 않는다.
 - spec이나 plan 변경을 HTML 생성 요청으로 추론하지 않는다.
-- source 옆 `view.html`이나 repository catalog HTML을 상시 관리하지 않는다. 명시적 요청으로 재생성하는 `docs/project-viewer/index.html`만 tracked derived document 예외로 허용한다.
+- source 옆 HTML을 자동으로 관리하지 않는다. 공유 문서의 경로와 Git 추적 여부는 사용자 요청과 프로젝트 관례를 따른다.
 - Visual Docs 생성만으로 spec 승인 또는 구현 완료를 선언하지 않는다.
 
 ## Behavior & Flows
@@ -51,10 +51,10 @@ Markdown source와 요청형 Visual Docs의 lifecycle:
 
 ```mermaid
 flowchart LR
-    S["Spec Bundle source of truth"] -. 사용자 명시 요청 .-> R["Visual Docs spec kind"]
-    L["plan source 집합"] -. 사용자 명시 요청 .-> V["Visual Docs plan kind"]
-    S -. Related Specs context .-> V
-    M["Project Map"] -. 사용자 명시 요청 .-> H["tracked Project Handbook"]
+    S["Spec Bundle source of truth"] -. 사용자 명시 요청 .-> R["Spec 시각화"]
+    L["plan source 집합"] -. 사용자 명시 요청 .-> V["Plan 시각화"]
+    S -. 관련 계약 참조 .-> V
+    M["프로젝트 문서와 확인한 근거"] -. 사용자 명시 요청 .-> H["tracked Project Handbook"]
     S -. declared Specs .-> H
 ```
 
@@ -119,9 +119,9 @@ spec-docs validate --root docs/specs
 | Artifact | 역할 | Git | 갱신 trigger |
 |---|---|---:|---|
 | `docs/specs/<semantic-bundle-name>/` | 영구 source of truth | 예 | 요구사항·상태 변경 |
-| `docs/plans/PPP-<slug>/plan.md` | 작업 단위 실행 source | 예 | 계획·진행 변경 |
-| `.forge/visual-docs/<view-id>/view.html` | 관리형 또는 자유 작성 로컬 HTML | 아니오 | 사용자 명시 요청 |
-| `docs/project-viewer/index.html` | 재생 가능한 Project Handbook | 예 | 사용자 명시 요청과 freshness 검증 |
+| 프로젝트가 선택한 `docs/plans/` 경로 또는 앱 기록 | 작업 단위 실행 source | 필요할 때 | 계획·진행 변경 |
+| `.forge/visual-docs/<view-id>/view.html` | 자유 작성 로컬 HTML 기본 경로 | 아니오 | 사용자 명시 요청 |
+| 프로젝트별 문서 경로 | 공유하는 Project Handbook | 프로젝트 관례 | 사용자 명시 요청과 요청에 맞는 검증 |
 
 spec transition manifest:
 

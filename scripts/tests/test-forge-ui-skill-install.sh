@@ -16,6 +16,8 @@ for destination in \
     mkdir -p "$TEST_ROOT/export/$destination/$name"
     printf 'obsolete Forge skill\n' >"$TEST_ROOT/export/$destination/$name/SKILL.md"
   done
+  mkdir -p "$TEST_ROOT/export/$destination/visual-docs/assets"
+  printf 'obsolete visual template\n' >"$TEST_ROOT/export/$destination/visual-docs/assets/viewer-template.html"
 done
 
 for _ in 1 2; do
@@ -33,7 +35,9 @@ assert {'visual-docs', 'verifying-work'} <= expected
 for destination in ('codex/.agents/skills', 'claude/.claude/skills/forge/skills', 'antigravity/agent-skills'):
     installed = temporary / 'export' / destination
     assert {p.name for p in installed.iterdir()} == expected, destination
-    for name in ('visual-docs/SKILL.md', 'visual-docs/references/managed-renderer.md',
+    assert {p.relative_to(installed / 'visual-docs').as_posix()
+            for p in (installed / 'visual-docs').rglob('*') if p.is_file()} == {'SKILL.md'}, destination
+    for name in ('visual-docs/SKILL.md',
                  'verifying-work/SKILL.md', 'verifying-work/references/ui-verification.md'):
         assert (installed / name).read_bytes() == (source / name).read_bytes(), (destination, name)
 assert (temporary / 'user-skills/web-app-design/marker').read_text() == 'user-owned\n'

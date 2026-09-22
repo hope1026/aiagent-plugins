@@ -1,7 +1,7 @@
 {
   "name": "forge",
-  "version": "0.1.27+codex.20260917130534",
-  "description": "Principle-first agent workflows that preserve intent, approved contracts, and verified outcomes, with optional planning, TDD, and source-backed Visual Docs.",
+  "version": "0.1.28+codex.20260922005908",
+  "description": "Connect project knowledge to correct agent work and clear human explanations, with task-specific context, source tracking, proportional planning, and verified outcomes.",
   "author": {
     "name": "Onestar Lee"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Forge",
     "shortDescription": "Clear outcomes, durable contracts, proportionate execution.",
-    "longDescription": "Forge helps agents finish authorized work, preserve approved project contracts, and verify observable results. It uses existing tests and adds regression protection where needed; TDD is available when useful or requested. Questions, plans, delegation, and records follow actual uncertainty and recovery needs. Structured Canonical Specs retain their validated interfaces. Forge visualizations preserve source meaning with free format choice; managed rendering is optional for reproducible documents and freshness checks. Forge also includes cross-agent extension authoring, evidence-based debugging, focused UI verification, and house writing guidance.",
+    "longDescription": "Forge connects human intent and project knowledge to correct agent work and clear explanations. Agents select the sources, conditions and exceptions needed for a task; people get explanations suited to their questions and decisions. Optional source capture and change checks preserve provenance independently of layout. Plans use clear outcomes and source links without a fixed parser grammar. Document constraints are judged by their contribution to correctness and understanding, not legacy compatibility. Verification distinguishes selected byte equality, source meaning, actual behavior and reader understanding. Forge also includes proportional planning, debugging, optional TDD, UI verification, cross-agent extension authoring and house writing guidance.",
     "developerName": "Onestar Lee",
     "category": "Productivity",
     "capabilities": [

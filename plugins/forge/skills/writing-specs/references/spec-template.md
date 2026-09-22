@@ -1,4 +1,6 @@
-# Canonical Spec Bundle Template
+# Canonical Spec Bundle Serialization
+
+Write for the reader first. These examples describe the existing parser interface; they are not a required outline for every feature. Choose explanatory headings, order, examples and file boundaries from the content. The smallest useful bundle is one root document containing its own Requirements and current decision; Acceptance Criteria and additional members are optional. Add the parser-owned metadata and exact references after the explanation is coherent.
 
 Use the `forge/spec@3` semantic contract for a Canonical Spec Bundle at `docs/specs/<semantic-bundle-name>/`. The normalized bundle directory path is the human-facing identity. Do not add a separate document identifier or a numeric prefix.
 
@@ -22,7 +24,7 @@ Only `approved` and `implemented` bundles are project SOT. `approved` records ac
 
 ## Root template
 
-This example uses a separate Acceptance member. For a Requirement-only bundle, omit the `acceptance` inventory entry and the Acceptance member. Never create an empty `Acceptance Criteria` section.
+This example keeps a small contract in one file. Add explanatory sections that help the reader, and split members only when their content warrants it. Acceptance Criteria are optional; the separate-member examples below show syntax when those members are useful.
 
 ````markdown
 ---
@@ -41,27 +43,27 @@ relatedSpecs: []
 ## Documents
 
 - root: [<root H1>](<descriptive-root-name>.md)
-- contract: [<contract member H1>](<descriptive-contract-name>.md)
-- acceptance: [<acceptance member H1>](<descriptive-acceptance-name>.md)
-- history: [<history member H1>](<descriptive-history-name>.md)
 
 ## <bundle에 맞는 서술 section>
 
-<목적과 범위. 일반적인 설명은 사용자의 언어로 쓴다.>
-
-<비목표 레이블>:
-- <의도적으로 포함하지 않는 범위>
+<목적과 동작을 설명한다. 이해에 필요한 이유·범위·경계·예외와 예시는 자연스러운 위치에 쓴다.>
 
 ## Requirements
 
 ### <조건 또는 사건과 필요한 시스템 동작을 한 문장으로 표현>
 
 <필요한 세부 설명>
+
+## Decisions & History
+
+- YYYY-MM-DD [CURRENT] <현재 채택된 결정과 이유>
 ````
 
 ## Acceptance member template
 
 Use this member only when the bundle includes Acceptance Criteria. Include at least one Acceptance statement.
+
+When adding a member, include its exact H1 and filename in the root Documents inventory, for example `- acceptance: [<member H1>](<descriptive-acceptance-name>.md)`. The same section can stay in the root instead.
 
 ````markdown
 # <검증 범위를 정확히 표현하는 제목>
@@ -76,6 +78,8 @@ Use this member only when the bundle includes Acceptance Criteria. Include at le
 ````
 
 ## History member template
+
+Move the current decision to a separate member only if it improves readability, and declare that member in Documents with role `history`. Keep exactly one Decisions & History section across the bundle.
 
 ````markdown
 # <bundle의 현재 결정을 표현하는 제목>

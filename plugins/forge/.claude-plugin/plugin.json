@@ -1,8 +1,8 @@
 {
   "name": "forge",
   "displayName": "Forge",
-  "version": "0.1.27",
-  "description": "Principle-first agent workflows that preserve intent, approved contracts, and verified outcomes, with optional planning, TDD, and source-backed Visual Docs.",
+  "version": "0.1.28",
+  "description": "Connect project knowledge to correct agent work and clear human explanations, with task-specific context, source tracking, proportional planning, and verified outcomes.",
   "author": { "name": "Onestar Lee" },
   "skills": "./skills/",
   "keywords": ["spec-first", "process", "tdd", "debugging", "agent-skills", "mcp", "ui-verification", "tone", "marketing", "operations", "customer-support", "korean", "codex", "claude-code", "antigravity"]

@@ -29,9 +29,9 @@ Source, manifest, installer의 신규 배포 결과와 skill catalog를 일치�
 
 ### 요청의 surface는 기존 제품에서 확인하고 결과를 바꾸는 미해결 선택만 질문하며 native mobile·desktop을 web 스킬에 강제 라우팅하지 않아야 한다.
 
-### Forge 원문의 시각화와 관리형 문서 요청에는 `visual-docs`를 유지하고 공용 renderer의 UI 변경은 `verifying-work`의 UI 검증 지침으로 확인해야 한다.
+### Forge 원문의 시각화에는 `visual-docs`의 의미 보존 지침을 적용하고 요청한 결과의 UI 변경은 `verifying-work`의 UI 검증 지침으로 확인해야 한다.
 
-일반 도식은 현재 앱 기능을 사용한다. Forge 원문은 의미와 출처를 보존하되 자유롭게 표현하고, tracked Handbook·재현성·freshness 요청이나 기존 관리형 문서 갱신에만 공용 renderer를 사용한다. HTML이라는 이유만으로 별도 디자인 절차를 요구하지 않는다.
+일반 도식은 현재 앱 기능을 사용한다. Forge 원문은 의미와 출처를 보존하며 자유롭게 표현한다. Forge 전용 시각 템플릿과 renderer는 요구하지 않는다. HTML이라는 이유만으로 별도 디자인 절차를 요구하지 않는다.
 
 ### `verifying-work`는 UI 검증이 필요한 작업에서만 참고 문서를 읽어 상태 보존, 재정렬 복구, 접근성과 실제 렌더링을 영향 범위에 맞게 확인해야 한다.
 
@@ -54,11 +54,11 @@ Source, manifest, installer의 신규 배포 결과와 skill catalog를 일치�
 - [`using-forge`는 UI 작업에 기존 제품 시스템과 사용자가 선택한 사용 가능한 디자인 지침을 활용하고 외부 디자인 스킬 설치를 필수로 요구하지 않아야 한다.](forge-ui-design-skill-separation.md#using-forge는-ui-작업에-기존-제품-시스템과-사용자가-선택한-사용-가능한-디자인-지침을-활용하고-외부-디자인-스킬-설치를-필수로-요구하지-않아야-한다)
 - [요청의 surface는 기존 제품에서 확인하고 결과를 바꾸는 미해결 선택만 질문하며 native mobile·desktop을 web 스킬에 강제 라우팅하지 않아야 한다.](forge-ui-design-skill-separation.md#요청의-surface는-기존-제품에서-확인하고-결과를-바꾸는-미해결-선택만-질문하며-native-mobiledesktop을-web-스킬에-강제-라우팅하지-않아야-한다)
 
-### 일반 도식, Forge 원문 설명과 공용 tooling 변경을 처리하면 각각 기본 기능, `visual-docs`의 의미 보존, 영향받는 UI 동작 검증을 적용한다.
+### 일반 도식, Forge 원문 설명과 해당 문서의 UI 변경을 처리하면 각각 기본 기능, `visual-docs`의 의미 보존, 영향받는 UI 동작 검증을 적용한다.
 
 검증하는 요구사항:
 
-- [Forge 원문의 시각화와 관리형 문서 요청에는 `visual-docs`를 유지하고 공용 renderer의 UI 변경은 `verifying-work`의 UI 검증 지침으로 확인해야 한다.](forge-ui-design-skill-separation.md#forge-원문의-시각화와-관리형-문서-요청에는-visual-docs를-유지하고-공용-renderer의-ui-변경은-verifying-work의-ui-검증-지침으로-확인해야-한다)
+- [Forge 원문의 시각화에는 `visual-docs`의 의미 보존 지침을 적용하고 요청한 결과의 UI 변경은 `verifying-work`의 UI 검증 지침으로 확인해야 한다.](forge-ui-design-skill-separation.md#forge-원문의-시각화에는-visual-docs의-의미-보존-지침을-적용하고-요청한-결과의-ui-변경은-verifying-work의-ui-검증-지침으로-확인해야-한다)
 - [`verifying-work`는 UI 검증이 필요한 작업에서만 참고 문서를 읽어 상태 보존, 재정렬 복구, 접근성과 실제 렌더링을 영향 범위에 맞게 확인해야 한다.](forge-ui-design-skill-separation.md#verifying-work는-ui-검증이-필요한-작업에서만-참고-문서를-읽어-상태-보존-재정렬-복구-접근성과-실제-렌더링을-영향-범위에-맞게-확인해야-한다)
 
 ### 국소 UI 수정과 일부 화면만 관찰한 완료 주장을 검토하면 필요한 상태·역할만 확인하고 미관찰 범위를 완료로 보고하지 않는다.
@@ -70,4 +70,4 @@ Source, manifest, installer의 신규 배포 결과와 skill catalog를 일치�
 
 ## Decisions & History
 
-- 2026-09-17 [CURRENT] 사용자가 승인한 범위에 따라 두 범용 디자인 스킬을 Forge 기본 배포에서 제거한다. UI의 상태·동작·렌더링 검증은 `verifying-work`의 선택형 참고 문서에 보존하고 `visual-docs`의 의미·출처 보존과 관리형 제작 경계를 유지한다. 외부 디자인 스킬이나 신규 패키지는 필수가 아니다.
+- 2026-09-21 [CURRENT] 범용 디자인 스킬을 기본 배포에서 분리하고 시각 템플릿과 공용 renderer도 제거한다. UI의 상태·동작·렌더링 검증은 `verifying-work`의 선택형 참고 문서에 보존하며 `visual-docs`는 내용에 맞춘 표현과 의미·출처 보존을 담당한다. 외부 디자인 스킬이나 신규 패키지는 필수가 아니다.

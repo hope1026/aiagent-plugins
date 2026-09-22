@@ -1,6 +1,6 @@
 # UI Verification
 
-Use this reference when verifying changed UI behavior or visual quality, including shared Visual Docs tooling. Follow the product contract, supported platforms, existing design system, and the user's requested result. Design guidance already selected for the work may help; no separate design skill or installation is required.
+Use this reference when verifying changed UI behavior or visual quality, including requested visual documents. Follow the product contract, supported platforms, existing design system, and the user's requested result. Design guidance already selected for the work may help; no separate design skill or installation is required.
 
 ## Select the affected evidence
 

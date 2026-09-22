@@ -158,12 +158,12 @@ The distributed Forge plugin contains user-execution skills only:
 |---|---|
 | `using-forge` | Preserve intent, contracts, and evidence with proportionate execution |
 | `writing-specs` | Create, approve, inspect, and validate semantic Spec Bundles with full-statement links |
-| `writing-plans` | Create independently identified plans with optional Related Spec Bundle paths and Task-level governing statement links |
+| `writing-plans` | Describe executable outcomes, dependencies, verification and source references without a fixed plan grammar |
 | `executing-plans` | Execute tasks with plan-local progress and checkpoints |
 | `test-driven-development` | Support requested or useful test-first development |
 | `systematic-debugging` | Reproduce, isolate, and establish root cause |
 | `verifying-work` | Gather fresh acceptance evidence, with a conditional UI reference for state, recovery, accessibility, and rendered checks |
-| `visual-docs` | Build request-only Brief, Plan, and Spec views plus the tracked source-backed Project Handbook |
+| `visual-docs` | Explain and visualize Forge sources with content-led format choice, source fidelity and reading checks |
 | `writing-tone` | Shape natural human-readable prose |
 | `marketing-tone` | Apply factual marketing and product tone |
 | `operations-tone` | Apply clear support and operations tone |
@@ -187,9 +187,9 @@ distributed catalog.
 | Dev install script | `scripts/install.sh` |
 | Pressure-test notes | `.forge/scratch/` |
 | Repository Spec Bundles | `docs/specs/<semantic-bundle-name>/` with descriptive root and member filenames |
-| Repository plans | `docs/plans/PPP-<slug>/plan.md` |
+| Repository plans | Project-chosen paths under `docs/plans/` |
 | Requested Brief, Plan, or Spec view | `.forge/visual-docs/<view-id>/view.html` |
-| Requested Project Handbook | `docs/project-viewer/index.html` |
+| Requested shared handbook | User-specified path or project documentation convention |
 | Shared research and debug records | `docs/research/`, `docs/debug/` |
 
 The validator checks distributed plugin skills, canonical extension skills,

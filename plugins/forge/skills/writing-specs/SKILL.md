@@ -21,7 +21,9 @@ When new meaning needs a decision, present the concrete proposal without replaci
 
 ## Apply and validate
 
-For structured authoring, read `references/bundle-authoring.md` and the applicable existing templates. Keep one independently reviewable durable condition per Requirement heading. Supporting examples, numbers, and exceptions belong in the body. Preserve exact links and unaffected statements.
+Write the explanation before fitting its serialization. Establish purpose, behavior, boundaries, conditions, exceptions, rationale and observable outcomes where they matter. An API may need request/error examples; a policy may need a rule and exception table; a stateful feature may need transitions. These are questions to resolve, not mandatory section names or a quota of diagrams. A reader should understand the feature without reconstructing it from isolated requirement headings.
+
+For structured authoring, read `references/bundle-authoring.md` and the applicable serialization examples. Use the current Spec validator to check source integrity and approval state. Compatibility is not a reason to retain an unused format or consumer; an authorized redesign updates the source contract, implementation and affected references together. Keep one independently reviewable durable condition per Requirement heading. Supporting examples, numbers, rationale, exceptions and interface detail belong in its body or a naturally placed explanation. Preserve valid links and unaffected meaning. Parser success checks structure and references; review missing behavior and contradictory meaning separately.
 
 Before applying a Delta, confirm the baseline is still current. Rebase on changed bytes and ask again only if the resulting meaning or effects exceed the authorization. Apply only approved meaning, set lifecycle to `approved`, update the current decision, and validate. Retain the applied Delta until its scope and evidence are recorded.
 
@@ -43,7 +45,7 @@ Any nonzero result blocks implementation handoff and completion claims. The tran
 
 ## Visual Docs Request Boundary
 
-Markdown is the default review path. A Spec Delta is not a Visual Docs source and does not authorize HTML generation. For a requested visualization of Forge sources, use the forge visual-docs skill to preserve meaning and choose an appropriate format. One-time explanations may stay in the conversation or use freely authored visuals; only managed freshness, reproducibility or tracked Handbook requests need the shared renderer. The active request includes proportional verification and necessary corrections.
+Markdown is the default review path. A Spec Delta does not authorize HTML generation. For a requested visualization of Forge sources, use the forge visual-docs skill to preserve meaning and choose an appropriate format. Explanations may stay in the conversation or use freely authored visuals. The active request includes proportional verification and necessary corrections.
 
 Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an existing visual document are not generation requests. Report possible staleness without reading or updating it.
 

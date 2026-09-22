@@ -11,6 +11,8 @@ Complete authorized work using the existing plan as the work record. Respond in 
 
 Read the goal, unfinished tasks, relevant contracts, and recorded evidence. Confirm the resume point against current files and changes. Reuse completed work and applicable evidence; investigate conflicting state rather than blindly trusting either memory or a checkbox.
 
+Use the forge using-forge skill's task-context guidance when handing work to another agent or resuming from a summary. Inspect relevant conditions and exceptions at their source. A saved packet may help detect changed files, but its hashes cannot establish that all dependencies were selected or that previous conclusions remain correct.
+
 Choose an order that respects dependencies and user priorities. Correct stale paths, commands, or implementation steps within the authorized scope and record changes that matter for recovery. A changed product outcome or unresolved contract conflict needs a user decision; independent authorized work can continue.
 
 Perform each bounded outcome and verify it using suitable existing tests, additional regression protection, or direct observation. TDD is optional unless requested or required by the project. Inspect worker results and confirm their evidence applies to the integrated state; rerun only missing or invalidated checks.
@@ -33,4 +35,4 @@ Use the forge verifying-work skill when assessing completion or Canonical lifecy
 
 Visual Docs are derived outputs. Do not inspect, generate, or refresh them merely because a plan or source changed. A requested visualization of Forge sources uses the forge visual-docs skill for meaning preservation and format choice; general diagrams use current app capabilities. Report possible staleness when relevant.
 
-When retaining a structured plan, use `docs/plans/PPP-<slug>/plan.md`; optional `progress.md` and `tasks/*.md` stay with it. Promote durable decisions before removing the plan. Requested local views stay under `.forge/visual-docs/`; the reproducible `docs/project-viewer/index.html` is tracked derived output, never an execution source.
+Keep a retained plan in the project's chosen location, with separate progress or task files only when useful. Interpret its outcomes, dependencies and unfinished work without requiring particular heading tokens or numbering. Promote durable decisions before removing the plan. Requested local views default to `.forge/visual-docs/`; a project handbook follows the user's path or project convention and remains derived output, never an execution source.

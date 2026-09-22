@@ -29,17 +29,15 @@ jobs:
           fi
           git cat-file -e "$baseline^{commit}"
           echo "ref=$baseline" >> "$GITHUB_OUTPUT"
-      - name: Validate structured specs, viewers, policies, and installs
+      - name: Validate structured specs, policies, and installs
         run: |
           PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=plugins/forge/skills/writing-specs/scripts \
             python3 -m unittest discover \
               -s plugins/forge/skills/writing-specs/tests -p 'test_*.py' -v
           node plugins/forge/skills/writing-specs/tests/test_mermaid_validate.mjs
           PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
-            -s plugins/forge/skills/visual-docs/tests -p 'test_*.py' -v
+            -s plugins/forge/skills/using-forge/tests -p 'test_*.py' -v
           bash scripts/tests/test-agent-extension-skill.sh
-          node plugins/forge/skills/visual-docs/tests/test-visual-docs-freshness.mjs
-          bash plugins/forge/skills/visual-docs/tests/test-build-visual-docs.sh
           bash scripts/tests/test-maintaining-forge-layout.sh
           bash scripts/tests/test-validator-skill-roots.sh
           bash scripts/tests/test-forge-spec-docs-policy.sh
@@ -56,12 +54,3 @@ jobs:
           bash plugins/forge/skills/writing-specs/scripts/spec-docs.sh \
             inspect --spec docs/specs/semantic-spec-bundles/ --format json
           bash scripts/validate.sh
-
-  browser:
-    runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.55.0-noble
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run pinned browser harness
-        run: |
-          bash plugins/forge/skills/visual-docs/tests/run-visual-docs-browser.sh

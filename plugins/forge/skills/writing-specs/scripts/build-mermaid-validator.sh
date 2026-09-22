@@ -128,8 +128,7 @@ refresh() {
   cp "$generated/mermaid-validator-THIRD-PARTY.txt" "$ASSET_DIR/mermaid-validator-THIRD-PARTY.txt"
   (
     cd "$ASSET_DIR"
-    shasum -a 256 mermaid.min.js mermaid.LICENSE \
-      mermaid-validator.bundle.mjs mermaid-validator-THIRD-PARTY.txt \
+    shasum -a 256 mermaid-validator.bundle.mjs mermaid-validator-THIRD-PARTY.txt \
       > mermaid.sha256
   )
 }

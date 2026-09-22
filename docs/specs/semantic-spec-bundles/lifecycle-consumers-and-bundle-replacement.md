@@ -2,7 +2,7 @@
 
 ## Requirements
 
-시각화의 제작 경로는 [시각 문서의 제작 경로](../review-viewer-lifecycle/presentation-routing.md)가 소유한다. 일회성 설명은 자유롭게 표현하며 아래 four-kind 배포 계약은 선택형 관리형 renderer에만 적용한다.
+시각화의 제작 경로는 [시각 문서의 제작 경로](../review-viewer-lifecycle/presentation-routing.md)가 소유한다. 시각화는 원문을 보존하며 자유롭게 작성하고 전용 renderer나 입력 schema를 요구하지 않는다.
 
 ### `writing-plans`, `executing-plans`, `verifying-work`와 다른 Forge lifecycle skill은 공통 bundle parser가 반환한 root metadata, member 목록, statement와 status를 사용해야 한다.
 
@@ -14,7 +14,7 @@
 
 ### Source 변경만으로 완료된 local View나 tracked Project Handbook을 자동 갱신하지 않아야 한다. 진행 중인 명시적 시각 문서 요청을 완성하기 위한 검증·수정·재생성은 같은 요청 안에서 수행할 수 있고, 완료 후 새 갱신에는 명시적 사용자 의도가 필요해야 한다.
 
-### Bundle parser와 validator, 관리형 Visual Docs parser·renderer·component asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle과 관리형 four-kind 계약을 사용해야 한다.
+### Bundle parser와 validator는 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle 계약을 사용해야 한다.
 
 ### 활성 Spec Bundle은 현재 유효한 제품·시스템 동작과 제약만 source of truth로 제공하고 완료된 실행 과정과 일회성 수치는 plan, ADR, evidence 또는 Git 이력에만 두어야 한다.
 
@@ -39,12 +39,12 @@
 - [Visual Docs는 사용자가 현재 Brief, Plan, Spec 또는 Project source set의 시각화, 생성 또는 갱신을 명시한 경우에만 별도 Visual Docs 계약에 따라 생성해야 한다.](lifecycle-consumers-and-bundle-replacement.md#visual-docs는-사용자가-현재-brief-plan-spec-또는-project-source-set의-시각화-생성-또는-갱신을-명시한-경우에만-별도-visual-docs-계약에-따라-생성해야-한다)
 - [Source 변경만으로 완료된 local View나 tracked Project Handbook을 자동 갱신하지 않아야 한다. 진행 중인 명시적 시각 문서 요청을 완성하기 위한 검증·수정·재생성은 같은 요청 안에서 수행할 수 있고, 완료 후 새 갱신에는 명시적 사용자 의도가 필요해야 한다.](lifecycle-consumers-and-bundle-replacement.md#source-변경만으로-완료된-local-view나-tracked-project-handbook을-자동-갱신하지-않아야-한다-진행-중인-명시적-시각-문서-요청을-완성하기-위한-검증수정재생성은-같은-요청-안에서-수행할-수-있고-완료-후-새-갱신에는-명시적-사용자-의도가-필요해야-한다)
 
-### 세 agent용 설치 fixture에서 같은 bundle을 validate·inspect하고 Visual Docs source로 읽으면 동일한 bundle·member path와 full statement 결과가 나오며 일반 validation은 HTML을 생성하지 않는다.
+### 세 agent용 설치 fixture에서 같은 bundle을 validate·inspect하면 동일한 bundle·member path와 full statement 결과가 나오며 일반 validation은 HTML을 생성하지 않는다.
 
 검증하는 요구사항:
 
 - [`writing-plans`, `executing-plans`, `verifying-work`와 다른 Forge lifecycle skill은 공통 bundle parser가 반환한 root metadata, member 목록, statement와 status를 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#writing-plans-executing-plans-verifying-work와-다른-forge-lifecycle-skill은-공통-bundle-parser가-반환한-root-metadata-member-목록-statement와-status를-사용해야-한다)
-- [Bundle parser와 validator, 관리형 Visual Docs parser·renderer·component asset은 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle과 관리형 four-kind 계약을 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#bundle-parser와-validator-관리형-visual-docs-parserrenderercomponent-asset은-forge-plugin-배포에-포함되고-claude-code-codex-antigravity에서-같은-spec-bundle과-관리형-four-kind-계약을-사용해야-한다)
+- [Bundle parser와 validator는 Forge plugin 배포에 포함되고 Claude Code, Codex, Antigravity에서 같은 Spec Bundle 계약을 사용해야 한다.](lifecycle-consumers-and-bundle-replacement.md#bundle-parser와-validator는-forge-plugin-배포에-포함되고-claude-code-codex-antigravity에서-같은-spec-bundle-계약을-사용해야-한다)
 
 ### Current source audit를 실행하면 Canonical Spec에는 현재 동작과 제약만 남고 대체된 실행 과정이나 일회성 수치는 active statement와 설명에 나타나지 않는다.
 

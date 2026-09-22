@@ -26,7 +26,7 @@ For existing-contract restoration, partial implementation, or approved Spec Delt
    - full implementation claim for a new Canonical Spec or never-implemented approved baseline: every statement in the bundle's Canonical verification set.
 3. Associate the required statements with inspected evidence. Group statements proved by the same observation; use a detailed table only when it improves review or lifecycle accountability.
 4. Confirm each required observable outcome. Code reading alone does not prove runtime behavior. Record failures and unobserved scope accurately.
-5. When an Execution Plan exists, confirm its Related Specs coverage, completed Task verification and goal-level Done Checks agree with the actual implementation.
+5. When an Execution Plan exists, confirm the contracts it actually covers, its completion checks and recorded outcomes agree with the implementation. Find this information by meaning; no fixed plan headings or repeated statement-link blocks are required.
 
 Unchanged statements retain prior implementation evidence when the approved scope identifies every affected statement and current regression evidence covers unchanged behavior. Any concrete uncertainty expands the affected set. Do not expand merely because more tests or statements exist.
 
