@@ -1,6 +1,6 @@
 {
   "name": "forge",
-  "version": "0.1.28+codex.20260922005908",
+  "version": "0.1.29+codex.20260924035954",
   "description": "Connect project knowledge to correct agent work and clear human explanations, with task-specific context, source tracking, proportional planning, and verified outcomes.",
   "author": {
     "name": "Onestar Lee"

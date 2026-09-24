@@ -23,7 +23,7 @@ Report meaningful progress, failures, or required decisions. A status update doe
 
 ## Delegation
 
-Choose root or worker execution by task independence, context-transfer cost, available capabilities, and review effort. Consult `references/adaptive-routing.md` when coordination needs more guidance. Inherit current model settings unless a supported, authorized override is useful. Respect platform and user concurrency limits; Forge adds no fixed worker count or tier ladder.
+Apply the forge using-forge skill's execution selection when starting or resuming work. Identify independent tasks and delegate when the expected benefit exceeds context-transfer and integration costs. Select supported model and reasoning settings for each delegated task within user preferences and permissions; inherit current settings when overrides are unavailable. Consult `references/adaptive-routing.md` for selection examples and coordination guidance. Respect platform and user concurrency limits; Forge adds no fixed worker count or tier ladder.
 
 Root retains integration and final judgment. Do not parallelize overlapping writes or dependent outcomes without resolving ownership and ordering. A worker's success summary alone is not completion evidence.
 

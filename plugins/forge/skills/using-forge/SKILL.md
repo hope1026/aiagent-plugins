@@ -14,10 +14,20 @@ Forge connects human intent and project knowledge to correct work. Give agents t
 - Finish authorized work. Plan when dependencies, uncertainty, coordination, or recovery benefit from it. Reuse the session plan or existing work record; create a file only when review, handoff, or resumption needs one.
 - Verify observable results and affected contracts. Use existing tests and add tests where needed for correctness or regression protection. Derive expectations from the request and contract, not the implementation. TDD is a useful method, not a prerequisite for every logic change.
 - Investigate problems with evidence, test hypotheses, and change approach when evidence contradicts them. Distinguish a mitigation from a confirmed fix.
-- Use the capabilities and permissions exposed by the current app. Preserve user work. Delegate only when a bounded task and integration review justify the coordination cost.
+- Use the capabilities and permissions exposed by the current app. Preserve user work. At task start, identify useful independent work and delegate it when the expected benefit exceeds briefing and integration costs. Choose supported model and reasoning settings for each delegated task within user preferences and permissions.
 - Reuse evidence that still applies to the current relevant state. Recheck invalidated or uncovered scope. Stop when the request, affected contracts, and required project checks are proven; report remaining uncertainty accurately.
 
 These principles do not require a form, route announcement, separate checklist, or repeated skill handoff. An explanation or investigation may finish with findings alone.
+
+## Choose execution at task start
+
+Once the goal and relevant context are clear, assess which parts can run independently. Use subagents when available and permitted for bounded investigation, implementation, or verification that benefits from delegation. Keep small or tightly coupled work with the agent that owns its context. Give each worker the necessary sources, expected result, write ownership, and verification conditions; resolve dependencies and overlapping writes before parallel work.
+
+When the environment supports and permits overrides, select each subagent's model for the capability and context the task needs, and its reasoning effort for the depth, uncertainty, and consequences of error. Start from the selected model's supported settings and default effort. Favor fast, lightweight configurations for clear, repeatable work; balanced configurations for ordinary implementation; and stronger reasoning for difficult diagnosis, design, or consequential judgments. These are starting points, not fixed model tiers or an escalation ladder.
+
+Honor explicit user settings and higher-priority instructions. Discover available models and effort values from the current environment; the same effort label need not mean the same depth across models. If overrides are unavailable, inherit current settings. If workers are unavailable, execute directly. Do not assume the running parent model can switch, change global configuration to obtain these capabilities, or invent unsupported calls.
+
+Reassess task decomposition, delegation, model, and effort when new dependencies, uncertainty, or verification failures change the work. Root reviews worker artifacts and evidence and verifies the integrated result. Explain consequential choices briefly when useful; routine selection needs no approval round or separate routing ledger. Use the forge executing-plans skill when coordination or recovery needs more guidance.
 
 ## Build the context for this task
 
