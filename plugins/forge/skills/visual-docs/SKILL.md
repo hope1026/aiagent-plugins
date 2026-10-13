@@ -1,6 +1,6 @@
 ---
 name: visual-docs
-description: 'Use when explaining or visualizing Forge Brief, Plan, Canonical Spec or project documentation while preserving source meaning. Triggers: "Forge 스펙 시각화", "포지 계획 시각화", "프로젝트 핸드북 갱신", "Visual Docs 최신성 검사". Not for general diagrams, explanations or website design.'
+description: 'Use when explaining or visualizing Forge Brief, Plan, Canonical Spec or project documentation while preserving source meaning. Triggers: "Forge 스펙 시각화", "포지 계획 시각화", "포지 뷰어", "프로젝트 핸드북 갱신", "Visual Docs 최신성 검사". Not for general diagrams, explanations or website design.'
 ---
 
 # Visual Docs
@@ -12,6 +12,10 @@ Help the reader understand Forge sources while preserving their meaning and auth
 Identify what this reader needs to understand or decide before choosing the presentation. A newcomer needs purpose and behavior; a change reviewer needs before/after meaning and consequences; a handoff needs progress and next actions. Write down the few key questions and expected facts when they will support a later reading check. These needs can overlap and do not prescribe document sections.
 
 Use the format that best answers the request: prose and tables, Mermaid, an available visualization tool, or directly authored HTML, CSS and JavaScript. Let the content and reader determine layout and interaction. A short explanation can stay in the conversation. Forge supplies no visual template, required section order or fixed navigation layout.
+
+For architecture relationships, prefer a labeled node-and-connection diagram when it helps readers understand components, boundaries and connection direction. Separate physical deployment, logical flow and code dependencies when combining them would obscure meaning. For code navigation or handoff, prefer a selective folder tree with a concrete responsibility beside each important path. Include significant files and explain how code paths map to runtime or deployment units when that mapping matters. These are recommended explanation patterns, not required sections for every view.
+
+Read `references/structure-views.md` when authoring or updating either pattern. Where useful, connect diagram components to their path explanations and source links so readers can move from relationships to implementation locations. Choose Mermaid, SVG, text or another suitable implementation; add zoom, panning, filtering or detail links only when they improve the requested reading path.
 
 Use existing sources, including a conversational Brief or session plan. Do not create a Brief file, Project Map, composition JSON or manifest solely to fit a renderer. Save an artifact only when the request needs one; follow the user's location or project convention, with `.forge/visual-docs/<view-id>/view.html` as the default for local HTML. Freely authored output can be edited directly.
 
@@ -28,6 +32,8 @@ Connect important explanations to source paths or statement links, quoting exact
 ## Verify the requested result
 
 Check that the primary reading path answers the reader's question and preserves the source's qualifications. Inspect the actual delivered surface, operate relevant links and interactions, and check narrow layouts when the document's complexity warrants it. Keep titles, explanations and provenance distinguishable. Use design guidance when the artifact needs it; HTML alone does not require a separate web design workflow.
+
+For structure diagrams, check connection direction, labels, boundaries and conditional relationships against the sources. For folder explanations, check actual paths and supported responsibilities, and distinguish existing code from proposed structure. When both appear, check that names, path mappings and links agree. A deployment contract, repository inspection and live infrastructure observation support different claims; keep that basis visible where it matters.
 
 For a representative new explanation approach, have a separate reader answer the preselected questions from the delivered explanation before consulting its sources. Compare their answers with the source facts and look for lost exceptions, mistaken certainty or hidden dependencies. An agent reader is useful evidence, not a human comprehension study. Small edits can reuse existing reading evidence where it still applies.
 

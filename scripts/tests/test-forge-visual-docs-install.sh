@@ -69,7 +69,14 @@ for skills in "$CODEX_SKILLS" "$CLAUDE_SKILLS" "$ANTIGRAVITY_SKILLS"; do
     fail "missing installed structured spec template: $skills"
   test -f "$skills/visual-docs/SKILL.md" ||
     fail "missing installed Visual Docs guidance: $skills"
-  test "$(find "$skills/visual-docs" -type f | wc -l | tr -d ' ')" -eq 1 ||
+  test -f "$skills/visual-docs/references/structure-views.md" || \
+    fail "missing installed structure view guidance: $skills"
+  for visual_doc in SKILL.md references/structure-views.md; do
+    test "$(sha256 "$skills/visual-docs/$visual_doc")" = \
+      "$(sha256 "$ROOT/plugins/forge/skills/visual-docs/$visual_doc")" || \
+      fail "installed Visual Docs guidance differs from source: $skills/$visual_doc"
+  done
+  test "$(find "$skills/visual-docs" -type f | wc -l | tr -d ' ')" -eq 2 || \
     fail "retired visual rendering files were installed: $skills"
   test -f "$skills/writing-specs/assets/mermaid-validator.bundle.mjs" ||
     fail "missing installed Mermaid syntax validator: $skills"

@@ -36,8 +36,10 @@ for destination in ('codex/.agents/skills', 'claude/.claude/skills/forge/skills'
     installed = temporary / 'export' / destination
     assert {p.name for p in installed.iterdir()} == expected, destination
     assert {p.relative_to(installed / 'visual-docs').as_posix()
-            for p in (installed / 'visual-docs').rglob('*') if p.is_file()} == {'SKILL.md'}, destination
+            for p in (installed / 'visual-docs').rglob('*') if p.is_file()} == {
+                'SKILL.md', 'references/structure-views.md'}, destination
     for name in ('visual-docs/SKILL.md',
+                 'visual-docs/references/structure-views.md',
                  'verifying-work/SKILL.md', 'verifying-work/references/ui-verification.md'):
         assert (installed / name).read_bytes() == (source / name).read_bytes(), (destination, name)
 assert (temporary / 'user-skills/web-app-design/marker').read_text() == 'user-owned\n'
