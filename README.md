@@ -134,6 +134,10 @@ The optional `using-forge/scripts/source_context.py` captures selected plain UTF
 
 Human explanations answer the reader's questions about purpose, behavior, changes and decisions. Task handoffs emphasize relevant conditions, progress and verification. Both retain access to their underlying sources. Representative workflow evaluations check an agent's actual task outcome and a separate reader's answers, rather than treating source coverage or component presence as comprehension.
 
+Shared naming decisions use [the terminology guide](plugins/forge/skills/using-forge/references/terminology.md): define the concept before choosing its name, compare existing definitions and relevant industry usage, and consider adjacent concepts and known extensions. Durable definitions stay in their owning approved Spec; plans, code explanations, replies and requested views refer to them. A separate glossary is optional and never becomes competing authority. Local names do not require a Spec or external research by default.
+
+`writing-tone` owns clear technical expression for replies, progress reports, documents and requested Spec or Plan views. It adapts useful ASD-STE100 clarity principles in the user's language: concrete actors and actions, explicit conditions and results, consistent terms, and preservation of exceptions and technical meaning. Korean prose does not claim compliance with the English standard. Each consumer skill applies these shared guides rather than maintaining its own naming or prose policy.
+
 ## Proportional planning and visual verification
 
 Plans specify outcomes, ownership, dependencies, interfaces, verification, and recovery. They include complete code only where an exact example or shared interface is needed. New or never-implemented contracts use full statement coverage; partial changes to an implemented baseline name affected statements and regression preservation.

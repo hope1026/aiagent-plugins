@@ -9,7 +9,7 @@ Condensed from Strunk's elementary principles of composition: one line and one e
 1. **Choose a suitable design and hold to it.** Decide the shape (report, request, answer) before the first sentence — a status update that drifts into a proposal serves neither.
 2. **Make the paragraph the unit of composition.** One topic per paragraph, opened by a sentence that states it. If a paragraph covers both the deploy and the flaky test, split it.
 3. **Use the active voice.** "The migration dropped the index" — not "the index was dropped by the migration".
-4. **Put statements in positive form.** "The client ignores unknown fields" beats "the client does not fail on fields it does not recognize".
+4. **Prefer direct positive wording when it preserves meaning.** "The client ignores unknown fields" is concise. Preserve a prohibition or negative condition when it defines the behavior; the core technical-explanation rules take precedence over a shorter rewrite.
 5. **Use definite, specific, concrete language.** "p95 latency rose from 120ms to 480ms after v2.3" beats "performance got significantly worse recently".
 6. **Omit needless words.** "in order to be able to retry" → "to retry"; "due to the fact that" → "because"; "it should be noted that X" → "X".
 7. **Avoid a succession of loose sentences.** Three "…, and …, so …" sentences in a row read as a ramble; vary the structure or split them.

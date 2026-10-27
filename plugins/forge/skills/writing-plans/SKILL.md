@@ -17,6 +17,8 @@ Define outcomes and how to verify them. Name files, interfaces, ordering, or rec
 
 Write so a new worker can tell what to do next and a person can understand what will change. Include the relevant source locations and conditions rather than copying entire Specs. Distinguish confirmed facts, implementation choices and unresolved decisions. The plan's detail should come from dependencies and uncertainty, not from filling every field in an example.
 
+Apply the forge using-forge skill's terminology guidance to new concepts and names, and the forge writing-tone skill to the explanation. Reuse the owning source's terms and link definitions where needed; mark a new concept as proposed instead of silently establishing its meaning in the plan. A plan-local reading aid remains derived.
+
 For example, specify that duplicate requests produce one persisted charge, rather than prescribing the test file's internal structure. Diagrams and milestones are optional and should explain actual relationships.
 
 ## Preserve contracts and progress

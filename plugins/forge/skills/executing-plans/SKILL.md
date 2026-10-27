@@ -17,6 +17,8 @@ Choose an order that respects dependencies and user priorities. Correct stale pa
 
 Perform each bounded outcome and verify it using suitable existing tests, additional regression protection, or direct observation. TDD is optional unless requested or required by the project. Inspect worker results and confirm their evidence applies to the integrated state; rerun only missing or invalidated checks.
 
+Apply the forge using-forge skill's terminology guidance when implementation introduces or changes names. Check affected code, tests and documentation against the owning definitions rather than inventing synonyms during execution. Use the forge writing-tone skill for progress and completion replies.
+
 Keep enough progress to resume safely: completed outcomes, unresolved decisions, useful evidence, and the next step. Use the plan's checklist or the app's existing record; no duplicate todos, per-task route scores, fixed ledger format, or mandatory commit cadence. Commit only with authorization.
 
 Report meaningful progress, failures, or required decisions. A status update does not pause execution. Continue through safe work until the requested outcome is complete or a necessary user decision remains.

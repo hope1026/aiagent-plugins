@@ -19,6 +19,8 @@ For worker results, inspect the diff or artifact and execution evidence, then co
 
 For context and documentation work, distinguish source integrity, semantic fidelity and successful use. Check that selected context includes the conditions needed by the task and that a reader can answer the intended questions. A valid schema, exact quote or matching source hash proves neither sufficiency nor understanding. Use actual task outcomes and a separate reader for representative workflow changes; identify agent evaluation as such.
 
+For naming and technical-explanation changes, use the forge using-forge skill's terminology guidance and the forge writing-tone skill's clarity rules as the shared criteria. Inspect affected code, tests, Specs, Plans, replies and requested views. For representative changes to shared terminology or explanations, have a separate reader classify examples, distinguish nearby concepts and recover the actor, action, conditions, results and exceptions. Compare their answers with the owning source; matching labels alone does not prove semantic consistency. Routine local renames do not require a separate reader.
+
 For visual quality, inspect the rendered reading or interaction path and representative affected viewports and states. Compare relevant peer roles and hierarchy. A build or one observed surface cannot prove unobserved UI. Detailed measurements are useful when diagnosing a discrepancy, not mandatory for every claim.
 
 When verifying UI changes, read `references/ui-verification.md` for the affected interaction, state preservation, accessibility, and rendered checks. Apply only relevant cases; ordinary non-UI work does not need this reference.

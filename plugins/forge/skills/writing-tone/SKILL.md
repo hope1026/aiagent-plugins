@@ -1,6 +1,6 @@
 ---
 name: writing-tone
-description: 'Use when writing or editing anything humans will read - natural, human-readable prose without AI-like filler; documentation, README, PR descriptions, commit messages, error messages, UI copy, Slack messages, emails, reports - in any language, especially Korean technical communication. Triggers: "톤앤매너", "말투", "자연스럽게", "사람처럼", "AI스럽지 않게", "문서", "메시지 작성", "리드미", drafting or reviewing prose.'
+description: 'Use when writing or editing human-readable replies, progress reports, technical explanations, documentation, Spec or Plan views, README, PR descriptions, commit messages, error messages, UI copy, Slack messages, emails or reports in any language. Triggers: "답변", "기술 설명", "스펙 뷰어", "플랜 뷰어", "톤앤매너", "말투", "자연스럽게", "사람처럼", "AI스럽지 않게", "문서", "메시지 작성", "리드미", drafting or reviewing prose.'
 ---
 
 # Writing Tone
@@ -21,13 +21,28 @@ LEAD WITH THE POINT. EVERY SENTENCE EARNS ITS PLACE — CUT WHAT THE READER DOES
 
 Apply these to every sentence, in any language:
 
-1. **Use active voice.** "The build failed" — not "a failure was experienced by the build".
-2. **Put statements in positive form.** Say what is, not what is not: "the cache is stale" beats "the cache is not up to date".
-3. **Use definite, specific, concrete language.** "Retries 3 times over 30s" beats "retries a few times for a while".
+1. **Use active voice when the actor is known.** "The build failed" — not "a failure was experienced by the build". Preserve uncertainty about an unknown actor.
+2. **Prefer direct positive wording when it preserves meaning.** "The cache is stale" is clear. Keep explicit prohibitions, negative conditions and failures when they define the behavior.
+3. **Use definite, specific, concrete language.** "Makes at most 3 total attempts within 30s" beats "retries a few times for a while".
 4. **Omit needless words.** "the fact that", "in order to", "it should be noted that" — delete.
 5. **Remove AI-like filler.** Skip stock openings, exaggerated praise, generic reassurance, and sign-offs that add no useful information.
 
 Above all: **lead with the point** — decision, result, or ask first; background after.
+
+Accuracy and preserved source meaning take priority over brevity, positive wording and stylistic variation.
+
+## Clear technical explanations
+
+Apply these principles to technical replies, progress reports, documents and requested Spec or Plan views. They adapt useful clarity principles from ASD-STE100; they do not establish compliance with that controlled English standard, particularly in Korean. Keep the purpose-specific voice of marketing and operations copy.
+
+- State concrete actors, actions, conditions and results where they matter. Use active voice when the actor is known; preserve uncertainty when it is unknown.
+- Give each sentence one main point and keep related sentences connected. Put a condition before an instruction when the reader needs it before acting. Explain causes, dependencies and rationale rather than reducing everything to disconnected commands.
+- Use familiar words while preserving precise technical terms. Explain an unfamiliar term at first use. For naming decisions and definition ownership, use the forge using-forge skill's terminology guidance; reuse the resulting terms consistently rather than varying them for style.
+- Shortening or simplifying prose must preserve exceptions, prohibitions, failure cases, quantities, units, uncertainty and obligation levels. Distinguish required behavior, permitted behavior and observed results. Keep exact identifiers, protocol values and quotations intact.
+
+For example, replace "A robust retry mechanism guarantees consistency" with the actual behavior: "If the request times out, the client retries with the same request ID. While the stored result remains available, the server returns it without repeating the charge." Those conditions are illustrative, not a contract for other systems.
+
+Sources: [ASD-STE100 overview](https://www.asd-ste100.org/about.html) and [official FAQ](https://www.asd-ste100.org/STE_faq.html). Use the principles that improve understanding, without importing its full dictionary, English word-count limits or a compulsory document layout.
 
 ## The Process
 

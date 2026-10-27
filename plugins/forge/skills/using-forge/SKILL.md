@@ -1,6 +1,6 @@
 ---
 name: using-forge
-description: 'Use when applying Forge to project work, coordinating implementation, or deciding whether durable contracts or recovery planning need attention. Triggers: "forge", "포지", "작업 시작", "정본 스펙", "바로 진행".'
+description: 'Use when applying Forge to project work, defining domain concepts or shared names, coordinating implementation, or deciding whether durable contracts or recovery planning need attention. Triggers: "forge", "포지", "작업 시작", "정본 스펙", "용어 정의", "네이밍", "바로 진행".'
 ---
 
 # Using Forge
@@ -39,6 +39,8 @@ Use the same underlying sources for execution and human explanation. A task hand
 
 Read `references/source-context.md` when a saved handoff or source-change check is useful. Its optional tool captures selected files without imposing headings or document metadata. Ordinary reading needs no snapshot. A matching hash proves byte equality for selected files, not correct reasoning or complete dependency selection.
 
+When defining a domain concept or choosing or changing a shared name, read `references/terminology.md`. It owns Forge's naming guidance; reuse the project's authoritative definitions across implementation and explanation. Load the relevant context rather than naming from one isolated snippet.
+
 ## Contracts and plans
 
 Consider durable contract impact separately from execution complexity. A small policy change can affect authority; a large implementation repair may preserve it. Keep this judgment internal unless recording it helps review or recovery.
@@ -65,7 +67,7 @@ Load a specialist only when its knowledge helps the task:
 - Planning or resuming coordinated work: the forge writing-plans or executing-plans skill.
 - Completion evidence or Canonical lifecycle judgment: the forge verifying-work skill.
 - UI work: inspect the existing product and follow its design system, the user's direction, and useful design guidance already available. Forge does not require installing a design skill. Use the forge verifying-work skill for affected UI behavior and rendered evidence; match platform guidance to the actual surface.
-- Substantial prose or house voice: the forge writing-tone skill; marketing or operations overlays when relevant.
+- Human-readable replies, progress reports, documents and requested views: the forge writing-tone skill, using its core rules directly for short responses; marketing or operations overlays when relevant.
 - Cross-agent extension authoring: the forge creating-agent-extensions skill.
 - Visualizing Forge sources or updating a Forge document: the forge visual-docs skill for meaning and source preservation, with format and layout chosen for the reader. General diagrams and explanations use current app capabilities. Existing HTML, source changes, or a checkpoint do not request generation or refresh.
 

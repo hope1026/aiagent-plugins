@@ -6,7 +6,7 @@ language: en
 kind: feature
 areas: ["forge","writing"]
 components: ["writing-tone","marketing-tone","operations-tone"]
-relatedSpecs: []
+relatedSpecs: [{"path":"docs/specs/task-context-and-readable-documents/","relation":"relatedTo"}]
 ---
 
 # Tone Overlay Skills
@@ -52,6 +52,8 @@ flowchart TD
 | `aiagent-plugins` | `plugins/forge/skills/writing-tone/SKILL.md`, `plugins/forge/skills/writing-tone/references/style-rules.md`, new `plugins/forge/skills/marketing-tone/SKILL.md`, new `plugins/forge/skills/operations-tone/SKILL.md`, plugin manifests, README, validator-relevant files |
 | `operations-private` | `.agents/skills/weppy-github-customer-response/SKILL.md`, `.agents/skills/weppy-roblox-mcp-social-copy/SKILL.md`, any command-center routing text that should point to the new Forge tone overlays |
 
+Technical explanations, including conversational replies and requested Spec or Plan views, use the shared terminology contract in [작업 컨텍스트와 읽기 쉬운 문서](../task-context-and-readable-documents/task-context-and-readable-documents.md). `using-forge` owns naming decisions; `writing-tone` owns expression. This bundle defines the prose behavior without maintaining a second naming policy or glossary.
+
 ## Requirements
 
 ### WHEN an agent writes or revises human-readable prose THE SYSTEM SHALL use `writing-tone` as the single base tone skill for natural, clear, non-AI-like writing.
@@ -77,6 +79,10 @@ flowchart TD
 ### IF `operations-private` contains existing uncommitted user changes THEN THE SYSTEM SHALL preserve those changes and only edit around them where required for deduplication.
 
 ### WHEN Forge documentation or manifests list skills THE SYSTEM SHALL include `marketing-tone` and `operations-tone` and describe `writing-tone` as the base prose layer.
+
+### WHEN Forge writes technical explanations in replies, documents or requested Spec and Plan views THE SYSTEM SHALL state concrete actors, actions, conditions and results while preserving technical meaning.
+
+Use one main point per sentence, familiar words and active voice when the actor is known. Put a condition before an instruction when the reader needs that condition to act correctly. Keep enough connected explanation to preserve causes, dependencies and rationale. Preserve exceptions, prohibitions, failures, quantities, uncertainty and obligation levels even when shortening prose or preferring positive wording. Retain and explain precise technical terms when simpler wording would change the meaning. Apply these clarity principles in the user's language; Korean text does not claim ASD-STE100 compliance. General marketing or operations copy retains its purpose-specific voice.
 
 ## Acceptance Criteria
 
@@ -144,7 +150,14 @@ Verifies:
 - [IF `operations-private` contains existing uncommitted user changes THEN THE SYSTEM SHALL preserve those changes and only edit around them where required for deduplication.](tone-overlay-skill-contract.md#if-operations-private-contains-existing-uncommitted-user-changes-then-the-system-shall-preserve-those-changes-and-only-edit-around-them-where-required-for-deduplication)
 - [WHEN Forge documentation or manifests list skills THE SYSTEM SHALL include `marketing-tone` and `operations-tone` and describe `writing-tone` as the base prose layer.](tone-overlay-skill-contract.md#when-forge-documentation-or-manifests-list-skills-the-system-shall-include-marketing-tone-and-operations-tone-and-describe-writing-tone-as-the-base-prose-layer)
 
+### GIVEN a technical explanation with conditions and failure cases, WHEN Forge writes a Korean reply or requested Spec or Plan explanation, THEN the reader can identify the actor, action, condition, result and retained exceptions without interpreting undefined synonyms.
+
+Verifies:
+
+- [WHEN Forge writes technical explanations in replies, documents or requested Spec and Plan views THE SYSTEM SHALL state concrete actors, actions, conditions and results while preserving technical meaning.](tone-overlay-skill-contract.md#when-forge-writes-technical-explanations-in-replies-documents-or-requested-spec-and-plan-views-the-system-shall-state-concrete-actors-actions-conditions-and-results-while-preserving-technical-meaning)
+
 ## Decisions & History
 
+- 2026-10-27 [CURRENT] Technical replies, documents and requested Spec/Plan views apply the shared terminology contract and clear technical prose through writing-tone. Clarity preserves conditions and technical meaning; Korean prose makes no ASD-STE100 compliance claim.
 - 2026-08-27 [CURRENT] 한국어 문장에서는 구체적인 동작이나 결과를 우선하고, 제품 업데이트는 기존 불편과 개선 결과를 구현 방법보다 먼저 설명한다. `~할 수 있습니다`는 자연스럽고 정확한 경우 그대로 사용한다.
 - 2026-08-09 [CURRENT] `writing-tone`을 공통 기반으로 사용하고 `marketing-tone`과 `operations-tone`은 목적별 overlay로 적용한다.
