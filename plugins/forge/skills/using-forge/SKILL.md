@@ -41,6 +41,8 @@ Read `references/source-context.md` when a saved handoff or source-change check 
 
 When defining a domain concept or choosing or changing a shared name, read `references/terminology.md`. It owns Forge's naming guidance; reuse the project's authoritative definitions across implementation and explanation. Load the relevant context rather than naming from one isolated snippet.
 
+When implementing, changing, or evaluating DB or external API access, read `references/data-access.md`. It owns guidance for scoped read reuse, invalidation, bounded work, shared time budgets and measured improvement. Apply it to the affected call path; ordinary unrelated work needs no performance audit.
+
 ## Contracts and plans
 
 Consider durable contract impact separately from execution complexity. A small policy change can affect authority; a large implementation repair may preserve it. Keep this judgment internal unless recording it helps review or recovery.

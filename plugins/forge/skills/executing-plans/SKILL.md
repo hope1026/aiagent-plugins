@@ -19,6 +19,8 @@ Perform each bounded outcome and verify it using suitable existing tests, additi
 
 Apply the forge using-forge skill's terminology guidance when implementation introduces or changes names. Check affected code, tests and documentation against the owning definitions rather than inventing synonyms during execution. Use the forge writing-tone skill for progress and completion replies.
 
+When changing DB or external API access, apply the forge using-forge skill's data-access guidance to the affected call path. Preserve valid reuse boundaries and correctness, and collect comparable evidence before claiming a performance improvement.
+
 Keep enough progress to resume safely: completed outcomes, unresolved decisions, useful evidence, and the next step. Use the plan's checklist or the app's existing record; no duplicate todos, per-task route scores, fixed ledger format, or mandatory commit cadence. Commit only with authorization.
 
 Report meaningful progress, failures, or required decisions. A status update does not pause execution. Continue through safe work until the requested outcome is complete or a necessary user decision remains.

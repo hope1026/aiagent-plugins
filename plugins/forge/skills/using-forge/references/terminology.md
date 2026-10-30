@@ -43,6 +43,23 @@ scope. Do not create abstractions, types or vocabulary solely for hypothetical
 future features. Use explicit qualifiers where they expose a real distinction;
 do not hide an undefined responsibility behind a generic label.
 
+## Check what the name promises at its use site
+
+Read a representative call site as well as the declaration. Can a reader infer
+the target and responsibility without reconstructing a long explanation? Match
+the name to actual behavior: a read-like name must not conceal creation or
+mutation, and a partial check must not imply full validation or authorization.
+For example, `verifyLicenseSignature` describes a signature-only check more
+precisely than `validateLicense`; neither name proves current access is allowed.
+
+Expose scope, state and units when they prevent a real misunderstanding, such
+as request-scoped reuse, cached versus current data, or milliseconds versus
+seconds. Qualifiers like `verified` must identify what was verified when the
+context does not make it clear. Judge generic words such as `data`, `manager`
+and `valid` in context; replace them with the actual target, responsibility or
+condition when ambiguous. Do not impose prefixes, suffixes or longer names on
+every local identifier.
+
 ## Keep definitions in their owning source
 
 Reuse the project's existing authoritative definition. For a durable shared
@@ -58,6 +75,15 @@ second authoritative glossary. Mark a proposed concept as proposed. Explain
 display-name and identifier mappings; preserve exact external identifiers,
 protocol values and quotations. Different abstraction levels need not share a
 name simply because a view places them together.
+
+Specs reuse existing owning definitions and preferred terms. Plans retain the
+referenced Spec's terms for the same concepts rather than substituting synonyms,
+abbreviations or translations. When implementation needs a more specific name,
+explain its mapping to the Spec concept. For example, a plan can map license
+revocation to `revokeLicense()`; calling it license deletion would suggest a
+different operation. Resolve an ambiguous definition or changed meaning in its
+owning Spec within authorization before relying on it in the dependent plan;
+do not silently redefine it there. Independent authorized work can continue.
 
 When renaming a public API, persisted field or other external contract, inspect
 consumers and authorized compatibility, migration and verification needs before

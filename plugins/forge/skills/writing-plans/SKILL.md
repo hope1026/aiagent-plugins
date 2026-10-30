@@ -19,6 +19,10 @@ Write so a new worker can tell what to do next and a person can understand what 
 
 Apply the forge using-forge skill's terminology guidance to new concepts and names, and the forge writing-tone skill to the explanation. Reuse the owning source's terms and link definitions where needed; mark a new concept as proposed instead of silently establishing its meaning in the plan. A plan-local reading aid remains derived.
 
+Retain the referenced Spec's preferred names for the same concepts; do not substitute synonyms, abbreviations or translations. Map more specific implementation names to those concepts without collapsing different responsibilities. Resolve ambiguous or changed meaning in the owning Spec within authorization before the plan relies on it.
+
+For work affecting DB or external API access, apply the forge using-forge skill's data-access guidance. Include reuse boundaries, preserved correctness and comparable measurements where they affect the planned outcome; unrelated tasks need no performance checklist.
+
 For example, specify that duplicate requests produce one persisted charge, rather than prescribing the test file's internal structure. Diagrams and milestones are optional and should explain actual relationships.
 
 ## Preserve contracts and progress

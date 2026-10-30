@@ -21,6 +21,8 @@ For context and documentation work, distinguish source integrity, semantic fidel
 
 For naming and technical-explanation changes, use the forge using-forge skill's terminology guidance and the forge writing-tone skill's clarity rules as the shared criteria. Inspect affected code, tests, Specs, Plans, replies and requested views. For representative changes to shared terminology or explanations, have a separate reader classify examples, distinguish nearby concepts and recover the actor, action, conditions, results and exceptions. Compare their answers with the owning source; matching labels alone does not prove semantic consistency. Routine local renames do not require a separate reader.
 
+For DB or external API optimization claims, apply the forge using-forge skill's data-access guidance. Inspect comparable before/after measurements of actual DB round trips, SQL statements, external calls, retries and latency as relevant, together with evidence that affected correctness is preserved. Identify measurement boundaries and unmeasured benefits; parallelism or a synthetic partial-path result alone does not prove fewer calls or better whole-request production latency.
+
 For visual quality, inspect the rendered reading or interaction path and representative affected viewports and states. Compare relevant peer roles and hierarchy. A build or one observed surface cannot prove unobserved UI. Detailed measurements are useful when diagnosing a discrepancy, not mandatory for every claim.
 
 When verifying UI changes, read `references/ui-verification.md` for the affected interaction, state preservation, accessibility, and rendered checks. Apply only relevant cases; ordinary non-UI work does not need this reference.
