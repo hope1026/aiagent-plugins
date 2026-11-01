@@ -23,6 +23,8 @@ When new meaning needs a decision, present the concrete proposal without replaci
 
 Write the explanation before fitting its serialization. Establish purpose, behavior, boundaries, conditions, exceptions, rationale and observable outcomes where they matter. An API may need request/error examples; a policy may need a rule and exception table; a stateful feature may need transitions. These are questions to resolve, not mandatory section names or a quota of diagrams. A reader should understand the feature without reconstructing it from isolated requirement headings.
 
+When defining or changing a public error contract, apply the error-handling reference owned by the forge using-forge skill. Inspect affected consumers and retain code meanings, trigger conditions, caller retry or recovery behavior, and disclosure boundaries in the owning source. Treat additions, removals and meaning changes as contract changes; do not silently recode failures during an implementation repair.
+
 Use the forge using-forge skill's terminology guidance when defining shared concepts or changing names, and the forge writing-tone skill for the explanation. Keep durable definitions in their owning approved source; link existing definitions rather than creating a second glossary. Make proposed meaning distinguishable from established meaning and explain necessary code-identifier mappings.
 
 Reuse existing preferred names for the same concepts across related Specs. Check that names express the actual responsibility, scope and state. Resolve ambiguous definitions in their owning source within authorization so dependent plans can retain the same meaning and terminology.

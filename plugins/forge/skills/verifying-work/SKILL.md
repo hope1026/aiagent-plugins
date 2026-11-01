@@ -23,6 +23,8 @@ For naming and technical-explanation changes, use the forge using-forge skill's 
 
 For DB or external API optimization claims, apply the forge using-forge skill's data-access guidance. Inspect comparable before/after measurements of actual DB round trips, SQL statements, external calls, retries and latency as relevant, together with evidence that affected correctness is preserved. Identify measurement boundaries and unmeasured benefits; parallelism or a synthetic partial-path result alone does not prove fewer calls or better whole-request production latency.
 
+For error-handling changes, apply the error-handling reference owned by the forge using-forge skill. Exercise representative failures through the affected mapping or shared handler and inspect meaningful code distinctions, stable meanings, safe cause context, occurrence correlation and public disclosure as affected. Existing tests or controlled fault injection may suffice; a code catalog or message-only assertion does not prove the behavior.
+
 For visual quality, inspect the rendered reading or interaction path and representative affected viewports and states. Compare relevant peer roles and hierarchy. A build or one observed surface cannot prove unobserved UI. Detailed measurements are useful when diagnosing a discrepancy, not mandatory for every claim.
 
 When verifying UI changes, read `references/ui-verification.md` for the affected interaction, state preservation, accessibility, and rendered checks. Apply only relevant cases; ordinary non-UI work does not need this reference.

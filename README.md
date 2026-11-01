@@ -74,6 +74,12 @@ bash scripts/install.sh --agent codex --plugin forge
 | `operations-tone` | Customer and operations overlay: confirmed status, impact, next action, and restrained cause detail |
 | `creating-agent-extensions` | Creates one `.agent-extensions/` source with thin Codex, Claude Code, and Antigravity skill/MCP adapters |
 
+For API, DB and external-service error handling, `using-forge` provides
+conditional guidance for stable error codes, meaningful failure distinctions,
+safe cause preservation and request or occurrence tracing. `writing-specs`
+covers public error contract changes, and `verifying-work` checks the affected
+failure paths through their actual mappings and shared handlers.
+
 ## Repository maintenance
 
 Forge itself is maintained through the repository-only canonical extension at

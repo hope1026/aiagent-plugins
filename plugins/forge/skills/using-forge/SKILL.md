@@ -14,6 +14,7 @@ Forge connects human intent and project knowledge to correct work. Give agents t
 - Finish authorized work. Plan when dependencies, uncertainty, coordination, or recovery benefit from it. Reuse the session plan or existing work record; create a file only when review, handoff, or resumption needs one.
 - Verify observable results and affected contracts. Use existing tests and add tests where needed for correctness or regression protection. Derive expectations from the request and contract, not the implementation. TDD is a useful method, not a prerequisite for every logic change.
 - Investigate problems with evidence, test hypotheses, and change approach when evidence contradicts them. Distinguish a mitigation from a confirmed fix.
+- Preserve meaningful failure distinctions when handling errors. Use consistent codes with stable meanings, retain safe cause and operation context, and distinguish an error kind from the request or occurrence used to trace it.
 - Use the capabilities and permissions exposed by the current app. Preserve user work. At task start, identify useful independent work and delegate it when the expected benefit exceeds briefing and integration costs. Choose supported model and reasoning settings for each delegated task within user preferences and permissions.
 - Reuse evidence that still applies to the current relevant state. Recheck invalidated or uncovered scope. Stop when the request, affected contracts, and required project checks are proven; report remaining uncertainty accurately.
 
@@ -42,6 +43,8 @@ Read `references/source-context.md` when a saved handoff or source-change check 
 When defining a domain concept or choosing or changing a shared name, read `references/terminology.md`. It owns Forge's naming guidance; reuse the project's authoritative definitions across implementation and explanation. Load the relevant context rather than naming from one isolated snippet.
 
 When implementing, changing, or evaluating DB or external API access, read `references/data-access.md`. It owns guidance for scoped read reuse, invalidation, bounded work, shared time budgets and measured improvement. Apply it to the affected call path; ordinary unrelated work needs no performance audit.
+
+When implementing, changing, or evaluating error handling at API, DB or external-service boundaries, read `references/error-handling.md`. It owns stable error identity, cause preservation, occurrence tracing and public-versus-diagnostic information. Apply it to the affected path without requiring an unrelated error-system redesign.
 
 ## Contracts and plans
 
