@@ -23,6 +23,8 @@ Retain the referenced Spec's preferred names for the same concepts; do not subst
 
 For work affecting DB or external API access, apply the forge using-forge skill's data-access guidance. Include reuse boundaries, preserved correctness and comparable measurements where they affect the planned outcome; unrelated tasks need no performance checklist.
 
+For UI work, apply the forge using-forge skill's UI guidance. Include role consistency, disclosure, prerequisites, high-risk confirmation and observable verification where they affect the outcome. A local UI change needs no separate design plan or mandatory worksheet.
+
 For example, specify that duplicate requests produce one persisted charge, rather than prescribing the test file's internal structure. Diagrams and milestones are optional and should explain actual relationships.
 
 ## Preserve contracts and progress

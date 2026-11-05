@@ -71,7 +71,7 @@ Load a specialist only when its knowledge helps the task:
 - Requested or project-required test-first work: the forge test-driven-development skill.
 - Planning or resuming coordinated work: the forge writing-plans or executing-plans skill.
 - Completion evidence or Canonical lifecycle judgment: the forge verifying-work skill.
-- UI work: inspect the existing product and follow its design system, the user's direction, and useful design guidance already available. Forge does not require installing a design skill. Use the forge verifying-work skill for affected UI behavior and rendered evidence; match platform guidance to the actual surface.
+- UI design, implementation, changes or evaluation: read `references/ui-work.md` for consistent roles, progressive disclosure, prerequisite guidance and high-risk action confirmation. Follow the product and platform; no design skill installation is required. Use the forge verifying-work skill for affected UI behavior and rendered evidence.
 - Human-readable replies, progress reports, documents and requested views: the forge writing-tone skill, using its core rules directly for short responses; marketing or operations overlays when relevant.
 - Cross-agent extension authoring: the forge creating-agent-extensions skill.
 - Visualizing Forge sources or updating a Forge document: the forge visual-docs skill for meaning and source preservation, with format and layout chosen for the reader. General diagrams and explanations use current app capabilities. Existing HTML, source changes, or a checkpoint do not request generation or refresh.

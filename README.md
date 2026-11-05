@@ -95,8 +95,13 @@ the 12 active user-execution skills listed above.
 
 Forge does not bundle general web app or website design skills. UI work follows
 the existing product and any useful design guidance the user has selected;
-installing another design skill is optional. `verifying-work` loads its UI
-reference only when needed, and `visual-docs` retains Forge source visualization.
+installing another design skill is optional. The shared
+[UI work guide](plugins/forge/skills/using-forge/references/ui-work.md) connects
+consistent component roles, progressive disclosure, prerequisite guidance and
+high-risk action confirmation to implementation. Planning and execution reuse
+that guide; `verifying-work` checks the affected rendered and interactive
+results. No fixed visual style or universal pixel scale is required.
+`visual-docs` retains Forge source visualization.
 
 When upgrading an older local dev install, Codex's per-skill copy mode may leave
 previous `web-app-design` and `website-design` entries under `~/.agents/skills/`.

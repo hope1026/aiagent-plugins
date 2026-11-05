@@ -38,7 +38,9 @@ for destination in ('codex/.agents/skills', 'claude/.claude/skills/forge/skills'
     assert {p.relative_to(installed / 'visual-docs').as_posix()
             for p in (installed / 'visual-docs').rglob('*') if p.is_file()} == {
                 'SKILL.md', 'references/structure-views.md'}, destination
-    for name in ('visual-docs/SKILL.md',
+    for name in ('using-forge/SKILL.md', 'using-forge/references/ui-work.md',
+                 'writing-plans/SKILL.md', 'executing-plans/SKILL.md',
+                 'visual-docs/SKILL.md',
                  'visual-docs/references/structure-views.md',
                  'verifying-work/SKILL.md', 'verifying-work/references/ui-verification.md'):
         assert (installed / name).read_bytes() == (source / name).read_bytes(), (destination, name)

@@ -20,6 +20,8 @@ for name in ('ui-design', 'web-app-design', 'website-design'):
 reference = skills / 'verifying-work/references/ui-verification.md'
 assert reference.is_file()
 assert 'references/ui-verification.md' in (skills / 'verifying-work/SKILL.md').read_text()
+assert (skills / 'using-forge/references/ui-work.md').is_file()
+assert 'references/ui-work.md' in (skills / 'using-forge/SKILL.md').read_text()
 for source in skills.rglob('*.md'):
     if 'tests' in source.parts:
         continue

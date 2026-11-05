@@ -21,6 +21,8 @@ Apply the forge using-forge skill's terminology guidance when implementation int
 
 When changing DB or external API access, apply the forge using-forge skill's data-access guidance to the affected call path. Preserve valid reuse boundaries and correctness, and collect comparable evidence before claiming a performance improvement.
 
+When implementing or changing UI, apply the forge using-forge skill's UI guidance to the affected task and verify the resulting reading and interaction path. Preserve the product's concept, intentional role differences, relevant state and safe confirmation behavior.
+
 Keep enough progress to resume safely: completed outcomes, unresolved decisions, useful evidence, and the next step. Use the plan's checklist or the app's existing record; no duplicate todos, per-task route scores, fixed ledger format, or mandatory commit cadence. Commit only with authorization.
 
 Report meaningful progress, failures, or required decisions. A status update does not pause execution. Continue through safe work until the requested outcome is complete or a necessary user decision remains.
