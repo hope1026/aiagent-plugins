@@ -17,6 +17,8 @@ Choose an order that respects dependencies and user priorities. Correct stale pa
 
 Perform each bounded outcome and verify it using suitable existing tests, additional regression protection, or direct observation. TDD is optional unless requested or required by the project. Inspect worker results and confirm their evidence applies to the integrated state; rerun only missing or invalidated checks.
 
+If individual fixes keep passing while the requested completion conditions remain blocked, reassess task boundaries, dependencies and verification order. Use the forge systematic-debugging skill for recurring failure patterns, and revise the plan around the next demonstrable outcome or decisive uncertainty. Preserve the full requested scope and required project gates; neither patch counts nor a fixed retry limit determines progress.
+
 Apply the forge using-forge skill's terminology guidance when implementation introduces or changes names. Check affected code, tests and documentation against the owning definitions rather than inventing synonyms during execution. Use the forge writing-tone skill for progress and completion replies.
 
 When changing DB or external API access, apply the forge using-forge skill's data-access guidance to the affected call path. Preserve valid reuse boundaries and correctness, and collect comparable evidence before claiming a performance improvement.
@@ -25,7 +27,7 @@ When implementing or changing UI, apply the forge using-forge skill's UI guidanc
 
 Keep enough progress to resume safely: completed outcomes, unresolved decisions, useful evidence, and the next step. Use the plan's checklist or the app's existing record; no duplicate todos, per-task route scores, fixed ledger format, or mandatory commit cadence. Commit only with authorization.
 
-Report meaningful progress, failures, or required decisions. A status update does not pause execution. Continue through safe work until the requested outcome is complete or a necessary user decision remains.
+Report meaningful progress through demonstrated user outcomes, remaining blockers and the next assumption or result to verify. Test and PR results support those claims; they do not replace them. Include required decisions when present. A status update does not pause execution. Continue through safe work until the requested outcome is complete or a necessary user decision remains.
 
 ## Delegation
 

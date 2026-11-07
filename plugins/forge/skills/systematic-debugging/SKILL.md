@@ -15,6 +15,8 @@ Form a specific hypothesis and choose evidence that could refute it. Narrow inpu
 
 Resolve repository facts yourself. Ask only if the intended outcome, scope, or authority remains a user-owned decision. If repeated attempts add no evidence, reconsider the hypothesis and method rather than retrying a fixed number of patches.
 
+Even when each attempt reveals a new error, similar failures recurring across stages can indicate a shared assumption or state-transition problem. Trace the related paths and compare actual responses and execution records before continuing isolated patches. Use those observations to reproduce representative failures where feasible, establish whether causes are shared, and choose the correction boundary. Similar symptoms alone do not establish one cause or justify an unrelated redesign.
+
 ## Correct and verify
 
 Compare the intended result with the approved contract. Restore it within the existing authorization; use the forge writing-specs skill if durable meaning must change. Preserve unrelated user work and keep the change focused on the cause or explicitly identified mitigation.
