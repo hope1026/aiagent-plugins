@@ -115,19 +115,21 @@ python3 "$MANAGER" plan \
 
 Repeat `--skill-source` for multiple skills. For `skill`, omit `--mcp-source`; for `mcp`, omit skill sources. Review `canonicalWrites`, `nativeTargets`, `collisions`, `credentialRequirements`, and `requiresConfirmation`. A non-empty collision list stops creation until the user chooses rename, adopt, or merge; this workflow does not make that choice.
 
-### 7. Confirm user-scope canonical writes
+### 7. Confirm user-scope writes
 
-For `user` scope, show the complete `plan` JSON plus any staged MCP implementation and shared-resource destination that the manager cannot infer. Ask for confirmation before passing `--confirm-user-write` to `init` or copying any candidate into the user canonical root.
+For `user` scope, show the complete `plan` JSON plus any staged MCP implementation and shared-resource destination that the manager cannot infer. Ensure this preview is covered by user approval before passing `--confirm-user-write` to `init` or copying any candidate into the user canonical root.
+
+For every user-scope write, compare the complete preview with the concrete scope already approved. Reuse prior approval across `init`, canonical updates, and `render` only when targets, content, credentials, and effects match; obtain confirmation for a new or changed decision before writing.
 
 Repository scope uses the repository change authorization already given for the task. Do not interpret it as release or push authority.
 
 ### 8. Create the canonical source with `init`
 
-Run `init` with the same source arguments used for the reviewed plan. Add `--confirm-user-write` only after the user confirmed a user-scope preview.
+Run `init` with the same source arguments used for the reviewed plan. Add `--confirm-user-write` only when covered by approval of the complete user-scope preview.
 
 The manager copies each staged skill plus its `references/`, `scripts/`, and `assets/`, writes canonical MCP JSON, and creates `extension.json`. After `init`, the orchestrator may copy approved MCP implementation candidates into `mcp/<server-name>/` and shared files into `shared/`. Keep every such write inside the previewed root.
 
-For an existing owned extension, do not run `init` again. Run `validate` before editing, preview the canonical diff, obtain user-scope confirmation, apply only canonical content/resource changes, then continue to adapter rendering. Component removal, rename, or ownership adoption requires an explicit user decision.
+For an existing owned extension, do not run `init` again. Run `validate` before editing, preview the canonical diff and its native effects, apply only canonical content/resource changes covered by task authorization and any required user-scope approval, then continue to adapter rendering. Component removal, rename, or ownership adoption requires an explicit user decision.
 
 ### 9. Preview and render native adapters
 
@@ -137,7 +139,7 @@ For repository scope:
 python3 "$MANAGER" render --extension /path/to/repository/.agent-extensions/example-extension
 ```
 
-For user scope, first run `render` without confirmation. Its expected `E_CONFIRMATION` response includes `canonicalSources`, entry-level `changes`, `nativeTargets`, `credentialRequirements`, and `collisions` without writing. Compare that preview with the concrete scope already approved. Reuse the approval when targets, content, credentials, and effects match; ask only for a new or changed decision. Once covered by approval, run:
+For user scope, first run `render` without confirmation. Its expected `E_CONFIRMATION` response includes `canonicalSources`, entry-level `changes`, `nativeTargets`, `credentialRequirements`, and `collisions` without writing. Compare it with the approved scope using step 7. Once covered by approval, run:
 
 ```bash
 python3 "$MANAGER" render \
@@ -157,14 +159,14 @@ Validation must return `status: PASS`. It checks manifest shape, canonical paths
 
 ### 11. Run realistic scenario tests
 
-Test the actual request, not only file existence:
+Test the actual request, not only file existence. Match the scenario set to what changed:
 
-- Ask each target agent to discover the skill from its native entry and follow one concrete usage example.
-- Exercise at least one MCP tool path for every declared transport that is available in the environment.
-- Test provider-present and provider-absent authoring paths when the workflow itself changed.
-- Inject one safe collision or drift case and confirm the manager refuses it without changing unrelated configuration.
+- For a new extension or changes to native discovery/layout, verify discovery through each affected target agent: follow a concrete usage example for a skill, or exercise a real MCP tool path. Cover each new or changed MCP transport with a real tool path through the affected target agents.
+- For canonical content-only changes, verify an affected concrete usage example and current canonical/native parity. Reuse inspected native integration and manager evidence only while the relevant implementation, inputs, configuration, and environment remain unchanged.
+- When authoring-provider selection or workflow behavior changes, test the affected provider-present and provider-absent paths.
+- When manager, ownership, collision, or drift behavior changes, inject the relevant safe collision or drift case and confirm refusal without changing unrelated configuration.
 
-If an external service or target agent is unavailable, report that scenario as pending rather than claiming full completion. Structural validation is not a substitute for a behavior test.
+Record the scenarios run and the evidence reused. If a required service or target agent is unavailable and no valid evidence covers it, keep that gate pending and report the limitation; do not claim completion of the required set or tested native support. A simulated scenario cannot prove native integration, and structural validation cannot replace a behavior test.
 
 ## Working Files
 
@@ -181,7 +183,7 @@ If an external service or target agent is unavailable, report that scenario as p
 
 | Code | Meaning | Required response |
 |---|---|---|
-| `E_CONFIRMATION` | user-scope write lacks reviewed confirmation | show payload, obtain confirmation, rerun only if approved |
+| `E_CONFIRMATION` | user-scope write lacks reviewed confirmation | show payload, compare with prior approval or obtain confirmation, rerun only if covered |
 | `E_COLLISION` | same native name is not owned by this extension | stop for rename, adopt, or merge decision |
 | `E_DRIFT` | canonical, state, or live native entry no longer matches | identify owner and target; reconcile before rendering |
 | `E_PROFILE_INPUT` | profile and staged sources disagree | fix the request contract and rerun `plan` |

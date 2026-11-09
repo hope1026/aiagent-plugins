@@ -30,16 +30,14 @@ Apply the forge writing-tone skill first, then apply these rules:
 
 ### Korean Product Copy
 
-- Avoid the abstract noun `흐름` unless the sequence itself is the subject. Name the concrete action or problem instead: `Agent 종료 시 Studio 연결도 끊겼습니다` is clearer than `연결 흐름을 개선했습니다`.
-- Do not insert `이어가다` as a generic benefit when the concrete result is connection retention, reduced waiting, or fewer retries. Use the exact result instead. `~할 수 있습니다` is acceptable when it is natural and accurately describes an available action.
 - Distinguish a new capability from an improvement to an existing capability. If users could already complete the task, do not present that result as newly available; state the prior friction and what the update improves.
-- When an internal architecture change exists to improve product quality, order the copy as user-visible problem, concrete improvement, then implementation method. The architecture is evidence for the improvement, not the headline benefit by itself.
+- For a product update improving an existing capability, explain the prior user-visible friction and concrete improvement before the implementation method. Include the method only when it helps the reader assess the improvement.
 
 ## The Process
 
 1. Identify the reader and the surface: landing page, launch post, short social copy, email, ad, product page, or release note.
 2. Extract the usable facts: product name, concrete feature, proof point, demo context, metric, limitation, and CTA.
-3. Draft in this order: reader problem, product action, proof or visible result, next step.
+3. Choose an order for the reader and surface, retaining the product-update condition above. Include the relevant product action, proof or visible result, and next step; other surfaces need no mandatory problem preamble.
 4. Run a claim audit: mark each strong claim as `proven`, `supported`, `assumed`, or `unsupported`.
 5. Rewrite or delete every `assumed` or `unsupported` claim.
 6. Apply the forge writing-tone cut pass: remove filler, generic excitement, and stock marketing phrases.

@@ -11,7 +11,7 @@ Only `approved` or `implemented` Canonical Spec Bundles are project SOT. A draft
 
 ## Establish the authorized meaning
 
-Read the affected contract and relevant consumers. Inspect a bundle through `scripts/spec-docs.sh --repo-root . inspect --spec <bundle-directory> --format json`; use `forge/spec@3`, the appropriate lifecycle, and empty diagnostics. Reuse inspected context while relevant bytes remain unchanged.
+Read the affected contract and relevant consumers. From the project root, inspect a bundle through `bash <writing-specs-skill>/scripts/spec-docs.sh --repo-root . inspect --spec <bundle-directory> --format json`, resolving `<writing-specs-skill>` to the installed skill directory. Require `forge/spec@3`, the appropriate lifecycle, and empty diagnostics. Reuse inspected context while relevant bytes remain unchanged.
 
 Identify the exact before/after meaning and effects. A concrete user instruction or approval covering the target, meaning, and effects is authorization; do not ask for the same decision again. Ask only about unresolved contract conflicts, added scope, or effects outside that authorization. A vague outcome request does not authorize every possible policy interpretation.
 
@@ -29,7 +29,7 @@ Use the forge using-forge skill's terminology guidance when defining shared conc
 
 Reuse existing preferred names for the same concepts across related Specs. Check that names express the actual responsibility, scope and state. Resolve ambiguous definitions in their owning source within authorization so dependent plans can retain the same meaning and terminology.
 
-For structured authoring, read `references/bundle-authoring.md` and the applicable serialization examples. Use the current Spec validator to check source integrity and approval state. Compatibility is not a reason to retain an unused format or consumer; an authorized redesign updates the source contract, implementation and affected references together. Keep one independently reviewable durable condition per Requirement heading. Supporting examples, numbers, rationale, exceptions and interface detail belong in its body or a naturally placed explanation. Preserve valid links and unaffected meaning. Parser success checks structure and references; review missing behavior and contradictory meaning separately.
+For structured authoring, use `references/bundle-authoring.md` for content boundaries and `references/spec-template.md` for serialization rules and examples. Use the current Spec validator to check source integrity and approval state. An authorized redesign updates the source contract, implementation and affected references together; an unused format or consumer need not be retained merely for compatibility. Preserve valid links and unaffected meaning. Parser success checks structure and references; review missing behavior and contradictory meaning separately.
 
 Before applying a Delta, confirm the baseline is still current. Rebase on changed bytes and ask again only if the resulting meaning or effects exceed the authorization. Apply only approved meaning, set lifecycle to `approved`, update the current decision, and validate. Retain the applied Delta until its scope and evidence are recorded.
 
@@ -53,7 +53,7 @@ Any nonzero result blocks implementation handoff and completion claims. The tran
 
 Markdown is the default review path. A Spec Delta does not authorize HTML generation. For a requested visualization of Forge sources, use the forge visual-docs skill to preserve meaning and choose an appropriate format. Explanations may stay in the conversation or use freely authored visuals. The active request includes proportional verification and necessary corrections.
 
-Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an existing visual document are not generation requests. Report possible staleness without reading or updating it.
+Source changes, approval, lifecycle status, complexity, Mermaid, tables, or an existing visual document are not generation requests. Read-only inspection may establish relevant staleness; do not generate or update the view without a request. If not inspected, describe staleness as possible rather than confirmed.
 
 
 Use an appropriate plan when coordination or recovery needs it. Otherwise execute the authorized change directly. The forge verifying-work skill owns evidence-based implementation status; partial work retains its actual lifecycle state.

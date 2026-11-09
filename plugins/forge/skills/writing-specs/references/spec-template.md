@@ -15,12 +15,12 @@ Canonical Specs record durable system intent, contracts, policy, and invariants.
 - Acceptance Criteria are optional at bundle level. A Requirement-only bundle omits the `Acceptance Criteria` section and any acceptance-only member instead of leaving an empty section.
 - When Acceptance Criteria are present, include at least one Acceptance statement, write every statement as a complete `###` heading, and cover every Requirement. Use EARS as a semantic discipline in the user's language: each Acceptance heading states a precondition, action, and observable outcome instead of only saying that a source matches.
 - Under each Acceptance statement, add `Verifies:` for English or `검증하는 요구사항:` for Korean, then link exact Requirement heading text to its member path and anchor.
-- Preserve lifecycle values, code identifiers, commands, and established technical names. Keep only the current adopted decision in the active history section.
+- Preserve lifecycle values, code identifiers, commands, and established technical names. Keep only currently adopted decisions in the active history section.
 - Put source-owned Mermaid, tables, examples, and code in the member where a reader naturally needs them.
 
 ## Lifecycle
 
-Only `approved` and `implemented` bundles are project SOT. `approved` records accepted intent that may be partially implemented; `implemented` records verified alignment for the whole bundle. `draft` is a proposal token for incomplete isolated candidate handling and never replaces existing approved authority. A complete Spec Delta shows the intended post-approval bundle with `status: approved`, but remains non-authoritative outside `docs/specs/` until explicit approval and the writer transaction. Partial work verifies and reports its affected scope without changing lifecycle. Only the forge verifying-work skill sets `implemented` after evidence passes for the bundle's complete Canonical verification set: all Acceptance statements when any exist, otherwise all Requirement statements. Any authoritative body, metadata, layout, or status edit is incomplete until repository Markdown validation passes. It never implies HTML generation.
+Only `approved` and `implemented` bundles are project SOT. `approved` records accepted intent that may be partially implemented; `implemented` records verified alignment for the whole bundle. `draft` never replaces existing approved authority. Follow the forge writing-specs skill for authorization and the writer transaction, and the forge verifying-work skill for full implementation evidence or affected verification with valid unchanged evidence for a previously implemented baseline. A template or partial result does not establish whole-bundle implementation status.
 
 ## Root template
 
@@ -111,11 +111,9 @@ The root may also own Requirements, Acceptance Criteria, or Decisions & History.
 - The root `Documents` section lists every direct Markdown member exactly once, including the root, with role `root`, `contract`, `acceptance`, `history`, or `reference`. Link text exactly matches the member H1.
 - H1 values are the display names. Member paths are the navigation and provenance keys.
 - Requirement headings are unique across the bundle after normalization. Acceptance headings follow the same rule.
-- When Acceptance Criteria are present, at least one Acceptance statement covers each Requirement. Every Acceptance statement links one or more Requirements in the same bundle using exact heading text, member path, and anchor.
-- A Requirement-only bundle omits the `Acceptance Criteria` section. An acceptance-bearing bundle never leaves that section empty.
 - `[NEEDS CLARIFICATION: ...]` is allowed only while `status` is `draft`.
-- Replacing one active path is the narrow exception: use one-to-one `superseded` in `docs/specs/.bundle-transitions.json` only after approval and isolated candidate verification. Consolidating two or more active paths into one new current boundary uses coordinated many-to-one `merged` records in `docs/specs/.bundle-transitions.json` with exact source hashes, one shared target, and one shared evidence file. Neither shape permits partial removal or an unvalidated current-tree mutation.
+- For approved path replacement or consolidation, follow [bundle-transitions.md](bundle-transitions.md); renaming files does not authorize removing active authority.
 
 ## Current decision
 
-Use one dated `[CURRENT]` entry that explains the adopted contract in ordinary language. Keep completed migration detail, rejected options and superseded clauses in Git or validated transition evidence instead of the active bundle.
+Use dated `[CURRENT]` entries to explain the currently adopted decisions in ordinary language. The bundle has one Decisions & History section, not a one-entry limit. Keep completed migration detail, rejected options and superseded clauses in Git or validated transition evidence instead of the active bundle.

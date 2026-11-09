@@ -39,10 +39,10 @@ For a new Canonical Spec, include the complete proposed `forge/spec@3` bundle he
 - Concrete user authorization covers the target, meaning, and effects; record an existing instruction or approval instead of asking again.
 - The baseline bundle SHA-256 still matches immediately before application.
 - The approved meaning is applied without extra semantic changes.
-- Every Requirement states the durable contract directly instead of pointing to another section or legacy source as a placeholder.
-- When Acceptance Criteria are present, every acceptance-to-requirement link resolves by exact member path, heading text, and anchor, every Requirement is covered, and no Acceptance statement only says that a source matches.
-- A Requirement-only bundle omits the `Acceptance Criteria` section.
+- The resulting source satisfies the bundle serialization contract and preserves unaffected meaning.
 - Repository Markdown validation passes before implementation handoff.
 ```
 
 Do not use `Requirements` or `Acceptance Criteria` as Spec Delta headings. Those headings carry normative authority only inside a Canonical Spec Bundle. Links to affected full statements do not grant the Delta authority.
+
+Use [spec-template.md](spec-template.md) for source syntax and statement-link rules rather than copying them into each Delta checklist.

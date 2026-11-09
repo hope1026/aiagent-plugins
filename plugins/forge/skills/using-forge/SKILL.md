@@ -17,6 +17,7 @@ Forge connects human intent and project knowledge to correct work. Give agents t
 - Preserve meaningful failure distinctions when handling errors. Use consistent codes with stable meanings, retain safe cause and operation context, and distinguish an error kind from the request or occurrence used to trace it.
 - Use the capabilities and permissions exposed by the current app. Preserve user work. At task start, identify useful independent work and delegate it when the expected benefit exceeds briefing and integration costs. Choose supported model and reasoning settings for each delegated task within user preferences and permissions.
 - Reuse evidence that still applies to the current relevant state. Recheck invalidated or uncovered scope. Stop when the request, affected contracts, and required project checks are proven; report remaining uncertainty accurately.
+- Check existing coverage before adding tests. A failure alone does not require a new regression test, and a release or handoff alone does not require a full rerun. Select checks by affected behavior and phase, preserving required gates and valid evidence.
 
 These principles do not require a form, route announcement, separate checklist, or repeated skill handoff. An explanation or investigation may finish with findings alone.
 
@@ -71,6 +72,7 @@ Load a specialist only when its knowledge helps the task:
 - Requested or project-required test-first work: the forge test-driven-development skill.
 - Planning or resuming coordinated work: the forge writing-plans or executing-plans skill.
 - Completion evidence or Canonical lifecycle judgment: the forge verifying-work skill.
+- Test creation, selection, repeated CI or deploy checks, or suite cleanup: read `references/test-policy.md` for coverage gaps, unit/integration/end-to-end boundaries, deduplication, and evidence reuse.
 - UI design, implementation, changes or evaluation: read `references/ui-work.md` for consistent roles, progressive disclosure, prerequisite guidance and high-risk action confirmation. Follow the product and platform; no design skill installation is required. Use the forge verifying-work skill for affected UI behavior and rendered evidence.
 - Human-readable replies, progress reports, documents and requested views: the forge writing-tone skill, using its core rules directly for short responses; marketing or operations overlays when relevant.
 - Cross-agent extension authoring: the forge creating-agent-extensions skill.

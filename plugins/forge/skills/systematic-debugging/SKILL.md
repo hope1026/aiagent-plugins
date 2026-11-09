@@ -21,7 +21,7 @@ Even when each attempt reveals a new error, similar failures recurring across st
 
 Compare the intended result with the approved contract. Restore it within the existing authorization; use the forge writing-specs skill if durable meaning must change. Preserve unrelated user work and keep the change focused on the cause or explicitly identified mitigation.
 
-Use existing checks and add regression protection where needed. A failing regression before the fix is often the clearest evidence; the forge test-driven-development skill can help when test-first work is appropriate. Test order is not a substitute for a meaningful expectation.
+Inspect existing coverage before adding regression protection. If an existing check already exposes the defect, fix and verify with it; extend a case or add a test only for a missing condition or boundary. Distinguish product defects from incorrect expectations, fixtures, setup, and transient failures; a failure alone does not justify a permanent test. Follow the test policy guidance in the forge using-forge skill for that decision and keep temporary diagnostic probes separate from lasting protection. A failing regression before the fix is often the clearest evidence; the forge test-driven-development skill can help when test-first work is appropriate. Test order is not a substitute for a meaningful expectation.
 
 Verify the original symptom when possible, the affected contract, and relevant regression behavior. One check can cover several of these. For a mitigation, state what improved and what remains unresolved; do not report the root cause fixed without evidence. Reuse valid observed evidence and expand checks for concrete uncovered risk.
 

@@ -31,9 +31,7 @@ Report meaningful progress through demonstrated user outcomes, remaining blocker
 
 ## Delegation
 
-Apply the forge using-forge skill's execution selection when starting or resuming work. Identify independent tasks and delegate when the expected benefit exceeds context-transfer and integration costs. Select supported model and reasoning settings for each delegated task within user preferences and permissions; inherit current settings when overrides are unavailable. Consult `references/adaptive-routing.md` for selection examples and coordination guidance. Respect platform and user concurrency limits; Forge adds no fixed worker count or tier ladder.
-
-Root retains integration and final judgment. Do not parallelize overlapping writes or dependent outcomes without resolving ownership and ordering. A worker's success summary alone is not completion evidence.
+Apply the forge using-forge skill's execution-selection policy when starting or resuming work. `references/adaptive-routing.md` gives task examples and coordination details. Root retains integration and final judgment; resolve dependent outcomes and overlapping writes before parallel work.
 
 ## Authority and completion
 
@@ -41,6 +39,6 @@ Reuse authorization for concrete work already approved. Pause dependent actions 
 
 Use the forge verifying-work skill when assessing completion or Canonical lifecycle status. Match the claim to the requested scope; finishing tasks does not imply an entire Spec Bundle is implemented.
 
-Visual Docs are derived outputs. Do not inspect, generate, or refresh them merely because a plan or source changed. A requested visualization of Forge sources uses the forge visual-docs skill for meaning preservation and format choice; general diagrams use current app capabilities. Report possible staleness when relevant.
+Visual Docs are derived outputs. Read-only inspection may answer a relevant freshness question, but a plan or source change does not authorize generation or refresh. A requested visualization of Forge sources uses the forge visual-docs skill; general diagrams use current app capabilities. Distinguish confirmed staleness from uninspected uncertainty.
 
 Keep a retained plan in the project's chosen location, with separate progress or task files only when useful. Interpret its outcomes, dependencies and unfinished work without requiring particular heading tokens or numbering. Promote durable decisions before removing the plan. Requested local views default to `.forge/visual-docs/`; a project handbook follows the user's path or project convention and remains derived output, never an execution source.

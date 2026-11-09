@@ -4,14 +4,16 @@ Read for affected-contract evidence or a lifecycle status change. Reuse already 
 
 ## Work-class Matrix
 
-| Work class | Required fresh evidence | Canonical lifecycle effect |
+| Work class | Required evidence | Canonical lifecycle effect |
 |---|---|---|
 | Quick | focused test, build, lint, type check, real run, or observation that directly proves the claim | none |
-| Plan-only | every plan verification command and goal-level Done Check | none |
+| Plan-only | current plan verification outcomes and goal-level Done Checks | none |
 | Existing-contract restoration | original reproduction or equivalent fault-boundary observation passes, affected contract matches, relevant regression evidence passes | none |
 | Partial implementation of an approved contract | every directly or indirectly affected statement plus relevant regression evidence | none; report the implemented work scope |
 | Approved Spec Delta against an implemented baseline | every affected statement in the Canonical verification set passes plus regression command for unchanged behavior | `approved → implemented` after validation |
 | Full implementation of a new or never-implemented approved baseline | every statement in the Canonical verification set passes plus the full relevant suite | `approved → implemented` after validation |
+
+Reuse inspected evidence while relevant source, implementation, tests, inputs, settings, environment, and project freshness policy still match. Run missing or invalidated checks and any project gate that explicitly requires a fresh run. For plans, verify current required outcomes rather than rerunning stale commands solely because they are listed; preserve required project gates.
 
 Keep an applied Spec Delta through verification so its baseline lifecycle and affected statement links remain available. Remove it after evidence is recorded or promote it only as explicitly non-authoritative evidence.
 

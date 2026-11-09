@@ -19,13 +19,13 @@ expect(cart.totalPrice()).toBe(3400);
 
 **Why it is wrong:** these tests protect the current structure, not the required behavior. Every refactor breaks them, so people stop trusting red tests — or stop refactoring.
 
-**The fix:** assert through the public interface: inputs in, observable outputs and effects out. If a behavior can only be checked by peeking inside, the design is missing a seam — fix the design, not the test.
+**The fix:** assert through the public interface: inputs in, observable outputs and effects out. When an observable outcome is difficult to check, use an appropriate existing seam or test scope; change production design only when the change is independently justified.
 
 **Gate:** "If I refactored the internals without changing behavior, would this test still pass?" If no, rewrite the assertion.
 
-## 2. Mocking What You Own
+## 2. Tests That Exercise Only Mocks
 
-**The violation:** replacing your own classes or modules with mocks, then asserting the mock was called.
+**The violation:** replacing the behavior under test with a mock, then treating a call assertion as evidence that the real behavior works.
 
 ```typescript
 // BAD: the real OrderService never runs; the test verifies the mock
@@ -33,7 +33,7 @@ const orderService = mock(OrderService);
 checkout(cart, orderService);
 expect(orderService.place).toHaveBeenCalled();
 
-// GOOD: real objects for code you own; fake only the true boundary
+// GOOD: exercise the real behavior under test with a suitable test double
 const orderService = new OrderService(new InMemoryPaymentGateway());
 const receipt = checkout(cart, orderService);
 expect(receipt.status).toBe('paid');
@@ -41,18 +41,18 @@ expect(receipt.status).toBe('paid');
 
 **Why it is wrong:** you end up testing mock behavior. Integration bugs between your own components sail through green tests and surface in production.
 
-**The fix:** mock only at boundaries you do not control — network, clock, filesystem, third-party services. Run real instances of your own code; if that is painful, the pain is telling you the coupling is too tight.
+**The fix:** exercise the real behavior under test. Use a test double for an owned collaborator or external dependency when isolation, determinism, cost, or a hard-to-reproduce condition justifies it. Preserve distinct integration coverage for real connections and contracts where needed; a unit test with doubles does not prove that wiring works.
 
-**Completeness rule:** when you must mock a boundary, mirror the complete real data structure, not just the fields your test touches. Partial mocks fail silently when downstream code reads an omitted field.
+**Fixtures:** represent the relevant contract-valid data shape and fields needed by the behavior; include intentionally missing or invalid fields when testing those cases. They need not reproduce unrelated fields.
 
-**Gate:** before mocking anything, ask "do I own this?" If yes, do not mock it. Then ask "does the test depend on a side effect of the real thing?" If unsure, run the test against the real implementation first and observe.
+**Gate:** ask what behavior the test proves, whether the double's assumptions match the contract, and where the real integration is covered.
 
 ## 3. Assertion-Free Tests
 
-**The violation:** a test that runs code and asserts nothing — or only asserts that no exception was thrown.
+**The violation:** a test that runs code without checking the expected outcome.
 
 ```typescript
-// BAD: cannot fail meaningfully; pure coverage theater
+// BAD: completion alone does not establish the report totals
 test('processes the report', async () => {
   await generateReport(fixtureData);
 });
@@ -66,7 +66,7 @@ test('report sums amounts per category', async () => {
 
 **Why it is wrong:** coverage numbers rise while nothing is verified. The suite goes green whether the code is right or wrong.
 
-**The fix:** every test asserts at least one concrete expected value or observable effect. If you cannot state the expected outcome, you do not understand the behavior yet — clarify the expectation before claiming the behavior is verified.
+**The fix:** check a concrete expected value or observable effect. A no-exception assertion is meaningful when successful completion without an exception is the actual contract; otherwise check the relevant result or effect. Clarify an unclear expectation before claiming the behavior is verified.
 
 ## 4. Snapshot Overuse
 
@@ -112,7 +112,7 @@ await waitFor(() => queue.size() === 0, { timeout: 2000 });
 | Anti-pattern | Fix |
 |--------------|-----|
 | Testing implementation details | Assert observable behavior through the public interface |
-| Mocking what you own | Real objects for owned code; mock only external boundaries, completely |
+| Testing only mocks | Exercise real behavior; justify doubles and preserve distinct integration coverage |
 | Assertion-free tests | Every test states a concrete expected outcome |
 | Snapshot overuse | Targeted assertions; snapshots small, reviewed, explained |
 | Test interdependence | Each test owns its world; passes alone and in any order |

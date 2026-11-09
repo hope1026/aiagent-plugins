@@ -14,7 +14,7 @@ Operations communication should reduce uncertainty for the customer. The default
 ## Principle
 
 ```
-STATUS AND NEXT ACTION FIRST. DO NOT EXPLAIN CAUSE DETAILS UNTIL THEY HELP THE CUSTOMER.
+CONFIRMED STATUS AND USEFUL NEXT ACTION COME FIRST.
 ```
 
 ## Core Rules
@@ -24,9 +24,9 @@ Apply the forge writing-tone skill first, then apply these rules:
 1. **Lead with confirmed status.** Say whether the issue is confirmed, fixed, under review, needs information, or not reproduced.
 2. **State customer impact in plain language.** Translate technical details into what the customer sees or needs to do.
 3. **Give the action plan.** Say whether a fix is planned, in progress, released, or blocked on missing information.
-4. **Name customer action.** If there is nothing for the customer to do, say that directly.
+4. **Name confirmed customer action when relevant.** Say that no action is needed only when that is established.
 5. **Set the next update condition when known.** Use an actual commitment; do not invent a follow-up, date, or service promise to fill the template.
-6. **Keep cause detail conditional.** Include root cause only when requested, confirmed, safe to share, and useful for customer action.
+6. **Keep cause detail conditional.** Use the Cause Detail Gate below.
 7. **Avoid customer blame.** Describe states and actions, not fault.
 
 ## The Process
@@ -34,28 +34,32 @@ Apply the forge writing-tone skill first, then apply these rules:
 1. Classify the reply: confirmed issue, fix planned, fix released, needs information, cannot reproduce, billing/account handoff, or general usage guidance.
 2. Choose the status sentence before writing anything else.
 3. Add customer impact and current action in one short paragraph.
-4. Add customer action: no action needed, restart/update/check version, provide logs, email support, or wait for the next update.
+4. Add any confirmed customer action or established no-action guidance.
 5. Decide whether cause detail is allowed. If not, leave it out.
-6. Apply the forge writing-tone cut pass: remove hedges, internal process detail, generic apologies, and unnecessary technical depth.
+6. Apply the forge writing-tone cut pass: remove needless hedges, internal process detail, generic apologies, and unnecessary technical depth. Preserve real uncertainty.
 
 For substantial replies, reuse the work checklist. For short replies, check status, customer action, and cause detail internally; return the requested message without process narration.
 
 ## Default Shapes
 
+Use only lines supported by known facts. Replace placeholders with confirmed details and omit optional lines when no instruction or commitment is established; do not invent a restart, follow-up, issue-open, or no-action promise.
+
 Confirmed issue, fix planned:
 
 ```text
-The issue has been confirmed. We are preparing a fix, and no action is needed on your side right now.
+The issue has been confirmed. <Confirmed fix status and customer impact.>
 
-We will update this thread once the fix is available. If a temporary workaround is confirmed before then, we will share it here as well.
+<Confirmed customer action or no-action guidance, if established.>
+<Next update condition, only if committed.>
 ```
 
 Fix released:
 
 ```text
-This has been fixed in <version or update>. Please restart <product/client> and check that you are on <version or later>.
+This has been fixed in <version or update>.
 
-If the same issue still appears after that, please send <specific info> so we can continue investigating.
+<Required update, restart, or verification step, if confirmed.>
+<Specific follow-up information and channel, if further investigation is available.>
 ```
 
 Needs information:
@@ -63,7 +67,7 @@ Needs information:
 ```text
 We need one more detail to investigate this.
 
-Could you send <specific log/screenshot/version>? Once we have that, we can check the failing step directly.
+Could you send <specific log/screenshot/version needed for the investigation>?
 ```
 
 Not reproduced:
@@ -71,7 +75,8 @@ Not reproduced:
 ```text
 We checked the same scenario but could not reproduce it yet.
 
-Please send <specific reproduction detail>. We will keep the issue open while we verify the missing case.
+<Specific reproduction detail needed, if any.>
+<Confirmed follow-up, if any.>
 ```
 
 ## Cause Detail Gate
@@ -83,7 +88,7 @@ Include cause detail only when all conditions are true:
 - The explanation is safe to share publicly or with that customer.
 - The explanation can be stated in customer language without exposing internals.
 
-If any condition fails, use status language instead:
+If any condition fails, leave out the cause. Use only status language supported by the evidence, for example:
 
 - `The issue has been confirmed.`
 - `We are preparing a fix.`

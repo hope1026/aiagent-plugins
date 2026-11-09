@@ -15,6 +15,8 @@ Read the actual result and relevant output. A successful lint run does not prove
 
 Reuse inspected evidence that applies to the same unchanged relevant source, implementation, tests, inputs, settings, and environment. New changes, failures, uncovered impact, or uncertainty require affected checks. A handoff or elapsed time alone does not require another run.
 
+Choose checks by affected behavior, dependencies, and the current phase's required outcomes, even when the project has no automated selector. Reexecution needs a concrete coverage gap, invalidated evidence, a failed check, or a project requirement for a fresh run; a release or handoff alone does not justify the full suite. Distinguish fresh passes, valid reused results, exclusions, and checks that could not run. A required check without acceptable passing evidence remains unsatisfied. Use the test policy guidance in the forge using-forge skill for unit/integration/end-to-end selection, duplicate coverage, deployment retries, and measured test or release optimization claims.
+
 For worker results, inspect the diff or artifact and execution evidence, then confirm it applies to the integrated state. Run integration checks when that boundary is not covered. Do not simply repeat the worker's summary.
 
 For context and documentation work, distinguish source integrity, semantic fidelity and successful use. Check that selected context includes the conditions needed by the task and that a reader can answer the intended questions. A valid schema, exact quote or matching source hash proves neither sufficiency nor understanding. Use actual task outcomes and a separate reader for representative workflow changes; identify agent evaluation as such.

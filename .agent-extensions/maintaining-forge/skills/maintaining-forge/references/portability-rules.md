@@ -56,9 +56,9 @@ commands. Install paths differ across harnesses and install modes.
 | Promoted research notes | `docs/research/` | yes |
 | Local scratch, research, reviews, ledgers, and build intermediates | `.forge/` | no |
 
-Forge preserves the same intent, authority, and evidence principles across platforms. Consider durable contract impact separately from execution complexity. Use existing session or file plans according to review, coordination, and recovery needs. Ask about material unresolved user choices, not repository facts or reversible implementation details; independent questions may be grouped. No fixed readiness form, question type, model tier, worker count, or route ledger is required.
+These locations must keep the same meaning across platforms. The forge using-forge skill owns authority and execution selection; writing-specs owns Spec structure and transactions; writing-plans and executing-plans own work records; verifying-work owns evidence reuse and completion. Consult the relevant owner when changing that behavior instead of maintaining a second lifecycle procedure here.
 
-Canonical Spec files and structured file plans use Markdown. Session plans can remain in the current app. A Spec Bundle is identified by its normalized directory path, and its root `Documents` inventory links every member by descriptive filename and H1. Requirements are mandatory complete statement headings; Acceptance Criteria are optional at bundle level and use complete statement headings when present. Plans link relevant sources with useful labels and clear scope; no dedicated plan parser, fixed heading tokens or repeated full-statement blocks are required. Lifecycle verification uses Acceptance statements when a bundle has any, otherwise Requirement statements; group evidence when it proves several statements. Full bundle implementation uses the full set; partial implementation, change, and restoration use affected statements plus regression preservation without changing the whole bundle lifecycle. Inspected evidence is reused while relevant source, implementation, tests, inputs, settings, and environment remain unchanged; only invalidated scope is rerun. Visual Docs is a separate request-only presentation layer with no bundled template or renderer; an active request includes rendered verification and necessary source/tooling corrections and rebuilds. Completed documents require new refresh intent. It never becomes project SOT; shared documentation follows the project's tracking convention. Promote durable `.forge/research/` findings to `docs/research/`. Retain an applied Spec Delta through verification, then remove it or promote it only as non-authoritative evidence. Before deleting a plan, promote permanent decisions; its `progress.md` and `tasks/*.md` do not remain as independent artifacts.
+Spec sources and ordinary file plans stay Markdown-only. Visual Docs remain requested derived outputs under the forge visual-docs skill and never replace project authority. Platform differences do not add mandatory forms, worker counts, or approval rounds.
 
 ## 7. Useful Skill Content
 
@@ -92,11 +92,9 @@ The `creating-agent-extensions` distributed skill creates authoring sources, not
 
 Native or system authoring helpers may propose detailed skill and MCP content inside a staging boundary. They do not own canonical paths, target adapters, collision decisions, merge ownership, or validation.
 
-## 10. Mechanical Gates
+## 10. Validation ownership
 
-- All JSON manifests parse with `jq .`.
-- `bash scripts/validate.sh` checks plugin skills and both repository-local wrapper roots.
-- A fresh validation run must print `validate: all checks passed` before commit.
+The maintaining-forge runbook owns validation, behavioral evaluation, and release gates. `scripts/validate.sh` checks the mechanical subset, including JSON manifests, plugin skills, canonical extensions, and native adapter parity; portable behavior still needs instruction review.
 
 ## Claude Code, Codex, and Antigravity Differences
 

@@ -27,15 +27,13 @@ Apply these to every sentence, in any language:
 4. **Omit needless words.** "the fact that", "in order to", "it should be noted that" — delete.
 5. **Remove AI-like filler.** Skip stock openings, exaggerated praise, generic reassurance, and sign-offs that add no useful information.
 
-Above all: **lead with the point** — decision, result, or ask first; background after.
-
 Accuracy and preserved source meaning take priority over brevity, positive wording and stylistic variation.
 
 ## Clear technical explanations
 
 Apply these principles to technical replies, progress reports, documents and requested Spec or Plan views. They adapt useful clarity principles from ASD-STE100; they do not establish compliance with that controlled English standard, particularly in Korean. Keep the purpose-specific voice of marketing and operations copy.
 
-- State concrete actors, actions, conditions and results where they matter. Use active voice when the actor is known; preserve uncertainty when it is unknown.
+- State concrete actors, actions, conditions and results where they matter.
 - Give each sentence one main point and keep related sentences connected. Put a condition before an instruction when the reader needs it before acting. Explain causes, dependencies and rationale rather than reducing everything to disconnected commands.
 - Use familiar words while preserving precise technical terms. Explain an unfamiliar term at first use. For naming decisions and definition ownership, use the forge using-forge skill's terminology guidance; reuse the resulting terms consistently rather than varying them for style.
 - Shortening or simplifying prose must preserve exceptions, prohibitions, failure cases, quantities, units, uncertainty and obligation levels. Distinguish required behavior, permitted behavior and observed results. Keep exact identifiers, protocol values and quotations intact.
@@ -49,8 +47,8 @@ Sources: [ASD-STE100 overview](https://www.asd-ste100.org/about.html) and [offic
 1. Decide the scope: substantial prose (documentation, README, reports, multi-paragraph PR descriptions) or a short message (Slack reply, commit message, brief comment).
 2. Use references/style-rules.md when substantial prose or house voice needs its examples. Short messages can use the core rules directly. Use part 2 for Korean house voice when needed and reuse it while available.
 3. Draft, leading with the point.
-4. Cut pass: delete hedges, filler, and anything the reader does not need in order to act.
-5. Read once as the reader: is the ask explicit — who does what, by when, and what happens next?
+4. Cut pass: delete needless hedges, filler, and anything the reader does not need. Preserve real uncertainty.
+5. Read once as the reader: is the result or request clear, including who acts, timing, and next steps when relevant?
 
 ## Review Surface Copy
 
