@@ -13,6 +13,8 @@ Read the goal, unfinished tasks, relevant contracts, and recorded evidence. Conf
 
 Use the forge using-forge skill's task-context guidance when handing work to another agent or resuming from a summary. Inspect relevant conditions and exceptions at their source. A saved packet may help detect changed files, but its hashes cannot establish that all dependencies were selected or that previous conclusions remain correct.
 
+Before implementing a plan or resuming planned work, confirm that the plan was reviewed under the forge writing-plans skill and applicable findings were incorporated. Reuse a review that still covers the current plan. For an unreviewed plan or material changes outside the prior review, follow the forge writing-plans skill before implementing the affected steps.
+
 Choose an order that respects dependencies and user priorities. Correct stale paths, commands, or implementation steps within the authorized scope and record changes that matter for recovery. A changed product outcome or unresolved contract conflict needs a user decision; independent authorized work can continue.
 
 Perform each bounded outcome and verify it using suitable existing tests, additional regression protection, or direct observation. TDD is optional unless requested or required by the project. Inspect worker results and confirm their evidence applies to the integrated state; rerun only missing or invalidated checks.

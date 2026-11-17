@@ -43,4 +43,10 @@ Use the project's plan location or a descriptive file under `docs/plans/` when a
 
 When a requested review needs relationships or diagrams, use the forge visual-docs skill and select the form from the actual plan. Visual Docs generation and refresh require an explicit user request; Markdown or an app plan is sufficient for ordinary review. A requested plan visualization can use that existing source and the current app's capabilities without creating a structured file plan.
 
-Review whether the plan is executable, appropriately bounded, and verifiable. Continue authorized execution through the forge executing-plans skill without another go-ahead just because a plan was saved.
+## Review before implementation
+
+Review every execution plan, including a session plan, before implementing it. When a separate agent is available, give an agent who did not author the plan the user's request, the plan, and relevant sources. Follow the forge using-forge skill to select a reviewer model with the capabilities and context capacity the review needs, and reasoning effort suited to the uncertainty and consequences of a missed issue. Honor user settings. If model selection is unavailable, use the separate agent with its inherited settings. If a separate agent is unavailable, the plan author performs the same review directly.
+
+Check scope, dependencies, assumptions, and whether the planned checks demonstrate the requested outcome. Before implementing any planned step, check the findings against the sources, revise the plan for supported issues, and briefly record the outcome in the existing work record. Resolve user-owned decisions before the affected work.
+
+Continue authorized execution through the forge executing-plans skill without another go-ahead just because a plan was saved.
