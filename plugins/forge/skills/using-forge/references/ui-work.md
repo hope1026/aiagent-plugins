@@ -17,12 +17,26 @@ Do not copy an accidental inconsistency as the standard. Resolve disagreement
 with the owning contract; if no standard exists, choose the smallest coherent
 approach supported by the user's direction and task.
 
-Consider type size, weight, line height, contrast, spacing and grouping together.
-Match controls by role, including size, alignment, labels, icons and states.
-Do not shrink important content to fit or make every action equally prominent.
-Different tasks and platforms may need different density and emphasis; Forge
-prescribes no universal font size, button height, layout or one-primary-button
-quota for an entire page.
+Use the product's type and control scales for labels, icons and states. Align
+text read side by side on a common baseline. Group buttons that act on
+the same item with consistent gaps. For single-line buttons and fields used
+together, match their outer heights and align their vertical centers. A compact
+status badge can share that center at its own size. Let longer labels wrap or
+controls move together to the next line while preserving usable touch targets.
+
+Within a bordered group, give text room on every side. Use a common starting
+edge for the heading, body and related values unless an indent conveys nesting.
+Give the title or key value the emphasis its role needs through size, weight,
+contrast or spacing. Keep units, dates and supporting copy legible. Place each
+label close enough to its value that the pair can be recognized at a glance.
+
+In a list, arrange the fields people compare in predictable positions across
+rows. Short details can sit beside the title when space permits. Use separate
+lines for content that benefits from being read in sequence. Choose row spacing
+that distinguishes entries without making each field look like a separate item.
+Preserve readable type, line height and the relative emphasis of primary and
+supporting actions as the layout becomes denser. The product and platform
+determine control sizes, spacing and how many actions deserve emphasis.
 
 Prefer extending a suitable component or variant to accumulating local patches.
 When web styles conflict, trace inheritance, selector specificity, load order
