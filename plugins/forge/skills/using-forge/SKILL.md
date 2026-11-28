@@ -21,6 +21,16 @@ Forge connects human intent and project knowledge to correct work. Give agents t
 
 These principles do not require a form, route announcement, separate checklist, or repeated skill handoff. An explanation or investigation may finish with findings alone.
 
+## Check the Git worktree before editing
+
+For work that will change a Git repository, identify the current checkout and the main worktree (the first entry in `git worktree list --porcelain`). Before editing or switching branches, run `git --no-optional-locks status --untracked-files=all` in the candidate worktree to check its branch, staged and unstaged changes, untracked files, and any in-progress Git operation. When the app exposes session activity and working paths, check for other active work in that worktree, including sessions running from a subdirectory. A clean Git status alone cannot establish that the worktree is unused.
+
+- For a new task, default to a new task branch in the main worktree when it is clean and available. Use the repository's default branch as the base unless the task or repository calls for a different base. Honor an explicit workspace or branch choice and reuse a worktree already assigned to the task, subject to the same safety checks.
+- If the main worktree is unavailable, has pre-existing uncommitted changes or an unfinished Git operation, or is in use by another task, leave it in place. Reuse a clean worktree available to this task or create a separate one from the appropriate base using the app's worktree action when available. Check the destination before writing. Ask only if proceeding safely depends on a user decision, such as whether to include existing changes when the work depends on them.
+- When resuming the same task, keep its worktree, branch, and changes. Check their state and resolve any overlap with unrelated changes or another task before writing. Never stash, reset, delete, commit, or move existing work just to make a checkout clean.
+
+Read-only requests and work outside Git do not require a branch or worktree setup. If evidence changes before editing, recheck the chosen worktree.
+
 ## Choose execution at task start
 
 Once the goal and relevant context are clear, assess which parts can run independently. Use subagents when available and permitted for bounded investigation, implementation, or verification that benefits from delegation. Keep small or tightly coupled work with the agent that owns its context. Give each worker the necessary sources, expected result, write ownership, and verification conditions; resolve dependencies and overlapping writes before parallel work.

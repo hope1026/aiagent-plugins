@@ -61,7 +61,7 @@ bash scripts/install.sh --agent codex --plugin forge
 
 | Skill | One line |
 |---|---|
-| `using-forge` | Classifies Canonical Spec impact and execution complexity, then selects Quick, plan-only, spec-backed direct, or full lifecycle |
+| `using-forge` | Checks the Git worktree before edits and uses Canonical Spec impact and task complexity to select Quick, plan-only, spec-backed direct, or full lifecycle |
 | `writing-specs` | Proposes approved Spec Deltas and maintains permanent `forge/spec@3` Canonical Spec Bundles without generating HTML |
 | `writing-plans` | Plans complex work through clear outcomes, dependencies, completion checks and useful source links |
 | `executing-plans` | Executes plan Tasks with checkpoints while keeping the plan a work source rather than project SOT |
